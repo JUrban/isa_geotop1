@@ -15224,6 +15224,21 @@ proof -
     using hdim unfolding geotop_is_edge_def by (by100 blast)
 qed
 
+lemma geotop_segment_chain_vertices_intersections_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  defines "F \<equiv> ((\<lambda>x. {x}) ` set us)
+    \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+        ` {0..<length us - 1})"
+  assumes h\<sigma>: "\<sigma> \<in> F"
+  assumes h\<tau>: "\<tau> \<in> F"
+  assumes hmeet: "\<sigma> \<inter> \<tau> \<noteq> {}"
+  shows "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+    \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  sorry
+
 lemma geotop_segment_chain_vertices_complex_dev34:
   fixes a b :: "real^2"
   assumes hab: "a \<noteq> b"
@@ -15233,7 +15248,230 @@ lemma geotop_segment_chain_vertices_complex_dev34:
     \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
         ` {0..<length us - 1})"
   shows "geotop_is_complex F"
-  sorry
+proof -
+  have hbasic:
+      "length us = n
+      \<and> us ! 0 = a
+      \<and> us ! (length us - 1) = b
+      \<and> distinct us
+      \<and> set us \<subseteq> closed_segment a b"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_basic_dev34[OF hab hlong])
+  have hadj_distinct:
+      "\<And>i. i < length us - 1 \<Longrightarrow> us ! i \<noteq> us ! Suc i"
+  proof -
+    fix i
+    assume hi: "i < length us - 1"
+    have hi': "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+      using hi unfolding us_def by (by100 simp)
+    have hne0:
+        "geotop_segment_chain_vertices_dev34 a b n ! i
+        \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc i"
+      by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+          [OF hab hlong hi'])
+    show "us ! i \<noteq> us ! Suc i"
+      using hne0 unfolding us_def by (by100 simp)
+  qed
+  have hsimplexes: "\<forall>\<sigma>\<in>F. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma>
+    assume h\<sigma>F: "\<sigma> \<in> F"
+    have hcases:
+        "(\<exists>x\<in>set us. \<sigma> = {x})
+        \<or> (\<exists>i\<in>{0..<length us - 1}.
+            \<sigma> = closed_segment (us ! i) (us ! Suc i))"
+    proof -
+      have h\<sigma>F':
+          "\<sigma> \<in> ((\<lambda>x. {x}) ` set us)
+            \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+              ` {0..<length us - 1})"
+        using h\<sigma>F unfolding F_def by (by100 simp)
+      show ?thesis
+      proof (rule UnE[OF h\<sigma>F'])
+        assume "\<sigma> \<in> ((\<lambda>x. {x}) ` set us)"
+        thus ?thesis
+          by (by100 blast)
+      next
+        assume "\<sigma> \<in> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+              ` {0..<length us - 1})"
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+    show "geotop_is_simplex \<sigma>"
+    proof (rule disjE[OF hcases])
+      assume hleft: "\<exists>x\<in>set us. \<sigma> = {x}"
+      show ?thesis
+      proof (rule bexE[OF hleft])
+        fix x
+        assume "x \<in> set us"
+        assume h\<sigma>x: "\<sigma> = {x}"
+        have hdim: "geotop_simplex_dim {x} 0"
+          by (rule geotop_singleton_is_simplex)
+        have hsimp: "geotop_is_simplex {x}"
+          by (rule geotop_simplex_dim_imp_is_simplex[OF hdim])
+        show ?thesis
+          using h\<sigma>x hsimp by (by100 simp)
+      qed
+    next
+      assume hright: "\<exists>i\<in>{0..<length us - 1}.
+          \<sigma> = closed_segment (us ! i) (us ! Suc i)"
+      show ?thesis
+      proof (rule bexE[OF hright])
+        fix i
+        assume hi_set: "i \<in> {0..<length us - 1}"
+        assume h\<sigma>i: "\<sigma> = closed_segment (us ! i) (us ! Suc i)"
+        have hi: "i < length us - 1"
+          using hi_set by (by100 simp)
+        have hne: "us ! i \<noteq> us ! Suc i"
+          by (rule hadj_distinct[OF hi])
+        have hdim: "geotop_simplex_dim (closed_segment (us ! i) (us ! Suc i)) 1"
+          by (rule geotop_closed_segment_is_simplex[OF hne])
+        have hsimp: "geotop_is_simplex (closed_segment (us ! i) (us ! Suc i))"
+          by (rule geotop_simplex_dim_imp_is_simplex[OF hdim])
+        show ?thesis
+          using h\<sigma>i hsimp by (by100 simp)
+      qed
+    qed
+  qed
+  have hfaces: "\<forall>\<sigma>\<in>F. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> F"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>F: "\<sigma> \<in> F"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have hcases:
+        "(\<exists>x\<in>set us. \<sigma> = {x})
+        \<or> (\<exists>i\<in>{0..<length us - 1}.
+            \<sigma> = closed_segment (us ! i) (us ! Suc i))"
+    proof -
+      have h\<sigma>F':
+          "\<sigma> \<in> ((\<lambda>x. {x}) ` set us)
+            \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+              ` {0..<length us - 1})"
+        using h\<sigma>F unfolding F_def by (by100 simp)
+      show ?thesis
+      proof (rule UnE[OF h\<sigma>F'])
+        assume "\<sigma> \<in> ((\<lambda>x. {x}) ` set us)"
+        thus ?thesis
+          by (by100 blast)
+      next
+        assume "\<sigma> \<in> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+              ` {0..<length us - 1})"
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+    show "\<tau> \<in> F"
+    proof (rule disjE[OF hcases])
+      assume hleft: "\<exists>x\<in>set us. \<sigma> = {x}"
+      show ?thesis
+      proof (rule bexE[OF hleft])
+        fix x
+        assume hx_us: "x \<in> set us"
+        assume h\<sigma>x: "\<sigma> = {x}"
+        have hface_single: "geotop_is_face \<tau> {x}"
+          using hface h\<sigma>x by (by100 simp)
+        have "\<tau> = {x}"
+          by (rule geotop_singleton_face_eq_prefix[OF hface_single])
+        thus ?thesis
+          unfolding F_def using hx_us by (by100 blast)
+      qed
+    next
+      assume hright: "\<exists>i\<in>{0..<length us - 1}.
+          \<sigma> = closed_segment (us ! i) (us ! Suc i)"
+      show ?thesis
+      proof (rule bexE[OF hright])
+        fix i
+        assume hi_set: "i \<in> {0..<length us - 1}"
+        assume h\<sigma>i: "\<sigma> = closed_segment (us ! i) (us ! Suc i)"
+        have hi: "i < length us - 1"
+          using hi_set by (by100 simp)
+        have hi_lt: "i < length us"
+          using hi by (by100 linarith)
+        have hSuc_lt: "Suc i < length us"
+          using hi by (by100 linarith)
+        have hleft_us: "us ! i \<in> set us"
+          using nth_mem[OF hi_lt] .
+        have hright_us: "us ! Suc i \<in> set us"
+          using nth_mem[OF hSuc_lt] .
+        have hne: "us ! i \<noteq> us ! Suc i"
+          by (rule hadj_distinct[OF hi])
+        have hface_seg: "geotop_is_face \<tau> (closed_segment (us ! i) (us ! Suc i))"
+          using hface h\<sigma>i by (by100 simp)
+        have hface_cases:
+            "\<tau> = {us ! i}
+            \<or> \<tau> = {us ! Suc i}
+            \<or> \<tau> = closed_segment (us ! i) (us ! Suc i)"
+          by (rule geotop_closed_segment_face_endpoint_or_self_prefix
+              [OF hne hface_seg])
+        show ?thesis
+        proof (rule disjE[OF hface_cases])
+          assume "\<tau> = {us ! i}"
+          thus ?thesis
+            unfolding F_def using hleft_us by (by100 blast)
+        next
+          assume htail: "\<tau> = {us ! Suc i}
+            \<or> \<tau> = closed_segment (us ! i) (us ! Suc i)"
+          show ?thesis
+          proof (rule disjE[OF htail])
+            assume "\<tau> = {us ! Suc i}"
+            thus ?thesis
+              unfolding F_def using hright_us by (by100 blast)
+          next
+            assume "\<tau> = closed_segment (us ! i) (us ! Suc i)"
+            thus ?thesis
+              unfolding F_def using hi_set by (by100 blast)
+          qed
+        qed
+      qed
+    qed
+  qed
+  have hintersections:
+      "\<forall>\<sigma>\<in>F. \<forall>\<tau>\<in>F. \<sigma> \<inter> \<tau> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>F: "\<sigma> \<in> F"
+    assume h\<tau>F: "\<tau> \<in> F"
+    assume hmeet: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>F': "\<sigma> \<in> ((\<lambda>x. {x}) `
+        set (geotop_segment_chain_vertices_dev34 a b n))
+      \<union> ((\<lambda>i. closed_segment
+            (geotop_segment_chain_vertices_dev34 a b n ! i)
+            (geotop_segment_chain_vertices_dev34 a b n ! Suc i))
+        ` {0..<length (geotop_segment_chain_vertices_dev34 a b n) - 1})"
+      using h\<sigma>F unfolding F_def us_def by (by100 simp)
+    have h\<tau>F': "\<tau> \<in> ((\<lambda>x. {x}) `
+        set (geotop_segment_chain_vertices_dev34 a b n))
+      \<union> ((\<lambda>i. closed_segment
+            (geotop_segment_chain_vertices_dev34 a b n ! i)
+            (geotop_segment_chain_vertices_dev34 a b n ! Suc i))
+        ` {0..<length (geotop_segment_chain_vertices_dev34 a b n) - 1})"
+      using h\<tau>F unfolding F_def us_def by (by100 simp)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule geotop_segment_chain_vertices_intersections_dev34
+          [OF hab hlong h\<sigma>F' h\<tau>F' hmeet])
+  qed
+  have hlocfin:
+      "\<forall>\<sigma>\<in>F. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>F. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    have hF_finite: "finite F"
+      unfolding F_def by (by100 simp)
+    fix \<sigma>
+    assume "\<sigma> \<in> F"
+    have "finite {\<tau>\<in>F. \<tau> \<inter> (UNIV :: (real^2) set) \<noteq> {}}"
+      using hF_finite by (by100 simp)
+    thus "\<exists>U. open U \<and> \<sigma> \<subseteq> U
+      \<and> finite {\<tau>\<in>F. \<tau> \<inter> U \<noteq> {}}"
+      by (intro exI[where x="UNIV :: (real^2) set"]) (by100 simp)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def
+    using hsimplexes hfaces hintersections hlocfin by (by100 blast)
+qed
 
 lemma geotop_segment_chain_vertices_listing_dev34:
   fixes a b :: "real^2"
