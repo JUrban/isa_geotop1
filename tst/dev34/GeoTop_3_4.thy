@@ -3859,6 +3859,337 @@ proof -
         \<in> F_B"
       using hu\<^sub>B_succ_edge_convex_hull_eq[of k] hseg by (by100 simp)
   qed
+  have hF_B_nonedge_singleton_cases:
+      "\<And>\<tau>. \<tau> \<in> F_B \<Longrightarrow> \<not> geotop_is_edge \<tau>
+        \<Longrightarrow> \<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). \<tau> = {x}"
+    using hF_B_vertex_edge_decomp hu\<^sub>B_succ_vertices by (by100 blast)
+  have hF_B_edge_listed_cases:
+      "\<And>\<tau>. \<tau> \<in> F_B \<Longrightarrow> geotop_is_edge \<tau>
+        \<Longrightarrow> \<exists>k\<in>{0..<p\<^sub>B}.
+          \<tau> = closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+    using hu\<^sub>B_succ_edges by (by100 blast)
+  have hF_B_convex_hull_nonedge_singleton_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> F_B
+        \<Longrightarrow> \<not> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x}"
+  proof -
+    fix W :: "(real^2) set"
+    assume hW_ne: "W \<noteq> {}"
+    assume hWhull_F: "geotop_convex_hull W \<in> F_B"
+    assume hnot_edge: "\<not> geotop_is_edge (geotop_convex_hull W)"
+    obtain x where hxV: "x \<in> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})"
+        and hWhull_eq: "geotop_convex_hull W = {x}"
+      using hF_B_nonedge_singleton_cases[OF hWhull_F hnot_edge]
+      by (by100 blast)
+    have hW_sub_x: "W \<subseteq> {x}"
+    proof
+      fix y
+      assume hyW: "y \<in> W"
+      have hy_hull: "y \<in> geotop_convex_hull W"
+        using geotop_convex_hull_contains_V hyW by (by100 blast)
+      show "y \<in> {x}"
+        using hy_hull hWhull_eq by (by100 simp)
+    qed
+    have hxW: "x \<in> W"
+    proof -
+      obtain y where hyW: "y \<in> W"
+        using hW_ne by (by100 blast)
+      have hy_single: "y \<in> {x}"
+        using hW_sub_x hyW by (by100 blast)
+      have hyx: "y = x"
+        using hy_single by (by100 simp)
+      show ?thesis
+        using hyW hyx by (by100 simp)
+    qed
+    have hW_eq: "W = {x}"
+      using hW_sub_x hxW by (by100 blast)
+    show "\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x}"
+      using hxV hW_eq by (by100 blast)
+  qed
+  have hF_B_convex_hull_member_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> F_B
+        \<Longrightarrow> (\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x})
+          \<or> (\<exists>k\<in>{0..<p\<^sub>B}.
+              geotop_convex_hull W =
+                closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))"
+    using hF_B_convex_hull_nonedge_singleton_cases hF_B_edge_listed_cases
+    by (by100 blast)
+  have hF_B_listed_edge_vertex_endpoint_cases:
+      "\<And>x k. x \<in> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})
+        \<Longrightarrow> k \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> x \<in> closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))
+        \<Longrightarrow> x = ?u\<^sub>B_succ k \<or> x = ?u\<^sub>B_succ (Suc k)"
+  proof -
+    fix x k
+    assume hxV: "x \<in> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})"
+    assume hk: "k \<in> {0..<p\<^sub>B}"
+    assume hxseg:
+        "x \<in> closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+    have hxF: "{x} \<in> F_B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+        hxV hu\<^sub>B_succ_vertices by (by100 blast)
+    have hsegF:
+        "closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)) \<in> F_B"
+      using hu\<^sub>B_succ_edges hk by (by100 blast)
+    have hmeet:
+        "{x} \<inter> closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)) \<noteq> {}"
+      using hxseg by (by100 blast)
+    have hface_pair:
+        "geotop_is_face
+          ({x} \<inter> closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))) {x}
+        \<and> geotop_is_face
+          ({x} \<inter> closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+          (closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))"
+      using geotop_is_complex_intersection[OF hF_B_complex] hxF hsegF hmeet
+      by (by100 blast)
+    have hface_single:
+        "geotop_is_face {x}
+          (closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))"
+      using hface_pair hxseg by (by100 simp)
+    have hface_cases:
+        "{x} = {?u\<^sub>B_succ k}
+        \<or> {x} = {?u\<^sub>B_succ (Suc k)}
+        \<or> {x} = closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+      using geotop_segment_face_cases_dev34
+        [OF hface_single hu\<^sub>B_succ_next_distinct[of k]]
+      by (by100 blast)
+    show "x = ?u\<^sub>B_succ k \<or> x = ?u\<^sub>B_succ (Suc k)"
+    proof (rule disjE[OF hface_cases])
+      assume "{x} = {?u\<^sub>B_succ k}"
+      thus ?thesis
+        by (by100 simp)
+    next
+      assume htail:
+          "{x} = {?u\<^sub>B_succ (Suc k)}
+          \<or> {x} = closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+      show ?thesis
+      proof (rule disjE[OF htail])
+        assume "{x} = {?u\<^sub>B_succ (Suc k)}"
+        thus ?thesis
+          by (by100 simp)
+      next
+        assume hself:
+            "{x} = closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+        have hedge:
+            "geotop_is_edge
+              (closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))"
+          using hu\<^sub>B_succ_edges hk by (by100 blast)
+        have "geotop_is_edge {x}"
+          using hedge hself by (by100 simp)
+        thus ?thesis
+          using geotop_singleton_not_edge_prefix by (by100 blast)
+      qed
+    qed
+  qed
+  have hF_B_convex_hull_listed_edge_vertex_subset:
+      "\<And>W k. W \<subseteq> geotop_complex_vertices F_B
+        \<Longrightarrow> k \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> geotop_convex_hull W =
+          closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))
+        \<Longrightarrow> W \<subseteq> {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+  proof
+    fix W k x
+    assume hWsub: "W \<subseteq> geotop_complex_vertices F_B"
+    assume hk: "k \<in> {0..<p\<^sub>B}"
+    assume hWhull:
+        "geotop_convex_hull W =
+          closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+    assume hxW: "x \<in> W"
+    have hxV: "x \<in> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})"
+      using hWsub hxW hu\<^sub>B_succ_vertices by (by100 blast)
+    have hx_hull: "x \<in> geotop_convex_hull W"
+      using geotop_convex_hull_contains_V hxW by (by100 blast)
+    have hx_seg: "x \<in> closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+      using hx_hull hWhull by (by100 simp)
+    show "x \<in> {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+      using hF_B_listed_edge_vertex_endpoint_cases[OF hxV hk hx_seg]
+      by (by100 blast)
+  qed
+  have hF_B_convex_hull_nonempty_pair_if_listed_edge:
+      "\<And>W k. W \<noteq> {}
+        \<Longrightarrow> W \<subseteq> geotop_complex_vertices F_B
+        \<Longrightarrow> k \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> geotop_convex_hull W =
+          closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))
+        \<Longrightarrow> W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+  proof -
+    fix W :: "(real^2) set" and k
+    assume hW_ne: "W \<noteq> {}"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices F_B"
+    assume hk: "k \<in> {0..<p\<^sub>B}"
+    assume hWhull:
+        "geotop_convex_hull W =
+          closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+    have hW_pair_sub: "W \<subseteq> {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+      by (rule hF_B_convex_hull_listed_edge_vertex_subset
+          [OF hWsub hk hWhull])
+    have hvk_in_W: "?u\<^sub>B_succ k \<in> W"
+    proof (rule ccontr)
+      assume hvk_not: "?u\<^sub>B_succ k \<notin> W"
+      have hW_sub_suc: "W \<subseteq> {?u\<^sub>B_succ (Suc k)}"
+        using hW_pair_sub hvk_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {?u\<^sub>B_succ (Suc k)}"
+        by (rule hull_mono[OF hW_sub_suc])
+      have hgeo_sub:
+          "geotop_convex_hull W
+            \<subseteq> geotop_convex_hull {?u\<^sub>B_succ (Suc k)}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{?u\<^sub>B_succ (Suc k)}"]
+        by (by100 simp)
+      have hvk_seg:
+          "?u\<^sub>B_succ k \<in>
+            closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+        by (by100 simp)
+      have "?u\<^sub>B_succ k
+          \<in> geotop_convex_hull {?u\<^sub>B_succ (Suc k)}"
+        using hgeo_sub hWhull hvk_seg by (by100 blast)
+      hence "?u\<^sub>B_succ k = ?u\<^sub>B_succ (Suc k)"
+        using geotop_convex_hull_eq_HOL[of "{?u\<^sub>B_succ (Suc k)}"]
+        by (by100 simp)
+      thus False
+        using hu\<^sub>B_succ_next_distinct[of k] by (by100 blast)
+    qed
+    have hvsuc_in_W: "?u\<^sub>B_succ (Suc k) \<in> W"
+    proof (rule ccontr)
+      assume hvsuc_not: "?u\<^sub>B_succ (Suc k) \<notin> W"
+      have hW_sub_k: "W \<subseteq> {?u\<^sub>B_succ k}"
+        using hW_pair_sub hvsuc_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {?u\<^sub>B_succ k}"
+        by (rule hull_mono[OF hW_sub_k])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {?u\<^sub>B_succ k}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{?u\<^sub>B_succ k}"]
+        by (by100 simp)
+      have hvsuc_seg:
+          "?u\<^sub>B_succ (Suc k) \<in>
+            closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+        by (by100 simp)
+      have "?u\<^sub>B_succ (Suc k)
+          \<in> geotop_convex_hull {?u\<^sub>B_succ k}"
+        using hgeo_sub hWhull hvsuc_seg by (by100 blast)
+      hence "?u\<^sub>B_succ (Suc k) = ?u\<^sub>B_succ k"
+        using geotop_convex_hull_eq_HOL[of "{?u\<^sub>B_succ k}"]
+        by (by100 simp)
+      thus False
+        using hu\<^sub>B_succ_next_distinct[of k] by (by100 blast)
+    qed
+    show "W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+      using hW_pair_sub hvk_in_W hvsuc_in_W by (by100 blast)
+  qed
+  have hF_B_convex_hull_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> geotop_complex_vertices F_B
+        \<Longrightarrow> geotop_convex_hull W \<in> F_B
+        \<Longrightarrow> (\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x})
+          \<or> (\<exists>k\<in>{0..<p\<^sub>B}.
+              W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)})"
+  proof -
+    fix W :: "(real^2) set"
+    assume hW_ne: "W \<noteq> {}"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices F_B"
+    assume hWhull_F: "geotop_convex_hull W \<in> F_B"
+    have hcases:
+        "(\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p\<^sub>B}.
+            geotop_convex_hull W =
+              closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))"
+      by (rule hF_B_convex_hull_member_cases[OF hW_ne hWhull_F])
+    show "(\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p\<^sub>B}.
+            W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)})"
+    proof (rule disjE[OF hcases])
+      assume hsingle:
+          "\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x}"
+      show ?thesis
+        using hsingle by (by100 blast)
+    next
+      assume hedge:
+          "\<exists>k\<in>{0..<p\<^sub>B}.
+            geotop_convex_hull W =
+              closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+      obtain k where hk: "k \<in> {0..<p\<^sub>B}"
+          and hWhull:
+            "geotop_convex_hull W =
+              closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+        using hedge by (by100 blast)
+      have hW_pair:
+          "W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+        by (rule hF_B_convex_hull_nonempty_pair_if_listed_edge
+            [OF hW_ne hWsub hk hWhull])
+      show ?thesis
+        using hk hW_pair by (by100 blast)
+    qed
+  qed
+  have hF_B_convex_hull_empty_notin:
+      "geotop_convex_hull ({} :: (real^2) set) \<notin> F_B"
+  proof
+    assume hempty_hull_F:
+        "geotop_convex_hull ({} :: (real^2) set) \<in> F_B"
+    have hhullempty: "geotop_convex_hull ({} :: (real^2) set) = {}"
+      using geotop_convex_hull_eq_HOL[of "({} :: (real^2) set)"]
+      by (by100 simp)
+    have hempty_F: "({} :: (real^2) set) \<in> F_B"
+      using hempty_hull_F hhullempty by (by100 simp)
+    have hcases:
+        "({} :: (real^2) set) \<in>
+          ((\<lambda>x. {x}) ` ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}))
+        \<or> ({} :: (real^2) set) \<in>
+          ((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+            ` {0..<p\<^sub>B})"
+      using hu\<^sub>B_succ_decomp hempty_F by (by100 blast)
+    have hnot_singleton_image:
+        "({} :: (real^2) set) \<notin>
+          ((\<lambda>x. {x}) ` ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}))"
+      by (by100 blast)
+    have hnot_edge_image:
+        "({} :: (real^2) set) \<notin>
+          ((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+            ` {0..<p\<^sub>B})"
+    proof
+      assume hempty_edge:
+          "({} :: (real^2) set) \<in>
+            ((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+              ` {0..<p\<^sub>B})"
+      have "geotop_is_edge ({} :: (real^2) set)"
+        using hu\<^sub>B_succ_edges hempty_edge by (by100 blast)
+      thus False
+        using geotop_is_simplex_nonempty unfolding geotop_is_edge_def
+        by (by100 blast)
+    qed
+    show False
+      using hcases hnot_singleton_image hnot_edge_image by (by100 blast)
+  qed
+  have hu\<^sub>B_succ_cases:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices F_B
+        \<longrightarrow> geotop_convex_hull W \<in> F_B
+        \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x})
+          \<or> (\<exists>k\<in>{0..<p\<^sub>B}.
+              W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}))"
+  proof (intro allI impI)
+    fix W :: "(real^2) set"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices F_B"
+    assume hWhull_F: "geotop_convex_hull W \<in> F_B"
+    show "(\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p\<^sub>B}.
+            W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)})"
+    proof (cases "W = {}")
+      case True
+      show ?thesis
+        using hWhull_F hF_B_convex_hull_empty_notin True by (by100 simp)
+    next
+      case False
+      show ?thesis
+        by (rule hF_B_convex_hull_cases[OF False hWsub hWhull_F])
+    qed
+  qed
+  have hu\<^sub>B_succ_listing_data:
+      "geotop_standard_boundary_cycle_listing_data_dev34
+        \<sigma> p\<^sub>B F_B ?u\<^sub>B_succ"
+    unfolding geotop_standard_boundary_cycle_listing_data_dev34_def
+    using hF_B_sub hu\<^sub>B_succ_closed hu\<^sub>B_succ_vertices
+      hu\<^sub>B_succ_decomp hu\<^sub>B_succ_edges hu\<^sub>B_succ_cases
+      hu\<^sub>B_succ_singletons hu\<^sub>B_succ_edges_in_F_B
+    by (by100 blast)
   have hsource_successor_vertex_card:
       "card ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
         ` {0..<p\<^sub>c}) = card (geotop_complex_vertices L)"
