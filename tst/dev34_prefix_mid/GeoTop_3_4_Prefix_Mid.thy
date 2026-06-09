@@ -10059,6 +10059,13 @@ lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
 proof -
   have hcut_open: "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
     by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
+  have hP_ne_R: "P \<noteq> R"
+  proof
+    assume hPR: "P = R"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hPR card_insert_if)
+    thus False using hcard by (by100 simp)
+  qed
   have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
   proof
     show "Q \<noteq> P"
@@ -10121,6 +10128,16 @@ proof -
     and hc_tS: "c tS = S"
     using hcyc
     by (rule geotop_polygon_cyclic_orderE_prefix)
+  have hD42_boundary_arc_split:
+      "\<exists>C\<^sub>1 C\<^sub>2.
+        J = C\<^sub>1 \<union> C\<^sub>2
+        \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, R}
+        \<and> geotop_arc_endpoints C\<^sub>1 {P, R}
+        \<and> geotop_arc_endpoints C\<^sub>2 {P, R}
+        \<and> geotop_arc_interior C\<^sub>1 {P, R} \<inter>
+            geotop_arc_interior C\<^sub>2 {P, R} = {}"
+    by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
+        [OF hJ hP hR hP_ne_R])
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
