@@ -12555,6 +12555,240 @@ next
   qed
 qed
 
+lemma geotop_endpoint_chain_listing_isomorphism_from_matching_dev34:
+  fixes L F :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hF_linear: "geotop_is_linear_graph F"
+  assumes hLlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hlen: "length us = length vs"
+  assumes h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+  assumes h\<psi>idx: "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+  shows "geotop_isomorphism L F \<psi>"
+  (**
+    Path version of the cyclic matching-isomorphism bookkeeping.  Once two
+    endpoint chains have the same length and the vertex bijection matches
+    their listed vertices indexwise, singleton and adjacent-edge normal forms
+    transfer the simplicial membership condition in both directions. **)
+proof -
+  let ?VL = "geotop_complex_vertices L"
+  let ?VF = "geotop_complex_vertices F"
+  have h\<psi>inj: "inj_on \<psi> ?VL"
+    using h\<psi>bij by (rule bij_betw_imp_inj_on)
+  have hLvertices: "set vs = ?VL"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hLlist])
+  have hFvertices: "set us = ?VF"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hFlist])
+  have hforward:
+      "\<And>W. W \<subseteq> ?VL \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F"
+  proof -
+    fix W :: "(real^2) set"
+    assume hWsub: "W \<subseteq> ?VL"
+    assume hWL: "geotop_convex_hull W \<in> L"
+    have hcases:
+        "(\<exists>x\<in>set vs. W = {x})
+        \<or> (\<exists>i<length vs - 1. W = {vs ! i, vs ! Suc i})"
+      by (rule geotop_endpoint_chain_listing_convex_hull_in_L_cases_all_dev34
+          [OF hL_linear hLlist hWsub hWL])
+    show "geotop_convex_hull (\<psi> ` W) \<in> F"
+    proof (rule disjE[OF hcases])
+      assume hsingle: "\<exists>x\<in>set vs. W = {x}"
+      then obtain x where hx: "x \<in> set vs" and hW: "W = {x}"
+        by (by100 blast)
+      have hxVL: "x \<in> ?VL"
+        using hx hLvertices by (by100 simp)
+      have h\<psi>xVF: "\<psi> x \<in> ?VF"
+        using h\<psi>bij hxVL unfolding bij_betw_def by (by100 blast)
+      have h\<psi>x_us: "\<psi> x \<in> set us"
+        using h\<psi>xVF hFvertices by (by100 simp)
+      have himage: "\<psi> ` W = {\<psi> x}"
+        using hW by (by100 simp)
+      show ?thesis
+        using geotop_endpoint_chain_listing_singleton_convex_hull_in_L_dev34
+          [OF hFlist h\<psi>x_us] himage
+        by (by100 simp)
+    next
+      assume hedge: "\<exists>i<length vs - 1. W = {vs ! i, vs ! Suc i}"
+      then obtain i where hi: "i < length vs - 1"
+        and hW: "W = {vs ! i, vs ! Suc i}"
+        by (by100 blast)
+      have hi_len: "i < length vs"
+        using hi by (by100 linarith)
+      have hSi_len: "Suc i < length vs"
+        using hi by (by100 linarith)
+      have h\<psi>i: "\<psi> (vs ! i) = us ! i"
+        using h\<psi>idx hi_len by (by100 blast)
+      have h\<psi>Si: "\<psi> (vs ! Suc i) = us ! Suc i"
+        using h\<psi>idx hSi_len by (by100 blast)
+      have himage: "\<psi> ` W = {us ! i, us ! Suc i}"
+        using hW h\<psi>i h\<psi>Si by (by100 simp)
+      have hi_us: "i < length us - 1"
+        using hi hlen by (by100 simp)
+      show ?thesis
+        using geotop_endpoint_chain_listing_adjacent_convex_hull_in_L_dev34
+          [OF hFlist hi_us] himage
+        by (by100 simp)
+    qed
+  qed
+  have hreverse:
+      "\<And>W. W \<subseteq> ?VL \<Longrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F
+        \<Longrightarrow> geotop_convex_hull W \<in> L"
+  proof -
+    fix W :: "(real^2) set"
+    assume hWsub: "W \<subseteq> ?VL"
+    assume himageF: "geotop_convex_hull (\<psi> ` W) \<in> F"
+    have himage_sub: "\<psi> ` W \<subseteq> ?VF"
+      using h\<psi>bij hWsub unfolding bij_betw_def by (by100 blast)
+    have hcases:
+        "(\<exists>y\<in>set us. \<psi> ` W = {y})
+        \<or> (\<exists>i<length us - 1. \<psi> ` W = {us ! i, us ! Suc i})"
+      by (rule geotop_endpoint_chain_listing_convex_hull_in_L_cases_all_dev34
+          [OF hF_linear hFlist himage_sub himageF])
+    show "geotop_convex_hull W \<in> L"
+    proof (rule disjE[OF hcases])
+      assume hsingle: "\<exists>y\<in>set us. \<psi> ` W = {y}"
+      then obtain y where hy_us: "y \<in> set us" and himage: "\<psi> ` W = {y}"
+        by (by100 blast)
+      obtain i where hi_us_len: "i < length us" and hy_eq: "y = us ! i"
+        using hy_us in_set_conv_nth by (by100 metis)
+      have hi_len: "i < length vs"
+        using hi_us_len hlen by (by100 simp)
+      have h\<psi>i: "\<psi> (vs ! i) = y"
+        using h\<psi>idx hi_len hy_eq by (by100 simp)
+      have hviVL: "vs ! i \<in> ?VL"
+        using hLvertices hi_len by (by100 simp)
+      obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = y"
+        using himage by (by100 blast)
+      have hxVL: "x \<in> ?VL"
+        using hWsub hxW by (by100 blast)
+      have hx_eq: "x = vs ! i"
+      proof -
+        have "\<psi> x = \<psi> (vs ! i)"
+          using h\<psi>x h\<psi>i by (by100 simp)
+        thus ?thesis
+          by (rule inj_onD[OF h\<psi>inj _ hxVL hviVL])
+      qed
+      have hW_sub: "W \<subseteq> {vs ! i}"
+      proof
+        fix z
+        assume hzW: "z \<in> W"
+        have hzVL: "z \<in> ?VL"
+          using hWsub hzW by (by100 blast)
+        have "\<psi> z = y"
+          using himage hzW by (by100 blast)
+        hence "\<psi> z = \<psi> (vs ! i)"
+          using h\<psi>i by (by100 simp)
+        hence "z = vs ! i"
+          by (rule inj_onD[OF h\<psi>inj _ hzVL hviVL])
+        thus "z \<in> {vs ! i}"
+          by (by100 simp)
+      qed
+      have hviW: "vs ! i \<in> W"
+        using hxW hx_eq by (by100 simp)
+      have hW_eq: "W = {vs ! i}"
+        using hW_sub hviW by (by100 blast)
+      have hvi_set: "vs ! i \<in> set vs"
+        using hi_len by (by100 simp)
+      show ?thesis
+        using geotop_endpoint_chain_listing_singleton_convex_hull_in_L_dev34
+          [OF hLlist hvi_set] hW_eq
+        by (by100 simp)
+    next
+      assume hedge:
+        "\<exists>i<length us - 1. \<psi> ` W = {us ! i, us ! Suc i}"
+      then obtain i where hi_us: "i < length us - 1"
+        and himage: "\<psi> ` W = {us ! i, us ! Suc i}"
+        by (by100 blast)
+      have hi: "i < length vs - 1"
+        using hi_us hlen by (by100 simp)
+      have hi_len: "i < length vs"
+        using hi by (by100 linarith)
+      have hSi_len: "Suc i < length vs"
+        using hi by (by100 linarith)
+      have h\<psi>i: "\<psi> (vs ! i) = us ! i"
+        using h\<psi>idx hi_len by (by100 blast)
+      have h\<psi>Si: "\<psi> (vs ! Suc i) = us ! Suc i"
+        using h\<psi>idx hSi_len by (by100 blast)
+      have hviVL: "vs ! i \<in> ?VL"
+        using hLvertices hi_len by (by100 simp)
+      have hvSiVL: "vs ! Suc i \<in> ?VL"
+        using hLvertices hSi_len by (by100 simp)
+      have hW_sub: "W \<subseteq> {vs ! i, vs ! Suc i}"
+      proof
+        fix z
+        assume hzW: "z \<in> W"
+        have hzVL: "z \<in> ?VL"
+          using hWsub hzW by (by100 blast)
+        have hz_cases: "\<psi> z = us ! i \<or> \<psi> z = us ! Suc i"
+          using himage hzW by (by100 blast)
+        show "z \<in> {vs ! i, vs ! Suc i}"
+        proof (rule disjE[OF hz_cases])
+          assume "\<psi> z = us ! i"
+          hence "\<psi> z = \<psi> (vs ! i)"
+            using h\<psi>i by (by100 simp)
+          hence "z = vs ! i"
+            by (rule inj_onD[OF h\<psi>inj _ hzVL hviVL])
+          thus ?thesis
+            by (by100 simp)
+        next
+          assume "\<psi> z = us ! Suc i"
+          hence "\<psi> z = \<psi> (vs ! Suc i)"
+            using h\<psi>Si by (by100 simp)
+          hence "z = vs ! Suc i"
+            by (rule inj_onD[OF h\<psi>inj _ hzVL hvSiVL])
+          thus ?thesis
+            by (by100 simp)
+        qed
+      qed
+      have hleft_in_W: "vs ! i \<in> W"
+      proof -
+        have "us ! i \<in> \<psi> ` W"
+          using himage by (by100 simp)
+        then obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = us ! i"
+          by (by100 blast)
+        have hxVL: "x \<in> ?VL"
+          using hWsub hxW by (by100 blast)
+        have "\<psi> x = \<psi> (vs ! i)"
+          using h\<psi>x h\<psi>i by (by100 simp)
+        hence "x = vs ! i"
+          by (rule inj_onD[OF h\<psi>inj _ hxVL hviVL])
+        thus ?thesis
+          using hxW by (by100 simp)
+      qed
+      have hright_in_W: "vs ! Suc i \<in> W"
+      proof -
+        have "us ! Suc i \<in> \<psi> ` W"
+          using himage by (by100 simp)
+        then obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = us ! Suc i"
+          by (by100 blast)
+        have hxVL: "x \<in> ?VL"
+          using hWsub hxW by (by100 blast)
+        have "\<psi> x = \<psi> (vs ! Suc i)"
+          using h\<psi>x h\<psi>Si by (by100 simp)
+        hence "x = vs ! Suc i"
+          by (rule inj_onD[OF h\<psi>inj _ hxVL hvSiVL])
+        thus ?thesis
+          using hxW by (by100 simp)
+      qed
+      have hW_eq: "W = {vs ! i, vs ! Suc i}"
+        using hW_sub hleft_in_W hright_in_W by (by100 blast)
+      show ?thesis
+        using geotop_endpoint_chain_listing_adjacent_convex_hull_in_L_dev34
+          [OF hLlist hi] hW_eq
+        by (by100 simp)
+    qed
+  qed
+  have hcond:
+      "\<forall>W. W \<subseteq> ?VL \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F)"
+    using hforward hreverse by (by100 blast)
+  show ?thesis
+    unfolding geotop_isomorphism_def using h\<psi>bij hcond by (by100 blast)
+qed
+
 lemma geotop_endpoint_chain_listing_two_vertex_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
