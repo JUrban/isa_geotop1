@@ -14926,7 +14926,456 @@ lemma geotop_broken_line_interior_vertex_incident_edge_card_le_two_dev34:
     remaining local interval argument is that an interior point of an arc has
     exactly two local sides, so three distinct incident 1-simplices in a finite
     linear carrier cannot all occur at \<open>P\<close>. **)
-  sorry
+proof -
+  define EdgesAtP where
+    "EdgesAtP = {\<sigma>\<in>L. P \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}"
+  have htarget_eq:
+      "{e\<in>L. geotop_is_edge e \<and> P \<in> e} = EdgesAtP"
+    unfolding EdgesAtP_def geotop_is_edge_def by (by100 blast)
+  have hEdges_fin: "finite EdgesAtP"
+    unfolding EdgesAtP_def using hfin by (by100 simp)
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_pim: "path_image \<gamma> = B"
+      and hE_eq: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+    using arc_endpoints_imp_arc_HOL[OF hE] by (by100 blast)
+  have hP_B: "P \<in> B"
+    using hP_int unfolding geotop_arc_interior_def by (by100 blast)
+  have hP_not_E: "P \<notin> E"
+    using hP_int unfolding geotop_arc_interior_def by (by100 blast)
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL])
+  have hpoly_path: "geotop_polyhedron L = path_image \<gamma>"
+    using hpoly h\<gamma>_pim by (by100 simp)
+  have h\<gamma>_inj: "inj_on \<gamma> {0..1}"
+    using h\<gamma>_arc unfolding arc_def by (by100 blast)
+  have h\<gamma>_injD:
+      "\<And>x y. x \<in> {0..1} \<Longrightarrow> y \<in> {0..1} \<Longrightarrow> \<gamma> x = \<gamma> y \<Longrightarrow> x = y"
+    using h\<gamma>_inj unfolding inj_on_def by (by100 blast)
+  obtain s\<^sub>P where hsP_01: "s\<^sub>P \<in> {0..1}" and h\<gamma>sP: "\<gamma> s\<^sub>P = P"
+    using hP_B h\<gamma>_pim unfolding path_image_def by (by100 blast)
+  have hsP_gt0: "0 < s\<^sub>P"
+  proof -
+    have "s\<^sub>P \<noteq> 0"
+    proof
+      assume hs0: "s\<^sub>P = 0"
+      have "P = pathstart \<gamma>"
+        using h\<gamma>sP hs0 unfolding pathstart_def by (by100 simp)
+      hence "P \<in> E"
+        using hE_eq by (by100 blast)
+      thus False
+        using hP_not_E by (by100 blast)
+    qed
+    thus ?thesis
+      using hsP_01 by (by100 simp)
+  qed
+  have hsP_lt1: "s\<^sub>P < 1"
+  proof -
+    have "s\<^sub>P \<noteq> 1"
+    proof
+      assume hs1: "s\<^sub>P = 1"
+      have "P = pathfinish \<gamma>"
+        using h\<gamma>sP hs1 unfolding pathfinish_def by (by100 simp)
+      hence "P \<in> E"
+        using hE_eq by (by100 blast)
+      thus False
+        using hP_not_E by (by100 blast)
+    qed
+    thus ?thesis
+      using hsP_01 by (by100 simp)
+  qed
+  define Left where
+    "Left = {e\<in>EdgesAtP.
+      \<exists>s q. s \<in> {0..1} \<and> s < s\<^sub>P \<and> q \<noteq> P \<and>
+        e = closed_segment P q \<and>
+        {t\<in>{0..1}. \<gamma> t \<in> e} = {s..s\<^sub>P}}"
+  define Right where
+    "Right = {e\<in>EdgesAtP.
+      \<exists>t q. t \<in> {0..1} \<and> s\<^sub>P < t \<and> q \<noteq> P \<and>
+        e = closed_segment P q \<and>
+        {u\<in>{0..1}. \<gamma> u \<in> e} = {s\<^sub>P..t}}"
+  have hside_cover: "EdgesAtP \<subseteq> Left \<union> Right"
+  proof
+    fix e
+    assume heE: "e \<in> EdgesAtP"
+    have heL: "e \<in> L" and hPe: "P \<in> e" and hedim: "geotop_simplex_dim e 1"
+      using heE unfolding EdgesAtP_def by (by100 blast)+
+    have hedge: "geotop_is_edge e"
+      unfolding geotop_is_edge_def using hedim by (by100 blast)
+    have hq_ex: "\<exists>q. q \<noteq> P \<and> e = closed_segment P q \<and> {q} \<in> L"
+      by (rule geotop_incident_edge_other_endpoint_vertex_prefix
+          [OF hL hPL heL hedge hPe])
+    obtain q where hq_ne: "q \<noteq> P"
+        and he_seg: "e = closed_segment P q"
+        and hqL: "{q} \<in> L"
+      using hq_ex by (by100 blast)
+    have hpre_ex: "\<exists>s t. s \<le> t \<and> s \<in> {0..1} \<and> t \<in> {0..1}
+        \<and> {u\<in>{0..1}. \<gamma> u \<in> e} = {s..t}
+        \<and> {\<gamma> s, \<gamma> t} = {P, q}"
+      by (rule geotop_arc_1simplex_preimage_structure
+          [OF h\<gamma>_arc hL_1dim hpoly_path heL he_seg hq_ne[symmetric]])
+    obtain s t where hst_le: "s \<le> t"
+        and hs_01: "s \<in> {0..1}"
+        and ht_01: "t \<in> {0..1}"
+        and hpre: "{u\<in>{0..1}. \<gamma> u \<in> e} = {s..t}"
+        and hends: "{\<gamma> s, \<gamma> t} = {P, q}"
+      using hpre_ex by blast
+    have hsP_pre: "s\<^sub>P \<in> {u\<in>{0..1}. \<gamma> u \<in> e}"
+      using hsP_01 h\<gamma>sP hPe by (by100 simp)
+    have hsP_iv: "s\<^sub>P \<in> {s..t}"
+      using hpre hsP_pre by (by100 simp)
+    have hP_in_ends: "P \<in> {\<gamma> s, \<gamma> t}"
+      using hends by (by100 simp)
+    have hP_at_end: "\<gamma> s = P \<or> \<gamma> t = P"
+    proof -
+      have hcases: "P = \<gamma> s \<or> P = \<gamma> t"
+        using hP_in_ends by (by100 simp)
+      show ?thesis
+      proof (rule disjE[OF hcases])
+        assume "P = \<gamma> s"
+        thus ?thesis by (by100 simp)
+      next
+        assume "P = \<gamma> t"
+        thus ?thesis by (by100 simp)
+      qed
+    qed
+    show "e \<in> Left \<union> Right"
+    proof (rule disjE[OF hP_at_end])
+      assume h\<gamma>s: "\<gamma> s = P"
+      have h\<gamma>s_eq_sP: "\<gamma> s = \<gamma> s\<^sub>P"
+        using h\<gamma>s h\<gamma>sP by (by100 simp)
+      have hs_eq: "s = s\<^sub>P"
+        by (rule h\<gamma>_injD[OF hs_01 hsP_01 h\<gamma>s_eq_sP])
+      have hst_ne: "s \<noteq> t"
+      proof
+        assume hst: "s = t"
+        have "\<gamma> t = P"
+          using hst h\<gamma>s by (by100 simp)
+        hence hends_single: "{P} = {P, q}"
+          using hends h\<gamma>s by (by100 simp)
+        have "q = P"
+          using hends_single by (by100 simp)
+        thus False
+          using hq_ne by (by100 blast)
+      qed
+      have hsP_lt_t: "s\<^sub>P < t"
+        using hst_le hst_ne hs_eq by (by100 linarith)
+      have hpre_right: "{u\<in>{0..1}. \<gamma> u \<in> e} = {s\<^sub>P..t}"
+        using hpre hs_eq by (by100 simp)
+      have "e \<in> Right"
+        unfolding Right_def
+        using heE ht_01 hsP_lt_t hq_ne he_seg hpre_right by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    next
+      assume h\<gamma>t: "\<gamma> t = P"
+      have h\<gamma>t_eq_sP: "\<gamma> t = \<gamma> s\<^sub>P"
+        using h\<gamma>t h\<gamma>sP by (by100 simp)
+      have ht_eq: "t = s\<^sub>P"
+        by (rule h\<gamma>_injD[OF ht_01 hsP_01 h\<gamma>t_eq_sP])
+      have hst_ne: "s \<noteq> t"
+      proof
+        assume hst: "s = t"
+        have "\<gamma> s = P"
+          using hst h\<gamma>t by (by100 simp)
+        hence hends_single: "{P} = {P, q}"
+          using hends h\<gamma>t by (by100 simp)
+        have "q = P"
+          using hends_single by (by100 simp)
+        thus False
+          using hq_ne by (by100 blast)
+      qed
+      have hs_lt_sP: "s < s\<^sub>P"
+        using hst_le hst_ne ht_eq by (by100 linarith)
+      have hpre_left: "{u\<in>{0..1}. \<gamma> u \<in> e} = {s..s\<^sub>P}"
+        using hpre ht_eq by (by100 simp)
+      have "e \<in> Left"
+        unfolding Left_def
+        using heE hs_01 hs_lt_sP hq_ne he_seg hpre_left by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+  have hLeft_unique: "\<forall>e\<in>Left. \<forall>d\<in>Left. e = d"
+  proof (intro ballI)
+    fix e d
+    assume heLft: "e \<in> Left" and hdLft: "d \<in> Left"
+    obtain se qe where hse_01: "se \<in> {0..1}"
+        and hse_lt_sP: "se < s\<^sub>P"
+        and hqe_ne: "qe \<noteq> P"
+        and he_seg: "e = closed_segment P qe"
+        and hpre_e: "{u\<in>{0..1}. \<gamma> u \<in> e} = {se..s\<^sub>P}"
+      using heLft unfolding Left_def by (by100 blast)
+    obtain sd qd where hsd_01: "sd \<in> {0..1}"
+        and hsd_lt_sP: "sd < s\<^sub>P"
+        and hqd_ne: "qd \<noteq> P"
+        and hd_seg: "d = closed_segment P qd"
+        and hpre_d: "{u\<in>{0..1}. \<gamma> u \<in> d} = {sd..s\<^sub>P}"
+      using hdLft unfolding Left_def by (by100 blast)
+    have heE: "e \<in> EdgesAtP"
+      using heLft unfolding Left_def by (by100 blast)
+    have hdE: "d \<in> EdgesAtP"
+      using hdLft unfolding Left_def by (by100 blast)
+    have heL: "e \<in> L" and hPe: "P \<in> e"
+      using heE unfolding EdgesAtP_def by (by100 blast)+
+    have hdL: "d \<in> L" and hPd: "P \<in> d"
+      using hdE unfolding EdgesAtP_def by (by100 blast)+
+    define r where "r = s\<^sub>P - min (s\<^sub>P - se) (s\<^sub>P - sd) / 2"
+    have hmin_pos: "0 < min (s\<^sub>P - se) (s\<^sub>P - sd)"
+      using hse_lt_sP hsd_lt_sP by (by100 simp)
+    have hr_lt_sP: "r < s\<^sub>P"
+      unfolding r_def using hmin_pos by (by100 simp)
+    have hmin_le_se: "min (s\<^sub>P - se) (s\<^sub>P - sd) \<le> s\<^sub>P - se"
+      by (by100 simp)
+    have hmin_le_sd: "min (s\<^sub>P - se) (s\<^sub>P - sd) \<le> s\<^sub>P - sd"
+      by (by100 simp)
+    have hhalf_le_min:
+        "min (s\<^sub>P - se) (s\<^sub>P - sd) / 2 \<le> min (s\<^sub>P - se) (s\<^sub>P - sd)"
+    proof -
+      have hdiv: "min (s\<^sub>P - se) (s\<^sub>P - sd) / 2
+          \<le> min (s\<^sub>P - se) (s\<^sub>P - sd) / 1"
+      proof (rule divide_left_mono)
+        show "(1::real) \<le> 2" by (by100 simp)
+        show "0 \<le> min (s\<^sub>P - se) (s\<^sub>P - sd)"
+          using hmin_pos by (by100 simp)
+        show "0 < (2::real) * 1" by (by100 simp)
+      qed
+      show ?thesis
+        using hdiv by (by100 simp)
+    qed
+    have hhalf_le_se: "min (s\<^sub>P - se) (s\<^sub>P - sd) / 2 \<le> s\<^sub>P - se"
+      using hhalf_le_min hmin_le_se by (by100 linarith)
+    have hhalf_le_sd: "min (s\<^sub>P - se) (s\<^sub>P - sd) / 2 \<le> s\<^sub>P - sd"
+      using hhalf_le_min hmin_le_sd by (by100 linarith)
+    have hse_le_r: "se \<le> r"
+      unfolding r_def using hhalf_le_se by (by100 linarith)
+    have hsd_le_r: "sd \<le> r"
+      unfolding r_def using hhalf_le_sd by (by100 linarith)
+    have hse_nonneg: "0 \<le> se"
+      using hse_01 by (by100 simp)
+    have hr_nonneg: "0 \<le> r"
+      using hse_nonneg hse_le_r by (by100 linarith)
+    have hsP_le1: "s\<^sub>P \<le> 1"
+      using hsP_01 by (by100 simp)
+    have hr_le1: "r \<le> 1"
+      using hr_lt_sP hsP_le1 by (by100 linarith)
+    have hr_01: "r \<in> {0..1}"
+      using hr_nonneg hr_le1 by (by100 simp)
+    have hr_e_iv: "r \<in> {se..s\<^sub>P}"
+      using hse_le_r hr_lt_sP by (by100 simp)
+    have hr_d_iv: "r \<in> {sd..s\<^sub>P}"
+      using hsd_le_r hr_lt_sP by (by100 simp)
+    have h\<gamma>r_e: "\<gamma> r \<in> e"
+      using hpre_e hr_01 hr_e_iv by (by100 blast)
+    have h\<gamma>r_d: "\<gamma> r \<in> d"
+      using hpre_d hr_01 hr_d_iv by (by100 blast)
+    have hr_ne_sP: "r \<noteq> s\<^sub>P"
+      using hr_lt_sP by (by100 linarith)
+    have h\<gamma>r_ne_P: "\<gamma> r \<noteq> P"
+    proof
+      assume h\<gamma>rP: "\<gamma> r = P"
+      have h\<gamma>r_eq_sP: "\<gamma> r = \<gamma> s\<^sub>P"
+        using h\<gamma>rP h\<gamma>sP by (by100 simp)
+      have "r = s\<^sub>P"
+        by (rule h\<gamma>_injD[OF hr_01 hsP_01 h\<gamma>r_eq_sP])
+      thus False
+        using hr_ne_sP by (by100 blast)
+    qed
+    have h_inter_ne: "e \<inter> d \<noteq> {}"
+      using hPe hPd by (by100 blast)
+    have hface_e: "geotop_is_face (e \<inter> d) e"
+      using hL_complex heL hdL h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hface_d: "geotop_is_face (e \<inter> d) d"
+      using hL_complex heL hdL h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hP_inter: "P \<in> e \<inter> d"
+      using hPe hPd by (by100 blast)
+    have h\<gamma>r_inter: "\<gamma> r \<in> e \<inter> d"
+      using h\<gamma>r_e h\<gamma>r_d by (by100 blast)
+    have hface_e_seg: "geotop_is_face (e \<inter> d) (closed_segment P qe)"
+      using hface_e he_seg by (by100 simp)
+    have hface_d_seg: "geotop_is_face (e \<inter> d) (closed_segment P qd)"
+      using hface_d hd_seg by (by100 simp)
+    have he_full: "e \<inter> d = e"
+      using segment_face_with_endpoint_and_extra_eq
+        [OF hface_e_seg hqe_ne hP_inter h\<gamma>r_inter h\<gamma>r_ne_P]
+        he_seg
+      by (by100 simp)
+    have hd_full: "e \<inter> d = d"
+      using segment_face_with_endpoint_and_extra_eq
+        [OF hface_d_seg hqd_ne hP_inter h\<gamma>r_inter h\<gamma>r_ne_P]
+        hd_seg
+      by (by100 simp)
+    show "e = d"
+      using he_full hd_full by (by100 simp)
+  qed
+  have hRight_unique: "\<forall>e\<in>Right. \<forall>d\<in>Right. e = d"
+  proof (intro ballI)
+    fix e d
+    assume heR: "e \<in> Right" and hdR: "d \<in> Right"
+    obtain te qe where hte_01: "te \<in> {0..1}"
+        and hsP_lt_te: "s\<^sub>P < te"
+        and hqe_ne: "qe \<noteq> P"
+        and he_seg: "e = closed_segment P qe"
+        and hpre_e: "{u\<in>{0..1}. \<gamma> u \<in> e} = {s\<^sub>P..te}"
+      using heR unfolding Right_def by (by100 blast)
+    obtain td qd where htd_01: "td \<in> {0..1}"
+        and hsP_lt_td: "s\<^sub>P < td"
+        and hqd_ne: "qd \<noteq> P"
+        and hd_seg: "d = closed_segment P qd"
+        and hpre_d: "{u\<in>{0..1}. \<gamma> u \<in> d} = {s\<^sub>P..td}"
+      using hdR unfolding Right_def by (by100 blast)
+    have heE: "e \<in> EdgesAtP"
+      using heR unfolding Right_def by (by100 blast)
+    have hdE: "d \<in> EdgesAtP"
+      using hdR unfolding Right_def by (by100 blast)
+    have heL: "e \<in> L" and hPe: "P \<in> e"
+      using heE unfolding EdgesAtP_def by (by100 blast)+
+    have hdL: "d \<in> L" and hPd: "P \<in> d"
+      using hdE unfolding EdgesAtP_def by (by100 blast)+
+    define r where "r = s\<^sub>P + min (te - s\<^sub>P) (td - s\<^sub>P) / 2"
+    have hmin_pos: "0 < min (te - s\<^sub>P) (td - s\<^sub>P)"
+      using hsP_lt_te hsP_lt_td by (by100 simp)
+    have hr_gt_sP: "s\<^sub>P < r"
+      unfolding r_def using hmin_pos by (by100 simp)
+    have hmin_le_te: "min (te - s\<^sub>P) (td - s\<^sub>P) \<le> te - s\<^sub>P"
+      by (by100 simp)
+    have hmin_le_td: "min (te - s\<^sub>P) (td - s\<^sub>P) \<le> td - s\<^sub>P"
+      by (by100 simp)
+    have hhalf_le_min:
+        "min (te - s\<^sub>P) (td - s\<^sub>P) / 2 \<le> min (te - s\<^sub>P) (td - s\<^sub>P)"
+    proof -
+      have hdiv: "min (te - s\<^sub>P) (td - s\<^sub>P) / 2
+          \<le> min (te - s\<^sub>P) (td - s\<^sub>P) / 1"
+      proof (rule divide_left_mono)
+        show "(1::real) \<le> 2" by (by100 simp)
+        show "0 \<le> min (te - s\<^sub>P) (td - s\<^sub>P)"
+          using hmin_pos by (by100 simp)
+        show "0 < (2::real) * 1" by (by100 simp)
+      qed
+      show ?thesis
+        using hdiv by (by100 simp)
+    qed
+    have hhalf_le_te: "min (te - s\<^sub>P) (td - s\<^sub>P) / 2 \<le> te - s\<^sub>P"
+      using hhalf_le_min hmin_le_te by (by100 linarith)
+    have hhalf_le_td: "min (te - s\<^sub>P) (td - s\<^sub>P) / 2 \<le> td - s\<^sub>P"
+      using hhalf_le_min hmin_le_td by (by100 linarith)
+    have hr_le_te: "r \<le> te"
+      unfolding r_def using hhalf_le_te by (by100 linarith)
+    have hr_le_td: "r \<le> td"
+      unfolding r_def using hhalf_le_td by (by100 linarith)
+    have hsP_nonneg: "0 \<le> s\<^sub>P"
+      using hsP_01 by (by100 simp)
+    have hr_nonneg: "0 \<le> r"
+      using hsP_nonneg hr_gt_sP by (by100 linarith)
+    have hte_le1: "te \<le> 1"
+      using hte_01 by (by100 simp)
+    have hr_le1: "r \<le> 1"
+      using hr_le_te hte_le1 by (by100 linarith)
+    have hr_01: "r \<in> {0..1}"
+      using hr_nonneg hr_le1 by (by100 simp)
+    have hr_e_iv: "r \<in> {s\<^sub>P..te}"
+      using hr_gt_sP hr_le_te by (by100 simp)
+    have hr_d_iv: "r \<in> {s\<^sub>P..td}"
+      using hr_gt_sP hr_le_td by (by100 simp)
+    have h\<gamma>r_e: "\<gamma> r \<in> e"
+      using hpre_e hr_01 hr_e_iv by (by100 blast)
+    have h\<gamma>r_d: "\<gamma> r \<in> d"
+      using hpre_d hr_01 hr_d_iv by (by100 blast)
+    have hr_ne_sP: "r \<noteq> s\<^sub>P"
+      using hr_gt_sP by (by100 linarith)
+    have h\<gamma>r_ne_P: "\<gamma> r \<noteq> P"
+    proof
+      assume h\<gamma>rP: "\<gamma> r = P"
+      have h\<gamma>r_eq_sP: "\<gamma> r = \<gamma> s\<^sub>P"
+        using h\<gamma>rP h\<gamma>sP by (by100 simp)
+      have "r = s\<^sub>P"
+        by (rule h\<gamma>_injD[OF hr_01 hsP_01 h\<gamma>r_eq_sP])
+      thus False
+        using hr_ne_sP by (by100 blast)
+    qed
+    have h_inter_ne: "e \<inter> d \<noteq> {}"
+      using hPe hPd by (by100 blast)
+    have hface_e: "geotop_is_face (e \<inter> d) e"
+      using hL_complex heL hdL h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hface_d: "geotop_is_face (e \<inter> d) d"
+      using hL_complex heL hdL h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hP_inter: "P \<in> e \<inter> d"
+      using hPe hPd by (by100 blast)
+    have h\<gamma>r_inter: "\<gamma> r \<in> e \<inter> d"
+      using h\<gamma>r_e h\<gamma>r_d by (by100 blast)
+    have hface_e_seg: "geotop_is_face (e \<inter> d) (closed_segment P qe)"
+      using hface_e he_seg by (by100 simp)
+    have hface_d_seg: "geotop_is_face (e \<inter> d) (closed_segment P qd)"
+      using hface_d hd_seg by (by100 simp)
+    have he_full: "e \<inter> d = e"
+      using segment_face_with_endpoint_and_extra_eq
+        [OF hface_e_seg hqe_ne hP_inter h\<gamma>r_inter h\<gamma>r_ne_P]
+        he_seg
+      by (by100 simp)
+    have hd_full: "e \<inter> d = d"
+      using segment_face_with_endpoint_and_extra_eq
+        [OF hface_d_seg hqd_ne hP_inter h\<gamma>r_inter h\<gamma>r_ne_P]
+        hd_seg
+      by (by100 simp)
+    show "e = d"
+      using he_full hd_full by (by100 simp)
+  qed
+  define left_edge where "left_edge = (SOME e. e \<in> Left)"
+  define right_edge where "right_edge = (SOME e. e \<in> Right)"
+  have hLeft_sub: "Left \<subseteq> {left_edge}"
+  proof
+    fix e
+    assume he: "e \<in> Left"
+    have hex: "\<exists>d. d \<in> Left"
+      using he by (by100 blast)
+    have hleft_in: "left_edge \<in> Left"
+      unfolding left_edge_def by (rule someI_ex[OF hex])
+    have "e = left_edge"
+      using hLeft_unique he hleft_in by (by100 blast)
+    thus "e \<in> {left_edge}"
+      by (by100 simp)
+  qed
+  have hRight_sub: "Right \<subseteq> {right_edge}"
+  proof
+    fix e
+    assume he: "e \<in> Right"
+    have hex: "\<exists>d. d \<in> Right"
+      using he by (by100 blast)
+    have hright_in: "right_edge \<in> Right"
+      unfolding right_edge_def by (rule someI_ex[OF hex])
+    have "e = right_edge"
+      using hRight_unique he hright_in by (by100 blast)
+    thus "e \<in> {right_edge}"
+      by (by100 simp)
+  qed
+  have hEdges_sub: "EdgesAtP \<subseteq> {left_edge, right_edge}"
+  proof
+    fix e
+    assume he: "e \<in> EdgesAtP"
+    have "e \<in> Left \<union> Right"
+      using hside_cover he by (by100 blast)
+    thus "e \<in> {left_edge, right_edge}"
+    proof
+      assume "e \<in> Left"
+      hence "e \<in> {left_edge}"
+        using hLeft_sub by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    next
+      assume "e \<in> Right"
+      hence "e \<in> {right_edge}"
+        using hRight_sub by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+  have hEdges_card: "card EdgesAtP \<le> 2"
+    by (rule geotop_subset_two_card_le2_prefix[OF hEdges_sub])
+  show ?thesis
+    using htarget_eq hEdges_card by (by100 simp)
+qed
 
 lemma geotop_broken_line_vertex_incident_edge_card_le_two_dev34:
   fixes L :: "(real^2) set set" and B :: "(real^2) set"
