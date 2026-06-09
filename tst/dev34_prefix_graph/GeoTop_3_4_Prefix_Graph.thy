@@ -1204,6 +1204,65 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_current_next_index_unique_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hinj:
+      "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+  assumes hm: "m \<in> {0..<p}"
+  assumes hn: "n \<in> {0..<p}"
+  assumes hcur:
+      "fst ((geotop_oriented_edge_successor L ^^ m) s)
+        = fst ((geotop_oriented_edge_successor L ^^ n) s)"
+  assumes hnext:
+      "fst ((geotop_oriented_edge_successor L ^^ Suc m) s)
+        = fst ((geotop_oriented_edge_successor L ^^ Suc n) s)"
+  shows "m = n"
+  (**
+    Cycle-order bookkeeping fact from the Moise graph split proof: if two
+    indexed successor states have the same oriented edge endpoints, then they
+    are the same state, hence the same index by orbit injectivity. **)
+proof -
+  have hsnd_m:
+      "snd ((geotop_oriented_edge_successor L ^^ m) s) =
+        closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ m) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc m) s))"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+        [OF hL_linear hdegree hs])
+  have hsnd_n:
+      "snd ((geotop_oriented_edge_successor L ^^ n) s) =
+        closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ n) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc n) s))"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+        [OF hL_linear hdegree hs])
+  have hstate_eq:
+      "(geotop_oriented_edge_successor L ^^ m) s =
+        (geotop_oriented_edge_successor L ^^ n) s"
+  proof -
+    have hfst_eq:
+        "fst ((geotop_oriented_edge_successor L ^^ m) s) =
+          fst ((geotop_oriented_edge_successor L ^^ n) s)"
+      by (rule hcur)
+    have hsnd_eq:
+        "snd ((geotop_oriented_edge_successor L ^^ m) s) =
+          snd ((geotop_oriented_edge_successor L ^^ n) s)"
+      using hcur hnext hsnd_m hsnd_n by (by100 simp)
+    show ?thesis
+      using hfst_eq hsnd_eq
+      by (cases "(geotop_oriented_edge_successor L ^^ m) s";
+          cases "(geotop_oriented_edge_successor L ^^ n) s";
+          by100 simp)
+  qed
+  show "m = n"
+    by (rule inj_onD[OF hinj hstate_eq hm hn])
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
