@@ -2,7 +2,7 @@
 
 ## Current status
 
-The zero-target-`sorry` goal is not finished. The current local hole scan reports 8 target `sorry`s:
+The zero-target-`sorry` goal is not finished. The current local target scan still reports 8 `sorry`s:
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106
@@ -10,12 +10,12 @@ dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
-dev34/GeoTop_3_4.thy:2396
-dev34/GeoTop_3_4.thy:10501
-dev34/GeoTop_3_4.thy:11719
+dev34/GeoTop_3_4.thy:2510
+dev34/GeoTop_3_4.thy:10615
+dev34/GeoTop_3_4.thy:11833
 ```
 
-The corresponding stable package names are:
+The stable package names are:
 
 ```text
 geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix
@@ -28,71 +28,105 @@ geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
 geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
 ```
 
-There are no visible `sledgehammer` or `try0` markers in the checked target scan. The working tree has many unrelated untracked files outside the target edits; the recently touched target files are clean after the last commit.
+There are no visible `sledgehammer` or `try0` markers in the target scan. The recently touched target files and generated indexes were clean after commit `1117ba8a Expose source cycle connectivity`.
 
-## What improved
+## Recent concrete progress
 
-The previous expert audits were right that this is no longer broad exploratory work. The target stack is now split into focused layers, the graph-prefix cycle split has been closed, and active Figure 4.10 work has progressed through several concrete commits:
-
-```text
-dccc4607 Bound cycle target vertex count
-3e5fff5e Prescribe boundary subdivision vertices
-85003e21 Record open boundary edge reservoir
-dadae502 Relate source anchors to boundary vertices
-de675911 Identify triangle boundary vertices
-e30b89ae Place triangle frontier in boundary carrier
-2d858a61 Record expert3 progress checkpoint
-```
-
-The active Figure 4.10 theorem now has a standard boundary triangle, named target boundary vertices, a source-to-boundary anchor map, a reservoir of extra points on an open boundary edge, a prescribed finite target set `S_B`, and a subdivision `F_B` whose vertex set contains `S_B`. This is real progress toward the cyclic boundary target.
-
-## Main blocker in the current active proof
-
-The current active proof is stopped at `geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34`.
-
-The important limitation is that the available subdivision helper only proves that prescribed boundary points become vertices and that old boundary vertices are preserved. It does not prove that the resulting subdivision has no extra vertices. The target predicate needs an exact cyclic listing of all vertices of `F`, and the final isomorphism needs a bijection between the source vertices and the target vertices.
-
-So the current obstacle is not just a missing tactic. It is an exact-realization issue:
+The newest committed Figure 4.10 work added and verified:
 
 ```text
-prescribed points become vertices
+geotop_closed_indexed_edge_cycle_complex_connected_dev34
 ```
 
-is weaker than:
+This helper turns a closed indexed edge cycle into `geotop_complex_connected K`. The active theorem `geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34` now proves:
 
 ```text
-the subdivision vertices are exactly the prescribed cyclic target vertices
+hsource_connected: geotop_complex_connected L
+hsource_successor_cycle_decomp: L equals the singleton/edge orbit of an oriented successor cycle
 ```
 
-The next useful local lemma is therefore either an exact no-extra-vertices subdivision lemma for finite boundary point insertion, or a direct construction of the standard boundary cycle complex from an ordered boundary list.
+That is a real reduction in the Figure 4.10 proof: the source graph is now known connected and has an explicit oriented successor-cycle decomposition. The latest focused verification for the cycle-realization target passed after this change.
 
 ## Audit-adjusted assessment
 
-The expert reports are consistent with the local state:
+The new expert audit `PLAN_zero_sorry-expert3.md` agrees with the earlier audits on the key point: the remaining 8 holes are package-sized Moise arguments, not isolated automation failures.
 
-* The project is approaching the goal in the sense that the hole count is small, named, and localized.
-* It is not approaching the goal in the sense of "a few automation calls remain."
-* The remaining 8 holes are package-sized Moise picture arguments.
-* Moving a `sorry` deeper into a wrapper is not progress unless the package obligation is actually proved.
+The graph-prefix cycle split is no longer an open target. That changes the immediate sprint: the active Figure 4.10 work should not restart graph-cycle splitting. The remaining gap is the exact standard-boundary realization and then reuse of that machinery for the endpoint fan.
 
-The finite graph / Figure 4.10 sprint remains the best short-term milestone, but the exact target subdivision issue must be solved before the current active theorem can close cleanly.
+The audit also gives two cautions that should steer the next steps:
+
+```text
+1. Do not use a weak "prescribed points become vertices" subdivision lemma
+   as if it proved exact target vertices.
+2. Check the one-sided semicircle statement before proof work; the
+   radius-level version may be under-assumed unless a larger collar in U
+   is available.
+```
+
+## Main active blocker
+
+The active proof is stopped at:
+
+```text
+geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34
+```
+
+The existing target-side construction has:
+
+```text
+standard 2-simplex boundary complex ?B
+named boundary vertices a_sigma, b_sigma, c_sigma
+source anchor map to those three vertices
+finite extra boundary points T_extra on open_segment a_sigma b_sigma
+target finite set S_B with card S_B = card (geotop_complex_vertices L)
+subdivision F_B whose vertices contain S_B and preserve old boundary vertices
+```
+
+The problem is exactness. The available subdivision helper proves prescribed boundary points become vertices, but the target predicate needs a cyclic listing of all target vertices:
+
+```text
+((lambda k. u k) ` {0..<p}) = geotop_complex_vertices F
+```
+
+So the next proof step needs either:
+
+```text
+an exact no-extra-vertices boundary subdivision lemma
+```
+
+or:
+
+```text
+a direct construction of the boundary cycle complex from an ordered boundary list
+```
+
+The new source successor-cycle decomposition should be used to transfer the source incidence pattern to the target cycle once exact target vertices/edges are available.
 
 ## Recommended next order
 
-1. Finish the active Figure 4.10 exact boundary-cycle realization by proving either exact finite boundary subdivision or direct cyclic boundary complex construction.
-2. Reuse that machinery for the endpoint boundary-arc fan target.
-3. Close the graph-cache branch-vertex local cutpoint package.
-4. Revisit the one-sided semicircle lemma, first checking whether the statement needs the stronger collar assumptions noted by the expert audit.
-5. Finish the Section 3 subdisk transfer and support-controlled fold normalization packages.
-6. Finish D42 through a reusable theta-separation lemma.
-7. Finish D44 last as a regular-neighborhood / brick-transfer package.
+1. Finish the active Figure 4.10 exact boundary-cycle realization.
+2. Reuse the boundary-cycle/listing machinery for the endpoint boundary-arc fan target.
+3. Close the graph-cache branch-vertex local cutpoint bridge.
+4. Recheck and then prove the one-sided semicircle/collar separator.
+5. Finish Section 3 subdisk transfer.
+6. Finish Section 3 support-controlled fold normalization.
+7. Finish D42 via a reusable theta-separation lemma.
+8. Finish D44 last as a regular-neighborhood / brick-transfer package.
 
 ## Process notes
 
-Use the full generated indexes frequently:
+Use the full indexes frequently:
 
 ```bash
 rg -n "pattern" THEOREMS_AND_DEFS.txt STMT_INDEX.txt
 ```
 
-Keep using focused verification through `check_dev34_fast.sh`; broad rebuilds are too expensive for every iteration. After theory or report edits, regenerate the generated indexes before committing if theorem statements or indexable content changed. This report did not change theory content, so it does not require index regeneration.
+Use focused verification instead of broad rebuilds during iteration:
+
+```bash
+./check_dev34_fast.sh focus dev34-cycle-realization
+./check_dev34_fast.sh focus dev34-fan
+./check_dev34_fast.sh focus-status
+```
+
+When theorem statements or theory content change, regenerate the generated indexes before committing. This report-only update does not require index regeneration.
