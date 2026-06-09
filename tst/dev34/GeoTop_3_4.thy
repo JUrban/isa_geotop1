@@ -14838,6 +14838,39 @@ lemma geotop_endpoint_nonfinish_degree_bound_book_step_dev34:
     the leaf-deletion endpoint-chain listing. **)
   sorry
 
+lemma geotop_endpoint_chain_boundary_edge_cone_target_data_book_step_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hvertices_finite: "finite (geotop_complex_vertices L)"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Endpoint boundary-edge target data, isolated exactly at the book step.
+    From the listed source endpoint chain, subdivide one boundary edge of a
+    named 2-simplex into a same-length target chain, match vertices
+    indexwise, and cone that boundary-edge subdivision from the remaining
+    vertex.  This is the path analogue of Fig. 4.10; it is deliberately not a
+    full boundary-cycle shortcut. **)
+  sorry
+
 lemma geotop_endpoint_chain_boundary_arc_target_model_from_listing_book_step_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -14868,7 +14901,8 @@ lemma geotop_endpoint_chain_boundary_arc_target_model_from_listing_book_step_dev
     chain \<open>us\<close>, match vertices indexwise, and cone that boundary-arc
     subdivision from the remaining vertex.  The arbitrary finite vertex-set
     clauses are then exactly the cone clauses already packaged above. **)
-  sorry
+  by (rule geotop_endpoint_chain_boundary_edge_cone_target_data_book_step_dev34
+      [OF hL_linear hvertices_finite hlist])
 
 lemma geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34:
   fixes L :: "(real^2) set set"
