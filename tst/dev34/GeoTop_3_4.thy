@@ -3306,6 +3306,9 @@ proof -
     show ?thesis
       unfolding S_B_def using hnamed hT by (by100 blast)
   qed
+  have hS_B_subset_frontier:
+      "S_B \<subseteq> frontier \<sigma>"
+    using hS_B_subset_named_edges h\<sigma>_frontier_named_edges by (by100 simp)
   have hB_vertices_subset_S_B:
       "geotop_complex_vertices ?B \<subseteq> S_B"
     unfolding S_B_def using hB_vertices_eq_named by (by100 blast)
@@ -3344,6 +3347,9 @@ proof -
         closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
         closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
     using hu\<^sub>B_list_set hS_B_subset_named_edges by (by100 simp)
+  have hu\<^sub>B_list_set_subset_frontier:
+      "set u\<^sub>B_list \<subseteq> frontier \<sigma>"
+    using hu\<^sub>B_list_set hS_B_subset_frontier by (by100 simp)
   have hu\<^sub>B_list_distinct:
       "distinct u\<^sub>B_list"
     unfolding u\<^sub>B_list_def
@@ -3463,6 +3469,15 @@ proof -
   have hu\<^sub>B_list_set_F_B_vertices:
       "set u\<^sub>B_list = geotop_complex_vertices F_B"
     using hu\<^sub>B_list_set hF_B_vertices_eq_S_B by (by100 simp)
+  have hF_B_vertices_subset_named_edges:
+      "geotop_complex_vertices F_B
+        \<subseteq> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+    using hF_B_vertices_eq_S_B hS_B_subset_named_edges by (by100 simp)
+  have hF_B_vertices_subset_frontier:
+      "geotop_complex_vertices F_B \<subseteq> frontier \<sigma>"
+    using hF_B_vertices_eq_S_B hS_B_subset_frontier by (by100 simp)
   have hu\<^sub>B_list_length_F_B_vertices:
       "length u\<^sub>B_list = card (geotop_complex_vertices F_B)"
     using hu\<^sub>B_list_length hF_B_vertices_card by (by100 simp)
