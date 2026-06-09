@@ -2289,6 +2289,71 @@ proof -
     thus ?thesis
       using hsource_successor_edge_orbit_eq by (by100 simp)
   qed
+  have hsource_listed_vertex_in_successor_orbit:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> \<exists>j\<in>{0..<p\<^sub>c}.
+          v k = fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have hv: "v k \<in> geotop_complex_vertices L"
+      by (rule hsource_index_vertex[OF hk])
+    have "v k \<in>
+        ((\<lambda>j. fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))
+          ` {0..<p\<^sub>c})"
+      using hv hsource_successor_vertices_eq by (by100 simp)
+    thus "\<exists>j\<in>{0..<p\<^sub>c}.
+        v k = fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)"
+      by (by100 blast)
+  qed
+  have hsource_listed_edge_in_successor_snd_orbit:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> \<exists>j\<in>{0..<p\<^sub>c}.
+          closed_segment (v k) (v (Suc k))
+            = snd ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have hedge:
+        "closed_segment (v k) (v (Suc k)) \<in> {e\<in>L. geotop_is_edge e}"
+      using hsource_listed_edge_in_L[OF hk]
+        hsource_listed_edge_is_edge[OF hk] by (by100 blast)
+    have "closed_segment (v k) (v (Suc k)) \<in>
+        ((\<lambda>j. snd ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))
+          ` {0..<p\<^sub>c})"
+      using hedge hsource_successor_snd_edge_orbit_eq by (by100 simp)
+    thus "\<exists>j\<in>{0..<p\<^sub>c}.
+        closed_segment (v k) (v (Suc k))
+          = snd ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)"
+      by (by100 blast)
+  qed
+  have hsource_listed_edge_in_successor_closed_orbit:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> \<exists>j\<in>{0..<p\<^sub>c}.
+          closed_segment (v k) (v (Suc k))
+            = closed_segment
+                (fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))
+                (fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    obtain j where hj: "j \<in> {0..<p\<^sub>c}"
+        and hedge:
+          "closed_segment (v k) (v (Suc k))
+            = snd ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)"
+      using hsource_listed_edge_in_successor_snd_orbit[OF hk] by (by100 blast)
+    have "snd ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)
+        = closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))
+            (fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))"
+      by (rule hsource_successor_state_edge_eq)
+    thus "\<exists>j\<in>{0..<p\<^sub>c}.
+        closed_segment (v k) (v (Suc k))
+          = closed_segment
+              (fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))
+              (fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))"
+      using hj hedge by (by100 blast)
+  qed
   have hsource_listed_edge_endpoints_vertices:
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> v k \<in> geotop_complex_vertices L
