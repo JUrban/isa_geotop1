@@ -142,6 +142,47 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_face_complex_hull_in_iff_nonempty_named_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hW: "W \<subseteq> {a, b, c}"
+  shows "geotop_convex_hull W \<in> {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+    \<longleftrightarrow> W \<noteq> {}"
+  (**
+    Face-complex membership in vertex-subset form.  This is the finite-subset
+    case split needed for endpoint boundary-arc fan boundary and cone clauses:
+    every nonempty subset of the three named vertices spans a face, and the
+    empty hull is not a simplex of the face complex. **)
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hK_complex: "geotop_is_complex ?K"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  show ?thesis
+  proof
+    assume hin: "geotop_convex_hull W \<in> ?K"
+    show "W \<noteq> {}"
+    proof
+      assume hW_empty: "W = {}"
+      have hHull_empty: "geotop_convex_hull W = {}"
+        using hW_empty geotop_convex_hull_eq_HOL[of W] convex_hull_empty
+        by (by100 simp)
+      have "{} \<in> ?K"
+        using hin hHull_empty by (by100 simp)
+      have "{} \<noteq> ({} :: (real^2) set)"
+        by (rule geotop_complex_simplex_nonempty[OF hK_complex \<open>{} \<in> ?K\<close>])
+      thus False
+        by (by100 simp)
+    qed
+  next
+    assume hW_ne: "W \<noteq> {}"
+    have hface: "geotop_is_face (geotop_convex_hull W) \<sigma>"
+      by (rule geotop_is_face_of_subset[OF h\<sigma>V hW_ne hW])
+    show "geotop_convex_hull W \<in> ?K"
+      using hface by (by100 simp)
+  qed
+qed
+
 lemma geotop_subdivision_source_is_complex_dev34:
   fixes K K' :: "'a::real_normed_vector set set"
   assumes hsub: "geotop_is_subdivision K' K"
