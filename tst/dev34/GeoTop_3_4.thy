@@ -12093,6 +12093,468 @@ proof -
     using hstep hfirst by (by100 simp)
 qed
 
+lemma geotop_endpoint_chain_listing_convex_hull_in_L_cases_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hW_ne: "W \<noteq> {}"
+  assumes hWsub: "W \<subseteq> geotop_complex_vertices L"
+  assumes hWhull_L: "geotop_convex_hull W \<in> L"
+  shows "(\<exists>x\<in>set vs. W = {x})
+    \<or> (\<exists>i<length vs - 1. W = {vs ! i, vs ! Suc i})"
+  (**
+    Endpoint-chain analogue of the cyclic source case split used in
+    Figure 4.10.  Once the graph has been listed as a simple edge-chain,
+    arbitrary nonempty vertex subsets whose convex hull is a simplex of the
+    graph reduce to singleton vertices or adjacent listed edge pairs. **)
+proof -
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
+  have hvertices: "set vs = geotop_complex_vertices L"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hlist])
+  have hedge_eq: "{e \<in> L. geotop_is_edge e}
+      = ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+    by (rule geotop_endpoint_chain_listing_edge_set_eq_dev34[OF hlist])
+  have hvertex_singletons:
+      "\<And>x. x \<in> set vs \<Longrightarrow> {x} \<in> L"
+    using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hlisted_edge_members:
+      "\<And>i. i < length vs - 1 \<Longrightarrow>
+        closed_segment (vs ! i) (vs ! Suc i) \<in> L
+        \<and> geotop_is_edge (closed_segment (vs ! i) (vs ! Suc i))"
+    using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hlisted_edge_endpoints_distinct:
+      "\<And>i. i < length vs - 1 \<Longrightarrow> vs ! i \<noteq> vs ! Suc i"
+  proof
+    fix i
+    assume hi: "i < length vs - 1"
+    assume heq: "vs ! i = vs ! Suc i"
+    have hedge: "geotop_is_edge (closed_segment (vs ! i) (vs ! Suc i))"
+      using hlisted_edge_members[OF hi] by (by100 blast)
+    have "\<not> geotop_is_edge {vs ! i}"
+      by (rule geotop_singleton_not_edge_prefix)
+    thus False
+      using hedge heq by (by100 simp)
+  qed
+  have hL_edge_listed_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> geotop_is_edge \<tau> \<Longrightarrow>
+        \<exists>i<length vs - 1. \<tau> = closed_segment (vs ! i) (vs ! Suc i)"
+    using hedge_eq by (by100 blast)
+  have hL_nonedge_singleton_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<not> geotop_is_edge \<tau> \<Longrightarrow>
+        \<exists>x\<in>set vs. \<tau> = {x}"
+  proof -
+    fix \<tau>
+    assume h\<tau>L: "\<tau> \<in> L"
+    assume h\<tau>_not_edge: "\<not> geotop_is_edge \<tau>"
+    have hcases: "(\<exists>x. \<tau> = {x}) \<or> (\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b)"
+      by (rule geotop_1dim_simplex_cases[OF hL_1dim h\<tau>L])
+    show "\<exists>x\<in>set vs. \<tau> = {x}"
+    proof (rule disjE[OF hcases])
+      assume "\<exists>x. \<tau> = {x}"
+      then obtain x where h\<tau>x: "\<tau> = {x}"
+        by (by100 blast)
+      have x_vertex: "x \<in> geotop_complex_vertices L"
+        using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] h\<tau>L h\<tau>x
+        by (by100 blast)
+      show ?thesis
+        using hvertices x_vertex h\<tau>x by (by100 blast)
+    next
+      assume "\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b"
+      then obtain a b where hab: "a \<noteq> b" and h\<tau>ab: "\<tau> = closed_segment a b"
+        by (by100 blast)
+      have hverts: "geotop_simplex_vertices \<tau> {a, b}"
+        using geotop_closed_segment_simplex_vertices[OF hab] h\<tau>ab
+        by (by100 simp)
+      have hdim: "geotop_simplex_dim \<tau> 1"
+        using hverts unfolding geotop_simplex_vertices_def by (by100 blast)
+      have "geotop_is_edge \<tau>"
+        using hdim unfolding geotop_is_edge_def by (by100 blast)
+      thus ?thesis
+        using h\<tau>_not_edge by (by100 blast)
+    qed
+  qed
+  have hconvex_hull_nonedge_singleton_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> \<not> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>x\<in>set vs. W = {x}"
+  proof -
+    fix W :: "(real^2) set"
+    assume hW_nonempty: "W \<noteq> {}"
+    assume hWhull: "geotop_convex_hull W \<in> L"
+    assume hnot_edge: "\<not> geotop_is_edge (geotop_convex_hull W)"
+    obtain x where hx: "x \<in> set vs"
+      and hWhull_eq: "geotop_convex_hull W = {x}"
+      using hL_nonedge_singleton_cases[OF hWhull hnot_edge] by (by100 blast)
+    have hW_sub_x: "W \<subseteq> {x}"
+    proof
+      fix y
+      assume hyW: "y \<in> W"
+      have "y \<in> geotop_convex_hull W"
+        using geotop_convex_hull_contains_V hyW by (by100 blast)
+      thus "y \<in> {x}"
+        using hWhull_eq by (by100 simp)
+    qed
+    have hxW: "x \<in> W"
+    proof -
+      obtain y where hyW: "y \<in> W"
+        using hW_nonempty by (by100 blast)
+      have "y = x"
+        using hW_sub_x hyW by (by100 blast)
+      thus ?thesis
+        using hyW by (by100 simp)
+    qed
+    show "\<exists>x\<in>set vs. W = {x}"
+      using hx hW_sub_x hxW by (by100 blast)
+  qed
+  have hconvex_hull_edge_listed_cases:
+      "\<And>W. geotop_convex_hull W \<in> L
+        \<Longrightarrow> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>i<length vs - 1.
+          geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)"
+    using hL_edge_listed_cases by (by100 blast)
+  have hlisted_edge_complex_vertex_endpoint_cases:
+      "\<And>x i. x \<in> set vs \<Longrightarrow> i < length vs - 1
+        \<Longrightarrow> x \<in> closed_segment (vs ! i) (vs ! Suc i)
+        \<Longrightarrow> x = vs ! i \<or> x = vs ! Suc i"
+  proof -
+    fix x i
+    assume hxV: "x \<in> set vs"
+    assume hi: "i < length vs - 1"
+    assume hxseg: "x \<in> closed_segment (vs ! i) (vs ! Suc i)"
+    have hxL: "{x} \<in> L"
+      by (rule hvertex_singletons[OF hxV])
+    have hsegL: "closed_segment (vs ! i) (vs ! Suc i) \<in> L"
+      using hlisted_edge_members[OF hi] by (by100 blast)
+    have hmeet: "{x} \<inter> closed_segment (vs ! i) (vs ! Suc i) \<noteq> {}"
+      using hxseg by (by100 blast)
+    have hface_pair:
+        "geotop_is_face ({x} \<inter> closed_segment (vs ! i) (vs ! Suc i)) {x}
+        \<and> geotop_is_face ({x} \<inter> closed_segment (vs ! i) (vs ! Suc i))
+             (closed_segment (vs ! i) (vs ! Suc i))"
+      using geotop_is_complex_intersection[OF hL_complex] hxL hsegL hmeet
+      by (by100 blast)
+    have hface_single:
+        "geotop_is_face {x} (closed_segment (vs ! i) (vs ! Suc i))"
+      using hface_pair hxseg by (by100 simp)
+    have hface_cases:
+        "{x} = {vs ! i}
+        \<or> {x} = {vs ! Suc i}
+        \<or> {x} = closed_segment (vs ! i) (vs ! Suc i)"
+      using geotop_segment_face_cases_dev34
+        [OF hface_single hlisted_edge_endpoints_distinct[OF hi]]
+      by (by100 blast)
+    show "x = vs ! i \<or> x = vs ! Suc i"
+    proof (rule disjE[OF hface_cases])
+      assume "{x} = {vs ! i}"
+      thus ?thesis
+        by (by100 simp)
+    next
+      assume htail: "{x} = {vs ! Suc i}
+        \<or> {x} = closed_segment (vs ! i) (vs ! Suc i)"
+      show ?thesis
+      proof (rule disjE[OF htail])
+        assume "{x} = {vs ! Suc i}"
+        thus ?thesis
+          by (by100 simp)
+      next
+        assume hself: "{x} = closed_segment (vs ! i) (vs ! Suc i)"
+        have hedge: "geotop_is_edge (closed_segment (vs ! i) (vs ! Suc i))"
+          using hlisted_edge_members[OF hi] by (by100 blast)
+        have "geotop_is_edge {x}"
+          using hedge hself by (by100 simp)
+        thus ?thesis
+          using geotop_singleton_not_edge_prefix by (by100 blast)
+      qed
+    qed
+  qed
+  have hconvex_hull_listed_edge_vertex_subset:
+      "\<And>W i. W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> i < length vs - 1
+        \<Longrightarrow> geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)
+        \<Longrightarrow> W \<subseteq> {vs ! i, vs ! Suc i}"
+  proof
+    fix W i x
+    assume hWsub': "W \<subseteq> geotop_complex_vertices L"
+    assume hi: "i < length vs - 1"
+    assume hWhull:
+        "geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)"
+    assume hxW: "x \<in> W"
+    have hxV: "x \<in> set vs"
+      using hWsub' hxW hvertices by (by100 blast)
+    have hx_hull: "x \<in> geotop_convex_hull W"
+      using geotop_convex_hull_contains_V hxW by (by100 blast)
+    have hx_seg: "x \<in> closed_segment (vs ! i) (vs ! Suc i)"
+      using hx_hull hWhull by (by100 simp)
+    show "x \<in> {vs ! i, vs ! Suc i}"
+      using hlisted_edge_complex_vertex_endpoint_cases[OF hxV hi hx_seg]
+      by (by100 blast)
+  qed
+  have hconvex_hull_nonempty_pair_if_listed_edge:
+      "\<And>W i. W \<noteq> {}
+        \<Longrightarrow> W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> i < length vs - 1
+        \<Longrightarrow> geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)
+        \<Longrightarrow> W = {vs ! i, vs ! Suc i}"
+  proof -
+    fix W :: "(real^2) set" and i
+    assume hW_nonempty: "W \<noteq> {}"
+    assume hWsub': "W \<subseteq> geotop_complex_vertices L"
+    assume hi: "i < length vs - 1"
+    assume hWhull:
+        "geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)"
+    have hW_pair_sub: "W \<subseteq> {vs ! i, vs ! Suc i}"
+      by (rule hconvex_hull_listed_edge_vertex_subset[OF hWsub' hi hWhull])
+    have hleft_in_W: "vs ! i \<in> W"
+    proof (rule ccontr)
+      assume hleft_not: "vs ! i \<notin> W"
+      have hW_sub_right: "W \<subseteq> {vs ! Suc i}"
+        using hW_pair_sub hleft_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {vs ! Suc i}"
+        by (rule hull_mono[OF hW_sub_right])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {vs ! Suc i}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{vs ! Suc i}"] by (by100 simp)
+      have hleft_seg: "vs ! i \<in> closed_segment (vs ! i) (vs ! Suc i)"
+        by (by100 simp)
+      have "vs ! i \<in> geotop_convex_hull {vs ! Suc i}"
+        using hgeo_sub hWhull hleft_seg by (by100 blast)
+      hence "vs ! i = vs ! Suc i"
+        using geotop_convex_hull_eq_HOL[of "{vs ! Suc i}"] by (by100 simp)
+      thus False
+        using hlisted_edge_endpoints_distinct[OF hi] by (by100 blast)
+    qed
+    have hright_in_W: "vs ! Suc i \<in> W"
+    proof (rule ccontr)
+      assume hright_not: "vs ! Suc i \<notin> W"
+      have hW_sub_left: "W \<subseteq> {vs ! i}"
+        using hW_pair_sub hright_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {vs ! i}"
+        by (rule hull_mono[OF hW_sub_left])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {vs ! i}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{vs ! i}"] by (by100 simp)
+      have hright_seg: "vs ! Suc i \<in> closed_segment (vs ! i) (vs ! Suc i)"
+        by (by100 simp)
+      have "vs ! Suc i \<in> geotop_convex_hull {vs ! i}"
+        using hgeo_sub hWhull hright_seg by (by100 blast)
+      hence "vs ! Suc i = vs ! i"
+        using geotop_convex_hull_eq_HOL[of "{vs ! i}"] by (by100 simp)
+      hence "vs ! i = vs ! Suc i"
+        by (by100 simp)
+      thus False
+        using hlisted_edge_endpoints_distinct[OF hi] by (by100 blast)
+    qed
+    show "W = {vs ! i, vs ! Suc i}"
+      using hW_pair_sub hleft_in_W hright_in_W by (by100 blast)
+  qed
+  have hcases:
+      "(\<exists>x\<in>set vs. W = {x})
+      \<or> (\<exists>i<length vs - 1.
+          geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i))"
+    using hconvex_hull_nonedge_singleton_cases
+      hconvex_hull_edge_listed_cases hW_ne hWhull_L
+    by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hcases])
+    assume hsingle: "\<exists>x\<in>set vs. W = {x}"
+    show ?thesis
+      using hsingle by (by100 blast)
+  next
+    assume hedge:
+        "\<exists>i<length vs - 1.
+          geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)"
+    obtain i where hi: "i < length vs - 1"
+      and hWhull:
+        "geotop_convex_hull W = closed_segment (vs ! i) (vs ! Suc i)"
+      using hedge by (by100 blast)
+    have hW_pair: "W = {vs ! i, vs ! Suc i}"
+      by (rule hconvex_hull_nonempty_pair_if_listed_edge
+          [OF hW_ne hWsub hi hWhull])
+    show ?thesis
+      using hi hW_pair by (by100 blast)
+  qed
+qed
+
+lemma geotop_endpoint_chain_listing_singleton_convex_hull_in_L_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hx: "x \<in> set vs"
+  shows "geotop_convex_hull {x} \<in> L"
+proof -
+  have hxL: "{x} \<in> L"
+    using hlist hx unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have "geotop_convex_hull {x} = {x}"
+    using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+  thus ?thesis
+    using hxL by (by100 simp)
+qed
+
+lemma geotop_endpoint_chain_listing_adjacent_convex_hull_in_L_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hi: "i < length vs - 1"
+  shows "geotop_convex_hull {vs ! i, vs ! Suc i} \<in> L"
+proof -
+  have hstep: "closed_segment (vs ! i) (vs ! Suc i) \<in> L
+      \<and> geotop_is_edge (closed_segment (vs ! i) (vs ! Suc i))"
+    using hlist hi unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hne: "vs ! i \<noteq> vs ! Suc i"
+  proof
+    assume heq: "vs ! i = vs ! Suc i"
+    have "\<not> geotop_is_edge {vs ! i}"
+      by (rule geotop_singleton_not_edge_prefix)
+    thus False
+      using hstep heq by (by100 simp)
+  qed
+  have hvertices:
+      "geotop_simplex_vertices (closed_segment (vs ! i) (vs ! Suc i))
+        {vs ! i, vs ! Suc i}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hne])
+  have "geotop_convex_hull {vs ! i, vs ! Suc i}
+      = closed_segment (vs ! i) (vs ! Suc i)"
+    using hvertices unfolding geotop_simplex_vertices_def by (by100 blast)
+  thus ?thesis
+    using hstep by (by100 simp)
+qed
+
+lemma geotop_endpoint_chain_listing_convex_hull_in_L_cases_all_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hWsub: "W \<subseteq> geotop_complex_vertices L"
+  assumes hWhull_L: "geotop_convex_hull W \<in> L"
+  shows "(\<exists>x\<in>set vs. W = {x})
+    \<or> (\<exists>i<length vs - 1. W = {vs ! i, vs ! Suc i})"
+proof (cases "W = {}")
+  case True
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hhullempty: "geotop_convex_hull ({} :: (real^2) set) = {}"
+    using geotop_convex_hull_eq_HOL[of "({} :: (real^2) set)"]
+    by (by100 simp)
+  have hempty_L: "({} :: (real^2) set) \<in> L"
+    using hWhull_L True hhullempty by (by100 simp)
+  have "geotop_is_simplex ({} :: (real^2) set)"
+    using geotop_is_complex_simplex[OF hL_complex] hempty_L by (by100 blast)
+  hence False
+    using geotop_is_simplex_nonempty by (by100 blast)
+  thus ?thesis
+    by (rule FalseE)
+next
+  case False
+  show ?thesis
+    by (rule geotop_endpoint_chain_listing_convex_hull_in_L_cases_dev34
+        [OF hL_linear hlist False hWsub hWhull_L])
+qed
+
+lemma geotop_endpoint_chain_listing_complex_decomp_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "L =
+    ((\<lambda>x. {x}) ` set vs)
+    \<union> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+        ` {0..<length vs - 1})"
+proof (rule equalityI)
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
+  have hvertices: "set vs = geotop_complex_vertices L"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hlist])
+  have hedge_eq: "{e \<in> L. geotop_is_edge e}
+      = ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+    by (rule geotop_endpoint_chain_listing_edge_set_eq_dev34[OF hlist])
+  show "L \<subseteq>
+      ((\<lambda>x. {x}) ` set vs)
+      \<union> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+  proof
+    fix \<tau>
+    assume h\<tau>L: "\<tau> \<in> L"
+    show "\<tau> \<in> ((\<lambda>x. {x}) ` set vs)
+      \<union> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+    proof (cases "geotop_is_edge \<tau>")
+      case True
+      have "\<tau> \<in> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+        using hedge_eq h\<tau>L True by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    next
+      case False
+      have hcases:
+          "(\<exists>x. \<tau> = {x}) \<or> (\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b)"
+        by (rule geotop_1dim_simplex_cases[OF hL_1dim h\<tau>L])
+      show ?thesis
+      proof (rule disjE[OF hcases])
+        assume "\<exists>x. \<tau> = {x}"
+        then obtain x where h\<tau>x: "\<tau> = {x}"
+          by (by100 blast)
+        have x_vertex: "x \<in> geotop_complex_vertices L"
+          using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] h\<tau>L h\<tau>x
+          by (by100 blast)
+        have "\<tau> \<in> ((\<lambda>x. {x}) ` set vs)"
+          using hvertices x_vertex h\<tau>x by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      next
+        assume "\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b"
+        then obtain a b where hab: "a \<noteq> b" and h\<tau>ab: "\<tau> = closed_segment a b"
+          by (by100 blast)
+        have hverts: "geotop_simplex_vertices \<tau> {a, b}"
+          using geotop_closed_segment_simplex_vertices[OF hab] h\<tau>ab
+          by (by100 simp)
+        have hdim: "geotop_simplex_dim \<tau> 1"
+          using hverts unfolding geotop_simplex_vertices_def by (by100 blast)
+        have "geotop_is_edge \<tau>"
+          using hdim unfolding geotop_is_edge_def by (by100 blast)
+        thus ?thesis
+          using False by (by100 blast)
+      qed
+    qed
+  qed
+next
+  show "((\<lambda>x. {x}) ` set vs)
+      \<union> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})
+      \<subseteq> L"
+  proof
+    fix \<tau>
+    assume h\<tau>: "\<tau> \<in> ((\<lambda>x. {x}) ` set vs)
+      \<union> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+    show "\<tau> \<in> L"
+    proof (rule UnE[OF h\<tau>])
+      assume "\<tau> \<in> ((\<lambda>x. {x}) ` set vs)"
+      thus ?thesis
+        using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+        by (by100 blast)
+    next
+      assume "\<tau> \<in> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+      then obtain i where hi: "i < length vs - 1"
+        and h\<tau>eq: "\<tau> = closed_segment (vs ! i) (vs ! Suc i)"
+        by (by100 blast)
+      have "closed_segment (vs ! i) (vs ! Suc i) \<in> L"
+        using hlist hi unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+        by (by100 blast)
+      thus ?thesis
+        using h\<tau>eq by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_endpoint_chain_listing_two_vertex_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
