@@ -10014,6 +10014,25 @@ definition geotop_polygon_cyclic_order ::
         0 \<le> tP \<and> tP < tQ \<and> tQ < tR \<and> tR < tS \<and> tS < 1 \<and>
         c tP = P \<and> c tQ = Q \<and> c tR = R \<and> c tS = S)"
 
+lemma geotop_polygon_cyclic_orderE_prefix:
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  obtains c tP tQ tR tS where
+    "simple_path c"
+    "pathfinish c = pathstart c"
+    "path_image c = J"
+    "0 \<le> tP"
+    "tP < tQ"
+    "tQ < tR"
+    "tR < tS"
+    "tS < 1"
+    "c tP = P"
+    "c tQ = Q"
+    "c tR = R"
+    "c tS = S"
+  using hcyc that
+  unfolding geotop_polygon_cyclic_order_def
+  by (by100 blast)
+
 lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
   fixes J A :: "(real^2) set" and P Q R S :: "real^2"
   assumes hJ: "geotop_is_polygon J"
