@@ -14676,6 +14676,24 @@ next
           hq_ne he_seg hqL])
 qed
 
+lemma geotop_broken_line_interior_vertex_incident_edge_card_le_two_dev34:
+  fixes L :: "(real^2) set set" and B :: "(real^2) set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hpoly: "geotop_polyhedron L = B"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hE: "geotop_arc_endpoints B E"
+  assumes hPL: "{P} \<in> L"
+  assumes hP_int: "P \<in> geotop_arc_interior B E"
+  shows "card {e\<in>L. geotop_is_edge e \<and> P \<in> e} \<le> 2"
+  (**
+    Interior-only Moise no-three-germs step for a broken-line arc.  The
+    endpoint case is already handled by the endpoint-card-one theorem; the
+    remaining local interval argument is that an interior point of an arc has
+    exactly two local sides, so three distinct incident 1-simplices in a finite
+    linear carrier cannot all occur at \<open>P\<close>. **)
+  sorry
+
 lemma geotop_broken_line_vertex_incident_edge_card_le_two_dev34:
   fixes L :: "(real^2) set set" and B :: "(real^2) set"
   assumes hL: "geotop_is_linear_graph L"
@@ -14691,7 +14709,25 @@ lemma geotop_broken_line_vertex_incident_edge_card_le_two_dev34:
     is a broken-line arc cannot support three distinct incident 1-simplices,
     since three graph germs at the vertex would violate the local interval
     structure of an arc. **)
-  sorry
+proof (cases "P \<in> E")
+  case True
+  have hcard1: "card {e\<in>L. geotop_is_edge e \<and> P \<in> e} = 1"
+    by (rule geotop_broken_line_endpoint_vertex_incident_edge_card_one_dev34
+        [OF hL hfin hpoly hB hE True hPL])
+  show ?thesis
+    using hcard1 by (by100 linarith)
+next
+  case False
+  have hP_poly: "P \<in> geotop_polyhedron L"
+    using hPL unfolding geotop_polyhedron_def by (by100 blast)
+  have hP_B: "P \<in> B"
+    using hP_poly hpoly by (by100 simp)
+  have hP_int: "P \<in> geotop_arc_interior B E"
+    using hP_B False unfolding geotop_arc_interior_def by (by100 blast)
+  show ?thesis
+    by (rule geotop_broken_line_interior_vertex_incident_edge_card_le_two_dev34
+        [OF hL hfin hpoly hB hE hPL hP_int])
+qed
 
 lemma geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34:
   fixes L :: "(real^2) set set"
