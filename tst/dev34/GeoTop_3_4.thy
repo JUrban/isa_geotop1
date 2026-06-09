@@ -4205,6 +4205,55 @@ proof -
         ` {0..<p\<^sub>B})"
     using hsource_successor_vertex_card hF_B_successor_vertex_card
       hF_B_vertices_card by (by100 simp)
+  have hsource_successor_vertices_card_le_period:
+      "card (geotop_complex_vertices L) \<le> p\<^sub>c"
+  proof -
+    have "card ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c}) \<le> card {0..<p\<^sub>c}"
+      by (rule card_image_le) (by100 simp)
+    thus ?thesis
+      using hsource_successor_vertex_card by (by100 simp)
+  qed
+  have hF_B_successor_vertices_card_le_period:
+      "card (geotop_complex_vertices F_B) \<le> p\<^sub>B"
+  proof -
+    have "card ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) \<le> card {0..<p\<^sub>B}"
+      by (rule card_image_le) (by100 simp)
+    thus ?thesis
+      using hF_B_successor_vertex_card by (by100 simp)
+  qed
+  have hcommon_vertex_card_le_source_period:
+      "card (geotop_complex_vertices F_B) \<le> p\<^sub>c"
+    using hsource_successor_vertices_card_le_period hF_B_vertices_card
+    by (by100 simp)
+  have hcommon_vertex_card_le_target_period:
+      "card (geotop_complex_vertices L) \<le> p\<^sub>B"
+    using hF_B_successor_vertices_card_le_period hF_B_vertices_card
+    by (by100 simp)
+  have hsource_successor_vertex_image_finite:
+      "finite ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c})"
+    by (rule finite_imageI) (by100 simp)
+  have hF_B_successor_vertex_image_finite:
+      "finite ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B})"
+    by (rule finite_imageI) (by100 simp)
+  obtain \<chi>\<^sub>V where h\<chi>\<^sub>V_bij:
+      "bij_betw \<chi>\<^sub>V
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+          ` {0..<p\<^sub>c})
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          ` {0..<p\<^sub>B})"
+    using finite_same_card_bij
+        [OF hsource_successor_vertex_image_finite
+          hF_B_successor_vertex_image_finite hsuccessor_vertex_card_match]
+    by (by100 blast)
+  have h\<chi>\<^sub>V_bij_vertices:
+      "bij_betw \<chi>\<^sub>V
+        (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
+    using h\<chi>\<^sub>V_bij hsource_successor_vertices_eq hF_B_successor_vertices_eq
+    by (by100 simp)
   show ?thesis
     sorry
 qed
