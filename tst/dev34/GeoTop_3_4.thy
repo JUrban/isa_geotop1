@@ -926,6 +926,7 @@ lemma geotop_complex_subdivide_edge_interior_vertices_subset_dev34:
   assumes hR_V: "R \<notin> V"
   shows "\<exists>K'. geotop_is_complex K'
       \<and> geotop_complex_is_1dim K'
+      \<and> geotop_is_subdivision K' K
       \<and> geotop_polyhedron K' = geotop_polyhedron K
       \<and> {R} \<in> K'
       \<and> K - {e} \<subseteq> K'
@@ -1064,12 +1065,42 @@ proof -
     using hK'_sim hK'_faces hK'_inter hK'_locfin by (by100 blast)
   have hK'_sup: "K - {e} \<subseteq> ?K'"
     by (by100 blast)
+  have hK'_refines: "geotop_refines ?K' K"
+    unfolding geotop_refines_def
+  proof
+    fix \<tau>
+    assume h\<tau>K': "\<tau> \<in> ?K'"
+    show "\<exists>\<sigma>\<in>K. \<tau> \<subseteq> \<sigma>"
+    proof (rule UnE[OF h\<tau>K'])
+      assume h\<tau>old: "\<tau> \<in> K - {e}"
+      show ?thesis
+        using h\<tau>old by (by100 blast)
+    next
+      assume h\<tau>new:
+        "\<tau> \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      have h\<tau>cases:
+        "\<tau> = {R}
+        \<or> \<tau> = closed_segment v\<^sub>0 R
+        \<or> \<tau> = closed_segment R v\<^sub>1"
+        using h\<tau>new by (by100 simp)
+      have hR_single_sub_e: "{R} \<subseteq> e"
+        using hR_e by (by100 blast)
+      have h\<tau>sub_e: "\<tau> \<subseteq> e"
+        using h\<tau>cases hR_single_sub_e hel_sub_e her_sub_e by (by100 blast)
+      show ?thesis
+        using he_K h\<tau>sub_e by (by100 blast)
+    qed
+  qed
+  have hK'_subdivision: "geotop_is_subdivision ?K' K"
+    unfolding geotop_is_subdivision_def
+    using hK_complex hK'_complex hK'_refines hK'_poly by (by100 blast)
   have hK'_vertices:
     "geotop_complex_vertices ?K' \<subseteq> insert R (geotop_complex_vertices K)"
     by (rule geotop_explicit_edge_subdivision_vertices_subset_dev34
         [OF hK_complex hK'_complex hR_v\<^sub>0 hR_v\<^sub>1])
   show ?thesis
-    using hK'_complex hK'_1dim hK'_poly hR_K' hK'_sup hK'_vertices hK'_fin
+    using hK'_complex hK'_1dim hK'_subdivision hK'_poly hR_K'
+      hK'_sup hK'_vertices hK'_fin
     by (by100 blast)
 qed
 
@@ -1082,6 +1113,7 @@ lemma geotop_complex_subdivide_edge_vertices_subset_dev34:
   assumes hR_e: "R \<in> e"
   shows "\<exists>K'. geotop_is_complex K'
       \<and> geotop_complex_is_1dim K'
+      \<and> geotop_is_subdivision K' K
       \<and> geotop_polyhedron K' = geotop_polyhedron K
       \<and> {R} \<in> K'
       \<and> K - {e} \<subseteq> K'
@@ -1115,8 +1147,11 @@ proof -
     have hK_vertices:
       "geotop_complex_vertices K \<subseteq> insert R (geotop_complex_vertices K)"
       by (by100 blast)
+    have hK_subdivision: "geotop_is_subdivision K K"
+      by (rule geotop_is_subdivision_refl[OF hK_complex])
     show ?thesis
-      using hK_complex hK_1dim hR_K hK_sup hK_vertices by (by100 blast)
+      using hK_complex hK_1dim hK_subdivision hR_K hK_sup hK_vertices
+      by (by100 blast)
   next
     case False
     show ?thesis
@@ -1132,6 +1167,7 @@ lemma geotop_complex_subdivide_at_vertices_subset_dev34:
   assumes hR_poly: "R \<in> geotop_polyhedron K"
   shows "\<exists>K'. geotop_is_complex K'
       \<and> geotop_complex_is_1dim K'
+      \<and> geotop_is_subdivision K' K
       \<and> geotop_polyhedron K' = geotop_polyhedron K
       \<and> {R} \<in> K'
       \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
@@ -1167,8 +1203,11 @@ proof -
     have hK_vertices:
       "geotop_complex_vertices K \<subseteq> insert R (geotop_complex_vertices K)"
       by (by100 blast)
+    have hK_subdivision: "geotop_is_subdivision K K"
+      by (rule geotop_is_subdivision_refl[OF hK_complex])
     show ?thesis
-      using hK_complex hK_1dim hR_K hold_vertices hK_vertices by (by100 blast)
+      using hK_complex hK_1dim hK_subdivision hR_K hold_vertices hK_vertices
+      by (by100 blast)
   next
     case (Suc k)
     have hn_eq_1: "n = 1"
@@ -1177,6 +1216,7 @@ proof -
       using h\<sigma>_dim hn_eq_1 by (by100 simp)
     obtain K' where hK'_complex: "geotop_is_complex K'"
         and hK'_1dim: "geotop_complex_is_1dim K'"
+        and hK'_subdivision: "geotop_is_subdivision K' K"
         and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
         and hR_K': "{R} \<in> K'"
         and hK'_sup: "K - {\<sigma>} \<subseteq> K'"
@@ -1210,7 +1250,8 @@ proof -
         using hK'_sup by (by100 blast)
     qed
     show ?thesis
-      using hK'_complex hK'_1dim hK'_poly hR_K' h_preserve hK'_vertices hK'_fin
+      using hK'_complex hK'_1dim hK'_subdivision hK'_poly hR_K'
+        h_preserve hK'_vertices hK'_fin
       by (by100 blast)
   qed
 qed
@@ -1225,6 +1266,7 @@ lemma geotop_finite_polyhedron_points_as_vertices_vertices_subset_dev34:
   shows "\<exists>K'. geotop_is_complex K'
       \<and> geotop_complex_is_1dim K'
       \<and> finite K'
+      \<and> geotop_is_subdivision K' K
       \<and> geotop_polyhedron K' = geotop_polyhedron K
       \<and> (\<forall>x\<in>S. {x} \<in> K')
       \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
@@ -1235,6 +1277,7 @@ proof -
       \<exists>K'. geotop_is_complex K'
         \<and> geotop_complex_is_1dim K'
         \<and> finite K'
+        \<and> geotop_is_subdivision K' K
         \<and> geotop_polyhedron K' = geotop_polyhedron K
         \<and> (\<forall>x\<in>S. {x} \<in> K')
         \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
@@ -1246,6 +1289,7 @@ proof -
       \<exists>K'. geotop_is_complex K'
         \<and> geotop_complex_is_1dim K'
         \<and> finite K'
+        \<and> geotop_is_subdivision K' K
         \<and> geotop_polyhedron K' = geotop_polyhedron K
         \<and> (\<forall>x\<in>S. {x} \<in> K')
         \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
@@ -1260,8 +1304,11 @@ proof -
       have hvertices_bound:
         "geotop_complex_vertices K \<subseteq> {} \<union> geotop_complex_vertices K"
         by (by100 simp)
+      have hK_subdivision: "geotop_is_subdivision K K"
+        by (rule geotop_is_subdivision_refl[OF hK_complex])
       show ?case
-        using hK_complex hK_1dim hK_finite hS_vertices hold_vertices hvertices_bound
+        using hK_complex hK_1dim hK_finite hK_subdivision hS_vertices
+          hold_vertices hvertices_bound
         by (by100 blast)
     next
       case (insert x S)
@@ -1272,6 +1319,7 @@ proof -
       obtain K0 where hK0_complex: "geotop_is_complex K0"
         and hK0_1dim: "geotop_complex_is_1dim K0"
         and hK0_finite: "finite K0"
+        and hK0_subdivision: "geotop_is_subdivision K0 K"
         and hK0_poly: "geotop_polyhedron K0 = geotop_polyhedron K"
         and hS_vertices: "\<forall>y\<in>S. {y} \<in> K0"
         and hold_vertices0: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K0"
@@ -1282,6 +1330,7 @@ proof -
         using hx_poly hK0_poly by (by100 simp)
       obtain K1 where hK1_complex: "geotop_is_complex K1"
         and hK1_1dim: "geotop_complex_is_1dim K1"
+        and hK1_subdivision0: "geotop_is_subdivision K1 K0"
         and hK1_poly0: "geotop_polyhedron K1 = geotop_polyhedron K0"
         and hx_vertex: "{x} \<in> K1"
         and hvertices_preserved: "\<forall>v. {v} \<in> K0 \<longrightarrow> {v} \<in> K1"
@@ -1293,6 +1342,8 @@ proof -
         by (by100 blast)
       have hK1_finite: "finite K1"
         using hfinite_imp hK0_finite by (by100 blast)
+      have hK1_subdivision: "geotop_is_subdivision K1 K"
+        by (rule geotop_is_subdivision_trans[OF hK0_subdivision hK1_subdivision0])
       have hK1_poly: "geotop_polyhedron K1 = geotop_polyhedron K"
         using hK1_poly0 hK0_poly by (by100 simp)
       have hS_vertices1: "\<forall>y\<in>S. {y} \<in> K1"
@@ -1306,7 +1357,7 @@ proof -
           \<subseteq> insert x S \<union> geotop_complex_vertices K"
         using hK1_vertices0 hK0_vertices by (by100 blast)
       show ?case
-        using hK1_complex hK1_1dim hK1_finite hK1_poly
+        using hK1_complex hK1_1dim hK1_finite hK1_subdivision hK1_poly
           hinsert_vertices hold_vertices1 hvertices_bound
         by (by100 blast)
     qed
@@ -1325,6 +1376,8 @@ lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
   shows "\<exists>F. geotop_is_complex F
       \<and> geotop_complex_is_1dim F
       \<and> finite F
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
       \<and> geotop_polyhedron F =
         geotop_polyhedron
           (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
@@ -1368,6 +1421,8 @@ lemma geotop_2simplex_boundary_finite_points_as_vertices_vertices_subset_dev34:
   shows "\<exists>F. geotop_is_complex F
       \<and> geotop_complex_is_1dim F
       \<and> finite F
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
       \<and> geotop_polyhedron F =
         geotop_polyhedron
           (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
@@ -1390,6 +1445,7 @@ proof -
   obtain F where hF_complex: "geotop_is_complex F"
       and hF_1dim: "geotop_complex_is_1dim F"
       and hF_finite: "finite F"
+      and hF_subdivision: "geotop_is_subdivision F ?B"
       and hF_poly: "geotop_polyhedron F = geotop_polyhedron ?B"
       and hS_vertices: "\<forall>x\<in>S. {x} \<in> F"
       and hold_vertices: "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F"
@@ -1399,7 +1455,8 @@ proof -
       [OF hB_complex hB_1dim hB_finite hS_finite hS_poly]
     by (by100 blast)
   show ?thesis
-    using hF_complex hF_1dim hF_finite hF_poly hS_vertices hold_vertices hF_vertices
+    using hF_complex hF_1dim hF_finite hF_subdivision hF_poly
+      hS_vertices hold_vertices hF_vertices
     by (by100 blast)
 qed
 
@@ -3093,8 +3150,10 @@ proof -
       "\<exists>F. geotop_is_subdivision F ?B
         \<and> finite F
         \<and> (\<forall>x\<in>S_B. {x} \<in> F)
-        \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
-    using geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34
+        \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)
+        \<and> geotop_complex_vertices F \<subseteq>
+          S_B \<union> geotop_complex_vertices ?B"
+    using geotop_2simplex_boundary_finite_points_as_vertices_vertices_subset_dev34
       [OF h\<sigma> hS_B_finite hS_B_subset_B_poly]
     by (by100 blast)
   obtain F_B where hF_B_sub:
@@ -3105,6 +3164,9 @@ proof -
         "\<forall>x\<in>S_B. {x} \<in> F_B"
       and hB_old_vertices_in_F_B:
         "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F_B"
+      and hF_B_vertices_subset_raw:
+        "geotop_complex_vertices F_B \<subseteq>
+          S_B \<union> geotop_complex_vertices ?B"
     using htarget_prescribed_subdivision by (by100 blast)
   have hF_B_complex:
       "geotop_is_complex F_B"
@@ -3120,10 +3182,20 @@ proof -
       using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
         hx_single by (by100 blast)
   qed
+  have hF_B_vertices_subset_S_B:
+      "geotop_complex_vertices F_B \<subseteq> S_B"
+    using hF_B_vertices_subset_raw hB_vertices_subset_S_B by (by100 blast)
+  have hF_B_vertices_eq_S_B:
+      "geotop_complex_vertices F_B = S_B"
+    using hS_B_subset_F_B_vertices hF_B_vertices_subset_S_B by (by100 blast)
   have hF_B_vertices_finite:
       "finite (geotop_complex_vertices F_B)"
     by (rule geotop_finite_complex_vertices_finite_dev34
         [OF hF_B_complex hF_B_finite])
+  have hF_B_vertices_card:
+      "card (geotop_complex_vertices F_B)
+        = card (geotop_complex_vertices L)"
+    using hF_B_vertices_eq_S_B hS_B_card by (by100 simp)
   have hsource_vertices_card_le_F_B_vertices:
       "card (geotop_complex_vertices L)
         \<le> card (geotop_complex_vertices F_B)"
