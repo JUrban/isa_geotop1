@@ -10107,6 +10107,20 @@ proof -
     hence "S \<in> {P, R}" using hAJ by (by100 simp)
     thus False using hS_ne_PR by (by100 blast)
   qed
+  obtain c tP tQ tR tS where hcyc_path: "simple_path c"
+    and hcyc_closed: "pathfinish c = pathstart c"
+    and hcyc_image: "path_image c = J"
+    and htP_nonneg: "0 \<le> tP"
+    and htP_tQ: "tP < tQ"
+    and htQ_tR: "tQ < tR"
+    and htR_tS: "tR < tS"
+    and htS_lt1: "tS < 1"
+    and hc_tP: "c tP = P"
+    and hc_tQ: "c tQ = Q"
+    and hc_tR: "c tR = R"
+    and hc_tS: "c tS = S"
+    using hcyc
+    by (rule geotop_polygon_cyclic_orderE_prefix)
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
