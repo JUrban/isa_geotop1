@@ -15904,6 +15904,36 @@ proof -
         [OF hlocal_poly_eq_\<sigma> hUsubM hz_Uminus hz_ball hz_radius])
 qed
 
+lemma geotop_closed_halfspace_sphere_arc_R2_dev34:
+  fixes n p :: "real^2"
+  assumes hn: "n \<noteq> 0"
+  assumes hr: "0 < r"
+  shows "geotop_is_arc (sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}))"
+  (**
+    The analytic half-circle fact used by Moise Lemma 3: a Euclidean circle
+    cut by a closed half-plane through its center is a closed semicircle, hence
+    an arc. **)
+  sorry
+
+lemma geotop_edge_face_2simplex_small_sphere_halfspace_model_exists_dev34:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  shows "\<exists>eps n. 0 < eps \<and> n \<noteq> 0
+      \<and> (\<forall>r. 0 < r \<and> r < eps \<longrightarrow>
+        sphere p r \<inter> \<sigma> = sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)})"
+  (**
+    Local half-plane model for a 2-simplex along an edge-interior point.
+    Choose \<open>eps\<close> below the distances from \<open>p\<close> to the edge endpoints and the
+    opposite side.  Inside every sphere of radius less than \<open>eps\<close>, the
+    triangle is indistinguishable from the closed half-plane bounded by the
+    edge line and pointing into the simplex. **)
+  sorry
+
 lemma geotop_edge_simplex_small_sphere_arc_radius_bound_exists_dev34:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15920,7 +15950,39 @@ lemma geotop_edge_simplex_small_sphere_arc_radius_bound_exists_dev34:
     face and to the opposite side of the 2-simplex.  Then every sphere of
     radius less than \<open>eps\<close> meets \<open>\<sigma>\<close> in the standard one-sided semicircle,
     hence in an arc. **)
-  sorry
+proof -
+  obtain eps n where heps: "0 < eps"
+    and hn: "n \<noteq> 0"
+    and hmodel: "\<forall>r. 0 < r \<and> r < eps \<longrightarrow>
+      sphere p r \<inter> \<sigma> = sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+    using geotop_edge_face_2simplex_small_sphere_halfspace_model_exists_dev34
+      [OF hedge hp h\<sigma>2 h\<sigma>face]
+    by (by100 blast)
+  have hall: "\<forall>r. 0 < r \<and> r < eps \<longrightarrow>
+      geotop_is_arc (sphere p r \<inter> \<sigma>)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (sphere p r \<inter> \<sigma>))"
+  proof (intro allI impI)
+    fix r
+    assume hrange: "0 < r \<and> r < eps"
+    have hr: "0 < r"
+      using hrange by (by100 blast)
+    have h_eq: "sphere p r \<inter> \<sigma> =
+        sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+      using hmodel hrange by (by100 blast)
+    have hhalf_arc:
+        "geotop_is_arc (sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}))"
+      by (rule geotop_closed_halfspace_sphere_arc_R2_dev34[OF hn hr])
+    show "geotop_is_arc (sphere p r \<inter> \<sigma>)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (sphere p r \<inter> \<sigma>))"
+      using hhalf_arc h_eq by (by100 simp)
+  qed
+  show ?thesis
+    using heps hall by (by100 blast)
+qed
 
 lemma geotop_edge_simplex_small_sphere_arc_edge_outer_witness_exists_dev34:
   fixes e \<sigma> :: "(real^2) set"
