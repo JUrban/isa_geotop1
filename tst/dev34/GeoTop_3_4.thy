@@ -15538,6 +15538,37 @@ proof
     using hballU hx_poly_ball_s by (by100 blast)
 qed
 
+lemma geotop_edge_rel_interior_point_in_domain_from_collar_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  shows "p \<in> U"
+proof -
+  have hp_\<sigma>: "p \<in> \<sigma>"
+  proof -
+    have hp_e: "p \<in> e"
+      using hp rel_interior_subset by (by100 blast)
+    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
+    show ?thesis
+      using hp_e he_sub_\<sigma> by (by100 blast)
+  qed
+  have hp_ball_s: "p \<in> ball p s"
+    using hs by (by100 simp)
+  have hp_ball_sigma_s: "p \<in> ball p s \<inter> \<sigma>"
+    using hp_ball_s hp_\<sigma> by (by100 blast)
+  have hp_ball_poly_s: "p \<in> ball p s \<inter> geotop_polyhedron K"
+    using hlocal_poly_eq_\<sigma> hp_ball_sigma_s by (by100 blast)
+  have hp_poly_ball_s: "p \<in> geotop_polyhedron K \<inter> ball p s"
+    using hp_ball_poly_s by (by100 blast)
+  show ?thesis
+    using hballU hp_poly_ball_s by (by100 blast)
+qed
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15588,30 +15619,9 @@ proof -
   have hA_subU: "?A \<subseteq> U"
     by (rule geotop_sphere_simplex_crosscut_subset_domain_from_collar_dev34
         [OF hr hrs hlocal_poly_eq_\<sigma> hballU])
-  have hp_\<sigma>: "p \<in> \<sigma>"
-  proof -
-    have hp_e: "p \<in> e"
-      using hp rel_interior_subset by (by100 blast)
-    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
-      by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
-    show ?thesis
-      using hp_e he_sub_\<sigma> by (by100 blast)
-  qed
   have hp_U: "p \<in> U"
-  proof -
-    have hs_pos: "0 < s"
-      using hr hrs by (by100 linarith)
-    have hp_ball_s: "p \<in> ball p s"
-      using hs_pos by (by100 simp)
-    have hp_ball_sigma_s: "p \<in> ball p s \<inter> \<sigma>"
-      using hp_ball_s hp_\<sigma> by (by100 blast)
-    have hp_ball_poly_s: "p \<in> ball p s \<inter> geotop_polyhedron K"
-      using hlocal_poly_eq_\<sigma> hp_ball_sigma_s by (by100 blast)
-    have hp_poly_ball_s: "p \<in> geotop_polyhedron K \<inter> ball p s"
-      using hp_ball_poly_s by (by100 blast)
-    show ?thesis
-      using hballU hp_poly_ball_s by (by100 blast)
-  qed
+    by (rule geotop_edge_rel_interior_point_in_domain_from_collar_dev34
+        [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU])
   have hp_not_A: "p \<notin> ?A"
     using hr by (by100 simp)
   have hp_inner_witness: "p \<in> U - ?A \<and> dist p p < r"
