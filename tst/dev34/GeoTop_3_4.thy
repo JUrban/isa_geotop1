@@ -15025,6 +15025,31 @@ lemma geotop_endpoint_nonfinish_degree_bound_book_step_dev34:
   by (rule geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34
       [OF hL_linear hL_finite hbroken hconn])
 
+lemma geotop_2simplex_opposite_vertex_notin_closed_segment_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hc: "c \<notin> {a, b}"
+  shows "c \<notin> closed_segment a b"
+proof
+  assume hcseg: "c \<in> closed_segment a b"
+  have hc_not_aff: "c \<notin> affine hull {a, b}"
+    by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix
+        [OF h\<sigma>V hc])
+  have hseg_aff: "closed_segment a b \<subseteq> affine hull {a, b}"
+  proof -
+    have hseg_hull: "closed_segment a b = convex hull {a, b}"
+      by (rule segment_convex_hull)
+    have "convex hull {a, b} \<subseteq> affine hull {a, b}"
+      by (rule convex_hull_subset_affine_hull)
+    thus ?thesis
+      using hseg_hull by (by100 simp)
+  qed
+  have "c \<in> affine hull {a, b}"
+    using hseg_aff hcseg by (by100 blast)
+  thus False
+    using hc_not_aff by (by100 blast)
+qed
+
 definition geotop_endpoint_boundary_edge_chain_on_simplex_dev34 ::
   "(real^2) set set \<Rightarrow> (real^2) set \<Rightarrow> real^2 \<Rightarrow> (real^2) list \<Rightarrow> bool"
 where
@@ -15042,6 +15067,28 @@ where
         \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
             ` {0..<length us - 1}))"
 
+lemma geotop_ordered_segment_endpoint_chain_target_of_length_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  shows "\<exists>F us.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a (us ! 1) us
+      \<and> length us = n
+      \<and> us ! 0 = a
+      \<and> us ! (length us - 1) = b
+      \<and> distinct us
+      \<and> set us \<subseteq> closed_segment a b
+      \<and> F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+  (**
+    Ordered boundary-edge realization target for the endpoint fan.  The book
+    step is to place exactly \<open>n\<close> distinct vertices in order on the segment
+    \<open>[a,b]\<close>, including the endpoints, and take the singleton vertices plus
+    adjacent subsegments as the target endpoint chain. **)
+  sorry
+
 lemma geotop_endpoint_boundary_edge_chain_target_of_length_dev34:
   fixes n :: nat
   assumes hlong: "2 < n"
@@ -15058,7 +15105,93 @@ lemma geotop_endpoint_boundary_edge_chain_target_of_length_dev34:
     be the corresponding subdivided edge chain.  The opposite simplex vertex
     \<open>c\<close> is deliberately outside the chain vertices and will be the cone
     point in the next step. **)
-  sorry
+proof -
+  from geotop_named_2simplex_exists_dev34 obtain \<sigma> :: "(real^2) set"
+      and a b c :: "real^2"
+    where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+      and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+      and hab: "a \<noteq> b"
+      and hc: "c \<notin> {a, b}"
+    by (by100 blast)
+  obtain F us where hF_linear: "geotop_is_linear_graph F"
+      and hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F a (us ! 1) us"
+      and hlen: "length us = n"
+      and hfirst: "us ! 0 = a"
+      and hlast: "us ! (length us - 1) = b"
+      and hdistinct: "distinct us"
+      and hset: "set us \<subseteq> closed_segment a b"
+      and hFdef: "F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+    using geotop_ordered_segment_endpoint_chain_target_of_length_dev34
+      [OF hab hlong]
+    by (by100 blast)
+  have hc_not_seg: "c \<notin> closed_segment a b"
+    by (rule geotop_2simplex_opposite_vertex_notin_closed_segment_dev34
+        [OF h\<sigma>V hc])
+  have hvertices: "geotop_complex_vertices F = set us"
+    using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hcF: "c \<notin> geotop_complex_vertices F"
+    using hvertices hset hc_not_seg by (by100 blast)
+  have hlen_ge2: "2 \<le> length us"
+    using hlong hlen by (by100 linarith)
+  have hplace_data:
+      "geotop_simplex_vertices \<sigma> {a, b, c}
+      \<and> a \<noteq> b
+      \<and> c \<notin> {a, b}
+      \<and> 2 \<le> length us
+      \<and> us ! 0 = a
+      \<and> us ! (length us - 1) = b
+      \<and> distinct us
+      \<and> set us \<subseteq> closed_segment a b
+      \<and> F =
+        ((\<lambda>x. {x}) ` set us) \<union>
+        ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+          ` {0..<length us - 1})"
+  proof (intro conjI)
+    show "geotop_simplex_vertices \<sigma> {a, b, c}"
+      by (rule h\<sigma>V)
+    show "a \<noteq> b"
+      by (rule hab)
+    show "c \<notin> {a, b}"
+      by (rule hc)
+    show "2 \<le> length us"
+      by (rule hlen_ge2)
+    show "us ! 0 = a"
+      by (rule hfirst)
+    show "us ! (length us - 1) = b"
+      by (rule hlast)
+    show "distinct us"
+      by (rule hdistinct)
+    show "set us \<subseteq> closed_segment a b"
+      by (rule hset)
+    show "F =
+      ((\<lambda>x. {x}) ` set us) \<union>
+      ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+        ` {0..<length us - 1})"
+      by (rule hFdef)
+  qed
+  have hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+    unfolding geotop_endpoint_boundary_edge_chain_on_simplex_dev34_def
+    apply (rule exI[where x=a])
+    apply (rule exI[where x=b])
+    by (rule hplace_data)
+  show ?thesis
+    apply (rule exI[where x=F])
+    apply (rule exI[where x=a])
+    apply (rule exI[where x="us ! 1"])
+    apply (rule exI[where x=us])
+    apply (rule exI[where x=\<sigma>])
+    apply (rule exI[where x=c])
+    apply (intro conjI)
+    apply (rule hF_linear)
+    apply (rule hFlist)
+    apply (rule hlen)
+    apply (rule h\<sigma>)
+    apply (rule hcF)
+    by (rule hplace)
+qed
 
 lemma geotop_endpoint_boundary_edge_chain_cone_fan_from_chain_target_dev34:
   fixes F :: "(real^2) set set"
