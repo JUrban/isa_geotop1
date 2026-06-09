@@ -842,6 +842,78 @@ proof -
     by (rule hinduct[OF hS_finite hS_poly])
 qed
 
+lemma geotop_explicit_edge_subdivision_vertices_subset_dev34:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK'_complex:
+    "geotop_is_complex
+      ((K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1})"
+  assumes hR_v\<^sub>0: "R \<noteq> v\<^sub>0"
+  assumes hR_v\<^sub>1: "R \<noteq> v\<^sub>1"
+  shows "geotop_complex_vertices
+      ((K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1})
+    \<subseteq> insert R (geotop_complex_vertices K)"
+proof
+  let ?K' = "(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  fix x
+  assume hx: "x \<in> geotop_complex_vertices ?K'"
+  have hK'_vertices:
+      "geotop_complex_vertices ?K' = {x. {x} \<in> ?K'}"
+    by (rule geotop_complex_vertices_eq_0_simplexes[OF hK'_complex])
+  have hK_vertices:
+      "geotop_complex_vertices K = {x. {x} \<in> K}"
+    by (rule geotop_complex_vertices_eq_0_simplexes[OF hK_complex])
+  have hx_single: "{x} \<in> ?K'"
+    using hx hK'_vertices by (by100 simp)
+  have hx_cases:
+      "{x} \<in> K - {e}
+      \<or> {x} \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+    using hx_single by (by100 blast)
+  show "x \<in> insert R (geotop_complex_vertices K)"
+  proof (rule disjE[OF hx_cases])
+    assume hxK: "{x} \<in> K - {e}"
+    have "x \<in> geotop_complex_vertices K"
+      using hxK hK_vertices by (by100 simp)
+    thus ?thesis by (by100 simp)
+  next
+    assume hxnew:
+        "{x} \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+    have hcases:
+        "{x} = {R}
+        \<or> {x} = closed_segment v\<^sub>0 R
+        \<or> {x} = closed_segment R v\<^sub>1"
+      using hxnew by (by100 simp)
+    show ?thesis
+    proof (rule disjE[OF hcases])
+      assume "{x} = {R}"
+      thus ?thesis by (by100 simp)
+    next
+      assume hseg_or: "{x} = closed_segment v\<^sub>0 R
+        \<or> {x} = closed_segment R v\<^sub>1"
+      show ?thesis
+      proof (rule disjE[OF hseg_or])
+        assume hxseg: "{x} = closed_segment v\<^sub>0 R"
+        have hv\<^sub>0x: "v\<^sub>0 = x"
+          using hxseg by (by100 simp)
+        have hRx: "R = x"
+          using hxseg by (by100 simp)
+        have False
+          using hR_v\<^sub>0 hv\<^sub>0x hRx by (by100 blast)
+        thus ?thesis by (by100 blast)
+      next
+        assume hxseg: "{x} = closed_segment R v\<^sub>1"
+        have hRx: "R = x"
+          using hxseg by (by100 simp)
+        have hv\<^sub>1x: "v\<^sub>1 = x"
+          using hxseg by (by100 simp)
+        have False
+          using hR_v\<^sub>1 hRx hv\<^sub>1x by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
   fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
