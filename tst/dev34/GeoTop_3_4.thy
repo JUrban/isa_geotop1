@@ -3775,6 +3775,105 @@ proof -
     thus ?thesis
       using hF_B_successor_edge_orbit_eq by (by100 simp)
   qed
+  let ?u\<^sub>B_succ =
+      "\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B)"
+  have hu\<^sub>B_succ_closed:
+      "?u\<^sub>B_succ p\<^sub>B = ?u\<^sub>B_succ 0"
+    using hp\<^sub>B_closed by (by100 simp)
+  have hu\<^sub>B_succ_vertices:
+      "((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})
+        = geotop_complex_vertices F_B"
+    using hF_B_successor_vertices_eq by (by100 simp)
+  have hu\<^sub>B_succ_decomp:
+      "F_B =
+        ((\<lambda>x. {x}) ` ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}))
+        \<union> ((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+          ` {0..<p\<^sub>B})"
+    using hF_B_successor_cycle_decomp by (by100 simp)
+  have hu\<^sub>B_succ_edges:
+      "((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+        ` {0..<p\<^sub>B}) = {e\<in>F_B. geotop_is_edge e}"
+    using hF_B_successor_edge_orbit_eq by (by100 simp)
+  have hu\<^sub>B_succ_boundary_cycle_core:
+      "geotop_is_subdivision F_B ?B
+      \<and> ?u\<^sub>B_succ p\<^sub>B = ?u\<^sub>B_succ 0
+      \<and> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})
+        = geotop_complex_vertices F_B
+      \<and> F_B =
+        ((\<lambda>x. {x}) ` ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}))
+        \<union> ((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+          ` {0..<p\<^sub>B})
+      \<and> ((\<lambda>k. closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+        ` {0..<p\<^sub>B}) = {e\<in>F_B. geotop_is_edge e}"
+    using hF_B_sub hu\<^sub>B_succ_closed hu\<^sub>B_succ_vertices
+      hu\<^sub>B_succ_decomp hu\<^sub>B_succ_edges by (by100 blast)
+  have hu\<^sub>B_succ_singletons:
+      "\<forall>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}).
+        geotop_convex_hull {x} \<in> F_B"
+  proof
+    fix x
+    assume hx: "x \<in> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})"
+    have hx_vertex: "x \<in> geotop_complex_vertices F_B"
+      using hx hu\<^sub>B_succ_vertices by (by100 blast)
+    have hx_single: "{x} \<in> F_B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+        hx_vertex by (by100 blast)
+    show "geotop_convex_hull {x} \<in> F_B"
+      using hsource_singleton_convex_hull_eq[of x] hx_single by (by100 simp)
+  qed
+  have hu\<^sub>B_succ_next_distinct:
+      "\<And>k. ?u\<^sub>B_succ k \<noteq> ?u\<^sub>B_succ (Suc k)"
+  proof -
+    fix k
+    have "?u\<^sub>B_succ (Suc k) \<noteq> ?u\<^sub>B_succ k"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+          [OF hF_B_linear hF_B_degree_two hs\<^sub>B])
+    thus "?u\<^sub>B_succ k \<noteq> ?u\<^sub>B_succ (Suc k)"
+      by (by100 blast)
+  qed
+  have hu\<^sub>B_succ_edge_convex_hull_eq:
+      "\<And>k. geotop_convex_hull {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}
+        = closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+  proof -
+    fix k
+    have hvertices:
+        "geotop_simplex_vertices
+          (closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)))
+          {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
+      by (rule geotop_closed_segment_simplex_vertices
+          [OF hu\<^sub>B_succ_next_distinct])
+    show "geotop_convex_hull {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}
+        = closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k))"
+      using hvertices unfolding geotop_simplex_vertices_def by (by100 blast)
+  qed
+  have hu\<^sub>B_succ_edges_in_F_B:
+      "\<forall>k\<in>{0..<p\<^sub>B}.
+        geotop_convex_hull {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)} \<in> F_B"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<p\<^sub>B}"
+    have hseg:
+        "closed_segment (?u\<^sub>B_succ k) (?u\<^sub>B_succ (Suc k)) \<in> F_B"
+      using hu\<^sub>B_succ_edges hk by (by100 blast)
+    show "geotop_convex_hull {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}
+        \<in> F_B"
+      using hu\<^sub>B_succ_edge_convex_hull_eq[of k] hseg by (by100 simp)
+  qed
+  have hsource_successor_vertex_card:
+      "card ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c}) = card (geotop_complex_vertices L)"
+    using hsource_successor_vertices_eq by (by100 simp)
+  have hF_B_successor_vertex_card:
+      "card ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) = card (geotop_complex_vertices F_B)"
+    using hF_B_successor_vertices_eq by (by100 simp)
+  have hsuccessor_vertex_card_match:
+      "card ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c})
+      = card ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B})"
+    using hsource_successor_vertex_card hF_B_successor_vertex_card
+      hF_B_vertices_card by (by100 simp)
   show ?thesis
     sorry
 qed
