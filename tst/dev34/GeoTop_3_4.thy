@@ -51,6 +51,41 @@ proof -
     using hdim by (by100 blast)
 qed
 
+lemma geotop_named_2simplex_exists_dev34:
+  shows "\<exists>(\<sigma> :: (real^2) set) a b c.
+    geotop_simplex_dim \<sigma> 2
+    \<and> geotop_simplex_vertices \<sigma> {a, b, c}
+    \<and> a \<noteq> b
+    \<and> c \<notin> {a, b}"
+  (**
+    Existential named 2-simplex used by endpoint fan base models. **)
+proof -
+  obtain \<sigma> :: "(real^2) set" where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    using geotop_standard_2simplex_exists_dev34 by (by100 blast)
+  obtain V m where hV_fin: "finite V"
+      and hV_card: "card V = 2 + 1"
+      and h2_le_m: "2 \<le> m"
+      and hV_gp: "geotop_general_position V m"
+      and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h2_le_m hV_gp h\<sigma>_eq by (by100 blast)
+  have hV_card3: "card V = 3"
+    using hV_card by (by100 simp)
+  obtain a b c where hV_eq: "V = {a, b, c}"
+      and hab: "a \<noteq> b"
+      and hbc: "b \<noteq> c"
+      and hac: "a \<noteq> c"
+    using iffD1[OF card_3_iff hV_card3] by (by100 blast)
+  have h\<sigma>V_named: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    using h\<sigma>V hV_eq by (by100 simp)
+  have hc: "c \<notin> {a, b}"
+    using hbc hac by (by100 blast)
+  show ?thesis
+    using h\<sigma> h\<sigma>V_named hab hc by (by100 blast)
+qed
+
 lemma geotop_isomorphism_refl_id_dev34:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
@@ -12737,6 +12772,87 @@ proof -
     using hF_linear hFlist hlen hbij hidx h\<sigma> hsub hcF hvertices
       hc_simplex hboundary hcone
     by (by100 blast)
+qed
+
+lemma geotop_two_vertex_endpoint_chain_fan_model_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hLlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+  shows "\<exists>vs F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+      geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+      \<and> geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Source-facing two-vertex endpoint fan model.  This packages the named
+    2-simplex base model into the exact existential shape used by the remaining
+    endpoint book-step theorem. **)
+proof -
+  from geotop_named_2simplex_exists_dev34 show ?thesis
+  proof (elim exE conjE)
+    fix \<sigma> :: "(real^2) set"
+    fix a b c :: "real^2"
+    assume h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+      and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+      and hab: "a \<noteq> b"
+      and hc: "c \<notin> {a, b}"
+    from geotop_two_vertex_endpoint_chain_named_2simplex_fan_model_dev34
+        [OF hL_linear hLlist h\<sigma> h\<sigma>V hab hc]
+    show ?thesis
+    proof (elim exE conjE)
+      fix F w' q' us T L' c' \<psi>
+      assume hF_linear: "geotop_is_linear_graph F"
+        and hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+        and hlen: "length us = length [w, q]"
+        and hbij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+        and hidx: "\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = us ! i"
+        and hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+        and h\<sigma>': "geotop_simplex_dim \<sigma> 2"
+        and hsub: "geotop_is_subdivision L' T"
+        and hcF: "c' \<notin> geotop_complex_vertices F"
+        and hvertices: "geotop_complex_vertices L' =
+          insert c' (geotop_complex_vertices F)"
+        and hc_simplex: "geotop_convex_hull {c'} \<in> L'"
+        and hboundary:
+          "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+        and hcone:
+          "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull (insert c' W) \<in> L')"
+    show ?thesis
+      apply (rule exI[where x="[w, q]"])
+      apply (rule exI[where x=F])
+      apply (rule exI[where x=w'])
+      apply (rule exI[where x=q'])
+      apply (rule exI[where x=us])
+      apply (rule exI[where x=T])
+      apply (rule exI[where x=\<sigma>])
+      apply (rule exI[where x=L'])
+      apply (rule exI[where x=c'])
+      apply (rule exI[where x=\<psi>])
+      using hLlist hF_linear hFlist hlen hbij hidx hT h\<sigma>' hsub hcF
+        hvertices hc_simplex hboundary hcone
+      by (by100 blast)
+    qed
+  qed
 qed
 
 lemma geotop_endpoint_chain_listing_convex_hull_in_L_cases_dev34:
