@@ -2379,6 +2379,19 @@ proof -
       using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
         hx_single by (by100 blast)
   qed
+  have hF_B_vertices_finite:
+      "finite (geotop_complex_vertices F_B)"
+    by (rule geotop_finite_complex_vertices_finite_dev34
+        [OF hF_B_complex hF_B_finite])
+  have hsource_vertices_card_le_F_B_vertices:
+      "card (geotop_complex_vertices L)
+        \<le> card (geotop_complex_vertices F_B)"
+  proof -
+    have "card S_B \<le> card (geotop_complex_vertices F_B)"
+      by (rule card_mono[OF hF_B_vertices_finite hS_B_subset_F_B_vertices])
+    thus ?thesis
+      using hS_B_card by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
