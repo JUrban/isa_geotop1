@@ -14014,36 +14014,6 @@ lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
     \<open>closed_segment w q\<close> is placed on a subdivided boundary arc of a
     2-simplex, and the adjacent boundary vertex is used as the fan vertex. **)
 proof -
-  have hchain_listing_base_if_finish:
-      "q = pathfinish \<gamma> \<Longrightarrow>
-        geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
-  proof -
-    assume hq_finish: "q = pathfinish \<gamma>"
-    have hq_endpoint: "geotop_graph_endpoint L q"
-      using hfinish_endpoint hq_finish by (by100 simp)
-    have hq_card: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
-      using geotop_graph_endpoint_singleton_and_card_one_dev34
-          [OF hL_linear hq_endpoint]
-      by (by100 blast)
-    show ?thesis
-      by (rule geotop_endpoint_chain_listing_two_vertex_dev34
-          [OF hL_linear hL_finite hconn hendpoint heL he_edge hw_e hq_ne
-            he_seg hqL hq_card])
-  qed
-  have hchain_listing_if_degree_one_or_two:
-      "(\<forall>x. {x} \<in> L \<longrightarrow>
-          card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
-          card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 2)
-      \<Longrightarrow> \<exists>vs. geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
-  proof -
-    assume hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
-        card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
-        card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 2"
-    show ?thesis
-      by (rule geotop_finite_connected_degree_one_or_two_endpoint_chain_listing_from_first_neighbor_dev34
-          [OF hL_linear hL_finite hconn hdegree12 hendpoint heL he_edge
-            hw_e hq_ne he_seg hqL])
-  qed
   have hchain_boundary_arc_fan_target:
       "\<exists>vs (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
         geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
