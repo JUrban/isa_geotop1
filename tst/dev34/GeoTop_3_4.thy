@@ -2293,6 +2293,92 @@ proof -
   have h\<sigma>_c_notin_open_edge_ab:
       "c\<^sub>\<sigma> \<notin> open_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
     using hc\<^sub>\<sigma>_notin_edge_ab segment_open_subset_closed by (by100 blast)
+  have hsource_vertices_card_ge3:
+      "3 \<le> card (geotop_complex_vertices L)"
+    using hsource_vertices_card_gt2 by (by100 linarith)
+  obtain T_extra where hT_extra_finite:
+        "finite T_extra"
+      and hT_extra_card:
+        "card T_extra = card (geotop_complex_vertices L) - 3"
+      and hT_extra_subset_open:
+        "T_extra \<subseteq> open_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+    using infinite_arbitrarily_large[OF h\<sigma>_open_edge_ab_infinite,
+      of "card (geotop_complex_vertices L) - 3"] by (by100 blast)
+  have hT_extra_subset_B_poly:
+      "T_extra \<subseteq> geotop_polyhedron ?B"
+    using hT_extra_subset_open h\<sigma>_open_edge_ab_subset_B_poly by (by100 blast)
+  have hT_extra_disjoint_named:
+      "T_extra \<inter> {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} = {}"
+    using hT_extra_subset_open h\<sigma>_c_notin_open_edge_ab
+    unfolding open_segment_def by (by100 blast)
+  define S_B where
+      "S_B = {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<union> T_extra"
+  have hS_B_finite:
+      "finite S_B"
+    unfolding S_B_def using hT_extra_finite by (by100 simp)
+  have hS_B_subset_B_poly:
+      "S_B \<subseteq> geotop_polyhedron ?B"
+  proof -
+    have hnamed_subset:
+        "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_polyhedron ?B"
+      using hB_vertices_eq_named hB_vertices_poly by (by100 simp)
+    show ?thesis
+      unfolding S_B_def using hnamed_subset hT_extra_subset_B_poly by (by100 blast)
+  qed
+  have hB_vertices_subset_S_B:
+      "geotop_complex_vertices ?B \<subseteq> S_B"
+    unfolding S_B_def using hB_vertices_eq_named by (by100 blast)
+  have hS_B_card:
+      "card S_B = card (geotop_complex_vertices L)"
+  proof -
+    have hnamed_card:
+        "card {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} = 3"
+      using hB_vertices_card hB_vertices_eq_named by (by100 simp)
+    have hdisj:
+        "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<inter> T_extra = {}"
+      using hT_extra_disjoint_named by (by100 blast)
+    have hcard_raw:
+        "card ({a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<union> T_extra)
+          = card {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} + card T_extra"
+      by (rule card_Un_disjoint[OF _ hT_extra_finite hdisj]) (by100 simp)
+    have hcard:
+        "card S_B = 3 + (card (geotop_complex_vertices L) - 3)"
+      using hcard_raw hnamed_card hT_extra_card unfolding S_B_def
+      by (by100 simp)
+    show ?thesis
+      using hcard hsource_vertices_card_ge3 by (by100 linarith)
+  qed
+  have htarget_prescribed_subdivision:
+      "\<exists>F. geotop_is_subdivision F ?B
+        \<and> finite F
+        \<and> (\<forall>x\<in>S_B. {x} \<in> F)
+        \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
+    using geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34
+      [OF h\<sigma> hS_B_finite hS_B_subset_B_poly]
+    by (by100 blast)
+  obtain F_B where hF_B_sub:
+        "geotop_is_subdivision F_B ?B"
+      and hF_B_finite:
+        "finite F_B"
+      and hS_B_vertices_in_F_B:
+        "\<forall>x\<in>S_B. {x} \<in> F_B"
+      and hB_old_vertices_in_F_B:
+        "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F_B"
+    using htarget_prescribed_subdivision by (by100 blast)
+  have hF_B_complex:
+      "geotop_is_complex F_B"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hF_B_sub])
+  have hS_B_subset_F_B_vertices:
+      "S_B \<subseteq> geotop_complex_vertices F_B"
+  proof
+    fix x
+    assume hx: "x \<in> S_B"
+    have hx_single: "{x} \<in> F_B"
+      using hS_B_vertices_in_F_B hx by (by100 blast)
+    show "x \<in> geotop_complex_vertices F_B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+        hx_single by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
