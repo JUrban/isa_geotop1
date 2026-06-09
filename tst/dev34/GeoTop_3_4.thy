@@ -4325,6 +4325,65 @@ proof -
         \<Longrightarrow> m = n"
     by (rule geotop_degree_two_oriented_edge_successor_current_next_index_unique_prefix
         [OF hF_B_linear hF_B_degree_two hs\<^sub>B hF_B_successor_state_inj])
+  have hsource_successor_vertex_index_unique:
+      "\<And>m n. m \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> n \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> fst ((geotop_oriented_edge_successor L ^^ m) s\<^sub>c)
+          = fst ((geotop_oriented_edge_successor L ^^ n) s\<^sub>c)
+        \<Longrightarrow> m = n"
+    by (rule geotop_degree_two_oriented_edge_successor_period_vertex_index_unique_prefix
+        [OF hL_linear hdegree_two hs\<^sub>c hp\<^sub>c_pos hp\<^sub>c_closed
+          hsource_successor_state_inj])
+  have hF_B_successor_vertex_index_unique:
+      "\<And>m n. m \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> n \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> fst ((geotop_oriented_edge_successor F_B ^^ m) s\<^sub>B)
+          = fst ((geotop_oriented_edge_successor F_B ^^ n) s\<^sub>B)
+        \<Longrightarrow> m = n"
+    by (rule geotop_degree_two_oriented_edge_successor_period_vertex_index_unique_prefix
+        [OF hF_B_linear hF_B_degree_two hs\<^sub>B hp\<^sub>B_pos hp\<^sub>B_closed
+          hF_B_successor_state_inj])
+  have hsource_successor_vertex_index_inj:
+      "inj_on (\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        {0..<p\<^sub>c}"
+    unfolding inj_on_def using hsource_successor_vertex_index_unique
+    by (by100 blast)
+  have hF_B_successor_vertex_index_inj:
+      "inj_on (\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        {0..<p\<^sub>B}"
+    unfolding inj_on_def using hF_B_successor_vertex_index_unique
+    by (by100 blast)
+  have hsource_successor_vertex_image_card_eq_period:
+      "card ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c}) = p\<^sub>c"
+  proof -
+    have "card ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c}) = card {0..<p\<^sub>c}"
+      by (rule card_image[OF hsource_successor_vertex_index_inj])
+    thus ?thesis
+      by (by100 simp)
+  qed
+  have hF_B_successor_vertex_image_card_eq_period:
+      "card ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) = p\<^sub>B"
+  proof -
+    have "card ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) = card {0..<p\<^sub>B}"
+      by (rule card_image[OF hF_B_successor_vertex_index_inj])
+    thus ?thesis
+      by (by100 simp)
+  qed
+  have hsource_successor_vertex_card_eq_period:
+      "card (geotop_complex_vertices L) = p\<^sub>c"
+    using hsource_successor_vertex_card
+      hsource_successor_vertex_image_card_eq_period by (by100 simp)
+  have hF_B_successor_vertex_card_eq_period:
+      "card (geotop_complex_vertices F_B) = p\<^sub>B"
+    using hF_B_successor_vertex_card
+      hF_B_successor_vertex_image_card_eq_period by (by100 simp)
+  have hsuccessor_period_match: "p\<^sub>c = p\<^sub>B"
+    using hsource_successor_vertex_card_eq_period
+      hF_B_successor_vertex_card_eq_period hF_B_vertices_card by (by100 simp)
   show ?thesis
     sorry
 qed
