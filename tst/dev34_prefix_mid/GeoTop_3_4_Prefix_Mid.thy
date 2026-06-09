@@ -10138,6 +10138,58 @@ proof -
             geotop_arc_interior C\<^sub>2 {P, R} = {}"
     by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
         [OF hJ hP hR hP_ne_R])
+  obtain C\<^sub>1 C\<^sub>2 where hD42_J_split: "J = C\<^sub>1 \<union> C\<^sub>2"
+    and hD42_C\<^sub>1C\<^sub>2_inter: "C\<^sub>1 \<inter> C\<^sub>2 = {P, R}"
+    and hD42_C\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {P, R}"
+    and hD42_C\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {P, R}"
+    and hD42_C\<^sub>1C\<^sub>2_int_disj:
+      "geotop_arc_interior C\<^sub>1 {P, R} \<inter>
+        geotop_arc_interior C\<^sub>2 {P, R} = {}"
+    using hD42_boundary_arc_split
+    by (elim exE conjE)
+  have hD42_A_misses_boundary_arc_interiors:
+      "geotop_arc_interior C\<^sub>1 {P, R} \<inter> A = {}
+        \<and> geotop_arc_interior C\<^sub>2 {P, R} \<inter> A = {}"
+  proof
+    have hC\<^sub>1_sub_J: "C\<^sub>1 \<subseteq> J"
+      using hD42_J_split by (by100 blast)
+    show "geotop_arc_interior C\<^sub>1 {P, R} \<inter> A = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx: "x \<in> geotop_arc_interior C\<^sub>1 {P, R} \<inter> A"
+      have hxC\<^sub>1: "x \<in> C\<^sub>1"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_PR: "x \<notin> {P, R}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hC\<^sub>1_sub_J hxC\<^sub>1 by (by100 blast)
+      have hxA: "x \<in> A"
+        using hx by (by100 blast)
+      have "x \<in> {P, R}"
+        using hAJ hxA hxJ by (by100 blast)
+      thus False
+        using hx_not_PR by (by100 blast)
+    qed
+    have hC\<^sub>2_sub_J: "C\<^sub>2 \<subseteq> J"
+      using hD42_J_split by (by100 blast)
+    show "geotop_arc_interior C\<^sub>2 {P, R} \<inter> A = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx: "x \<in> geotop_arc_interior C\<^sub>2 {P, R} \<inter> A"
+      have hxC\<^sub>2: "x \<in> C\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_PR: "x \<notin> {P, R}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hC\<^sub>2_sub_J hxC\<^sub>2 by (by100 blast)
+      have hxA: "x \<in> A"
+        using hx by (by100 blast)
+      have "x \<in> {P, R}"
+        using hAJ hxA hxJ by (by100 blast)
+      thus False
+        using hx_not_PR by (by100 blast)
+    qed
+  qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
