@@ -8002,6 +8002,80 @@ proof -
     using hsub hc_set by (by100 blast)
 qed
 
+lemma geotop_convex_hull_insert_inter_affine_base_dev34:
+  fixes A L :: "(real^2) set"
+  assumes hA_ne: "A \<noteq> {}"
+  assumes hA_L: "A \<subseteq> L"
+  assumes hL_aff: "affine L"
+  assumes hcL: "c \<notin> L"
+  shows "geotop_convex_hull (insert c A) \<inter> L = geotop_convex_hull A"
+proof
+  show "geotop_convex_hull (insert c A) \<inter> L \<subseteq> geotop_convex_hull A"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_convex_hull (insert c A) \<inter> L"
+    have hx_cone: "x \<in> convex hull (insert c A)"
+      using hx unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    have hxL: "x \<in> L"
+      using hx by (by100 simp)
+    obtain u v y where hu: "0 \<le> u"
+      and hv: "0 \<le> v"
+      and huv: "u + v = 1"
+      and hy: "y \<in> convex hull A"
+      and hx_eq: "x = u *\<^sub>R c + v *\<^sub>R y"
+      using hx_cone unfolding convex_hull_insert[OF hA_ne] by (by100 blast)
+    have hA_hull_L: "convex hull A \<subseteq> L"
+      by (rule hull_minimal[of A L convex, OF hA_L affine_imp_convex[OF hL_aff]])
+    have hyL: "y \<in> L"
+      using hA_hull_L hy by (by100 blast)
+    show "x \<in> geotop_convex_hull A"
+    proof (cases "u = 0")
+      case True
+      have "x = y"
+        using True huv hx_eq by (by100 simp)
+      thus ?thesis
+        using hy unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    next
+      case False
+      have hcoef: "(1 / u) + (1 - 1 / u) = 1"
+        by (by100 simp)
+      have hcoef_y: "v / u + (1 - 1 / u) = 0"
+        using huv False by (simp add: field_simps)
+      have hc_eq: "(1 / u) *\<^sub>R x + (1 - 1 / u) *\<^sub>R y = c"
+      proof -
+        have "(1 / u) *\<^sub>R x + (1 - 1 / u) *\<^sub>R y
+            = (1 / u) *\<^sub>R (u *\<^sub>R c + v *\<^sub>R y)
+              + (1 - 1 / u) *\<^sub>R y"
+          using hx_eq by (by100 simp)
+        also have "... = c + ((v / u) *\<^sub>R y + (1 - 1 / u) *\<^sub>R y)"
+          using False by (simp add: scaleR_add_left algebra_simps)
+        also have "... = c + (v / u + (1 - 1 / u)) *\<^sub>R y"
+          by (simp add: scaleR_left_distrib)
+        also have "... = c"
+          using hcoef_y by (by100 simp)
+        finally show ?thesis .
+      qed
+      have "c \<in> L"
+        using mem_affine[OF hL_aff hxL hyL hcoef] hc_eq by (by100 simp)
+      thus ?thesis
+        using hcL by (by100 blast)
+    qed
+  qed
+  show "geotop_convex_hull A \<subseteq> geotop_convex_hull (insert c A) \<inter> L"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_convex_hull A"
+    have hmono: "geotop_convex_hull A \<subseteq> geotop_convex_hull (insert c A)"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_mono) (by100 blast)
+    have hA_hull_L: "convex hull A \<subseteq> L"
+      by (rule hull_minimal[of A L convex, OF hA_L affine_imp_convex[OF hL_aff]])
+    have hxL: "x \<in> L"
+      using hx hA_hull_L unfolding geotop_convex_hull_eq_HOL by (by100 blast)
+    show "x \<in> geotop_convex_hull (insert c A) \<inter> L"
+      using hx hmono hxL by (by100 blast)
+  qed
+qed
+
 lemma geotop_boundary_subdivision_old_hull_ne_cone_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
@@ -15183,6 +15257,299 @@ proof -
         [OF hplace])
   show False
     using hc_poly hc_not_poly by (by100 blast)
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_old_vertex_hull_misses_apex_dev34:
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hA: "A \<subseteq> geotop_complex_vertices F"
+  shows "c \<notin> geotop_convex_hull A"
+proof -
+  obtain a b where hdata:
+      "geotop_simplex_vertices \<sigma> {a, b, c}
+      \<and> c \<notin> {a, b}
+      \<and> set us \<subseteq> closed_segment a b"
+    using hplace unfolding geotop_endpoint_boundary_edge_chain_on_simplex_dev34_def
+    by (by100 auto)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    using hdata by (by100 blast)
+  have hc_ab: "c \<notin> {a, b}"
+    using hdata by (by100 blast)
+  have hset: "set us \<subseteq> closed_segment a b"
+    using hdata by (by100 blast)
+  have hvertices: "geotop_complex_vertices F = set us"
+    using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hA_us: "A \<subseteq> set us"
+    using hA hvertices by (by100 blast)
+  have hA_base: "A \<subseteq> closed_segment a b"
+    using hA_us hset by (by100 blast)
+  have hconv_sub: "geotop_convex_hull A \<subseteq> closed_segment a b"
+  proof -
+    have hHOL: "convex hull A \<subseteq> closed_segment a b"
+      by (rule hull_minimal[OF hA_base convex_closed_segment])
+    show ?thesis
+      using hHOL geotop_convex_hull_eq_HOL[of A] by (by100 simp)
+  qed
+  have hc_not_base: "c \<notin> closed_segment a b"
+    by (rule geotop_2simplex_opposite_vertex_notin_closed_segment_dev34
+        [OF h\<sigma>V hc_ab])
+  show ?thesis
+  proof
+    assume hc_hull: "c \<in> geotop_convex_hull A"
+    have "c \<in> closed_segment a b"
+      using hconv_sub hc_hull by (by100 blast)
+    thus False
+      using hc_not_base by (by100 blast)
+  qed
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_old_vertex_hull_ne_cone_dev34:
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hA: "A \<subseteq> geotop_complex_vertices F"
+  shows "geotop_convex_hull A \<noteq> geotop_convex_hull (insert c B)"
+proof
+  assume heq: "geotop_convex_hull A = geotop_convex_hull (insert c B)"
+  have hc_cone: "c \<in> geotop_convex_hull (insert c B)"
+    by (rule geotop_convex_hull_insert_contains_insert_point_dev34)
+  have hc_hull: "c \<in> geotop_convex_hull A"
+    using heq hc_cone by (by100 simp)
+  have hc_not_hull: "c \<notin> geotop_convex_hull A"
+    by (rule geotop_endpoint_boundary_edge_chain_old_vertex_hull_misses_apex_dev34
+        [OF hFlist hplace hA])
+  show False
+    using hc_hull hc_not_hull by (by100 blast)
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_old_hull_iff_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hcF: "c \<notin> geotop_complex_vertices F"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hA: "A \<subseteq> geotop_complex_vertices F"
+  shows "geotop_convex_hull A \<in> F \<longleftrightarrow> geotop_convex_hull A \<in> L'"
+proof
+  assume hAF: "geotop_convex_hull A \<in> F"
+  show "geotop_convex_hull A \<in> L'"
+    by (rule geotop_boundary_cone_definition_old_hull_imp_dev34[OF hL hAF])
+next
+  assume hAL: "geotop_convex_hull A \<in> L'"
+  have hcases:
+      "geotop_convex_hull A = geotop_convex_hull {c}
+      \<or> geotop_convex_hull A \<in> F
+      \<or> (\<exists>B. B \<in> F \<and> B \<noteq> {}
+          \<and> geotop_convex_hull A = geotop_convex_hull (insert c B))"
+    by (rule geotop_boundary_cone_definition_member_cases_dev34[OF hL hAL])
+  show "geotop_convex_hull A \<in> F"
+  proof (cases "geotop_convex_hull A = geotop_convex_hull {c}")
+    case True
+    have hne: "geotop_convex_hull A \<noteq> geotop_convex_hull {c}"
+      by (rule geotop_old_vertices_hull_ne_new_singleton_dev34[OF hcF hA])
+    thus ?thesis
+      using True by (by100 blast)
+  next
+    case hnot_new: False
+    have hrest:
+        "geotop_convex_hull A \<in> F
+        \<or> (\<exists>B. B \<in> F \<and> B \<noteq> {}
+            \<and> geotop_convex_hull A = geotop_convex_hull (insert c B))"
+      using hcases hnot_new by (by100 blast)
+    show ?thesis
+    proof (cases "geotop_convex_hull A \<in> F")
+      case True
+      show ?thesis
+        using True .
+    next
+      case False
+      obtain B where hBF: "B \<in> F"
+        and hBne: "B \<noteq> {}"
+        and heq: "geotop_convex_hull A = geotop_convex_hull (insert c B)"
+        using hrest False by (by100 blast)
+      have hne: "geotop_convex_hull A \<noteq> geotop_convex_hull (insert c B)"
+        by (rule geotop_endpoint_boundary_edge_chain_old_vertex_hull_ne_cone_dev34
+            [OF hFlist hplace hA])
+      show ?thesis
+        using heq hne by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_cone_hull_iff_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hcF: "c \<notin> geotop_complex_vertices F"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hA_fin: "finite A"
+  assumes hA_ne: "A \<noteq> {}"
+  assumes hA: "A \<subseteq> geotop_complex_vertices F"
+  shows "geotop_convex_hull A \<in> F
+      \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'"
+proof
+  assume hAF: "geotop_convex_hull A \<in> F"
+  show "geotop_convex_hull (insert c A) \<in> L'"
+    by (rule geotop_boundary_cone_definition_cone_hull_imp_dev34
+        [OF hL hAF hA_ne])
+next
+  assume hconeL: "geotop_convex_hull (insert c A) \<in> L'"
+  obtain a b where hdata:
+      "geotop_simplex_vertices \<sigma> {a, b, c}
+      \<and> c \<notin> {a, b}
+      \<and> set us \<subseteq> closed_segment a b
+      \<and> F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+    using hplace unfolding geotop_endpoint_boundary_edge_chain_on_simplex_dev34_def
+    by (by100 auto)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    using hdata by (by100 blast)
+  have hc_ab: "c \<notin> {a, b}"
+    using hdata by (by100 blast)
+  have hset: "set us \<subseteq> closed_segment a b"
+    using hdata by (by100 blast)
+  have hFdef:
+      "F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+    using hdata by (by100 blast)
+  have hvertices: "geotop_complex_vertices F = set us"
+    using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hseg_aff: "closed_segment a b \<subseteq> affine hull {a, b}"
+  proof -
+    have hseg_hull: "closed_segment a b = convex hull {a, b}"
+      by (rule segment_convex_hull)
+    have "convex hull {a, b} \<subseteq> affine hull {a, b}"
+      by (rule convex_hull_subset_affine_hull)
+    thus ?thesis
+      using hseg_hull by (by100 simp)
+  qed
+  have hA_base: "A \<subseteq> closed_segment a b"
+    using hA hvertices hset by (by100 blast)
+  have hA_aff: "A \<subseteq> affine hull {a, b}"
+    using hA_base hseg_aff by (by100 blast)
+  have hc_not_aff: "c \<notin> affine hull {a, b}"
+    by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix
+        [OF h\<sigma>V hc_ab])
+  have hcases:
+      "geotop_convex_hull (insert c A) = geotop_convex_hull {c}
+      \<or> geotop_convex_hull (insert c A) \<in> F
+      \<or> (\<exists>B. B \<in> F \<and> B \<noteq> {}
+          \<and> geotop_convex_hull (insert c A)
+            = geotop_convex_hull (insert c B))"
+    by (rule geotop_boundary_cone_definition_member_cases_dev34[OF hL hconeL])
+  show "geotop_convex_hull A \<in> F"
+  proof (cases "geotop_convex_hull (insert c A) = geotop_convex_hull {c}")
+    case hnew: True
+    obtain x where hx: "x \<in> A"
+      using hA_ne by (by100 blast)
+    have hxF: "x \<in> geotop_complex_vertices F"
+      using hA hx by (by100 blast)
+    have hxc: "x \<noteq> c"
+      using hcF hxF by (by100 blast)
+    have hsub: "insert c A \<subseteq> geotop_convex_hull (insert c A)"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+    have hx_cone: "x \<in> geotop_convex_hull (insert c A)"
+      using hsub hx by (by100 blast)
+    have hsing: "geotop_convex_hull {c} = {c}"
+      using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+    have "x = c"
+      using hnew hsing hx_cone by (by100 blast)
+    thus ?thesis
+      using hxc by (by100 blast)
+  next
+    case hnot_new: False
+    have hrest:
+        "geotop_convex_hull (insert c A) \<in> F
+        \<or> (\<exists>B. B \<in> F \<and> B \<noteq> {}
+            \<and> geotop_convex_hull (insert c A)
+              = geotop_convex_hull (insert c B))"
+      using hcases hnot_new by (by100 blast)
+    show ?thesis
+    proof (cases "geotop_convex_hull (insert c A) \<in> F")
+      case hconeF: True
+      have False
+        by (rule geotop_endpoint_boundary_edge_chain_cone_hull_not_old_dev34
+            [OF hplace hconeF])
+      thus ?thesis
+        by (by100 blast)
+    next
+      case hnot_old: False
+      obtain B where hBF: "B \<in> F"
+        and hBne: "B \<noteq> {}"
+        and hcone_eq:
+          "geotop_convex_hull (insert c A)
+            = geotop_convex_hull (insert c B)"
+        using hrest hnot_old by (by100 blast)
+      have hB_cases:
+          "(\<exists>x\<in>set us. B = {x})
+          \<or> (\<exists>i\<in>{0..<length us - 1}.
+              B = closed_segment (us ! i) (us ! Suc i))"
+        using hBF unfolding hFdef by (by100 blast)
+      have hB_base_conv: "B \<subseteq> closed_segment a b \<and> convex B"
+      proof (rule disjE[OF hB_cases])
+        assume "\<exists>x\<in>set us. B = {x}"
+        then obtain x where hxus: "x \<in> set us" and hB: "B = {x}"
+          by (by100 blast)
+        have "x \<in> closed_segment a b"
+          using hset hxus by (by100 blast)
+        thus ?thesis
+          using hB by (by100 simp)
+      next
+        assume "\<exists>i\<in>{0..<length us - 1}.
+              B = closed_segment (us ! i) (us ! Suc i)"
+        then obtain i where hi_set: "i \<in> {0..<length us - 1}"
+          and hB: "B = closed_segment (us ! i) (us ! Suc i)"
+          by (by100 blast)
+        have hi: "i < length us"
+          using hi_set by (by100 simp)
+        have hSi: "Suc i < length us"
+          using hi_set by (by100 simp)
+        have hui: "us ! i \<in> closed_segment a b"
+          using hset nth_mem[OF hi] by (by100 blast)
+        have huSi: "us ! Suc i \<in> closed_segment a b"
+          using hset nth_mem[OF hSi] by (by100 blast)
+        have hseg_sub:
+            "closed_segment (us ! i) (us ! Suc i) \<subseteq> closed_segment a b"
+          by (rule closed_segment_subset[OF hui huSi convex_closed_segment])
+        show ?thesis
+          using hB hseg_sub convex_closed_segment by (by100 blast)
+      qed
+      have hB_base: "B \<subseteq> closed_segment a b"
+        using hB_base_conv by (by100 blast)
+      have hB_conv: "convex B"
+        using hB_base_conv by (by100 blast)
+      have hB_aff: "B \<subseteq> affine hull {a, b}"
+        using hB_base hseg_aff by (by100 blast)
+      have hB_hull: "geotop_convex_hull B = B"
+        using hB_conv geotop_convex_hull_eq_HOL[of B] hull_same[of convex B]
+        by (by100 simp)
+      have hleft:
+          "geotop_convex_hull (insert c A) \<inter> affine hull {a, b}
+            = geotop_convex_hull A"
+        by (rule geotop_convex_hull_insert_inter_affine_base_dev34
+            [OF hA_ne hA_aff affine_affine_hull hc_not_aff])
+      have hright:
+          "geotop_convex_hull (insert c B) \<inter> affine hull {a, b}
+            = geotop_convex_hull B"
+        by (rule geotop_convex_hull_insert_inter_affine_base_dev34
+            [OF hBne hB_aff affine_affine_hull hc_not_aff])
+      have "geotop_convex_hull A = geotop_convex_hull B"
+        using hcone_eq hleft hright by (by100 simp)
+      hence "geotop_convex_hull A = B"
+        using hB_hull by (by100 simp)
+      thus ?thesis
+        using hBF by (by100 simp)
+    qed
+  qed
 qed
 
 definition geotop_segment_chain_vertices_dev34 ::
