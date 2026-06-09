@@ -15538,6 +15538,59 @@ proof
     using hballU hx_poly_ball_s by (by100 blast)
 qed
 
+lemma geotop_edge_rel_interior_point_in_small_ball_dev34:
+  fixes e :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hs: "0 < s"
+  obtains y where "y \<in> rel_interior e" "0 < dist p y" "dist p y < s"
+  (**
+    Edge-local outer witness reservoir: every edge-interior point has other
+    edge-interior points arbitrarily close to it. **)
+proof -
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain[OF hedge])
+  have hrel: "rel_interior e = open_segment a b"
+    using he_seg hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have hp_open: "p \<in> open_segment a b"
+    using hp hrel by (by100 simp)
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    using hp_open unfolding in_segment by (by100 auto)
+  have h1mt: "0 < 1 - t"
+    using ht1 by (by100 linarith)
+  have hnorm_pos: "0 < norm (b - a)"
+    using hab by (by100 simp)
+  define u where "u = min (min t (1 - t)) (s / norm (b - a)) / 2"
+  have hu0: "0 < u"
+    unfolding u_def using ht0 h1mt hs hnorm_pos by (by100 simp)
+  have hut: "u < t"
+    unfolding u_def using ht0 h1mt hs hnorm_pos by (by100 simp)
+  have hu1mt: "u < 1 - t"
+    unfolding u_def using ht0 h1mt hs hnorm_pos by (by100 simp)
+  have hus: "u * norm (b - a) < s"
+    unfolding u_def using ht0 h1mt hs hnorm_pos by (by100 simp)
+  define y where "y = p + u *\<^sub>R (b - a)"
+  have htu0: "0 < t + u"
+    using ht0 hu0 by (by100 linarith)
+  have htu1: "t + u < 1"
+    using hu1mt by (by100 linarith)
+  have hy_eq: "y = (1 - (t + u)) *\<^sub>R a + (t + u) *\<^sub>R b"
+    unfolding y_def using hp_eq by (simp add: algebra_simps scaleR_diff_right)
+  have hy_open: "y \<in> open_segment a b"
+    unfolding in_segment using hab htu0 htu1 hy_eq by (by100 blast)
+  have hy_rel: "y \<in> rel_interior e"
+    using hy_open hrel by (by100 simp)
+  have hy_dist_eq: "dist p y = u * norm (b - a)"
+    unfolding y_def using hu0 by (by100 simp)
+  have hy_dist_pos: "0 < dist p y"
+    using hy_dist_eq hu0 hnorm_pos by (by100 simp)
+  have hy_dist_lt: "dist p y < s"
+    using hy_dist_eq hus by (by100 simp)
+  show ?thesis
+    by (rule that[OF hy_rel hy_dist_pos hy_dist_lt])
+qed
+
 lemma geotop_distance_radius_partition_not_connected_dev34:
   fixes M :: "(real^2) set"
   assumes hxM: "x \<in> M"
@@ -15784,6 +15837,69 @@ proof -
         [OF hlocal_poly_eq_\<sigma> hUsubM hr hrs hp_in hp_dist hy hy_outer])
 qed
 
+lemma geotop_edge_collar_crosscut_outer_radius_exists_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  obtains r y where
+    "0 < r"
+    "r < s"
+    "y \<in> U - (sphere p r \<inter> \<sigma>)"
+    "r < dist p y"
+    "\<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+      (subspace_topology UNIV geotop_euclidean_topology
+        (U - (sphere p r \<inter> \<sigma>)))"
+  (**
+    Edge-side outer witness for the one-sided semicircle proof: choose a
+    nearby edge point in the collar and take half of its radius. **)
+proof -
+  obtain y where hy_rel: "y \<in> rel_interior e"
+    and hy_dist_pos: "0 < dist p y"
+    and hy_dist_lt_s: "dist p y < s"
+    by (rule geotop_edge_rel_interior_point_in_small_ball_dev34[OF hedge hp hs])
+  define r where "r = dist p y / 2"
+  have hr: "0 < r"
+    unfolding r_def using hy_dist_pos by (by100 simp)
+  have hrs: "r < s"
+    unfolding r_def using hy_dist_pos hy_dist_lt_s by (by100 linarith)
+  have hy_outer: "r < dist p y"
+    unfolding r_def using hy_dist_pos by (by100 simp)
+  have hy_e: "y \<in> e"
+    using hy_rel rel_interior_subset by (by100 blast)
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
+  have hy_\<sigma>: "y \<in> \<sigma>"
+    using hy_e he_sub_\<sigma> by (by100 blast)
+  have hy_ball: "y \<in> ball p s"
+    using hy_dist_lt_s by (by100 simp)
+  have hy_ball_sigma: "y \<in> ball p s \<inter> \<sigma>"
+    using hy_ball hy_\<sigma> by (by100 blast)
+  have hy_ball_poly: "y \<in> ball p s \<inter> geotop_polyhedron K"
+    using hlocal_poly_eq_\<sigma> hy_ball_sigma by (by100 blast)
+  have hy_poly_ball: "y \<in> geotop_polyhedron K \<inter> ball p s"
+    using hy_ball_poly by (by100 blast)
+  have hyU: "y \<in> U"
+    using hballU hy_poly_ball by (by100 blast)
+  have hy_not_crosscut: "y \<notin> sphere p r \<inter> \<sigma>"
+    using hy_outer by (by100 simp)
+  have hy_Uminus: "y \<in> U - (sphere p r \<inter> \<sigma>)"
+    using hyU hy_not_crosscut by (by100 blast)
+  have hsep: "\<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+      (subspace_topology UNIV geotop_euclidean_topology
+        (U - (sphere p r \<inter> \<sigma>)))"
+    by (rule geotop_edge_collar_crosscut_outer_witness_not_connected_dev34
+        [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU hUsubM
+            hr hrs hy_Uminus hy_outer])
+  show ?thesis
+    by (rule that[OF hr hrs hy_Uminus hy_outer hsep])
+qed
+
 lemma geotop_connected_collar_crosscut_radius_crossing_contradiction_dev34:
   fixes K :: "(real^2) set set" and \<sigma> U C :: "(real^2) set"
   assumes hlocal_poly_eq_\<sigma>:
@@ -15844,6 +15960,18 @@ lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
     inner cap to the outer side first meets \<open>sphere p r\<close>, and the local
     equality on the larger collar ball identifies that crossing with \<open>A\<close>. **)
 proof -
+  have hsmall_crosscut_arc_outer_book:
+      "\<exists>r y. 0 < r \<and> r < s
+        \<and> geotop_is_arc (sphere p r \<inter> \<sigma>)
+            (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))
+        \<and> y \<in> U - (sphere p r \<inter> \<sigma>)
+        \<and> r < dist p y"
+    (**
+      Remaining metric simplex geometry: choose the radius small relative to
+      the edge endpoints and the opposite side of \<open>\<sigma>\<close>, so the sphere cuts
+      \<open>\<sigma>\<close> in the standard one-sided semicircle, and keep an edge-side point
+      outside that radius. **)
+    sorry
   have hsmall_crosscut_book:
       "\<exists>r. 0 < r \<and> r < s
         \<and> geotop_is_arc (sphere p r \<inter> \<sigma>)
@@ -15856,7 +15984,23 @@ proof -
       endpoints and the opposite side of \<open>\<sigma>\<close>, so the sphere cuts \<open>\<sigma>\<close> in the
       standard one-sided semicircle.  Then use the radius-crossing argument in
       the collar \<open>ball p s\<close>. **)
-    sorry
+  proof -
+    obtain r y where hr: "0 < r" and hrs: "r < s"
+      and hA_arc: "geotop_is_arc (sphere p r \<inter> \<sigma>)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (sphere p r \<inter> \<sigma>))"
+      and hy: "y \<in> U - (sphere p r \<inter> \<sigma>)"
+      and hy_outer: "r < dist p y"
+      using hsmall_crosscut_arc_outer_book by (by100 blast)
+    have hA_sep: "\<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+        (subspace_topology UNIV geotop_euclidean_topology
+          (U - (sphere p r \<inter> \<sigma>)))"
+      by (rule geotop_edge_collar_crosscut_outer_witness_not_connected_dev34
+          [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU hUsubM
+              hr hrs hy hy_outer])
+    show ?thesis
+      using hr hrs hA_arc hA_sep by (by100 blast)
+  qed
   obtain r where hr: "0 < r" and hrs: "r < s"
       and hA_arc: "geotop_is_arc (sphere p r \<inter> \<sigma>)
         (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))"
