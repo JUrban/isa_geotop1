@@ -10472,6 +10472,97 @@ proof -
         hQ'_cut hS'_cut hsame_imp
       by (intro exI conjI)
   qed
+  have hD42_different_component_open_split:
+      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+        U\<^sub>Q0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+        \<and> Q' \<in> geotop_polygon_interior J - A
+        \<and> S' \<in> geotop_polygon_interior J - A
+        \<and> (S' \<notin> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'
+            \<longrightarrow> (\<exists>V W. V \<in> geotop_euclidean_topology
+              \<and> W \<in> geotop_euclidean_topology
+              \<and> V \<subseteq> geotop_polygon_interior J - A
+              \<and> W \<subseteq> geotop_polygon_interior J - A
+              \<and> Q' \<in> V \<and> S' \<in> W
+              \<and> V \<inter> W = {}
+              \<and> geotop_polygon_interior J - A = V \<union> W))"
+  proof -
+    obtain Q' S' U\<^sub>Q0 U\<^sub>S0 where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+      and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+      and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+      and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+      and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+      using hD42_side_points by (elim exE conjE)
+    have hdiff_imp:
+      "S' \<notin> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - A) Q'
+        \<longrightarrow> (\<exists>V W. V \<in> geotop_euclidean_topology
+          \<and> W \<in> geotop_euclidean_topology
+          \<and> V \<subseteq> geotop_polygon_interior J - A
+          \<and> W \<subseteq> geotop_polygon_interior J - A
+          \<and> Q' \<in> V \<and> S' \<in> W
+          \<and> V \<inter> W = {}
+          \<and> geotop_polygon_interior J - A = V \<union> W)"
+    proof
+      assume hS'_not_comp:
+        "S' \<notin> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - A) Q'"
+      let ?U = "geotop_polygon_interior J - A"
+      have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+      have hS'_sing_conn: "top1_connected_on {S'}
+          (subspace_topology UNIV geotop_euclidean_topology {S'})"
+        by (rule top1_connected_on_singleton[OF hTU], simp)
+      have hS'_compS:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?U S'"
+        by (rule geotop_self_in_component_at[OF hS'_cut hS'_sing_conn])
+      have hcomp_neq:
+        "geotop_component_at UNIV geotop_euclidean_topology ?U Q' \<noteq>
+         geotop_component_at UNIV geotop_euclidean_topology ?U S'"
+      proof
+        assume heq:
+          "geotop_component_at UNIV geotop_euclidean_topology ?U Q' =
+           geotop_component_at UNIV geotop_euclidean_topology ?U S'"
+        have "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?U Q'"
+          using heq hS'_compS by (by100 simp)
+        thus False
+          using hS'_not_comp by (by100 blast)
+      qed
+      obtain V W where hU_eq: "?U = V \<union> W"
+        and hVW_disj: "V \<inter> W = {}"
+        and hV_open: "V \<in> geotop_euclidean_topology"
+        and hW_open: "W \<in> geotop_euclidean_topology"
+        and hQ'_V: "Q' \<in> V"
+        and hS'_W: "S' \<in> W"
+        using Theorem_GT_4_1[OF hcut_open hQ'_cut hS'_cut hcomp_neq]
+        by (elim exE conjE)
+      have hV_sub: "V \<subseteq> ?U"
+        using hU_eq by (by100 blast)
+      have hW_sub: "W \<subseteq> ?U"
+        using hU_eq by (by100 blast)
+      show "\<exists>V W. V \<in> geotop_euclidean_topology
+          \<and> W \<in> geotop_euclidean_topology
+          \<and> V \<subseteq> geotop_polygon_interior J - A
+          \<and> W \<subseteq> geotop_polygon_interior J - A
+          \<and> Q' \<in> V \<and> S' \<in> W
+          \<and> V \<inter> W = {}
+          \<and> geotop_polygon_interior J - A = V \<union> W"
+        using hV_open hW_open hV_sub hW_sub hQ'_V hS'_W hVW_disj hU_eq
+        by (intro exI conjI)
+    qed
+    show ?thesis
+      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
+        hQ'_cut hS'_cut hdiff_imp
+      by (intro exI conjI)
+  qed
   have hD42_theta_component_book_step:
       "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
         \<and> U\<^sub>S \<in> geotop_euclidean_topology
