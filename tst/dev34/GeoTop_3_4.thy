@@ -15515,6 +15515,29 @@ proof -
     using htop_img hcomp by (by100 blast)
 qed
 
+lemma geotop_sphere_simplex_crosscut_subset_domain_from_collar_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> U :: "(real^2) set"
+  assumes hr: "0 < r"
+  assumes hrs: "r < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  shows "sphere p r \<inter> \<sigma> \<subseteq> U"
+proof
+  fix x
+  assume hx: "x \<in> sphere p r \<inter> \<sigma>"
+  have hx_ball_s: "x \<in> ball p s"
+    using hx hr hrs by (by100 simp)
+  have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
+    using hx hx_ball_s by (by100 blast)
+  have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
+    using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
+  have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
+    using hx_ball_poly_s by (by100 blast)
+  show "x \<in> U"
+    using hballU hx_poly_ball_s by (by100 blast)
+qed
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15563,20 +15586,8 @@ proof -
     using hsmall_crosscut_book by (by100 blast)
   let ?A = "sphere p r \<inter> \<sigma>"
   have hA_subU: "?A \<subseteq> U"
-  proof
-    fix x
-    assume hx: "x \<in> ?A"
-    have hx_ball_s: "x \<in> ball p s"
-      using hx hr hrs by (by100 simp)
-    have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
-      using hx hx_ball_s by (by100 blast)
-    have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
-      using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
-    have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
-      using hx_ball_poly_s by (by100 blast)
-    show "x \<in> U"
-      using hballU hx_poly_ball_s by (by100 blast)
-  qed
+    by (rule geotop_sphere_simplex_crosscut_subset_domain_from_collar_dev34
+        [OF hr hrs hlocal_poly_eq_\<sigma> hballU])
   have hp_\<sigma>: "p \<in> \<sigma>"
   proof -
     have hp_e: "p \<in> e"
