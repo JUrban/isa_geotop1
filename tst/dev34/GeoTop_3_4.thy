@@ -12371,6 +12371,51 @@ proof -
     using hF_linear hF_finite hlisting by (by100 blast)
 qed
 
+lemma geotop_two_vertex_endpoint_chain_target_matching_dev34:
+  fixes L F :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hLlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+  assumes hab: "a \<noteq> b"
+  defines "F \<equiv> {{a}, {b}, closed_segment a b}"
+  defines "\<psi> \<equiv> (\<lambda>x. if x = w then a else b)"
+  shows "geotop_is_linear_graph F
+    \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]
+    \<and> length [a, b] = length [w, q]
+    \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+    \<and> (\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = [a, b] ! i)"
+  (**
+    Two-vertex endpoint-chain target matching.  This packages the book's
+    indexwise identification of the source base chain with the single target
+    boundary edge; the cone/fan construction is a separate target-side step. **)
+proof -
+  have htarget:
+      "geotop_is_linear_graph F
+      \<and> finite F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]"
+    by (rule geotop_two_point_segment_endpoint_chain_listing_dev34
+        [OF hab F_def])
+  have hF_linear: "geotop_is_linear_graph F"
+    using htarget by (by100 blast)
+  have hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]"
+    using htarget by (by100 blast)
+  have hwq: "w \<noteq> q"
+    using hLlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 simp)
+  have hL_vertices: "geotop_complex_vertices L = {w, q}"
+    using hLlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 simp)
+  have hF_vertices: "geotop_complex_vertices F = {a, b}"
+    using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 simp)
+  have hbij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+    using hL_vertices hF_vertices hwq hab
+    unfolding \<psi>_def bij_betw_def by (by100 simp)
+  have hidx: "\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = [a, b] ! i"
+    using hwq unfolding \<psi>_def by (by100 simp)
+  show ?thesis
+    using hF_linear hFlist hbij hidx by (by100 simp)
+qed
+
 lemma geotop_endpoint_chain_listing_convex_hull_in_L_cases_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
