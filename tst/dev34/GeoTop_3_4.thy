@@ -15904,6 +15904,24 @@ proof -
         [OF hlocal_poly_eq_\<sigma> hUsubM hz_Uminus hz_ball hz_radius])
 qed
 
+lemma geotop_edge_simplex_small_sphere_arc_radius_bound_exists_dev34:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  shows "\<exists>eps>0. \<forall>r. 0 < r \<and> r < eps \<longrightarrow>
+      geotop_is_arc (sphere p r \<inter> \<sigma>)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (sphere p r \<inter> \<sigma>))"
+  (**
+    Small-radius semicircle geometry from Moise Lemma 3.  Choose \<open>eps\<close>
+    smaller than the distances from \<open>p\<close> to the two endpoints of the edge
+    face and to the opposite side of the 2-simplex.  Then every sphere of
+    radius less than \<open>eps\<close> meets \<open>\<sigma>\<close> in the standard one-sided semicircle,
+    hence in an arc. **)
+  sorry
+
 lemma geotop_edge_simplex_small_sphere_arc_edge_outer_witness_exists_dev34:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15924,7 +15942,39 @@ lemma geotop_edge_simplex_small_sphere_arc_edge_outer_witness_exists_dev34:
     little farther along the same edge.  This contains no collar-domain
     transfer; it is only the Euclidean 2-simplex geometry of the book's
     semicircle crosscut. **)
-  sorry
+proof -
+  obtain eps where heps: "0 < eps"
+    and harc_small: "\<forall>r. 0 < r \<and> r < eps \<longrightarrow>
+      geotop_is_arc (sphere p r \<inter> \<sigma>)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (sphere p r \<inter> \<sigma>))"
+    using geotop_edge_simplex_small_sphere_arc_radius_bound_exists_dev34
+      [OF hedge hp h\<sigma>2 h\<sigma>face]
+    by (by100 blast)
+  have hmin_pos: "0 < min s eps"
+    using hs heps by (by100 simp)
+  obtain y where hy_rel: "y \<in> rel_interior e"
+    and hy_dist_pos: "0 < dist p y"
+    and hy_dist_lt_min: "dist p y < min s eps"
+    by (rule geotop_edge_rel_interior_point_in_small_ball_dev34
+        [OF hedge hp hmin_pos])
+  define r where "r = dist p y / 2"
+  have hr: "0 < r"
+    unfolding r_def using hy_dist_pos by (by100 simp)
+  have hrs: "r < s"
+    unfolding r_def using hy_dist_pos hy_dist_lt_min by (by100 linarith)
+  have hreps: "r < eps"
+    unfolding r_def using hy_dist_pos hy_dist_lt_min by (by100 linarith)
+  have hA_arc: "geotop_is_arc (sphere p r \<inter> \<sigma>)
+      (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))"
+    using harc_small hr hreps by (by100 blast)
+  have hy_outer: "r < dist p y"
+    unfolding r_def using hy_dist_pos by (by100 simp)
+  have hy_dist_s: "dist p y < s"
+    using hy_dist_lt_min by (by100 linarith)
+  show ?thesis
+    using hr hrs hA_arc hy_rel hy_outer hy_dist_s by (by100 blast)
+qed
 
 lemma geotop_edge_simplex_small_sphere_arc_outer_radius_exists_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
