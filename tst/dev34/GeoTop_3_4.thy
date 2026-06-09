@@ -15625,6 +15625,31 @@ proof -
     using hx by (by100 blast)
 qed
 
+lemma geotop_collar_point_outside_crosscut_radius_lt_or_gt_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> U :: "(real^2) set"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hx: "x \<in> U - (sphere p r \<inter> \<sigma>)"
+  assumes hx_ball: "x \<in> ball p s"
+  shows "dist p x < r \<or> r < dist p x"
+  (**
+    Strict radius dichotomy inside the collar, after deleting the spherical
+    crosscut.  This is the local form used in the first-crossing separation
+    argument. **)
+proof (cases "dist p x = r")
+  case True
+  have False
+    by (rule geotop_collar_point_outside_crosscut_not_on_radius_dev34
+        [OF hlocal_poly_eq_\<sigma> hUsubM hx hx_ball True])
+  thus ?thesis
+    by (rule FalseE)
+next
+  case False
+  show ?thesis
+    using False by (by100 linarith)
+qed
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
