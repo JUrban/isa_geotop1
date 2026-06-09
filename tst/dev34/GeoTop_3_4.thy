@@ -15333,6 +15333,69 @@ proof -
     using hmid by (rule Int_closed_segment[OF disjI1])
 qed
 
+lemma geotop_segment_chain_vertex_on_edge_endpoint_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  assumes hk: "k < length us"
+  assumes hi: "i < length us - 1"
+  assumes hx: "us ! k \<in> closed_segment (us ! i) (us ! Suc i)"
+  shows "k = i \<or> k = Suc i"
+proof -
+  have hlen: "length us = n"
+    unfolding us_def geotop_segment_chain_vertices_dev34_def by (by100 simp)
+  have hk_n: "k < n"
+    using hk hlen by (by100 simp)
+  have hi_n: "i < n"
+    using hi hlen by (by100 linarith)
+  have hSuc_n: "Suc i < n"
+    using hi hlen by (by100 linarith)
+  let ?d = "real (n - 1)"
+  let ?ti = "real i / ?d"
+  let ?tk = "real k / ?d"
+  let ?ts = "real (Suc i) / ?d"
+  have hti_unit: "?ti \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hi_n])
+  have htk_unit: "?tk \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hk_n])
+  have hts_unit: "?ts \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hSuc_n])
+  have hden_pos: "0 < ?d"
+    using hlong by (by100 simp)
+  have hti_le_ts: "?ti \<le> ?ts"
+    using hden_pos by (simp add: divide_right_mono)
+  have hi_nth: "us ! i = linepath a b ?ti"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hi_n])
+  have hk_nth: "us ! k = linepath a b ?tk"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hk_n])
+  have hSuc_nth: "us ! Suc i = linepath a b ?ts"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hSuc_n])
+  have hx_param:
+      "linepath a b ?tk \<in> closed_segment (linepath a b ?ti) (linepath a b ?ts)"
+    using hx hi_nth hk_nth hSuc_nth by (by100 simp)
+  have hbounds: "?ti \<le> ?tk \<and> ?tk \<le> ?ts"
+    by (rule geotop_linepath_subsegment_param_bounds_dev34
+        [OF hab hti_unit htk_unit hts_unit hti_le_ts hx_param])
+  have hle_left: "?ti \<le> ?tk"
+    using hbounds by (by100 blast)
+  have hle_right: "?tk \<le> ?ts"
+    using hbounds by (by100 blast)
+  have hik_real: "real i \<le> real k"
+    using hle_left hden_pos by (simp add: pos_divide_le_eq)
+  have hks_real: "real k \<le> real (Suc i)"
+    using hle_right hden_pos by (simp add: pos_divide_le_eq)
+  have hik: "i \<le> k"
+    using hik_real by (by100 simp)
+  have hks: "k \<le> Suc i"
+    using hks_real by (by100 simp)
+  show ?thesis
+    using hik hks by (by100 linarith)
+qed
+
 lemma geotop_segment_chain_vertices_basic_dev34:
   fixes a b :: "real^2"
   assumes hab: "a \<noteq> b"
