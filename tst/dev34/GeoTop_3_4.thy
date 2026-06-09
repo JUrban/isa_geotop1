@@ -3284,6 +3284,28 @@ proof -
     show ?thesis
       unfolding S_B_def using hnamed_subset hT_extra_subset_B_poly by (by100 blast)
   qed
+  have hT_extra_subset_closed_edge_ab:
+      "T_extra \<subseteq> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+    using hT_extra_subset_open segment_open_subset_closed by (by100 blast)
+  have hS_B_subset_named_edges:
+      "S_B \<subseteq> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+  proof -
+    have hnamed:
+        "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}
+          \<subseteq> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+            closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+            closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+      by (by100 auto)
+    have hT:
+        "T_extra \<subseteq> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+      using hT_extra_subset_closed_edge_ab by (by100 blast)
+    show ?thesis
+      unfolding S_B_def using hnamed hT by (by100 blast)
+  qed
   have hB_vertices_subset_S_B:
       "geotop_complex_vertices ?B \<subseteq> S_B"
     unfolding S_B_def using hB_vertices_eq_named by (by100 blast)
@@ -3317,6 +3339,11 @@ proof -
   have hu\<^sub>B_list_set:
       "set u\<^sub>B_list = S_B"
     unfolding u\<^sub>B_list_def S_B_def using hxs\<^sub>B_set by (by100 simp)
+  have hu\<^sub>B_list_set_subset_named_edges:
+      "set u\<^sub>B_list \<subseteq> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+    using hu\<^sub>B_list_set hS_B_subset_named_edges by (by100 simp)
   have hu\<^sub>B_list_distinct:
       "distinct u\<^sub>B_list"
     unfolding u\<^sub>B_list_def
