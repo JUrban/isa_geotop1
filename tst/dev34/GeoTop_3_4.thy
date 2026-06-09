@@ -13847,6 +13847,70 @@ next
           hq_ne he_seg hqL])
 qed
 
+lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_chain_target_dev34:
+  fixes L F L' :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes htarget:
+    "geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  shows "\<exists>vs F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+      geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+      \<and> geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Endpoint model packaging in the exact split used by the book proof: once
+    the source graph is listed as an oriented endpoint chain, the remaining
+    target work is only to build a same-length boundary-arc chain and its fan
+    subdivision. **)
+proof -
+  show ?thesis
+    apply (rule exI[where x=vs])
+    apply (rule exI[where x=F])
+    apply (rule exI[where x=w'])
+    apply (rule exI[where x=q'])
+    apply (rule exI[where x=us])
+    apply (rule exI[where x=T])
+    apply (rule exI[where x=\<sigma>])
+    apply (rule exI[where x=L'])
+    apply (rule exI[where x=c])
+    apply (rule exI[where x=\<psi>])
+    using hlist htarget
+    by (by100 blast)
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
