@@ -15547,6 +15547,164 @@ proof -
     using hdim unfolding geotop_is_edge_def by (by100 blast)
 qed
 
+lemma geotop_segment_chain_singletons_inter_faces_dev34:
+  fixes x y :: "real^2"
+  assumes hmeet: "{x} \<inter> {y} \<noteq> {}"
+  shows "geotop_is_face ({x} \<inter> {y}) {x}
+    \<and> geotop_is_face ({x} \<inter> {y}) {y}"
+proof -
+  have hxy: "x = y"
+    using hmeet by (by100 blast)
+  have hxx: "{x} \<inter> {y} = {x}"
+    using hxy by (by100 simp)
+  have hface_x: "geotop_is_face ({x} \<inter> {y}) {x}"
+    unfolding hxx by (rule geotop_singleton_is_face_self)
+  have hface_y: "geotop_is_face ({x} \<inter> {y}) {y}"
+    using hxy hxx geotop_singleton_is_face_self[of x] by (by100 simp)
+  show ?thesis
+    using hface_x hface_y by (by100 blast)
+qed
+
+lemma geotop_segment_chain_singleton_edge_inter_faces_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  assumes hk: "k < length us"
+  assumes hi: "i < length us - 1"
+  assumes hmeet: "{us ! k} \<inter> closed_segment (us ! i) (us ! Suc i) \<noteq> {}"
+  shows "geotop_is_face
+      ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i)) {us ! k}
+    \<and> geotop_is_face
+      ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i))
+      (closed_segment (us ! i) (us ! Suc i))"
+proof -
+  have hx_edge: "us ! k \<in> closed_segment (us ! i) (us ! Suc i)"
+    using hmeet by (by100 blast)
+  have hk0: "k < length (geotop_segment_chain_vertices_dev34 a b n)"
+    using hk unfolding us_def by (by100 simp)
+  have hi0: "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+    using hi unfolding us_def by (by100 simp)
+  have hx0:
+      "geotop_segment_chain_vertices_dev34 a b n ! k
+        \<in> closed_segment
+          (geotop_segment_chain_vertices_dev34 a b n ! i)
+          (geotop_segment_chain_vertices_dev34 a b n ! Suc i)"
+    using hx_edge unfolding us_def by (by100 simp)
+  have hk_cases: "k = i \<or> k = Suc i"
+    by (rule geotop_segment_chain_vertex_on_edge_endpoint_dev34
+        [OF hab hlong hk0 hi0 hx0])
+  have hne0:
+      "geotop_segment_chain_vertices_dev34 a b n ! i
+        \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc i"
+    by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+        [OF hab hlong hi0])
+  have hne: "us ! i \<noteq> us ! Suc i"
+    using hne0 unfolding us_def by (by100 simp)
+  show ?thesis
+  proof (rule disjE[OF hk_cases])
+    assume hki: "k = i"
+    have hinter: "{us ! k} \<inter> closed_segment (us ! i) (us ! Suc i) = {us ! k}"
+      using hx_edge by (by100 blast)
+    have hface_single:
+        "geotop_is_face
+          ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i)) {us ! k}"
+      unfolding hinter by (rule geotop_singleton_is_face_self)
+    have hface_edge:
+        "geotop_is_face
+          ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i))
+          (closed_segment (us ! i) (us ! Suc i))"
+    proof -
+      have hv: "us ! k = us ! i \<or> us ! k = us ! Suc i"
+        using hki by (by100 simp)
+      show ?thesis
+        unfolding hinter
+        by (rule geotop_closed_segment_is_face_endpoint[OF hne hv])
+    qed
+    show ?thesis
+      using hface_single hface_edge by (by100 blast)
+  next
+    assume hkSuc: "k = Suc i"
+    have hinter: "{us ! k} \<inter> closed_segment (us ! i) (us ! Suc i) = {us ! k}"
+      using hx_edge by (by100 blast)
+    have hface_single:
+        "geotop_is_face
+          ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i)) {us ! k}"
+      unfolding hinter by (rule geotop_singleton_is_face_self)
+    have hface_edge:
+        "geotop_is_face
+          ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i))
+          (closed_segment (us ! i) (us ! Suc i))"
+    proof -
+      have hv: "us ! k = us ! i \<or> us ! k = us ! Suc i"
+        using hkSuc by (by100 simp)
+      show ?thesis
+        unfolding hinter
+        by (rule geotop_closed_segment_is_face_endpoint[OF hne hv])
+    qed
+    show ?thesis
+      using hface_single hface_edge by (by100 blast)
+  qed
+qed
+
+lemma geotop_segment_chain_edge_singleton_inter_faces_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  assumes hi: "i < length us - 1"
+  assumes hk: "k < length us"
+  assumes hmeet: "closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k} \<noteq> {}"
+  shows "geotop_is_face
+      (closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k})
+      (closed_segment (us ! i) (us ! Suc i))
+    \<and> geotop_is_face
+      (closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k}) {us ! k}"
+proof -
+  have hmeet': "{us ! k} \<inter> closed_segment (us ! i) (us ! Suc i) \<noteq> {}"
+    using hmeet by (by100 blast)
+  have hk0: "k < length (geotop_segment_chain_vertices_dev34 a b n)"
+    using hk unfolding us_def by (by100 simp)
+  have hi0: "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+    using hi unfolding us_def by (by100 simp)
+  have hmeet0:
+      "{geotop_segment_chain_vertices_dev34 a b n ! k}
+        \<inter> closed_segment
+          (geotop_segment_chain_vertices_dev34 a b n ! i)
+          (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+      \<noteq> {}"
+    using hmeet' unfolding us_def by (by100 simp)
+  have hpair0:
+      "geotop_is_face
+        ({geotop_segment_chain_vertices_dev34 a b n ! k}
+          \<inter> closed_segment
+            (geotop_segment_chain_vertices_dev34 a b n ! i)
+            (geotop_segment_chain_vertices_dev34 a b n ! Suc i))
+        {geotop_segment_chain_vertices_dev34 a b n ! k}
+      \<and> geotop_is_face
+        ({geotop_segment_chain_vertices_dev34 a b n ! k}
+          \<inter> closed_segment
+            (geotop_segment_chain_vertices_dev34 a b n ! i)
+            (geotop_segment_chain_vertices_dev34 a b n ! Suc i))
+        (closed_segment (geotop_segment_chain_vertices_dev34 a b n ! i)
+          (geotop_segment_chain_vertices_dev34 a b n ! Suc i))"
+    by (rule geotop_segment_chain_singleton_edge_inter_faces_dev34
+        [OF hab hlong hk0 hi0 hmeet0])
+  have hpair:
+      "geotop_is_face
+        ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i)) {us ! k}
+      \<and> geotop_is_face
+        ({us ! k} \<inter> closed_segment (us ! i) (us ! Suc i))
+        (closed_segment (us ! i) (us ! Suc i))"
+    using hpair0 unfolding us_def by (by100 simp)
+  have hcomm:
+      "closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k}
+      = {us ! k} \<inter> closed_segment (us ! i) (us ! Suc i)"
+    by (by100 blast)
+  show ?thesis
+    using hpair hcomm by (by100 simp)
+qed
+
 lemma geotop_segment_chain_vertices_intersections_dev34:
   fixes a b :: "real^2"
   assumes hab: "a \<noteq> b"
