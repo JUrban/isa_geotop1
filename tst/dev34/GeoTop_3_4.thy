@@ -3187,6 +3187,54 @@ proof -
       "frontier \<sigma> \<subseteq> geotop_polyhedron ?B"
     using h\<sigma>_frontier_named_edges h\<sigma>_named_edges_subset_B_poly
     by (by100 simp)
+  have h\<sigma>_B_poly_subset_frontier:
+      "geotop_polyhedron ?B \<subseteq> frontier \<sigma>"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron ?B"
+    obtain \<tau> where h\<tau>B: "\<tau> \<in> ?B" and hx\<tau>: "x \<in> \<tau>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have hcases:
+        "(\<exists>y. \<tau> = {y}) \<or> (\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b)"
+      by (rule geotop_1dim_simplex_cases[OF hB_1dim h\<tau>B])
+    show "x \<in> frontier \<sigma>"
+    proof (rule disjE[OF hcases])
+      assume "\<exists>y. \<tau> = {y}"
+      then obtain y where h\<tau>y: "\<tau> = {y}"
+        by (by100 blast)
+      have hy_vertex: "y \<in> geotop_complex_vertices ?B"
+        using geotop_complex_vertices_eq_0_simplexes[OF hB_complex]
+          h\<tau>B h\<tau>y by (by100 blast)
+      have "y \<in> {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+        using hy_vertex hB_vertices_eq_named by (by100 simp)
+      hence "y \<in> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+        by (by100 auto)
+      thus "x \<in> frontier \<sigma>"
+        using h\<tau>y hx\<tau> h\<sigma>_frontier_named_edges by (by100 blast)
+    next
+      assume "\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b"
+      then obtain a b where hab: "a \<noteq> b" and h\<tau>ab: "\<tau> = closed_segment a b"
+        by (by100 blast)
+      have h\<tau>edge: "geotop_is_edge \<tau>"
+        using geotop_closed_segment_is_simplex[OF hab] h\<tau>ab
+        unfolding geotop_is_edge_def by (by100 simp)
+      have h\<tau>face: "geotop_is_face \<tau> \<sigma>"
+        using geotop_2simplex_comb_boundary_member_proper_face_dev34
+          [OF h\<sigma> h\<tau>B] by (by100 blast)
+      have "\<tau> \<in> {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+        using h\<tau>edge h\<tau>face by (by100 blast)
+      hence "x \<in> \<Union>{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+        using hx\<tau> by (by100 blast)
+      thus "x \<in> frontier \<sigma>"
+        using geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<sigma>]
+        by (by100 simp)
+    qed
+  qed
+  have h\<sigma>_B_poly_eq_frontier:
+      "geotop_polyhedron ?B = frontier \<sigma>"
+    using h\<sigma>_frontier_subset_B_poly h\<sigma>_B_poly_subset_frontier by (by100 blast)
   have h\<sigma>_open_edge_ab_subset_B_poly:
       "open_segment a\<^sub>\<sigma> b\<^sub>\<sigma> \<subseteq> geotop_polyhedron ?B"
   proof
