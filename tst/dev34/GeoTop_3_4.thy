@@ -2276,6 +2276,23 @@ proof -
       "frontier \<sigma> \<subseteq> geotop_polyhedron ?B"
     using h\<sigma>_frontier_named_edges h\<sigma>_named_edges_subset_B_poly
     by (by100 simp)
+  have h\<sigma>_open_edge_ab_subset_B_poly:
+      "open_segment a\<^sub>\<sigma> b\<^sub>\<sigma> \<subseteq> geotop_polyhedron ?B"
+  proof
+    fix x
+    assume hx: "x \<in> open_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+    have hx_closed: "x \<in> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+      using hx segment_open_subset_closed by (by100 blast)
+    show "x \<in> geotop_polyhedron ?B"
+      unfolding geotop_polyhedron_def
+      using hx_closed h\<sigma>_closed_edge_ab_in_B by (by100 blast)
+  qed
+  have h\<sigma>_open_edge_ab_infinite:
+      "infinite (open_segment a\<^sub>\<sigma> b\<^sub>\<sigma>)"
+    using ha\<^sub>\<sigma>b\<^sub>\<sigma> finite_open_segment[of a\<^sub>\<sigma> b\<^sub>\<sigma>] by (by100 blast)
+  have h\<sigma>_c_notin_open_edge_ab:
+      "c\<^sub>\<sigma> \<notin> open_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+    using hc\<^sub>\<sigma>_notin_edge_ab segment_open_subset_closed by (by100 blast)
   show ?thesis
     sorry
 qed
