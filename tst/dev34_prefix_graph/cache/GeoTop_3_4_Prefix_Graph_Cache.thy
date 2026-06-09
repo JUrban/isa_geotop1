@@ -9603,11 +9603,19 @@ proof -
               \<union> ((U - {w}) \<inter> ball w r)
               \<union> (ball w r - (S \<union> T \<union> U))"
         using hN_sub hselected_punctured_carrier_sector_cover by (by100 blast)
+      have hsplit_side_endpoint_local_branch_book_step: False
+        (**
+          Book local branch step.  The connected split-side arc gives two
+          distinct selected incident germs from the same endpoint of the
+          simple closed curve.  Since the carrier is finite and locally a
+          1-complex, the SCC arc side is locally a single broken-line endpoint
+          segment; the third selected incident germ makes this impossible. **)
+        sorry
       show "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
         \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
         \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
         \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
-        sorry
+        using hsplit_side_endpoint_local_branch_book_step by (by100 blast)
     qed
     show ?thesis
     proof -
