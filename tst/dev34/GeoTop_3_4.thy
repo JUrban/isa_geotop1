@@ -13709,6 +13709,67 @@ proof (induction L arbitrary: w e q rule: finite_psubset_induct)
   qed
 qed
 
+lemma geotop_endpoint_chain_listing_base_if_first_neighbor_is_finish_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  assumes hfinish_endpoint: "geotop_graph_endpoint L (pathfinish \<gamma>)"
+  assumes hq_finish: "q = pathfinish \<gamma>"
+  shows "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+  (**
+    Endpoint-chain base step from Moise Fig. 4.10.  If the first edge out of
+    the graph endpoint already reaches the other endpoint of the broken-line
+    carrier, connectedness forces the source graph to be the single edge, so
+    the ordered chain is exactly \<open>[w,q]\<close>. **)
+proof -
+  have hq_endpoint: "geotop_graph_endpoint L q"
+    using hfinish_endpoint hq_finish by (by100 simp)
+  have hq_card: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+    using geotop_graph_endpoint_singleton_and_card_one_dev34
+        [OF hL_linear hq_endpoint]
+    by (by100 blast)
+  show ?thesis
+    by (rule geotop_endpoint_chain_listing_two_vertex_dev34
+        [OF hL_linear hL_finite hconn hendpoint heL he_edge hw_e hq_ne
+          he_seg hqL hq_card])
+qed
+
+lemma geotop_endpoint_chain_listing_from_degree_bound_first_neighbor_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 2"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  shows "\<exists>vs. geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  (**
+    Source-chain reduction for the endpoint fan package.  Once the book's
+    local arc argument has supplied the degree-one-or-two bound for the finite
+    broken-line graph, the existing leaf-deletion induction enumerates the
+    chain from \<open>w\<close> through its first neighbor \<open>q\<close>. **)
+proof -
+  show ?thesis
+    by (rule geotop_finite_connected_degree_one_or_two_endpoint_chain_listing_from_first_neighbor_dev34
+        [OF hL_linear hL_finite hconn hdegree12 hendpoint heL he_edge hw_e
+          hq_ne he_seg hqL])
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
