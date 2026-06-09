@@ -2268,6 +2268,27 @@ proof -
       qed
     qed
   qed
+  have hsource_successor_state_edge_eq:
+      "\<And>k. snd ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c)
+        = closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s\<^sub>c))"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+        [OF hL_linear hdegree_two hs\<^sub>c])
+  have hsource_successor_snd_edge_orbit_eq:
+      "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c}) = {e\<in>L. geotop_is_edge e}"
+  proof -
+    have "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+        ` {0..<p\<^sub>c})
+      = ((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s\<^sub>c)))
+        ` {0..<p\<^sub>c})"
+      using hsource_successor_state_edge_eq by (by100 blast)
+    thus ?thesis
+      using hsource_successor_edge_orbit_eq by (by100 simp)
+  qed
   have hsource_listed_edge_endpoints_vertices:
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> v k \<in> geotop_complex_vertices L
