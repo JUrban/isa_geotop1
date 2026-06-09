@@ -4384,8 +4384,387 @@ proof -
   have hsuccessor_period_match: "p\<^sub>c = p\<^sub>B"
     using hsource_successor_vertex_card_eq_period
       hF_B_successor_vertex_card_eq_period hF_B_vertices_card by (by100 simp)
+  let ?w\<^sub>c =
+      "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c)"
+  let ?w\<^sub>B =
+      "\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B)"
+  let ?\<psi>\<^sub>succ = "\<lambda>x. ?w\<^sub>B (inv_into {0..<p\<^sub>c} ?w\<^sub>c x)"
+  let ?u\<^sub>succ = "\<lambda>k. ?\<psi>\<^sub>succ (v k)"
+  have hsource_successor_vertex_bij:
+      "bij_betw ?w\<^sub>c {0..<p\<^sub>c} (geotop_complex_vertices L)"
+    unfolding bij_betw_def
+    using hsource_successor_vertex_index_inj hsource_successor_vertices_eq
+    by (by100 blast)
+  have hF_B_successor_vertex_bij_period:
+      "bij_betw ?w\<^sub>B {0..<p\<^sub>c} (geotop_complex_vertices F_B)"
+  proof -
+    have "bij_betw ?w\<^sub>B {0..<p\<^sub>B} (geotop_complex_vertices F_B)"
+      unfolding bij_betw_def
+      using hF_B_successor_vertex_index_inj hF_B_successor_vertices_eq
+      by (by100 blast)
+    thus ?thesis
+      using hsuccessor_period_match by (by100 simp)
+  qed
+  have hsource_successor_vertex_inv_bij:
+      "bij_betw (inv_into {0..<p\<^sub>c} ?w\<^sub>c)
+        (geotop_complex_vertices L) {0..<p\<^sub>c}"
+    by (rule bij_betw_inv_into[OF hsource_successor_vertex_bij])
+  have h\<psi>\<^sub>succ_bij:
+      "bij_betw ?\<psi>\<^sub>succ
+        (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
+  proof -
+    have "bij_betw (?w\<^sub>B \<circ> (inv_into {0..<p\<^sub>c} ?w\<^sub>c))
+        (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
+      by (rule bij_betw_trans
+          [OF hsource_successor_vertex_inv_bij hF_B_successor_vertex_bij_period])
+    thus ?thesis
+      by (by100 simp)
+  qed
+  have h\<psi>\<^sub>succ_source_successor_index:
+      "\<And>j. j \<in> {0..<p\<^sub>c} \<Longrightarrow> ?\<psi>\<^sub>succ (?w\<^sub>c j) = ?w\<^sub>B j"
+  proof -
+    fix j
+    assume hj: "j \<in> {0..<p\<^sub>c}"
+    have "inv_into {0..<p\<^sub>c} ?w\<^sub>c (?w\<^sub>c j) = j"
+      by (rule inv_into_f_f[OF hsource_successor_vertex_index_inj hj])
+    thus "?\<psi>\<^sub>succ (?w\<^sub>c j) = ?w\<^sub>B j"
+      by (by100 simp)
+  qed
+  have h\<psi>\<^sub>succ_source_listed_index:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> \<exists>j\<in>{0..<p\<^sub>c}.
+          v k = ?w\<^sub>c j \<and> ?\<psi>\<^sub>succ (v k) = ?w\<^sub>B j"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    obtain j where hj: "j \<in> {0..<p\<^sub>c}" and hvj: "v k = ?w\<^sub>c j"
+      using hsource_listed_vertex_in_successor_orbit[OF hk] by (by100 blast)
+    have "?\<psi>\<^sub>succ (v k) = ?w\<^sub>B j"
+      using hvj h\<psi>\<^sub>succ_source_successor_index[OF hj] by (by100 simp)
+    thus "\<exists>j\<in>{0..<p\<^sub>c}. v k = ?w\<^sub>c j \<and> ?\<psi>\<^sub>succ (v k) = ?w\<^sub>B j"
+      using hj hvj by (by100 blast)
+  qed
+  have hu\<^sub>succ_closed: "?u\<^sub>succ p = ?u\<^sub>succ 0"
+    using hsource_closed by (by100 simp)
+  have hu\<^sub>succ_vertices:
+      "((\<lambda>k. ?u\<^sub>succ k) ` {0..<p}) = geotop_complex_vertices F_B"
+  proof -
+    have "((\<lambda>k. ?u\<^sub>succ k) ` {0..<p})
+        = ?\<psi>\<^sub>succ ` geotop_complex_vertices L"
+      using hsource_vertices by (by100 blast)
+    also have "\<dots> = geotop_complex_vertices F_B"
+      using h\<psi>\<^sub>succ_bij unfolding bij_betw_def by (by100 blast)
+    finally show ?thesis .
+  qed
+  have hsource_successor_vertex_closed_period: "?w\<^sub>c p\<^sub>c = ?w\<^sub>c 0"
+    using hp\<^sub>c_closed by (by100 simp)
+  have hF_B_successor_vertex_closed_source_period: "?w\<^sub>B p\<^sub>c = ?w\<^sub>B 0"
+    using hp\<^sub>B_closed hsuccessor_period_match by (by100 simp)
+  have h\<psi>\<^sub>succ_source_successor_Suc_index:
+      "\<And>j. j \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> ?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?w\<^sub>B (Suc j)"
+  proof -
+    fix j
+    assume hj: "j \<in> {0..<p\<^sub>c}"
+    show "?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?w\<^sub>B (Suc j)"
+    proof (cases "Suc j < p\<^sub>c")
+      case True
+      have hSuc: "Suc j \<in> {0..<p\<^sub>c}"
+        using True by (by100 simp)
+      show ?thesis
+        by (rule h\<psi>\<^sub>succ_source_successor_index[OF hSuc])
+    next
+      case False
+      have hSuc_eq: "Suc j = p\<^sub>c"
+        using hj False by (by100 linarith)
+      have h0: "0 \<in> {0..<p\<^sub>c}"
+        using hp\<^sub>c_pos by (by100 simp)
+      have "?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?\<psi>\<^sub>succ (?w\<^sub>c 0)"
+        using hSuc_eq hsource_successor_vertex_closed_period by (by100 simp)
+      also have "\<dots> = ?w\<^sub>B 0"
+        by (rule h\<psi>\<^sub>succ_source_successor_index[OF h0])
+      also have "\<dots> = ?w\<^sub>B (Suc j)"
+        using hSuc_eq hF_B_successor_vertex_closed_source_period by (by100 simp)
+      finally show ?thesis .
+    qed
+  qed
+  have hu\<^sub>succ_listed_edge_target_successor:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> \<exists>j\<in>{0..<p\<^sub>c}.
+          closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+            = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    obtain j where hj: "j \<in> {0..<p\<^sub>c}"
+        and hcases:
+          "(v k = ?w\<^sub>c j \<and> v (Suc k) = ?w\<^sub>c (Suc j))
+          \<or> (v k = ?w\<^sub>c (Suc j) \<and> v (Suc k) = ?w\<^sub>c j)"
+      using hsource_listed_edge_successor_endpoint_cases[OF hk]
+      by (by100 blast)
+    have hmap_j: "?\<psi>\<^sub>succ (?w\<^sub>c j) = ?w\<^sub>B j"
+      by (rule h\<psi>\<^sub>succ_source_successor_index[OF hj])
+    have hmap_Suc_j: "?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?w\<^sub>B (Suc j)"
+      by (rule h\<psi>\<^sub>succ_source_successor_Suc_index[OF hj])
+    have hedge:
+        "closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+          = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+    proof (rule disjE[OF hcases])
+      assume hforward:
+          "v k = ?w\<^sub>c j \<and> v (Suc k) = ?w\<^sub>c (Suc j)"
+      show ?thesis
+        using hforward hmap_j hmap_Suc_j by (by100 simp)
+    next
+      assume hreverse:
+          "v k = ?w\<^sub>c (Suc j) \<and> v (Suc k) = ?w\<^sub>c j"
+      show ?thesis
+        using hreverse hmap_j hmap_Suc_j
+          closed_segment_commute[of "?w\<^sub>B (Suc j)" "?w\<^sub>B j"]
+        by (by100 simp)
+    qed
+    show "\<exists>j\<in>{0..<p\<^sub>c}.
+        closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+          = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+      using hj hedge by (by100 blast)
+  qed
+  have hu\<^sub>succ_edges_subset_F_B_edges:
+      "((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))) ` {0..<p})
+        \<subseteq> {e\<in>F_B. geotop_is_edge e}"
+  proof
+    fix e
+    assume he:
+        "e \<in> ((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k)))
+          ` {0..<p})"
+    obtain k where hk: "k \<in> {0..<p}"
+        and he_eq: "e = closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))"
+      using he by (by100 blast)
+    obtain j where hj: "j \<in> {0..<p\<^sub>c}"
+        and hseg:
+          "closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+            = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+      using hu\<^sub>succ_listed_edge_target_successor[OF hk] by (by100 blast)
+    have hjB: "j \<in> {0..<p\<^sub>B}"
+      using hj hsuccessor_period_match by (by100 simp)
+    have "closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))
+        \<in> ((\<lambda>j. closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))) ` {0..<p\<^sub>B})"
+      using hjB by (by100 blast)
+    hence "closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))
+        \<in> {e\<in>F_B. geotop_is_edge e}"
+      using hF_B_successor_edge_orbit_eq by (by100 simp)
+    thus "e \<in> {e\<in>F_B. geotop_is_edge e}"
+      using he_eq hseg by (by100 simp)
+  qed
+  have hsource_successor_next_distinct:
+      "\<And>j. ?w\<^sub>c j \<noteq> ?w\<^sub>c (Suc j)"
+  proof -
+    fix j
+    have "?w\<^sub>c (Suc j) \<noteq> ?w\<^sub>c j"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+          [OF hL_linear hdegree_two hs\<^sub>c])
+    thus "?w\<^sub>c j \<noteq> ?w\<^sub>c (Suc j)"
+      by (by100 blast)
+  qed
+  have hu\<^sub>succ_source_successor_edge:
+      "\<And>k j. k \<in> {0..<p}
+        \<Longrightarrow> j \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> closed_segment (v k) (v (Suc k))
+          = closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))
+        \<Longrightarrow> closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+          = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+  proof -
+    fix k j
+    assume hk: "k \<in> {0..<p}"
+    assume hj: "j \<in> {0..<p\<^sub>c}"
+    assume hseg:
+        "closed_segment (v k) (v (Suc k))
+          = closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))"
+    have hpair:
+        "{v k, v (Suc k)} = {?w\<^sub>c j, ?w\<^sub>c (Suc j)}"
+      using hseg
+        closed_segment_eq[of "v k" "v (Suc k)" "?w\<^sub>c j" "?w\<^sub>c (Suc j)"]
+      by (by100 simp)
+    have hneq: "v k \<noteq> v (Suc k)"
+      by (rule hsource_adjacent_distinct[OF hk])
+    have hcases:
+        "(v k = ?w\<^sub>c j \<and> v (Suc k) = ?w\<^sub>c (Suc j))
+        \<or> (v k = ?w\<^sub>c (Suc j) \<and> v (Suc k) = ?w\<^sub>c j)"
+      using hpair hneq by (by100 blast)
+    have hmap_j: "?\<psi>\<^sub>succ (?w\<^sub>c j) = ?w\<^sub>B j"
+      by (rule h\<psi>\<^sub>succ_source_successor_index[OF hj])
+    have hmap_Suc_j: "?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?w\<^sub>B (Suc j)"
+      by (rule h\<psi>\<^sub>succ_source_successor_Suc_index[OF hj])
+    show "closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+        = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+    proof (rule disjE[OF hcases])
+      assume hforward:
+          "v k = ?w\<^sub>c j \<and> v (Suc k) = ?w\<^sub>c (Suc j)"
+      show ?thesis
+        using hforward hmap_j hmap_Suc_j by (by100 simp)
+    next
+      assume hreverse:
+          "v k = ?w\<^sub>c (Suc j) \<and> v (Suc k) = ?w\<^sub>c j"
+      show ?thesis
+        using hreverse hmap_j hmap_Suc_j
+          closed_segment_commute[of "?w\<^sub>B (Suc j)" "?w\<^sub>B j"]
+        by (by100 simp)
+    qed
+  qed
+  have hsource_successor_edge_source_listed:
+      "\<And>j. j \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> \<exists>k\<in>{0..<p}.
+          closed_segment (v k) (v (Suc k))
+            = closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))"
+  proof -
+    fix j
+    assume hj: "j \<in> {0..<p\<^sub>c}"
+    have "closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))
+        \<in> ((\<lambda>j. closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))) ` {0..<p\<^sub>c})"
+      using hj by (by100 blast)
+    hence "closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j)) \<in> ?E"
+      using hsource_successor_edge_orbit_eq hsource_edges_eq by (by100 simp)
+    thus "\<exists>k\<in>{0..<p}.
+        closed_segment (v k) (v (Suc k))
+          = closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))"
+      by (by100 blast)
+  qed
+  have hu\<^sub>succ_edges_eq_F_B_edges:
+      "((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))) ` {0..<p})
+        = {e\<in>F_B. geotop_is_edge e}"
+  proof
+    show "((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))) ` {0..<p})
+        \<subseteq> {e\<in>F_B. geotop_is_edge e}"
+      by (rule hu\<^sub>succ_edges_subset_F_B_edges)
+    show "{e\<in>F_B. geotop_is_edge e}
+        \<subseteq> ((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))) ` {0..<p})"
+    proof
+      fix e
+      assume he: "e \<in> {e\<in>F_B. geotop_is_edge e}"
+      have "e \<in> ((\<lambda>j. closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))) ` {0..<p\<^sub>B})"
+        using hF_B_successor_edge_orbit_eq he by (by100 simp)
+      then obtain j where hjB: "j \<in> {0..<p\<^sub>B}"
+          and he_eq: "e = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+        by (by100 blast)
+      have hjc: "j \<in> {0..<p\<^sub>c}"
+        using hjB hsuccessor_period_match by (by100 simp)
+      obtain k where hk: "k \<in> {0..<p}"
+          and hsource_seg:
+            "closed_segment (v k) (v (Suc k))
+              = closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))"
+        using hsource_successor_edge_source_listed[OF hjc] by (by100 blast)
+      have htarget_seg:
+          "closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+            = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+        by (rule hu\<^sub>succ_source_successor_edge[OF hk hjc hsource_seg])
+      show "e \<in>
+          ((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))) ` {0..<p})"
+        using hk he_eq htarget_seg by (by100 blast)
+    qed
+  qed
+  have hu\<^sub>succ_decomp:
+      "F_B =
+        ((\<lambda>x. {x}) ` ((\<lambda>k. ?u\<^sub>succ k) ` {0..<p}))
+        \<union> ((\<lambda>k. closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))) ` {0..<p})"
+    using hF_B_vertex_edge_decomp hu\<^sub>succ_vertices hu\<^sub>succ_edges_eq_F_B_edges
+    by (by100 simp)
+  have hu\<^sub>succ_singletons:
+      "\<forall>x\<in>((\<lambda>k. ?u\<^sub>succ k) ` {0..<p}).
+        geotop_convex_hull {x} \<in> F_B"
+  proof
+    fix x
+    assume hx: "x \<in> ((\<lambda>k. ?u\<^sub>succ k) ` {0..<p})"
+    have hx_vertex: "x \<in> geotop_complex_vertices F_B"
+      using hx hu\<^sub>succ_vertices by (by100 blast)
+    have hx_single: "{x} \<in> F_B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+        hx_vertex by (by100 blast)
+    show "geotop_convex_hull {x} \<in> F_B"
+      using hsource_singleton_convex_hull_eq[of x] hx_single by (by100 simp)
+  qed
+  have hu\<^sub>succ_edges_in_F_B:
+      "\<forall>k\<in>{0..<p}.
+        geotop_convex_hull {?u\<^sub>succ k, ?u\<^sub>succ (Suc k)} \<in> F_B"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have hseg:
+        "closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k)) \<in> F_B"
+      using hu\<^sub>succ_edges_eq_F_B_edges hk by (by100 blast)
+    show "geotop_convex_hull {?u\<^sub>succ k, ?u\<^sub>succ (Suc k)} \<in> F_B"
+      using h\<sigma>_pair_hull_eq_segment[of "?u\<^sub>succ k" "?u\<^sub>succ (Suc k)"]
+        hseg by (by100 simp)
+  qed
+  have hu\<^sub>succ_cases:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices F_B
+        \<longrightarrow> geotop_convex_hull W \<in> F_B
+        \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. ?u\<^sub>succ k) ` {0..<p}). W = {x})
+          \<or> (\<exists>k\<in>{0..<p}. W = {?u\<^sub>succ k, ?u\<^sub>succ (Suc k)}))"
+  proof (intro allI impI)
+    fix W :: "(real^2) set"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices F_B"
+    assume hWhull_F: "geotop_convex_hull W \<in> F_B"
+    have hcases:
+        "(\<exists>x\<in>((\<lambda>k. ?w\<^sub>B k) ` {0..<p\<^sub>B}). W = {x})
+        \<or> (\<exists>j\<in>{0..<p\<^sub>B}. W = {?w\<^sub>B j, ?w\<^sub>B (Suc j)})"
+      using hu\<^sub>B_succ_cases hWsub hWhull_F by (by100 blast)
+    show "(\<exists>x\<in>((\<lambda>k. ?u\<^sub>succ k) ` {0..<p}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {?u\<^sub>succ k, ?u\<^sub>succ (Suc k)})"
+    proof (rule disjE[OF hcases])
+      assume hsingle:
+          "\<exists>x\<in>((\<lambda>k. ?w\<^sub>B k) ` {0..<p\<^sub>B}). W = {x}"
+      obtain x where hx: "x \<in> ((\<lambda>k. ?w\<^sub>B k) ` {0..<p\<^sub>B})"
+          and hW: "W = {x}"
+        using hsingle by (by100 blast)
+      have hx_target: "x \<in> geotop_complex_vertices F_B"
+        using hx hF_B_successor_vertices_eq by (by100 simp)
+      have hx_u: "x \<in> ((\<lambda>k. ?u\<^sub>succ k) ` {0..<p})"
+        using hx_target hu\<^sub>succ_vertices by (by100 simp)
+      show ?thesis
+        using hx_u hW by (by100 blast)
+    next
+      assume hedge:
+          "\<exists>j\<in>{0..<p\<^sub>B}. W = {?w\<^sub>B j, ?w\<^sub>B (Suc j)}"
+      obtain j where hjB: "j \<in> {0..<p\<^sub>B}"
+          and hW: "W = {?w\<^sub>B j, ?w\<^sub>B (Suc j)}"
+        using hedge by (by100 blast)
+      have hjc: "j \<in> {0..<p\<^sub>c}"
+        using hjB hsuccessor_period_match by (by100 simp)
+      obtain k where hk: "k \<in> {0..<p}"
+          and hsource_seg:
+            "closed_segment (v k) (v (Suc k))
+              = closed_segment (?w\<^sub>c j) (?w\<^sub>c (Suc j))"
+        using hsource_successor_edge_source_listed[OF hjc] by (by100 blast)
+      have htarget_seg:
+          "closed_segment (?u\<^sub>succ k) (?u\<^sub>succ (Suc k))
+            = closed_segment (?w\<^sub>B j) (?w\<^sub>B (Suc j))"
+        by (rule hu\<^sub>succ_source_successor_edge[OF hk hjc hsource_seg])
+      have hpair:
+          "{?u\<^sub>succ k, ?u\<^sub>succ (Suc k)}
+            = {?w\<^sub>B j, ?w\<^sub>B (Suc j)}"
+        using htarget_seg
+          closed_segment_eq[of "?u\<^sub>succ k" "?u\<^sub>succ (Suc k)"
+            "?w\<^sub>B j" "?w\<^sub>B (Suc j)"]
+        by (by100 simp)
+      show ?thesis
+        using hk hW hpair by (by100 blast)
+    qed
+  qed
+  have hu\<^sub>succ_listing_data:
+      "geotop_standard_boundary_cycle_listing_data_dev34
+        \<sigma> p F_B ?u\<^sub>succ"
+    unfolding geotop_standard_boundary_cycle_listing_data_dev34_def
+    using hF_B_sub hu\<^sub>succ_closed hu\<^sub>succ_vertices
+      hu\<^sub>succ_decomp hu\<^sub>succ_edges_eq_F_B_edges hu\<^sub>succ_cases
+      hu\<^sub>succ_singletons hu\<^sub>succ_edges_in_F_B
+    by (by100 blast)
   show ?thesis
-    sorry
+  proof (intro exI conjI)
+    show "geotop_standard_boundary_cycle_listing_data_dev34 \<sigma> p F_B ?u\<^sub>succ"
+      by (rule hu\<^sub>succ_listing_data)
+    show "bij_betw ?\<psi>\<^sub>succ (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
+      by (rule h\<psi>\<^sub>succ_bij)
+    show "\<forall>k\<in>{0..<p}. ?\<psi>\<^sub>succ (v k) = ?u\<^sub>succ k"
+      by (by100 simp)
+  qed
 qed
 
 lemma geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34:
