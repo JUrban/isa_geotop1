@@ -10190,6 +10190,94 @@ proof -
         using hx_not_PR by (by100 blast)
     qed
   qed
+  have hD42_broken_boundary_arc_split:
+      "\<exists>D\<^sub>1 D\<^sub>2.
+        J = D\<^sub>1 \<union> D\<^sub>2
+        \<and> geotop_is_broken_line D\<^sub>1
+        \<and> geotop_is_broken_line D\<^sub>2
+        \<and> geotop_arc_endpoints D\<^sub>1 {P, R}
+        \<and> geotop_arc_endpoints D\<^sub>2 {P, R}
+        \<and> geotop_arc_interior D\<^sub>1 {P, R} \<inter>
+            geotop_arc_interior D\<^sub>2 {P, R} = {}"
+  proof -
+    obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_conn: "geotop_complex_connected L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hPL: "{P} \<in> L"
+      and hRL: "{R} \<in> L"
+      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ hP hR]
+      by (by100 blast)
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+      using hJ hL_poly by (by100 simp)
+    obtain D\<^sub>1 D\<^sub>2 where hsplit:
+        "geotop_polyhedron L = D\<^sub>1 \<union> D\<^sub>2
+        \<and> geotop_is_broken_line D\<^sub>1
+        \<and> geotop_is_broken_line D\<^sub>2
+        \<and> geotop_arc_endpoints D\<^sub>1 {P, R}
+        \<and> geotop_arc_endpoints D\<^sub>2 {P, R}
+        \<and> geotop_arc_interior D\<^sub>1 {P, R} \<inter>
+            geotop_arc_interior D\<^sub>2 {P, R} = {}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hPL hRL hP_ne_R]
+      by (by100 blast)
+    show ?thesis
+      using hsplit hL_poly by (by100 blast)
+  qed
+  obtain D\<^sub>1 D\<^sub>2 where hD42_D_J_split: "J = D\<^sub>1 \<union> D\<^sub>2"
+    and hD42_D\<^sub>1_bl: "geotop_is_broken_line D\<^sub>1"
+    and hD42_D\<^sub>2_bl: "geotop_is_broken_line D\<^sub>2"
+    and hD42_D\<^sub>1E: "geotop_arc_endpoints D\<^sub>1 {P, R}"
+    and hD42_D\<^sub>2E: "geotop_arc_endpoints D\<^sub>2 {P, R}"
+    and hD42_D\<^sub>1D\<^sub>2_int_disj:
+      "geotop_arc_interior D\<^sub>1 {P, R} \<inter>
+        geotop_arc_interior D\<^sub>2 {P, R} = {}"
+    using hD42_broken_boundary_arc_split
+    by (elim exE conjE)
+  have hD42_A_misses_broken_boundary_arc_interiors:
+      "geotop_arc_interior D\<^sub>1 {P, R} \<inter> A = {}
+        \<and> geotop_arc_interior D\<^sub>2 {P, R} \<inter> A = {}"
+  proof
+    have hD\<^sub>1_sub_J: "D\<^sub>1 \<subseteq> J"
+      using hD42_D_J_split by (by100 blast)
+    show "geotop_arc_interior D\<^sub>1 {P, R} \<inter> A = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx: "x \<in> geotop_arc_interior D\<^sub>1 {P, R} \<inter> A"
+      have hxD\<^sub>1: "x \<in> D\<^sub>1"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_PR: "x \<notin> {P, R}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hD\<^sub>1_sub_J hxD\<^sub>1 by (by100 blast)
+      have hxA: "x \<in> A"
+        using hx by (by100 blast)
+      have "x \<in> {P, R}"
+        using hAJ hxA hxJ by (by100 blast)
+      thus False
+        using hx_not_PR by (by100 blast)
+    qed
+    have hD\<^sub>2_sub_J: "D\<^sub>2 \<subseteq> J"
+      using hD42_D_J_split by (by100 blast)
+    show "geotop_arc_interior D\<^sub>2 {P, R} \<inter> A = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx: "x \<in> geotop_arc_interior D\<^sub>2 {P, R} \<inter> A"
+      have hxD\<^sub>2: "x \<in> D\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_PR: "x \<notin> {P, R}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hD\<^sub>2_sub_J hxD\<^sub>2 by (by100 blast)
+      have hxA: "x \<in> A"
+        using hx by (by100 blast)
+      have "x \<in> {P, R}"
+        using hAJ hxA hxJ by (by100 blast)
+      thus False
+        using hx_not_PR by (by100 blast)
+    qed
+  qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
