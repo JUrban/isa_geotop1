@@ -65,6 +65,83 @@ proof -
     unfolding geotop_isomorphism_def using hbij hcond by (by100 blast)
 qed
 
+lemma geotop_2simplex_face_complex_vertices_named_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hab: "a \<noteq> b"
+  assumes hc: "c \<notin> {a, b}"
+  shows "geotop_complex_vertices {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+    = {a, b, c}"
+  (**
+    Named-vertex bookkeeping for the endpoint boundary-arc fan target: the
+    full face complex of a named 2-simplex has exactly the three simplex
+    vertices as complex vertices. **)
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hK_complex: "geotop_is_complex ?K"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  show ?thesis
+  proof
+    show "geotop_complex_vertices ?K \<subseteq> {a, b, c}"
+    proof
+      fix x
+      assume hx: "x \<in> geotop_complex_vertices ?K"
+      have hx_single: "{x} \<in> ?K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK_complex] hx
+        by (by100 blast)
+      have hcase: "geotop_is_face {x} \<sigma> \<or> {x} = \<sigma>"
+        using hx_single by (by100 blast)
+      show "x \<in> {a, b, c}"
+      proof (rule disjE[OF hcase])
+        assume hface: "geotop_is_face {x} \<sigma>"
+        obtain V W where h\<sigma>V': "geotop_simplex_vertices \<sigma> V"
+          and hW_ne: "W \<noteq> {}"
+          and hW_sub: "W \<subseteq> V"
+          and hx_eq: "{x} = geotop_convex_hull W"
+          and hxW: "geotop_simplex_vertices {x} W"
+          by (rule geotop_face_witness_simplex_vertices[OF hface])
+        have hV_eq: "V = {a, b, c}"
+          by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V])
+        have hW_eq: "W = {x}"
+          by (rule geotop_singleton_simplex_vertices[OF hxW])
+        show ?thesis
+          using hW_sub hV_eq hW_eq by (by100 blast)
+      next
+        assume hx_eq_\<sigma>: "{x} = \<sigma>"
+        have hdim0: "geotop_simplex_dim {x} 0"
+          by (rule geotop_singleton_is_simplex)
+        have hdim2: "geotop_simplex_dim {x} 2"
+          using h\<sigma> hx_eq_\<sigma> by (by100 simp)
+        have h02: "(0::nat) = 2"
+          by (rule geotop_simplex_dim_unique[OF hdim0 hdim2])
+        show ?thesis
+          using h02 by (by100 simp)
+      qed
+    qed
+  next
+    show "{a, b, c} \<subseteq> geotop_complex_vertices ?K"
+    proof
+      fix x
+      assume hx: "x \<in> {a, b, c}"
+      have hx_face: "geotop_is_face (geotop_convex_hull {x}) \<sigma>"
+      proof (rule geotop_is_face_of_subset[OF h\<sigma>V])
+        show "{x} \<noteq> {}"
+          by (by100 simp)
+        show "{x} \<subseteq> {a, b, c}"
+          using hx by (by100 simp)
+      qed
+      have hx_hull: "geotop_convex_hull {x} = {x}"
+        using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+      have "{x} \<in> ?K"
+        using hx_face hx_hull by (by100 simp)
+      thus "x \<in> geotop_complex_vertices ?K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK_complex]
+        by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_subdivision_source_is_complex_dev34:
   fixes K K' :: "'a::real_normed_vector set set"
   assumes hsub: "geotop_is_subdivision K' K"
