@@ -14676,6 +14676,23 @@ next
           hq_ne he_seg hqL])
 qed
 
+lemma geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+  assumes hconn: "geotop_complex_connected L"
+  shows "\<forall>x. {x} \<in> L \<longrightarrow>
+      card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+      card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2"
+  (**
+    Moise finite-linear-arc no-branch step for Section 4.  A finite linear
+    complex whose carrier is a broken line is locally an interval at each
+    vertex: the two arc endpoints have one incident edge, and all interior
+    vertices have two.  This is the source-side analogue of the polygon
+    no-branch lemma already used for the Figure 4.10 boundary-cycle package. **)
+  sorry
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_chain_target_dev34:
   fixes L F L' :: "(real^2) set set"
     and \<psi> :: "real^2 \<Rightarrow> real^2"
@@ -14903,7 +14920,8 @@ lemma geotop_endpoint_nonfinish_degree_bound_book_step_dev34:
     no-branch argument for a finite linear arc rules out degree greater than
     two at every source vertex.  This is the graph-theoretic prerequisite for
     the leaf-deletion endpoint-chain listing. **)
-  sorry
+  by (rule geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34
+      [OF hL_linear hL_finite hbroken hconn])
 
 lemma geotop_endpoint_chain_boundary_edge_cone_target_model_long_dev34:
   fixes L :: "(real^2) set set"
