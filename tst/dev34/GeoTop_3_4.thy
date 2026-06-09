@@ -14676,6 +14676,23 @@ next
           hq_ne he_seg hqL])
 qed
 
+lemma geotop_broken_line_vertex_incident_edge_card_le_two_dev34:
+  fixes L :: "(real^2) set set" and B :: "(real^2) set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hpoly: "geotop_polyhedron L = B"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hE: "geotop_arc_endpoints B E"
+  assumes hPL: "{P} \<in> L"
+  shows "card {e\<in>L. geotop_is_edge e \<and> P \<in> e} \<le> 2"
+  (**
+    Moise finite-linear-arc local no-branch upper bound.  This is the sharp
+    missing source-side step: a vertex of a finite linear graph whose carrier
+    is a broken-line arc cannot support three distinct incident 1-simplices,
+    since three graph germs at the vertex would violate the local interval
+    structure of an arc. **)
+  sorry
+
 lemma geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -14691,7 +14708,56 @@ lemma geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34:
     vertex: the two arc endpoints have one incident edge, and all interior
     vertices have two.  This is the source-side analogue of the polygon
     no-branch lemma already used for the Figure 4.10 boundary-cycle package. **)
-  sorry
+proof -
+  have hB_arc: "geotop_is_arc (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hbroken unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain E where hE: "geotop_arc_endpoints (geotop_polyhedron L) E"
+    using geotop_is_arc_has_arc_endpoints_dev34[OF hB_arc] by (by100 blast)
+  have hpoly_refl: "geotop_polyhedron L = geotop_polyhedron L"
+    by (rule HOL.refl)
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
+  show ?thesis
+  proof (intro allI impI)
+    fix x
+    assume hxL: "{x} \<in> L"
+    let ?S = "{d\<in>L. geotop_is_edge d \<and> x \<in> d}"
+    have hle: "card ?S \<le> 2"
+      by (rule geotop_broken_line_vertex_incident_edge_card_le_two_dev34
+          [OF hL_linear hL_finite hpoly_refl hbroken hE hxL])
+    show "card ?S = 1 \<or> card ?S = 2"
+    proof (cases "x \<in> E")
+      case True
+      have hcard1: "card ?S = 1"
+        by (rule geotop_broken_line_endpoint_vertex_incident_edge_card_one_dev34
+            [OF hL_linear hL_finite hpoly_refl hbroken hE True hxL])
+      show ?thesis
+        using hcard1 by (by100 blast)
+    next
+      case False
+      have hx_poly: "x \<in> geotop_polyhedron L"
+        using hxL unfolding geotop_polyhedron_def by (by100 blast)
+      have hx_int: "x \<in> geotop_arc_interior (geotop_polyhedron L) E"
+        using hx_poly False unfolding geotop_arc_interior_def by (by100 blast)
+      have hraw:
+          "card {\<sigma> \<in> L. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
+        by (rule broken_line_internal_vertex_card_edges_ge2
+            [OF hL_complex hpoly_refl hL_1dim hB_arc hE hxL hx_int])
+      have hsets:
+          "{\<sigma> \<in> L. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} = ?S"
+        unfolding geotop_is_edge_def by (by100 blast)
+      have hge: "card ?S \<ge> 2"
+        using hraw hsets by (by100 simp)
+      have hcard2: "card ?S = 2"
+        using hge hle by (by100 linarith)
+      show ?thesis
+        using hcard2 by (by100 blast)
+    qed
+  qed
+qed
 
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_chain_target_dev34:
   fixes L F L' :: "(real^2) set set"
