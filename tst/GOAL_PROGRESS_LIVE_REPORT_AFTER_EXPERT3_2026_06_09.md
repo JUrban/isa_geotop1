@@ -15,8 +15,8 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:13738
-dev34/GeoTop_3_4.thy:14956
+dev34/GeoTop_3_4.thy:13841
+dev34/GeoTop_3_4.thy:15294
 ```
 
 Stable open package names:
@@ -53,11 +53,19 @@ Recent endpoint-chain infrastructure is also now checked and indexed:
 geotop_endpoint_chain_listing_isomorphism_from_matching_dev34
 geotop_endpoint_chain_fan_target_transfer_from_isomorphism_dev34
 geotop_endpoint_chain_fan_target_from_matching_model_dev34
+geotop_endpoint_chain_fan_target_from_target_model_exists_dev34
 ```
 
 These helpers do not close the endpoint fan target yet, but they reduce the
 remaining proof to constructing the correct target-side boundary-arc fan model
 and applying the matching/isomorphism transfer.
+
+After the expert3 audit, the active endpoint fan target was also refactored so
+the remaining `sorry` is exactly the target-side model construction:
+enumerate the endpoint chain, build a matching boundary-arc chain on one edge of
+a 2-simplex, and cone that arc subdivision from the adjacent/opposite boundary
+vertex. The surrounding transfer from that model to the original graph is now
+checked in the focused `dev34-fan` slice.
 
 ## What the expert audits got right
 
