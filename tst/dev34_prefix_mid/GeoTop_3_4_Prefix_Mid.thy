@@ -10121,6 +10121,24 @@ proof -
     hence "S \<in> {P, R}" using hAJ by (by100 simp)
     thus False using hS_ne_PR by (by100 blast)
   qed
+  have hP_A: "P \<in> A"
+    using hAJ hP by (by100 blast)
+  have hR_A: "R \<in> A"
+    using hAJ hR by (by100 blast)
+  have hA_connected:
+      "top1_connected_on A
+        (subspace_topology UNIV geotop_euclidean_topology A)"
+  proof -
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A"
+      using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+    have h\<gamma>_path: "path \<gamma>"
+      using h\<gamma>_arc unfolding arc_def by (by100 simp)
+    have hA_conn_HOL: "connected A"
+      using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
+    show ?thesis
+      using hA_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  qed
   obtain c tP tQ tR tS where hcyc_path: "simple_path c"
     and hcyc_closed: "pathfinish c = pathstart c"
     and hcyc_image: "path_image c = J"
