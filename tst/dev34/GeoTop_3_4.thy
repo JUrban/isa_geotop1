@@ -2354,6 +2354,57 @@ proof -
               (fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))"
       using hj hedge by (by100 blast)
   qed
+  have hsource_listed_edge_successor_endpoint_cases:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> \<exists>j\<in>{0..<p\<^sub>c}.
+          (v k = fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)
+            \<and> v (Suc k) =
+              fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))
+          \<or> (v k =
+              fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c)
+            \<and> v (Suc k) =
+              fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    obtain j where hj: "j \<in> {0..<p\<^sub>c}"
+        and hseg:
+          "closed_segment (v k) (v (Suc k))
+            = closed_segment
+                (fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))
+                (fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))"
+      using hsource_listed_edge_in_successor_closed_orbit[OF hk]
+      by (by100 blast)
+    have hpair:
+        "{v k, v (Suc k)}
+          = {fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c),
+              fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c)}"
+      using hseg
+        closed_segment_eq[of "v k" "v (Suc k)"
+          "fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)"
+          "fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c)"]
+      by (by100 simp)
+    have hneq: "v k \<noteq> v (Suc k)"
+      by (rule hsource_adjacent_distinct[OF hk])
+    have hcases:
+        "(v k = fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)
+          \<and> v (Suc k) =
+            fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))
+        \<or> (v k =
+            fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c)
+          \<and> v (Suc k) =
+            fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))"
+      using hpair hneq by (by100 blast)
+    show "\<exists>j\<in>{0..<p\<^sub>c}.
+        (v k = fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)
+          \<and> v (Suc k) =
+            fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))
+        \<or> (v k =
+            fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c)
+          \<and> v (Suc k) =
+            fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))"
+      using hj hcases by (by100 blast)
+  qed
   have hsource_successor_vertex_edge_decomp:
       "L = ((\<lambda>v. {v}) ` geotop_complex_vertices L)
         \<union> {e\<in>L. geotop_is_edge e}"
@@ -4254,6 +4305,26 @@ proof -
         (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
     using h\<chi>\<^sub>V_bij hsource_successor_vertices_eq hF_B_successor_vertices_eq
     by (by100 simp)
+  have hsource_successor_current_next_index_unique:
+      "\<And>m n. m \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> n \<in> {0..<p\<^sub>c}
+        \<Longrightarrow> fst ((geotop_oriented_edge_successor L ^^ m) s\<^sub>c)
+          = fst ((geotop_oriented_edge_successor L ^^ n) s\<^sub>c)
+        \<Longrightarrow> fst ((geotop_oriented_edge_successor L ^^ Suc m) s\<^sub>c)
+          = fst ((geotop_oriented_edge_successor L ^^ Suc n) s\<^sub>c)
+        \<Longrightarrow> m = n"
+    by (rule geotop_degree_two_oriented_edge_successor_current_next_index_unique_prefix
+        [OF hL_linear hdegree_two hs\<^sub>c hsource_successor_state_inj])
+  have hF_B_successor_current_next_index_unique:
+      "\<And>m n. m \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> n \<in> {0..<p\<^sub>B}
+        \<Longrightarrow> fst ((geotop_oriented_edge_successor F_B ^^ m) s\<^sub>B)
+          = fst ((geotop_oriented_edge_successor F_B ^^ n) s\<^sub>B)
+        \<Longrightarrow> fst ((geotop_oriented_edge_successor F_B ^^ Suc m) s\<^sub>B)
+          = fst ((geotop_oriented_edge_successor F_B ^^ Suc n) s\<^sub>B)
+        \<Longrightarrow> m = n"
+    by (rule geotop_degree_two_oriented_edge_successor_current_next_index_unique_prefix
+        [OF hF_B_linear hF_B_degree_two hs\<^sub>B hF_B_successor_state_inj])
   show ?thesis
     sorry
 qed
