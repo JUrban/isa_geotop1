@@ -13770,6 +13770,83 @@ proof -
           hq_ne he_seg hqL])
 qed
 
+lemma geotop_first_neighbor_degree_two_if_not_finish_degree_bound_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 2"
+  assumes hqL: "{q} \<in> L"
+  assumes hq_not_endpoint: "\<not> geotop_graph_endpoint L q"
+  shows "card {e\<in>L. geotop_is_edge e \<and> q \<in> e} = 2"
+  (**
+    Endpoint-chain bookkeeping for the non-finish case.  Once the book's
+    local arc argument supplies the degree-one-or-two bound, the first
+    neighbor cannot have degree one, because degree one is exactly the graph
+    endpoint condition. **)
+proof -
+  have hq_degree:
+      "card {e\<in>L. geotop_is_edge e \<and> q \<in> e} = 1
+      \<or> card {e\<in>L. geotop_is_edge e \<and> q \<in> e} = 2"
+    using hdegree12 hqL by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hq_degree])
+    assume hq_card1: "card {e\<in>L. geotop_is_edge e \<and> q \<in> e} = 1"
+    have "geotop_graph_endpoint L q"
+      unfolding geotop_graph_endpoint_def using hqL hq_card1 by (by100 blast)
+    thus ?thesis
+      using hq_not_endpoint by (by100 blast)
+  next
+    assume hq_card2: "card {e\<in>L. geotop_is_edge e \<and> q \<in> e} = 2"
+    show ?thesis
+      by (rule hq_card2)
+  qed
+qed
+
+lemma geotop_endpoint_chain_listing_from_finish_or_degree_bound_dev34:
+  fixes L :: "(real^2) set set"
+  fixes \<gamma> :: "real \<Rightarrow> real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  assumes hfinish_endpoint: "geotop_graph_endpoint L (pathfinish \<gamma>)"
+  assumes hdegree12_if_not_finish:
+    "q \<noteq> pathfinish \<gamma> \<Longrightarrow> \<forall>x. {x} \<in> L \<longrightarrow>
+      card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+      card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2"
+  shows "\<exists>vs. geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  (**
+    Source-chain split for the endpoint fan package.  If the first edge reaches
+    the other arc endpoint, the chain has two vertices; otherwise the remaining
+    book local-arc step is precisely the degree-one-or-two bound needed by the
+    leaf-deletion chain-listing induction. **)
+proof (cases "q = pathfinish \<gamma>")
+  case True
+  have hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+    by (rule geotop_endpoint_chain_listing_base_if_first_neighbor_is_finish_dev34
+        [OF hL_linear hL_finite hconn hendpoint heL he_edge hw_e hq_ne
+          he_seg hqL hfinish_endpoint True])
+  show ?thesis
+    using hlist by (by100 blast)
+next
+  case False
+  have hdegree12:
+      "\<forall>x. {x} \<in> L \<longrightarrow>
+        card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+        card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2"
+    by (rule hdegree12_if_not_finish[OF False])
+  show ?thesis
+    by (rule geotop_endpoint_chain_listing_from_degree_bound_first_neighbor_dev34
+        [OF hL_linear hL_finite hconn hdegree12 hendpoint heL he_edge hw_e
+          hq_ne he_seg hqL])
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
