@@ -9881,6 +9881,44 @@ proof -
     by (rule geotop_component_at_open_in_euclidean[OF hopen hX])
 qed
 
+lemma geotop_open_component_broken_line_between_prefix:
+  fixes U :: "'a::euclidean_space set" and X Y :: 'a
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hX: "X \<in> U"
+  assumes hYcomp:
+    "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  shows "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> X \<in> B \<and> Y \<in> B"
+  (**
+    D42 extraction cache: once the Q-side and S-side points are shown to lie
+    in the same component of the cut-open disk, Moise's Theorem 1.13 supplies
+    the required broken line inside that component. **)
+proof -
+  let ?C = "geotop_component_at UNIV geotop_euclidean_topology U X"
+  have hC_open: "?C \<in> geotop_euclidean_topology"
+    by (rule geotop_component_at_open_in_euclidean[OF hUopen hX])
+  have hC_eq: "?C = connected_component_set U X"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hC_conn_HOL: "connected ?C"
+    using hC_eq connected_connected_component by (by100 simp)
+  have hC_conn:
+    "top1_connected_on ?C (subspace_topology UNIV geotop_euclidean_topology ?C)"
+    using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hC_bl: "geotop_broken_line_connected ?C"
+    by (rule Theorem_GT_1_13[OF hC_open hC_conn])
+  have hX_C: "X \<in> ?C"
+    using hC_eq hX connected_component_refl by (by100 simp)
+  obtain B where hB: "geotop_is_broken_line B" and hB_C: "B \<subseteq> ?C"
+    and hXB: "X \<in> B" and hYB: "Y \<in> B"
+    using hC_bl hX_C hYcomp unfolding geotop_broken_line_connected_def
+    by (by100 blast)
+  have hC_sub_U: "?C \<subseteq> U"
+    using hC_eq connected_component_subset by (by100 simp)
+  have hB_U: "B \<subseteq> U"
+    using hB_C hC_sub_U by (by100 blast)
+  show ?thesis
+    using hB hB_U hXB hYB by (by100 blast)
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -9915,6 +9953,61 @@ lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
 proof -
   have hcut_open: "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
     by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
+  have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  proof
+    show "Q \<noteq> P"
+    proof
+      assume hQP: "Q = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQP card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+    show "Q \<noteq> R"
+    proof
+      assume hQR: "Q = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQR card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+  qed
+  have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  proof
+    show "S \<noteq> P"
+    proof
+      assume hSP: "S = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSP card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+    show "S \<noteq> R"
+    proof
+      assume hSR: "S = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSR card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+  qed
+  have hQ_not_A: "Q \<notin> A"
+  proof
+    assume hQA: "Q \<in> A"
+    hence "Q \<in> A \<inter> J" using hQ by (by100 blast)
+    hence "Q \<in> {P, R}" using hAJ by (by100 simp)
+    thus False using hQ_ne_PR by (by100 blast)
+  qed
+  have hS_not_A: "S \<notin> A"
+  proof
+    assume hSA: "S \<in> A"
+    hence "S \<in> A \<inter> J" using hS by (by100 blast)
+    hence "S \<in> {P, R}" using hAJ by (by100 simp)
+    thus False using hS_ne_PR by (by100 blast)
+  qed
+  have hsame_component_broken_line_extraction:
+    "\<And>X Y. X \<in> geotop_polygon_interior J - A \<Longrightarrow>
+      Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J - A) X \<Longrightarrow>
+      \<exists>B. geotop_is_broken_line B \<and>
+          B \<subseteq> geotop_polygon_interior J - A \<and> X \<in> B \<and> Y \<in> B"
+    by (rule geotop_open_component_broken_line_between_prefix[OF hcut_open])
   have hD42_theta_component_book_step:
       "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
         \<and> U\<^sub>S \<in> geotop_euclidean_topology
@@ -9926,10 +10019,10 @@ proof -
         \<and> geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
     (**
       Remaining D42 theta component step after the elementary cut-open fact:
-      choose the Q-side and S-side components of \<open>I - A\<close>.  If the two side
-      components coincide, extract the Moise broken-line chord in \<open>I - A\<close>
-      and combine it with the two P-R boundary arcs to obtain the forbidden
-      theta graph from Theorem 2.8. **)
+      choose interior points on the Q-side and S-side.  The local facts above
+      already provide endpoint hygiene and turn a same-component assumption
+      into a broken line in \<open>I - A\<close>; the remaining content is the cyclic-order
+      theta contradiction with the two P-R boundary arcs. **)
     sorry
   show ?thesis
     using hD42_theta_component_book_step by (by100 blast)
