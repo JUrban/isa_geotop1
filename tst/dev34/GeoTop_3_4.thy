@@ -15569,6 +15569,30 @@ proof -
     using hballU hp_poly_ball_s by (by100 blast)
 qed
 
+lemma geotop_edge_rel_interior_inner_radius_witness_from_collar_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hr: "0 < r"
+  shows "p \<in> U - (sphere p r \<inter> \<sigma>) \<and> dist p p < r"
+  (**
+    Inner witness for the collar/radius-crossing proof of Moise Lemma 3:
+    the edge-interior center lies in the domain side strictly inside the chosen
+    spherical crosscut. **)
+proof -
+  have hpU: "p \<in> U"
+    by (rule geotop_edge_rel_interior_point_in_domain_from_collar_dev34
+        [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU])
+  have hp_not_sphere: "p \<notin> sphere p r \<inter> \<sigma>"
+    using hr by (by100 simp)
+  show ?thesis
+    using hpU hp_not_sphere hr by (by100 simp)
+qed
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15619,13 +15643,9 @@ proof -
   have hA_subU: "?A \<subseteq> U"
     by (rule geotop_sphere_simplex_crosscut_subset_domain_from_collar_dev34
         [OF hr hrs hlocal_poly_eq_\<sigma> hballU])
-  have hp_U: "p \<in> U"
-    by (rule geotop_edge_rel_interior_point_in_domain_from_collar_dev34
-        [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU])
-  have hp_not_A: "p \<notin> ?A"
-    using hr by (by100 simp)
   have hp_inner_witness: "p \<in> U - ?A \<and> dist p p < r"
-    using hp_U hp_not_A hr by (by100 simp)
+    by (rule geotop_edge_rel_interior_inner_radius_witness_from_collar_dev34
+        [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU hr])
   show ?thesis
     using hr hrs hA_subU hA_arc hA_sep by (by100 blast)
 qed
