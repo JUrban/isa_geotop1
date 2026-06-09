@@ -1125,6 +1125,96 @@ proof -
   qed
 qed
 
+lemma geotop_complex_subdivide_at_vertices_subset_dev34:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes hR_poly: "R \<in> geotop_polyhedron K"
+  shows "\<exists>K'. geotop_is_complex K'
+      \<and> geotop_complex_is_1dim K'
+      \<and> geotop_polyhedron K' = geotop_polyhedron K
+      \<and> {R} \<in> K'
+      \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
+      \<and> geotop_complex_vertices K' \<subseteq> insert R (geotop_complex_vertices K)
+      \<and> (finite K \<longrightarrow> finite K')"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hR\<sigma>: "R \<in> \<sigma>"
+    using hR_poly unfolding geotop_polyhedron_def by (by100 blast)
+  obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+    using hK_1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+  show ?thesis
+  proof (cases n)
+    case 0
+    obtain V m where hV_fin: "finite V"
+        and hV_card: "card V = 0 + 1"
+        and hm: "0 \<le> m"
+        and hV_gp: "geotop_general_position V m"
+        and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_dim 0 unfolding geotop_simplex_dim_def by (by100 blast)
+    have hV_sing: "\<exists>v. V = {v}"
+      using hV_card by (by100 force)
+    obtain v where hV_eq: "V = {v}"
+      using hV_sing by (by100 blast)
+    have h\<sigma>_sing: "\<sigma> = {v}"
+      using h\<sigma>_hull hV_eq geotop_convex_hull_eq_HOL[of "{v}"]
+      by (by100 simp)
+    have hR_v: "R = v"
+      using hR\<sigma> h\<sigma>_sing by (by100 blast)
+    have hR_K: "{R} \<in> K"
+      using h\<sigma>K h\<sigma>_sing hR_v by (by100 simp)
+    have hold_vertices: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K"
+      by (by100 simp)
+    have hK_vertices:
+      "geotop_complex_vertices K \<subseteq> insert R (geotop_complex_vertices K)"
+      by (by100 blast)
+    show ?thesis
+      using hK_complex hK_1dim hR_K hold_vertices hK_vertices by (by100 blast)
+  next
+    case (Suc k)
+    have hn_eq_1: "n = 1"
+      using hn_le Suc by (by100 simp)
+    have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1"
+      using h\<sigma>_dim hn_eq_1 by (by100 simp)
+    obtain K' where hK'_complex: "geotop_is_complex K'"
+        and hK'_1dim: "geotop_complex_is_1dim K'"
+        and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
+        and hR_K': "{R} \<in> K'"
+        and hK'_sup: "K - {\<sigma>} \<subseteq> K'"
+        and hK'_vertices:
+          "geotop_complex_vertices K' \<subseteq> insert R (geotop_complex_vertices K)"
+        and hK'_fin: "finite K \<longrightarrow> finite K'"
+      using geotop_complex_subdivide_edge_vertices_subset_dev34
+        [OF hK_complex hK_1dim h\<sigma>K h\<sigma>_dim1 hR\<sigma>]
+      by (by100 blast)
+    have h_preserve: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K'"
+    proof (intro allI impI)
+      fix v
+      assume hvK: "{v} \<in> K"
+      have h_not_\<sigma>: "{v} \<noteq> \<sigma>"
+      proof
+        assume heq: "{v} = \<sigma>"
+        have h_dim0: "geotop_simplex_dim {v} 0"
+          by (rule geotop_singleton_is_simplex)
+        have h_\<sigma>_dim0: "geotop_simplex_dim \<sigma> 0"
+          using h_dim0 heq by (by100 simp)
+        have h_01: "(0::nat) = 1"
+          by (rule geotop_simplex_dim_unique[OF h_\<sigma>_dim0 h\<sigma>_dim1])
+        have h_ne: "(0::nat) \<noteq> 1"
+          by (by100 simp)
+        show False
+          using h_01 h_ne by (by100 blast)
+      qed
+      have "{v} \<in> K - {\<sigma>}"
+        using hvK h_not_\<sigma> by (by100 simp)
+      thus "{v} \<in> K'"
+        using hK'_sup by (by100 blast)
+    qed
+    show ?thesis
+      using hK'_complex hK'_1dim hK'_poly hR_K' h_preserve hK'_vertices hK'_fin
+      by (by100 blast)
+  qed
+qed
+
 lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
   fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
