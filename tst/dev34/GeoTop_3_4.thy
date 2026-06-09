@@ -15538,6 +15538,45 @@ proof
     using hballU hx_poly_ball_s by (by100 blast)
 qed
 
+lemma geotop_distance_radius_partition_not_connected_dev34:
+  fixes M :: "(real^2) set"
+  assumes hxM: "x \<in> M"
+  assumes hx_inner: "dist p x < r"
+  assumes hyM: "y \<in> M"
+  assumes hy_outer: "r < dist p y"
+  assumes hcover:
+    "M \<subseteq> {z. dist p z < r} \<union> {z. r < dist p z}"
+  shows "\<not> top1_connected_on M
+      (subspace_topology UNIV geotop_euclidean_topology M)"
+  (**
+    Distance-level separation used by the semicircle collar proof.  The two
+    strict radius sides are relatively open, disjoint, nonempty, and cover
+    the punctured carrier. **)
+proof
+  assume hconn_top: "top1_connected_on M
+      (subspace_topology UNIV geotop_euclidean_topology M)"
+  have hconn: "connected M"
+    using hconn_top top1_connected_on_geotop_iff_connected[of M]
+    by (by100 blast)
+  let ?I = "{z::real^2. dist p z < r}"
+  let ?O = "{z::real^2. r < dist p z}"
+  have hI_open: "open ?I"
+    by (by100 simp)
+  have hO_open: "open ?O"
+    by (by100 simp)
+  have hdisj: "?I \<inter> ?O \<inter> M = {}"
+    by (by100 auto)
+  have hI_ne: "?I \<inter> M \<noteq> {}"
+    using hxM hx_inner by (by100 blast)
+  have hO_ne: "?O \<inter> M \<noteq> {}"
+    using hyM hy_outer by (by100 blast)
+  have "\<exists>A B. open A \<and> open B \<and> M \<subseteq> A \<union> B
+      \<and> A \<inter> B \<inter> M = {} \<and> A \<inter> M \<noteq> {} \<and> B \<inter> M \<noteq> {}"
+    using hI_open hO_open hcover hdisj hI_ne hO_ne by (by100 blast)
+  thus False
+    using hconn unfolding connected_def by (by100 blast)
+qed
+
 lemma geotop_edge_rel_interior_point_in_domain_from_collar_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hp: "p \<in> rel_interior e"
@@ -15648,6 +15687,68 @@ next
   case False
   show ?thesis
     using False by (by100 linarith)
+qed
+
+lemma geotop_collar_crosscut_radius_partition_cover_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> U :: "(real^2) set"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hr: "0 < r"
+  assumes hrs: "r < s"
+  shows "U - (sphere p r \<inter> \<sigma>)
+      \<subseteq> {z. dist p z < r} \<union> {z. r < dist p z}"
+  (**
+    Global strict-radius cover for the punctured collar domain.  If a point of
+    \<open>U - (sphere p r \<inter> \<sigma>)\<close> had exact radius \<open>r\<close>, then \<open>r < s\<close> places it
+    inside the collar ball and the local carrier equality puts it back in the
+    deleted crosscut. **)
+proof
+  fix z
+  assume hz: "z \<in> U - (sphere p r \<inter> \<sigma>)"
+  show "z \<in> {z. dist p z < r} \<union> {z. r < dist p z}"
+  proof (cases "dist p z = r")
+    case True
+    have hz_ball: "z \<in> ball p s"
+      using True hrs by (by100 simp)
+    have False
+      by (rule geotop_collar_point_outside_crosscut_not_on_radius_dev34
+          [OF hlocal_poly_eq_\<sigma> hUsubM hz hz_ball True])
+    thus ?thesis
+      by (rule FalseE)
+  next
+    case False
+    show ?thesis
+      using False by (by100 linarith)
+  qed
+qed
+
+lemma geotop_collar_crosscut_inner_outer_not_connected_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> U :: "(real^2) set"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hr: "0 < r"
+  assumes hrs: "r < s"
+  assumes hx: "x \<in> U - (sphere p r \<inter> \<sigma>)"
+  assumes hx_inner: "dist p x < r"
+  assumes hy: "y \<in> U - (sphere p r \<inter> \<sigma>)"
+  assumes hy_outer: "r < dist p y"
+  shows "\<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+      (subspace_topology UNIV geotop_euclidean_topology
+        (U - (sphere p r \<inter> \<sigma>)))"
+  (**
+    Assembled collar separation step: inner and outer witnesses, together
+    with the exact-radius exclusion, split the punctured collar domain by
+    the distance-to-center function. **)
+proof -
+  have hcover: "U - (sphere p r \<inter> \<sigma>)
+      \<subseteq> {z. dist p z < r} \<union> {z. r < dist p z}"
+    by (rule geotop_collar_crosscut_radius_partition_cover_dev34
+        [OF hlocal_poly_eq_\<sigma> hUsubM hr hrs])
+  show ?thesis
+    by (rule geotop_distance_radius_partition_not_connected_dev34
+        [OF hx hx_inner hy hy_outer hcover])
 qed
 
 lemma geotop_connected_collar_crosscut_radius_crossing_contradiction_dev34:
