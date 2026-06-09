@@ -15025,6 +15025,35 @@ lemma geotop_endpoint_nonfinish_degree_bound_book_step_dev34:
   by (rule geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34
       [OF hL_linear hL_finite hbroken hconn])
 
+lemma geotop_endpoint_boundary_edge_cone_target_model_of_length_dev34:
+  fixes n :: nat
+  assumes hlong: "2 < n"
+  shows "\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = n
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Pure geometric long endpoint target model.  For any requested length
+    \<open>n > 2\<close>, subdivide one boundary edge of a named 2-simplex into an ordered
+    endpoint chain of \<open>n\<close> vertices, then cone that edge subdivision from the
+    third simplex vertex.  This isolates the construction from the source
+    graph; source matching is handled by the existing endpoint-chain
+    bijection lemmas. **)
+  sorry
+
 lemma geotop_endpoint_chain_boundary_edge_cone_target_model_long_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -15054,7 +15083,8 @@ lemma geotop_endpoint_chain_boundary_edge_cone_target_model_long_dev34:
     ordered vertices on one boundary edge of a named 2-simplex and cone that
     boundary-edge subdivision from the third vertex.  The source-target
     indexwise bijection is handled separately by list bookkeeping. **)
-  sorry
+  by (rule geotop_endpoint_boundary_edge_cone_target_model_of_length_dev34
+      [where n="length vs", OF hlong])
 
 lemma geotop_endpoint_chain_boundary_edge_cone_target_data_long_book_step_dev34:
   fixes L :: "(real^2) set set"
