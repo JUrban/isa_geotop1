@@ -15067,6 +15067,118 @@ where
         \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
             ` {0..<length us - 1}))"
 
+definition geotop_segment_chain_vertices_dev34 ::
+  "real^2 \<Rightarrow> real^2 \<Rightarrow> nat \<Rightarrow> (real^2) list"
+where
+  "geotop_segment_chain_vertices_dev34 a b n =
+    map (\<lambda>i. linepath a b (real i / real (n - 1))) [0..<n]"
+
+lemma geotop_segment_chain_vertices_basic_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  shows "length us = n
+    \<and> us ! 0 = a
+    \<and> us ! (length us - 1) = b
+    \<and> distinct us
+    \<and> set us \<subseteq> closed_segment a b"
+proof -
+  let ?t = "\<lambda>i::nat. real i / real (n - 1)"
+  let ?u = "\<lambda>i::nat. linepath a b (?t i)"
+  have hden_pos: "0 < real (n - 1)"
+    using hlong by (by100 simp)
+  have hden_ne: "real (n - 1) \<noteq> 0"
+    using hden_pos by (by100 linarith)
+  have hlen: "length us = n"
+    unfolding us_def geotop_segment_chain_vertices_dev34_def
+    by (by100 simp)
+  have hfirst: "us ! 0 = a"
+    unfolding us_def geotop_segment_chain_vertices_dev34_def linepath_def
+    using hlong by (by100 simp)
+  have hlast: "us ! (length us - 1) = b"
+  proof -
+    have hidx: "n - 1 < n"
+      using hlong by (by100 linarith)
+    have hratio: "real (n - 1) / real (n - 1) = (1::real)"
+      using hden_ne by (by100 simp)
+    show ?thesis
+      unfolding us_def geotop_segment_chain_vertices_dev34_def linepath_def
+      using hlen hidx hratio by (by100 simp)
+  qed
+  have hparam_interval:
+      "\<And>i. i \<in> {0..<n} \<Longrightarrow> ?t i \<in> {0..1::real}"
+  proof -
+    fix i assume hi: "i \<in> {0..<n}"
+    have hi_le: "i \<le> n - 1"
+      using hi by (by100 simp)
+    have hnonneg: "0 \<le> ?t i"
+      using hden_pos by (by100 simp)
+    have hub: "?t i \<le> 1"
+      using hi_le hden_pos by (by100 simp)
+    show "?t i \<in> {0..1::real}"
+      using hnonneg hub by (by100 simp)
+  qed
+  have hset: "set us \<subseteq> closed_segment a b"
+  proof
+    fix x assume hx: "x \<in> set us"
+    have himage: "linepath a b ` {0..1::real} = closed_segment a b"
+      by (rule linepath_image_01)
+    obtain i where hi: "i \<in> {0..<n}" and hx_eq: "x = ?u i"
+      using hx unfolding us_def geotop_segment_chain_vertices_dev34_def
+      by (by100 auto)
+    have "?t i \<in> {0..1::real}"
+      by (rule hparam_interval[OF hi])
+    hence "?u i \<in> linepath a b ` {0..1::real}"
+      by (by100 blast)
+    thus "x \<in> closed_segment a b"
+      using hx_eq himage by (by100 simp)
+  qed
+  have hparam_inj: "inj_on ?t {0..<n}"
+  proof (rule inj_onI)
+    fix i j
+    assume hi: "i \<in> {0..<n}" and hj: "j \<in> {0..<n}"
+    assume hij: "?t i = ?t j"
+    have "real i = real j"
+      using hij hden_ne by (simp add: field_simps)
+    thus "i = j"
+      by (by100 simp)
+  qed
+  have hline_inj: "inj_on (linepath a b) {0..1::real}"
+    by (rule inj_on_linepath[OF hab])
+  have hu_inj: "inj_on ?u {0..<n}"
+  proof (rule inj_onI)
+    fix i j
+    assume hi: "i \<in> {0..<n}" and hj: "j \<in> {0..<n}"
+    assume hij: "?u i = ?u j"
+    have hti: "?t i \<in> {0..1::real}"
+      by (rule hparam_interval[OF hi])
+    have htj: "?t j \<in> {0..1::real}"
+      by (rule hparam_interval[OF hj])
+    have ht_eq: "?t i = ?t j"
+      using inj_onD[OF hline_inj hij hti htj] .
+    show "i = j"
+      using inj_onD[OF hparam_inj ht_eq hi hj] .
+  qed
+  have hdistinct: "distinct us"
+    unfolding us_def geotop_segment_chain_vertices_dev34_def
+    using hu_inj by (simp add: distinct_map)
+  show ?thesis
+    using hlen hfirst hlast hdistinct hset by (by100 blast)
+qed
+
+lemma geotop_segment_chain_vertices_listing_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  defines "F \<equiv> ((\<lambda>x. {x}) ` set us)
+    \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+        ` {0..<length us - 1})"
+  shows "geotop_is_linear_graph F
+    \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a (us ! 1) us"
+  sorry
+
 lemma geotop_ordered_segment_endpoint_chain_target_of_length_dev34:
   fixes a b :: "real^2"
   assumes hab: "a \<noteq> b"
@@ -15087,7 +15199,60 @@ lemma geotop_ordered_segment_endpoint_chain_target_of_length_dev34:
     step is to place exactly \<open>n\<close> distinct vertices in order on the segment
     \<open>[a,b]\<close>, including the endpoints, and take the singleton vertices plus
     adjacent subsegments as the target endpoint chain. **)
-  sorry
+proof -
+  define us where "us = geotop_segment_chain_vertices_dev34 a b n"
+  define F where "F = ((\<lambda>x. {x}) ` set us)
+    \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+        ` {0..<length us - 1})"
+  have hbasic:
+      "length us = n
+      \<and> us ! 0 = a
+      \<and> us ! (length us - 1) = b
+      \<and> distinct us
+      \<and> set us \<subseteq> closed_segment a b"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_basic_dev34[OF hab hlong])
+  have hlisting:
+      "geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a (us ! 1) us"
+    unfolding F_def us_def
+    by (rule geotop_segment_chain_vertices_listing_dev34[OF hab hlong])
+  have hF_linear: "geotop_is_linear_graph F"
+    using hlisting by (by100 blast)
+  have hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F a (us ! 1) us"
+    using hlisting by (by100 blast)
+  have hlen: "length us = n"
+    using hbasic by (by100 blast)
+  have hfirst: "us ! 0 = a"
+    using hbasic by (by100 blast)
+  have hlast: "us ! (length us - 1) = b"
+    using hbasic by (by100 blast)
+  have hdistinct: "distinct us"
+    using hbasic by (by100 blast)
+  have hset: "set us \<subseteq> closed_segment a b"
+    using hbasic by (by100 blast)
+  show ?thesis
+  proof (intro exI conjI)
+    show "geotop_is_linear_graph F"
+      by (rule hF_linear)
+    show "geotop_linear_graph_endpoint_chain_listing_dev34 F a (us ! 1) us"
+      by (rule hFlist)
+    show "length us = n"
+      by (rule hlen)
+    show "us ! 0 = a"
+      by (rule hfirst)
+    show "us ! (length us - 1) = b"
+      by (rule hlast)
+    show "distinct us"
+      by (rule hdistinct)
+    show "set us \<subseteq> closed_segment a b"
+      by (rule hset)
+    show "F =
+      ((\<lambda>x. {x}) ` set us) \<union>
+      ((\<lambda>i. closed_segment (us ! i) (us ! Suc i)) ` {0..<length us - 1})"
+      by (rule F_def)
+  qed
+qed
 
 lemma geotop_endpoint_boundary_edge_chain_target_of_length_dev34:
   fixes n :: nat
