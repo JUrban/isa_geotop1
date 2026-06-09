@@ -3146,9 +3146,43 @@ proof -
     show ?thesis
       using hcard hsource_vertices_card_ge3 by (by100 linarith)
   qed
+  obtain xs\<^sub>B where hxs\<^sub>B_set:
+        "set xs\<^sub>B = T_extra"
+      and hxs\<^sub>B_distinct:
+        "distinct xs\<^sub>B"
+    using finite_distinct_list_of_set[OF hT_extra_finite] by (by100 blast)
+  define u\<^sub>B_list where
+      "u\<^sub>B_list = [a\<^sub>\<sigma>] @ xs\<^sub>B @ [b\<^sub>\<sigma>, c\<^sub>\<sigma>]"
+  have hu\<^sub>B_list_set:
+      "set u\<^sub>B_list = S_B"
+    unfolding u\<^sub>B_list_def S_B_def using hxs\<^sub>B_set by (by100 simp)
+  have hu\<^sub>B_list_distinct:
+      "distinct u\<^sub>B_list"
+    unfolding u\<^sub>B_list_def
+    using hxs\<^sub>B_distinct hxs\<^sub>B_set hT_extra_disjoint_named
+      ha\<^sub>\<sigma>b\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma>
+    by (by100 simp)
+  have hu\<^sub>B_list_length:
+      "length u\<^sub>B_list = card (geotop_complex_vertices L)"
+  proof -
+    have hlength:
+        "length u\<^sub>B_list = 3 + length xs\<^sub>B"
+      unfolding u\<^sub>B_list_def by (by100 simp)
+    have hxs_len:
+        "length xs\<^sub>B = card T_extra"
+      using distinct_card[OF hxs\<^sub>B_distinct] hxs\<^sub>B_set by (by100 simp)
+    have hlen_raw:
+        "length u\<^sub>B_list = 3 + card T_extra"
+      using hlength hxs_len by (by100 simp)
+    show ?thesis
+      using hlen_raw hT_extra_card hsource_vertices_card_ge3 by (by100 linarith)
+  qed
   have htarget_prescribed_subdivision:
-      "\<exists>F. geotop_is_subdivision F ?B
+      "\<exists>F. geotop_is_complex F
+        \<and> geotop_complex_is_1dim F
         \<and> finite F
+        \<and> geotop_is_subdivision F ?B
+        \<and> geotop_polyhedron F = geotop_polyhedron ?B
         \<and> (\<forall>x\<in>S_B. {x} \<in> F)
         \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)
         \<and> geotop_complex_vertices F \<subseteq>
@@ -3156,10 +3190,16 @@ proof -
     using geotop_2simplex_boundary_finite_points_as_vertices_vertices_subset_dev34
       [OF h\<sigma> hS_B_finite hS_B_subset_B_poly]
     by (by100 blast)
-  obtain F_B where hF_B_sub:
-        "geotop_is_subdivision F_B ?B"
+  obtain F_B where hF_B_complex:
+        "geotop_is_complex F_B"
+      and hF_B_1dim:
+        "geotop_complex_is_1dim F_B"
       and hF_B_finite:
         "finite F_B"
+      and hF_B_sub:
+        "geotop_is_subdivision F_B ?B"
+      and hF_B_poly_eq:
+        "geotop_polyhedron F_B = geotop_polyhedron ?B"
       and hS_B_vertices_in_F_B:
         "\<forall>x\<in>S_B. {x} \<in> F_B"
       and hB_old_vertices_in_F_B:
@@ -3168,9 +3208,10 @@ proof -
         "geotop_complex_vertices F_B \<subseteq>
           S_B \<union> geotop_complex_vertices ?B"
     using htarget_prescribed_subdivision by (by100 blast)
-  have hF_B_complex:
-      "geotop_is_complex F_B"
-    by (rule geotop_subdivision_source_is_complex_dev34[OF hF_B_sub])
+  have hF_B_linear:
+      "geotop_is_linear_graph F_B"
+    by (rule geotop_complex_1dim_imp_linear_graph_dev34
+        [OF hF_B_complex hF_B_1dim])
   have hS_B_subset_F_B_vertices:
       "S_B \<subseteq> geotop_complex_vertices F_B"
   proof
@@ -3196,6 +3237,12 @@ proof -
       "card (geotop_complex_vertices F_B)
         = card (geotop_complex_vertices L)"
     using hF_B_vertices_eq_S_B hS_B_card by (by100 simp)
+  have hu\<^sub>B_list_set_F_B_vertices:
+      "set u\<^sub>B_list = geotop_complex_vertices F_B"
+    using hu\<^sub>B_list_set hF_B_vertices_eq_S_B by (by100 simp)
+  have hu\<^sub>B_list_length_F_B_vertices:
+      "length u\<^sub>B_list = card (geotop_complex_vertices F_B)"
+    using hu\<^sub>B_list_length hF_B_vertices_card by (by100 simp)
   have hsource_vertices_card_le_F_B_vertices:
       "card (geotop_complex_vertices L)
         \<le> card (geotop_complex_vertices F_B)"
