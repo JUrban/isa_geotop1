@@ -15133,6 +15133,99 @@ next
     using hr0 hr1 hline by (by100 blast)
 qed
 
+lemma geotop_linepath_subsegment_param_bounds_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hs: "s \<in> {0..1::real}"
+  assumes ht: "t \<in> {0..1::real}"
+  assumes hu: "u \<in> {0..1::real}"
+  assumes hsu: "s \<le> u"
+  assumes hx: "linepath a b t \<in> closed_segment (linepath a b s) (linepath a b u)"
+  shows "s \<le> t \<and> t \<le> u"
+proof -
+  obtain r where hr0: "0 \<le> r" and hr1: "r \<le> 1"
+      and hx_eq: "linepath a b t =
+        (1 - r) *\<^sub>R linepath a b s + r *\<^sub>R linepath a b u"
+    using hx unfolding closed_segment_def by (by100 blast)
+  define v where "v = (1 - r) * s + r * u"
+  have hline:
+      "(1 - r) *\<^sub>R linepath a b s + r *\<^sub>R linepath a b u =
+        linepath a b v"
+  proof -
+    show ?thesis
+      unfolding linepath_def v_def
+      apply (simp add: vec_eq_iff)
+      apply (intro allI)
+      by (simp add: algebra_simps)
+  qed
+  have hv0: "0 \<le> v"
+  proof -
+    have h1r0: "0 \<le> 1 - r"
+      using hr1 by (by100 simp)
+    have hs0: "0 \<le> s"
+      using hs by (by100 simp)
+    have hu0: "0 \<le> u"
+      using hu by (by100 simp)
+    have hleft: "0 \<le> (1 - r) * s"
+      by (rule mult_nonneg_nonneg[OF h1r0 hs0])
+    have hright: "0 \<le> r * u"
+      by (rule mult_nonneg_nonneg[OF hr0 hu0])
+    show ?thesis
+      unfolding v_def using hleft hright by (by100 simp)
+  qed
+  have hv1: "v \<le> 1"
+  proof -
+    have h1r0: "0 \<le> 1 - r"
+      using hr1 by (by100 simp)
+    have hs1: "s \<le> 1"
+      using hs by (by100 simp)
+    have hu1: "u \<le> 1"
+      using hu by (by100 simp)
+    have hleft: "(1 - r) * s \<le> (1 - r) * 1"
+      by (rule mult_left_mono[OF hs1 h1r0])
+    have hright: "r * u \<le> r * 1"
+      by (rule mult_left_mono[OF hu1 hr0])
+    have hsum_le: "(1 - r) * s + r * u \<le> (1 - r) * 1 + r * 1"
+      using hleft hright by (by100 linarith)
+    have hsum_eq: "(1 - r) * 1 + r * 1 = (1::real)"
+      by (by100 simp)
+    show ?thesis
+      unfolding v_def using hsum_le hsum_eq by (by100 linarith)
+  qed
+  have hv: "v \<in> {0..1::real}"
+    using hv0 hv1 by (by100 simp)
+  have hinj: "inj_on (linepath a b) {0..1::real}"
+    by (rule inj_on_linepath[OF hab])
+  have ht_eq_v: "t = v"
+    using inj_onD[OF hinj _ ht hv] hx_eq hline by (by100 simp)
+  have hsv: "s \<le> v"
+  proof -
+    have hdiff: "v - s = r * (u - s)"
+      unfolding v_def by (by100 argo)
+    have hus_nonneg: "0 \<le> u - s"
+      using hsu by (by100 simp)
+    have hdiff_nonneg: "0 \<le> r * (u - s)"
+      by (rule mult_nonneg_nonneg[OF hr0 hus_nonneg])
+    show ?thesis
+      using hdiff hdiff_nonneg by (by100 linarith)
+  qed
+  have hvu: "v \<le> u"
+  proof -
+    have h1r0: "0 \<le> 1 - r"
+      using hr1 by (by100 simp)
+    have hdiff: "u - v = (1 - r) * (u - s)"
+      unfolding v_def by (by100 argo)
+    have hus_nonneg: "0 \<le> u - s"
+      using hsu by (by100 simp)
+    have hdiff_nonneg: "0 \<le> (1 - r) * (u - s)"
+      by (rule mult_nonneg_nonneg[OF h1r0 hus_nonneg])
+    show ?thesis
+      using hdiff hdiff_nonneg by (by100 linarith)
+  qed
+  show ?thesis
+    using ht_eq_v hsv hvu by (by100 simp)
+qed
+
 lemma geotop_segment_chain_vertices_nth_dev34:
   assumes hi: "i < n"
   shows "geotop_segment_chain_vertices_dev34 a b n ! i =
