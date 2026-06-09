@@ -14868,8 +14868,235 @@ next
     broken-line arc order must first give the local degree-one-or-two bound,
     then the source chain is enumerated and realized as a same-length boundary
     arc subdivision. **)
-  show ?thesis
+  have hnonfinish_source_chain_and_target_book_step:
+      "\<exists>vs. (\<forall>x. {x} \<in> L \<longrightarrow>
+          card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+          card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2)
+        \<and> geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+        \<and> (\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+          geotop_is_linear_graph F
+          \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+          \<and> length us = length vs
+          \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+          \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+          \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_subdivision L' T
+          \<and> c \<notin> geotop_complex_vertices F
+          \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+          \<and> geotop_convex_hull {c} \<in> L'
+          \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+          \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')))"
+    (**
+      Exact non-finish Fig. 4.10 endpoint package.  Since \<open>q\<close> is not the
+      opposite endpoint, the broken-line arc order first gives the
+      degree-one-or-two bound on all vertices.  The leaf-deletion chain-listing
+      lemma then enumerates \<open>L\<close> from \<open>w\<close> through \<open>q\<close>.  Finally the listed
+      source chain is matched to a boundary-arc subdivision of one edge of a
+      2-simplex and coned from the third vertex. **)
     sorry
+  obtain vs where hnonfinish_pack:
+      "(\<forall>x. {x} \<in> L \<longrightarrow>
+          card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+          card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2)
+        \<and> geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+        \<and> (\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+          geotop_is_linear_graph F
+          \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+          \<and> length us = length vs
+          \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+          \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+          \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_subdivision L' T
+          \<and> c \<notin> geotop_complex_vertices F
+          \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+          \<and> geotop_convex_hull {c} \<in> L'
+          \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+          \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')))"
+  proof (rule exE[OF hnonfinish_source_chain_and_target_book_step])
+    fix vs
+    assume hpack:
+      "(\<forall>x. {x} \<in> L \<longrightarrow>
+          card {d \<in> L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+          card {d \<in> L. geotop_is_edge d \<and> x \<in> d} = 2) \<and>
+        geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs \<and>
+        (\<exists>F w' q' us T \<sigma> L' c \<psi>.
+          geotop_is_linear_graph F \<and>
+          geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us \<and>
+          length us = length vs \<and>
+          bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F) \<and>
+          (\<forall>i<length vs. \<psi> (vs ! i) = us ! i) \<and>
+          T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} \<and>
+          geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_subdivision L' T \<and>
+          c \<notin> geotop_complex_vertices F \<and>
+          geotop_complex_vertices L' = insert c (geotop_complex_vertices F) \<and>
+          geotop_convex_hull {c} \<in> L' \<and>
+          (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull W \<in> L')) \<and>
+          (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')))"
+    show thesis
+      by (rule that[OF hpack])
+  qed
+  have hdegree12:
+      "\<forall>x. {x} \<in> L \<longrightarrow>
+        card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+        card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2"
+    using hnonfinish_pack by (by100 simp)
+  have hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+    using hnonfinish_pack by (by100 simp)
+  have htarget_model:
+      "\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+        geotop_is_linear_graph F
+        \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+        \<and> length us = length vs
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+        \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> geotop_is_subdivision L' T
+        \<and> c \<notin> geotop_complex_vertices F
+        \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+        \<and> geotop_convex_hull {c} \<in> L'
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+        \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+          W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+    using hnonfinish_pack by (by100 simp)
+  obtain F w' q' us T \<sigma> L' c \<psi> where htarget_pack:
+      "geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  proof -
+    from htarget_model show thesis
+    proof (elim exE)
+      fix F w' q' us T \<sigma> L' c \<psi>
+      assume hpack:
+        "geotop_is_linear_graph F \<and>
+        geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us \<and>
+        length us = length vs \<and>
+        bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F) \<and>
+        (\<forall>i<length vs. \<psi> (vs ! i) = us ! i) \<and>
+        T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} \<and>
+        geotop_simplex_dim \<sigma> 2 \<and>
+        geotop_is_subdivision L' T \<and>
+        c \<notin> geotop_complex_vertices F \<and>
+        geotop_complex_vertices L' = insert c (geotop_complex_vertices F) \<and>
+        geotop_convex_hull {c} \<in> L' \<and>
+        (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull W \<in> L')) \<and>
+        (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+          W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+      show thesis
+        by (rule that[OF hpack])
+    qed
+  qed
+  have hF_linear: "geotop_is_linear_graph F"
+    using htarget_pack by (by100 simp)
+  have hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+    using htarget_pack by (by100 simp)
+  have hlen: "length us = length vs"
+    using htarget_pack by (by100 simp)
+  have h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L)
+      (geotop_complex_vertices F)"
+    using htarget_pack by (by100 simp)
+  have h\<psi>idx: "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+    using htarget_pack by (by100 simp)
+  have hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using htarget_pack by (by100 simp)
+  have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    using htarget_pack by (by100 simp)
+  have hsub: "geotop_is_subdivision L' T"
+    using htarget_pack by (by100 simp)
+  have hcF: "c \<notin> geotop_complex_vertices F"
+    using htarget_pack by (by100 simp)
+  have hvertices: "geotop_complex_vertices L' =
+      insert c (geotop_complex_vertices F)"
+    using htarget_pack by (by100 simp)
+  have hc_simplex: "geotop_convex_hull {c} \<in> L'"
+    using htarget_pack by (by100 simp)
+  have hboundary:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+    using htarget_pack by (by100 simp)
+  have hcone:
+      "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
+    using htarget_pack by (by100 simp)
+  show ?thesis
+  proof (intro exI conjI)
+    show "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+      by (rule hlist)
+    show "geotop_is_linear_graph F"
+      by (rule hF_linear)
+    show "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+      by (rule hFlist)
+    show "length us = length vs"
+      by (rule hlen)
+    show "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+      by (rule h\<psi>bij)
+    show "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+      by (rule h\<psi>idx)
+    show "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+      by (rule hT)
+    show "geotop_simplex_dim \<sigma> 2"
+      by (rule h\<sigma>)
+    show "geotop_is_subdivision L' T"
+      by (rule hsub)
+    show "c \<notin> geotop_complex_vertices F"
+      by (rule hcF)
+    show "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)"
+      by (rule hvertices)
+    show "geotop_convex_hull {c} \<in> L'"
+      by (rule hc_simplex)
+    show "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+      (geotop_convex_hull W \<in> F \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+      by (rule hboundary)
+    show "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+      W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+      (geotop_convex_hull W \<in> F \<longleftrightarrow>
+        geotop_convex_hull (insert c W) \<in> L')"
+      by (rule hcone)
+  qed
 qed
 
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
