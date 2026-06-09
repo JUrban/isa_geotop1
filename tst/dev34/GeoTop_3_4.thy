@@ -15751,6 +15751,39 @@ proof -
         [OF hx hx_inner hy hy_outer hcover])
 qed
 
+lemma geotop_edge_collar_crosscut_outer_witness_not_connected_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hr: "0 < r"
+  assumes hrs: "r < s"
+  assumes hy: "y \<in> U - (sphere p r \<inter> \<sigma>)"
+  assumes hy_outer: "r < dist p y"
+  shows "\<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+      (subspace_topology UNIV geotop_euclidean_topology
+        (U - (sphere p r \<inter> \<sigma>)))"
+  (**
+    Outer-witness form of the collar separation step.  The edge-interior
+    center supplies the inner witness; any point of the punctured collar domain
+    beyond radius \<open>r\<close> supplies the outer witness. **)
+proof -
+  have hp_inner: "p \<in> U - (sphere p r \<inter> \<sigma>) \<and> dist p p < r"
+    by (rule geotop_edge_rel_interior_inner_radius_witness_from_collar_dev34
+        [OF hp h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU hr])
+  have hp_in: "p \<in> U - (sphere p r \<inter> \<sigma>)"
+    using hp_inner by (by100 blast)
+  have hp_dist: "dist p p < r"
+    using hp_inner by (by100 blast)
+  show ?thesis
+    by (rule geotop_collar_crosscut_inner_outer_not_connected_dev34
+        [OF hlocal_poly_eq_\<sigma> hUsubM hr hrs hp_in hp_dist hy hy_outer])
+qed
+
 lemma geotop_connected_collar_crosscut_radius_crossing_contradiction_dev34:
   fixes K :: "(real^2) set set" and \<sigma> U C :: "(real^2) set"
   assumes hlocal_poly_eq_\<sigma>:
