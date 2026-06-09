@@ -15073,6 +15073,66 @@ where
   "geotop_segment_chain_vertices_dev34 a b n =
     map (\<lambda>i. linepath a b (real i / real (n - 1))) [0..<n]"
 
+lemma geotop_linepath_between_params_dev34:
+  fixes a b :: "real^2"
+  assumes hst: "s \<le> t"
+  assumes htu: "t \<le> u"
+  shows "linepath a b t \<in> closed_segment (linepath a b s) (linepath a b u)"
+proof (cases "s = u")
+  case True
+  hence "t = s"
+    using hst htu by (by100 linarith)
+  thus ?thesis
+    using True by (by100 simp)
+next
+  case False
+  have hsu: "s < u"
+    using hst htu False by (by100 linarith)
+  define r where "r = (t - s) / (u - s)"
+  have hr0: "0 \<le> r"
+    unfolding r_def using hst hsu by (by100 simp)
+  have hr1: "r \<le> 1"
+  proof -
+    have "t - s \<le> u - s"
+      using htu by (by100 simp)
+    thus ?thesis
+      unfolding r_def using hsu by (by100 simp)
+  qed
+  have ht: "t = (1 - r) * s + r * u"
+  proof -
+    have hden_ne: "u - s \<noteq> 0"
+      using hsu by (by100 linarith)
+    have hr_eq: "r * (u - s) = t - s"
+      unfolding r_def using hden_ne by (by100 simp)
+    have hright: "(1 - r) * s + r * u = s + r * (u - s)"
+      by (by100 argo)
+    have "s + r * (u - s) = t"
+      using hr_eq by (by100 argo)
+    thus ?thesis
+      using hright by (by100 simp)
+  qed
+  have hline:
+      "linepath a b t =
+        (1 - r) *\<^sub>R linepath a b s + r *\<^sub>R linepath a b u"
+  proof -
+    have hbcoef: "(1 - r) * s + r * u = t"
+      using ht by (by100 simp)
+    have hacoef: "(1 - r) * (1 - s) + r * (1 - u) = 1 - t"
+      using ht by (by100 argo)
+    have ht_rewrite: "t = s + r * u - r * s"
+      using hbcoef by (by100 argo)
+    show ?thesis
+      unfolding linepath_def
+      apply (simp add: vec_eq_iff)
+      apply (intro allI)
+      apply (subst ht_rewrite)+
+      by (simp add: algebra_simps)
+  qed
+  show ?thesis
+    unfolding closed_segment_def
+    using hr0 hr1 hline by (by100 blast)
+qed
+
 lemma geotop_segment_chain_vertices_nth_dev34:
   assumes hi: "i < n"
   shows "geotop_segment_chain_vertices_dev34 a b n ! i =
@@ -15109,6 +15169,75 @@ proof -
     using hij by (by100 simp)
   thus ?thesis
     by (rule divide_strict_right_mono[OF _ hden_pos])
+qed
+
+lemma geotop_segment_chain_vertices_between_indices_dev34:
+  fixes a b :: "real^2"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  assumes hij: "i \<le> j"
+  assumes hjk: "j \<le> k"
+  assumes hk: "k < n"
+  shows "us ! j \<in> closed_segment (us ! i) (us ! k)"
+proof -
+  have hi: "i < n"
+    using hij hjk hk by (by100 linarith)
+  have hj: "j < n"
+    using hjk hk by (by100 linarith)
+  have hden_pos: "0 < real (n - 1)"
+    using hlong by (by100 simp)
+  have htij:
+      "real i / real (n - 1) \<le> real j / real (n - 1)"
+    using hij hden_pos by (simp add: divide_right_mono)
+  have htjk:
+      "real j / real (n - 1) \<le> real k / real (n - 1)"
+    using hjk hden_pos by (simp add: divide_right_mono)
+  have hi_nth:
+      "us ! i = linepath a b (real i / real (n - 1))"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hi])
+  have hj_nth:
+      "us ! j = linepath a b (real j / real (n - 1))"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hj])
+  have hk_nth:
+      "us ! k = linepath a b (real k / real (n - 1))"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hk])
+  have "linepath a b (real j / real (n - 1))
+      \<in> closed_segment
+        (linepath a b (real i / real (n - 1)))
+        (linepath a b (real k / real (n - 1)))"
+    by (rule geotop_linepath_between_params_dev34[OF htij htjk])
+  thus ?thesis
+    using hi_nth hj_nth hk_nth by (by100 simp)
+qed
+
+lemma geotop_segment_chain_adjacent_edges_inter_dev34:
+  fixes a b :: "real^2"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  assumes hk: "Suc (Suc i) < length us"
+  shows "closed_segment (us ! i) (us ! Suc i)
+      \<inter> closed_segment (us ! Suc i) (us ! Suc (Suc i))
+    = {us ! Suc i}"
+proof -
+  have hlen: "length us = n"
+    unfolding us_def geotop_segment_chain_vertices_dev34_def by (by100 simp)
+  have hk_n: "Suc (Suc i) < n"
+    using hk hlen by (by100 simp)
+  have hmid0:
+      "geotop_segment_chain_vertices_dev34 a b n ! Suc i
+        \<in> closed_segment
+          (geotop_segment_chain_vertices_dev34 a b n ! i)
+          (geotop_segment_chain_vertices_dev34 a b n ! Suc (Suc i))"
+    by (rule geotop_segment_chain_vertices_between_indices_dev34
+        [OF hlong _ _ hk_n]) (by100 simp_all)
+  have hmid:
+      "us ! Suc i \<in> closed_segment (us ! i) (us ! Suc (Suc i))"
+    using hmid0 unfolding us_def by (by100 simp)
+  show ?thesis
+    using hmid by (rule Int_closed_segment[OF disjI1])
 qed
 
 lemma geotop_segment_chain_vertices_basic_dev34:
