@@ -2354,6 +2354,26 @@ proof -
               (fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c))"
       using hj hedge by (by100 blast)
   qed
+  have hsource_successor_vertex_edge_decomp:
+      "L = ((\<lambda>v. {v}) ` geotop_complex_vertices L)
+        \<union> {e\<in>L. geotop_is_edge e}"
+  proof -
+    have hsingle:
+        "((\<lambda>w. {w}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+            ` {0..<p\<^sub>c}))
+        = ((\<lambda>v. {v}) ` geotop_complex_vertices L)"
+      using hsource_successor_vertices_eq by (by100 simp)
+    have hedge:
+        "((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s\<^sub>c)))
+            ` {0..<p\<^sub>c})
+        = {e\<in>L. geotop_is_edge e}"
+      by (rule hsource_successor_edge_orbit_eq)
+    show ?thesis
+      using hsource_successor_cycle_decomp hsingle hedge by (by100 simp)
+  qed
   have hsource_listed_edge_endpoints_vertices:
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> v k \<in> geotop_complex_vertices L
