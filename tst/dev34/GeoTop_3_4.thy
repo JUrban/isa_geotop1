@@ -15783,6 +15783,25 @@ proof -
     by (rule subset_antisym[OF hsubL hsup])
 qed
 
+lemma geotop_endpoint_boundary_edge_chain_cone_is_subdivision_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hF_linear: "geotop_is_linear_graph F"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  (**
+    Remaining endpoint fan subdivision package.  The placed chain subdivides
+    the base edge of \<open>\<sigma>\<close>; coning all old simplices from the opposite vertex
+    should give a complex that refines the full face complex of \<open>\<sigma>\<close> and has
+    carrier \<open>\<sigma>\<close>.  The proof should mirror the already proved full-boundary
+    cone subdivision, replacing the full boundary radial cover by the one-edge
+    radial cover from \<open>c\<close> to the subdivided base segment. **)
+  sorry
+
 definition geotop_segment_chain_vertices_dev34 ::
   "real^2 \<Rightarrow> real^2 \<Rightarrow> nat \<Rightarrow> (real^2) list"
 where
@@ -17636,7 +17655,8 @@ proof -
         (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
     by (by100 simp)
   have hsub: "geotop_is_subdivision ?L' ?T"
-    sorry
+    by (rule geotop_endpoint_boundary_edge_chain_cone_is_subdivision_dev34
+        [OF hF_linear h\<sigma> hplace hL])
   have hvertices:
       "geotop_complex_vertices ?L' = insert c (geotop_complex_vertices F)"
     by (rule geotop_endpoint_boundary_edge_chain_cone_vertices_eq_dev34
