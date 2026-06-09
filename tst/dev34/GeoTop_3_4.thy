@@ -3383,6 +3383,18 @@ proof -
     thus "x \<in> frontier \<sigma>"
       using hF_B_poly_eq_frontier by (by100 simp)
   qed
+  have hF_B_poly_eq_named_edges:
+      "geotop_polyhedron F_B =
+        \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+    using hF_B_poly_eq_frontier h\<sigma>_frontier_named_edges by (by100 simp)
+  have hF_B_simplex_subset_named_edges:
+      "\<And>A. A \<in> F_B \<Longrightarrow>
+        A \<subseteq> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+    using hF_B_simplex_subset_frontier h\<sigma>_frontier_named_edges by (by100 simp)
   have hF_B_linear:
       "geotop_is_linear_graph F_B"
     by (rule geotop_complex_1dim_imp_linear_graph_dev34
