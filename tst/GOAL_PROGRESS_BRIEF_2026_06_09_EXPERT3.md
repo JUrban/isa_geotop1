@@ -2,87 +2,113 @@
 
 ## Current verified status
 
-The live target scan is down to six `sorry`s:
+The zero-target-`sorry` goal is not finished. The live target scan now reports
+six `sorry`s:
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
-dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:9915
-dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:14872
+dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:9933
+dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:3921
+dev34/GeoTop_3_4.thy:14859
 ```
 
-The older expert audits are therefore stale on raw counts. Their main
-diagnosis remains correct: the remaining holes are package-sized Moise picture
-arguments, not routine tactic cleanup.
+This is better than the expert3 raw count of eight. Two expert3 targets have
+since closed as target holes: the active standard-boundary cycle realization
+and the one-sided semicircle/collar package. The expert diagnosis is still
+right in substance: the remaining holes are package-sized Moise book arguments,
+not isolated automation cleanups.
 
 ## Remaining packages
 
 1. `geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix`
-   - Theorem 4.4 brick/regular-neighborhood/component transfer.
-   - Largest remaining prefix package.
+   - Theorem 4.4 brick / regular-neighborhood / component transfer.
+   - Still the largest remaining prefix package.
 
 2. `geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix`
    - Section 3 chord-subdisk induction transfer.
-   - Needs book-faithful smaller-subdisk and boundary-witness transfer.
+   - Needs the book-faithful smaller-subdisk proof and boundary-witness
+     transfer back to the parent disk.
 
 3. `geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix`
    - Section 3 support-controlled free-triangle fold engine.
-   - Intended to serve both unrestricted and support-controlled fold uses.
+   - The support-parametric architecture is correct and should be kept, because
+     it serves both the unrestricted and supported fold uses.
 
 4. `geotop_polygon_arc_opposite_boundary_theta_component_split_prefix`
-   - Theorem 4.2/D42 theta separation package.
-   - Needs the book step extracting a forbidden theta graph if opposite
-     boundary sides lie in the same component.
+   - Theorem 4.2 / D42 theta-separation package.
+   - The intended proof is the Moise theta contradiction, not component
+     algebra by broad automation.
 
 5. `geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix`
-   - Graph-cache local branch cutpoint package.
-   - Current inner gap is the local three-germ bridge: from the simple-closed
-     curve/local graph setup to a component of
+   - Graph-cache branch-vertex local cutpoint package.
+   - Its remaining named bridge is
+     `geotop_connected_split_side_three_germs_local_component_prefix`: from the
+     simple-closed-curve/local split-side setup, produce a component of
      `ball w r - (e1 union e2 union e3)` whose closure meets all three selected
      incident edge germs.
 
-6. `geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`
-   - Active endpoint-chain boundary-arc fan realization.
-   - The current non-finish branch still lacks the endpoint chain to boundary
-     arc model. The older full-boundary-cycle shortcut is not appropriate for
-     this target.
+6. `geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34`
+   - Active endpoint non-finish package. It now combines the endpoint degree
+     bound with the endpoint boundary-arc fan target construction.
+   - The downstream wrapper
+     `geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`
+     calls this named theorem; the visible hole is in the named package, not in
+     the wrapper.
 
 ## Audit takeaways to keep
 
-- Use the full indexes frequently. `THEOREMS_AND_DEFS.txt` and
-  `STMT_INDEX.txt` should be searched before inventing any helper.
+- Use the full indexes frequently:
+  `rg -n "pattern" THEOREMS_AND_DEFS.txt STMT_INDEX.txt`.
 - The graph-cache branch package must use the simple-closed-curve/local
-  one-manifold hypothesis. A general "degree greater than two implies
-  cutpoint" theorem for arbitrary finite graphs would be false.
-- The endpoint fan target is now correctly a boundary-arc fan, not a whole
-  boundary-cycle model.
-- The D42 and D44 packages are genuine separation/regular-neighborhood book
-  steps. Wrapping them in weaker local claims will not complete the goal.
-- Per `CLAUDE.md`, any new proof structure should be written with `sorry`
-  first and compiled before replacing holes in small batches.
+  one-manifold hypothesis. A general "degree greater than two implies cutpoint"
+  claim for arbitrary finite graphs would be false.
+- The endpoint target is correctly a boundary-arc fan, not a full boundary-cycle
+  model. Existing full-boundary Figure 4.10 helpers should not be used as a
+  shortcut unless they really prove the endpoint arc clauses.
+- The D42 and D44 packages are genuine separation / regular-neighborhood book
+  steps. Moving them into weaker local wrappers will not complete the goal.
+- Per `CLAUDE.md`, new proof structure should be written with `sorry` first,
+  compiled, and only then replaced in small verified batches.
 
-## Iteration and caching status
+## Iteration and cache status
 
 The current workflow is faster than broad Isabelle builds:
 
-- `./check_dev34_fast.sh holes` gives the live target hole map quickly.
-- Focused targets should be used for local work, especially:
-  - `focus-full graph-branch-local geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix`
-  - `focus-full dev34-fan geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`
-  - `slice-hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy geotop_polygon_arc_opposite_boundary_theta_component_split_prefix`
-- The index scripts already include local advice/report files in their cache
-  signatures, so new reports should be followed by:
-  - `bash gen_index.sh`
-  - `bash gen_stmt_index.sh`
+```bash
+./check_dev34_fast.sh holes
+rg -n "concept_or_theorem_name" THEOREMS_AND_DEFS.txt STMT_INDEX.txt
+./check_dev34_fast.sh focus-full graph-branch-local geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix
+./check_dev34_fast.sh slice-hot dev34/GeoTop_3_4.thy geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34
+```
+
+The last two proof changes introduced named packages and verified focused
+slices:
+
+```text
+geotop_connected_split_side_three_germs_local_component_prefix
+geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34
+```
+
+The generated indexes include advice/report files, so this report update should
+be followed by:
+
+```bash
+bash gen_index.sh
+bash gen_stmt_index.sh
+```
 
 ## Recommended next move
 
-The most actionable current proof target is the graph-cache branch gap. The
-surrounding proof has already staged the radial-sector contradiction; the open
-step is specifically the book bridge that forces a local component to touch all
-three selected germs. If the exact bridge cannot yet be proved directly, the
-next useful change is to isolate that bridge as the single named missing book
-step without increasing the total hole count, then continue replacing its
-substeps from the existing local SCC and component infrastructure.
+The most actionable current target is still one complete package at a time.
+There are two realistic near-term choices:
+
+1. Finish the graph-cache local-component bridge, because the surrounding
+   radial-sector contradiction is already staged.
+2. Finish the endpoint non-finish package, using the existing endpoint chain
+   listing and fan-transfer helpers, while avoiding the old full-boundary-cycle
+   shortcut.
+
+Either route should preserve the current six-hole map until a package is
+actually closed.
