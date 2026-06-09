@@ -3268,6 +3268,35 @@ proof -
     thus ?thesis
       using hS_B_card by (by100 simp)
   qed
+  obtain \<psi>\<^sub>B where h\<psi>\<^sub>B_bij:
+      "bij_betw \<psi>\<^sub>B
+        (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
+    using finite_same_card_bij
+        [OF hsource_vertices_finite hF_B_vertices_finite
+          hF_B_vertices_card[symmetric]]
+    by (by100 blast)
+  have hu\<^sub>B_list_index_bij:
+      "bij_betw ((!) u\<^sub>B_list)
+        {0..<length u\<^sub>B_list} (geotop_complex_vertices F_B)"
+  proof (rule bij_betw_nth)
+    show "distinct u\<^sub>B_list"
+      by (rule hu\<^sub>B_list_distinct)
+    show "{0..<length u\<^sub>B_list} = {..<length u\<^sub>B_list}"
+      by (by100 simp)
+    show "geotop_complex_vertices F_B = set u\<^sub>B_list"
+      using hu\<^sub>B_list_set_F_B_vertices by (by100 simp)
+  qed
+  have hu\<^sub>B_list_source_card_index_bij:
+      "bij_betw ((!) u\<^sub>B_list)
+        {0..<card (geotop_complex_vertices L)}
+        (geotop_complex_vertices F_B)"
+    using hu\<^sub>B_list_index_bij hu\<^sub>B_list_length by (by100 simp)
+  have hu\<^sub>B_list_F_B_card_index_bij:
+      "bij_betw ((!) u\<^sub>B_list)
+        {0..<card (geotop_complex_vertices F_B)}
+        (geotop_complex_vertices F_B)"
+    using hu\<^sub>B_list_index_bij hu\<^sub>B_list_length_F_B_vertices
+    by (by100 simp)
   show ?thesis
     sorry
 qed
