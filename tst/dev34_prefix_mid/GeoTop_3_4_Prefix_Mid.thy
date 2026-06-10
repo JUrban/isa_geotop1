@@ -16910,11 +16910,56 @@ proof -
                               using hT\<^sub>2_singleton by (by100 simp)
                             have h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
                               using h\<tau>T\<^sub>2 by (by100 simp)
-                            have h\<tau>2: "geotop_simplex_dim \<tau> 2"
-                              using h\<tau>T\<^sub>2 by (by100 simp)
-                            have hT\<^sub>1_distinct_from_\<tau>:
-                              "\<And>\<sigma>. \<sigma> \<in> ?T\<^sub>1 \<Longrightarrow> \<sigma> \<noteq> \<tau>"
-                              using hT\<^sub>1_T\<^sub>2_disjoint_book h\<tau>T\<^sub>2 by (by100 blast)
+	                            have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+	                              using h\<tau>T\<^sub>2 by (by100 simp)
+	                            obtain \<theta>\<^sub>c where h\<theta>cT\<^sub>2_singleton_outer: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
+	                              and h\<theta>c_chord_face_singleton:
+	                                "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c"
+	                              and h\<theta>_not_T\<^sub>2_singleton: "\<theta> \<notin> ?T\<^sub>2"
+	                              using hside_core_chord_classification_book
+	                              by (elim bexE conjE)
+	                            have h\<theta>c_eq_\<tau>: "\<theta>\<^sub>c = \<tau>"
+	                              using hT\<^sub>2_singleton h\<theta>cT\<^sub>2_singleton_outer by (by100 simp)
+	                            have h\<tau>_chord_face:
+	                              "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau>"
+	                              using h\<theta>c_chord_face_singleton h\<theta>c_eq_\<tau> by (by100 simp)
+	                            have h\<theta>_ne_\<tau>: "\<theta> \<noteq> \<tau>"
+	                              using h\<theta>_not_T\<^sub>2_singleton h\<tau>T\<^sub>2 by (by100 blast)
+	                            have hcarrier_side2_singleton:
+	                              "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                                  (geotop_polygon_interior J\<^sub>2).
+	                                  geotop_K_carrier K x \<subseteq>
+	                                    closure_on UNIV geotop_euclidean_topology
+	                                      (geotop_polygon_interior J\<^sub>2))"
+	                              by (rule hside_core_carrier2_book)
+	                            have hJ\<^sub>2_closure_sub_K_singleton:
+	                              "closure_on UNIV geotop_euclidean_topology
+	                                (geotop_polygon_interior J\<^sub>2)
+	                                \<subseteq> geotop_polyhedron K"
+	                              using hclosure_split hK_poly' by (by100 blast)
+	                            have hcarrier_side2_point_singleton:
+	                              "\<And>x. x \<in> closure_on UNIV geotop_euclidean_topology
+	                                  (geotop_polygon_interior J\<^sub>2) \<Longrightarrow>
+	                                geotop_K_carrier K x \<subseteq>
+	                                  closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>2)"
+	                              using hcarrier_side2_singleton by (by100 blast)
+	                            have hL\<^sub>2_poly_rev_singleton:
+	                              "closure_on UNIV geotop_euclidean_topology
+	                                (geotop_polygon_interior J\<^sub>2)
+	                                \<subseteq> geotop_polyhedron L\<^sub>2"
+	                              unfolding hL\<^sub>2_def
+	                              by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+	                                  [OF hK' hK_fin' hJ\<^sub>2_closure_sub_K_singleton
+	                                    hcarrier_side2_point_singleton])
+	                            have hL\<^sub>2_poly_eq_singleton:
+	                              "geotop_polyhedron L\<^sub>2 =
+	                                closure_on UNIV geotop_euclidean_topology
+	                                  (geotop_polygon_interior J\<^sub>2)"
+	                              using hL\<^sub>2_poly_sub hL\<^sub>2_poly_rev_singleton by (by100 blast)
+	                            have hT\<^sub>1_distinct_from_\<tau>:
+	                              "\<And>\<sigma>. \<sigma> \<in> ?T\<^sub>1 \<Longrightarrow> \<sigma> \<noteq> \<tau>"
+	                              using hT\<^sub>1_T\<^sub>2_disjoint_book h\<tau>T\<^sub>2 by (by100 blast)
 	                            have hside1_singleton_branch_canonical_witness:
 	                              "\<exists>\<sigma>. \<sigma> \<in> L\<^sub>1
 	                                \<and> geotop_simplex_dim \<sigma> 2
