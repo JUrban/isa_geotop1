@@ -8243,6 +8243,34 @@ proof -
     using hL\<^sub>1_def hchord_segment_K hchord_segment_sub_B\<^sub>1 by (by100 blast)
   have hchord_segment_L\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>2"
     using hL\<^sub>2_def hchord_segment_K hchord_segment_sub_B\<^sub>2 by (by100 blast)
+  have hcarrier_side1_on_chord:
+    "\<And>x. x \<in> ?B\<^sub>1 \<Longrightarrow> x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1"
+    assume hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+    have hcarrier_sub_chord:
+      "geotop_K_carrier K x \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+      by (rule geotop_K_carrier_subset_containing_simplex
+          [OF hK hK_fin hchord_segment_K hxchord])
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+      using hcarrier_sub_chord hchord_segment_sub_B\<^sub>1 by (by100 blast)
+  qed
+  have hcarrier_side2_on_chord:
+    "\<And>x. x \<in> ?B\<^sub>2 \<Longrightarrow> x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>2"
+    assume hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+    have hcarrier_sub_chord:
+      "geotop_K_carrier K x \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+      by (rule geotop_K_carrier_subset_containing_simplex
+          [OF hK hK_fin hchord_segment_K hxchord])
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+      using hcarrier_sub_chord hchord_segment_sub_B\<^sub>2 by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
