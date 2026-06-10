@@ -15375,6 +15375,110 @@ proof -
 	                              apply assumption+
 	                              done
 	                          qed
+	                          have hside_canonical_witnesses_no_chord_face:
+	                            "\<exists>\<theta>\<^sub>c \<sigma>\<^sub>L \<tau>\<^sub>L. \<theta>\<^sub>c \<in> ?T\<^sub>2
+	                              \<and> \<theta>\<^sub>c \<notin> ?T\<^sub>1
+	                              \<and> \<theta>\<^sub>c \<noteq> \<theta>
+	                              \<and> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c
+	                              \<and> \<theta> \<notin> ?T\<^sub>2
+	                              \<and> \<sigma>\<^sub>L \<in> L\<^sub>1
+	                              \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
+	                              \<and> \<sigma>\<^sub>L \<noteq> \<theta>
+	                              \<and> \<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>\<^sub>L
+	                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                              \<and> \<sigma>\<^sub>L \<inter> J\<^sub>1 =
+	                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1}
+	                              \<and> \<tau>\<^sub>L \<in> L\<^sub>2
+	                              \<and> geotop_simplex_dim \<tau>\<^sub>L 2
+	                              \<and> \<tau>\<^sub>L \<noteq> \<theta>
+	                              \<and> \<tau>\<^sub>L \<noteq> \<theta>\<^sub>c
+	                              \<and> \<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau>\<^sub>L
+	                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                              \<and> \<tau>\<^sub>L \<inter> J\<^sub>2 =
+	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2}
+	                              \<and> \<sigma>\<^sub>L \<noteq> \<tau>\<^sub>L"
+	                          proof -
+	                            obtain \<theta>\<^sub>c \<sigma>\<^sub>L \<tau>\<^sub>L
+	                              where h\<theta>cT\<^sub>2: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
+	                                and h\<theta>c_not_T\<^sub>1: "\<theta>\<^sub>c \<notin> ?T\<^sub>1"
+	                                and h\<theta>c_ne_\<theta>: "\<theta>\<^sub>c \<noteq> \<theta>"
+	                                and h\<theta>c_chord_face:
+	                                  "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c"
+	                                and h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+	                                and hT\<^sub>1_chord_only_\<theta>:
+	                                  "\<forall>\<rho>\<in>?T\<^sub>1.
+	                                    geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                    \<longrightarrow> \<rho> = \<theta>"
+	                                and hT\<^sub>2_chord_only_\<theta>c:
+	                                  "\<forall>\<rho>\<in>?T\<^sub>2.
+	                                    geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                    \<longrightarrow> \<rho> = \<theta>\<^sub>c"
+	                                and h\<sigma>\<^sub>LL\<^sub>1: "\<sigma>\<^sub>L \<in> L\<^sub>1"
+	                                and h\<sigma>\<^sub>L2: "geotop_simplex_dim \<sigma>\<^sub>L 2"
+	                                and h\<sigma>\<^sub>L_ne_\<theta>: "\<sigma>\<^sub>L \<noteq> \<theta>"
+	                                and h\<sigma>\<^sub>L_card:
+	                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                and h\<sigma>\<^sub>L_contact_can:
+	                                  "\<sigma>\<^sub>L \<inter> J\<^sub>1 =
+	                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1}"
+	                                and h\<tau>\<^sub>LL\<^sub>2: "\<tau>\<^sub>L \<in> L\<^sub>2"
+	                                and h\<tau>\<^sub>L2: "geotop_simplex_dim \<tau>\<^sub>L 2"
+	                                and h\<tau>\<^sub>L_ne_\<theta>: "\<tau>\<^sub>L \<noteq> \<theta>"
+	                                and h\<tau>\<^sub>L_ne_\<theta>c: "\<tau>\<^sub>L \<noteq> \<theta>\<^sub>c"
+	                                and h\<tau>\<^sub>L_card:
+	                                  "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                and h\<tau>\<^sub>L_contact_can:
+	                                  "\<tau>\<^sub>L \<inter> J\<^sub>2 =
+	                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2}"
+	                                and h\<sigma>\<^sub>L_ne_\<tau>\<^sub>L: "\<sigma>\<^sub>L \<noteq> \<tau>\<^sub>L"
+	                              using hside_canonical_boundary_witnesses_chord_exception
+	                              by (elim exE conjE)
+	                            have h\<sigma>\<^sub>LT\<^sub>1: "\<sigma>\<^sub>L \<in> ?T\<^sub>1"
+	                              using h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 by (by100 simp)
+	                            have h\<tau>\<^sub>LT\<^sub>2: "\<tau>\<^sub>L \<in> ?T\<^sub>2"
+	                              using h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 by (by100 simp)
+	                            have h\<sigma>\<^sub>L_not_chord_face:
+	                              "\<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>\<^sub>L"
+	                            proof
+	                              assume hface:
+	                                "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>\<^sub>L"
+	                              have "\<sigma>\<^sub>L = \<theta>"
+	                                using hT\<^sub>1_chord_only_\<theta> h\<sigma>\<^sub>LT\<^sub>1 hface by (by100 blast)
+	                              thus False
+	                                using h\<sigma>\<^sub>L_ne_\<theta> by (by100 blast)
+	                            qed
+	                            have h\<tau>\<^sub>L_not_chord_face:
+	                              "\<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau>\<^sub>L"
+	                            proof
+	                              assume hface:
+	                                "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau>\<^sub>L"
+	                              have "\<tau>\<^sub>L = \<theta>\<^sub>c"
+	                                using hT\<^sub>2_chord_only_\<theta>c h\<tau>\<^sub>LT\<^sub>2 hface by (by100 blast)
+	                              thus False
+	                                using h\<tau>\<^sub>L_ne_\<theta>c by (by100 blast)
+	                            qed
+	                            show ?thesis
+	                              apply (rule exI[where x = "\<theta>\<^sub>c"])
+	                              apply (rule exI[where x = "\<sigma>\<^sub>L"])
+	                              apply (rule exI[where x = "\<tau>\<^sub>L"])
+	                              using h\<theta>cT\<^sub>2 h\<theta>c_not_T\<^sub>1 h\<theta>c_ne_\<theta> h\<theta>c_chord_face
+	                                h\<theta>_not_T\<^sub>2 h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_ne_\<theta>
+	                                h\<sigma>\<^sub>L_not_chord_face h\<sigma>\<^sub>L_card h\<sigma>\<^sub>L_contact_can
+	                                h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 h\<tau>\<^sub>L_ne_\<theta> h\<tau>\<^sub>L_ne_\<theta>c
+	                                h\<tau>\<^sub>L_not_chord_face h\<tau>\<^sub>L_card h\<tau>\<^sub>L_contact_can
+	                                h\<sigma>\<^sub>L_ne_\<tau>\<^sub>L
+	                              apply (intro conjI)
+	                              apply assumption+
+	                              done
+	                          qed
 	                          have hside_canonical_boundary_witnesses_distinct:
 	                            "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L. \<sigma>\<^sub>L \<in> L\<^sub>1
 	                              \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
