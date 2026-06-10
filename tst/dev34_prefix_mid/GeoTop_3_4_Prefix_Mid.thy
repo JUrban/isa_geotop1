@@ -8855,10 +8855,31 @@ proof -
           using hpair_card by (by100 simp)
       qed
       have hstep_more_than_two:
-        "card ?T > 2 \<Longrightarrow> card ?F \<ge> 2"
+        "(\<And>J'' L.
+            geotop_is_polygon J'' \<Longrightarrow>
+            geotop_is_complex L \<Longrightarrow>
+            finite L \<Longrightarrow>
+            geotop_polyhedron L =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J'') \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} < card ?T \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} > 1 \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_free_2_simplex L J'' \<rho>} \<ge> 2) \<Longrightarrow>
+          card ?T > 2 \<Longrightarrow> card ?F \<ge> 2"
       proof -
-        assume hT_gt2: "card ?T > 2"
-        \<comment> \<open>Book step: choose two 2-simplexes with an edge in \<open>Fr |K|\<close>.\<close>
+        assume hIH_less:
+          "\<And>J'' L.
+            geotop_is_polygon J'' \<Longrightarrow>
+            geotop_is_complex L \<Longrightarrow>
+            finite L \<Longrightarrow>
+            geotop_polyhedron L =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J'') \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} < card ?T \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} > 1 \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_free_2_simplex L J'' \<rho>} \<ge> 2"
+                assume hT_gt2: "card ?T > 2"
+                \<comment> \<open>Book step: choose two 2-simplexes with an edge in \<open>Fr |K|\<close>.\<close>
         have hboundary_pair:
           "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
              \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
@@ -9304,8 +9325,26 @@ proof -
         case False
         have "card ?T > 2"
           using hcard' False by (by100 simp)
+        have hIH_less:
+          "\<And>J'' L.
+            geotop_is_polygon J'' \<Longrightarrow>
+            geotop_is_complex L \<Longrightarrow>
+            finite L \<Longrightarrow>
+            geotop_polyhedron L =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J'') \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} < card ?T \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} > 1 \<Longrightarrow>
+            card {\<rho>\<in>L. geotop_free_2_simplex L J'' \<rho>} \<ge> 2"
+          (**
+            Strong induction hypothesis from Moise Theorem 3.3: the stronger
+            two-free-simplex conclusion holds for every polygonal-disk
+            triangulation with strictly fewer 2-simplexes than the current
+            triangulation.  This is the missing formal induction wrapper
+            around the current book-step proof. **)
+          sorry
         show ?thesis
-          by (rule hstep_more_than_two[OF \<open>card ?T > 2\<close>])
+          by (rule hstep_more_than_two[OF hIH_less \<open>card ?T > 2\<close>])
       qed
     qed
     have hSC_induction:
