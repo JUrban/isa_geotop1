@@ -8541,6 +8541,29 @@ proof -
     show "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
       using hface_closed_K hcarrierK hface by (by100 blast)
   qed
+  have hcarrier_chord_inter_cases:
+    "\<And>x. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {} \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}
+      \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}
+      \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+          closed_segment v\<^sub>0 v\<^sub>2"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hinter:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+    have hface_chord:
+      "geotop_is_face (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (closed_segment v\<^sub>0 v\<^sub>2)"
+      using hcarrier_chord_inter_faces[OF hxB hinter] by (by100 blast)
+    show
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}
+      \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}
+      \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+          closed_segment v\<^sub>0 v\<^sub>2"
+      using geotop_segment_face_cases_prefix[OF hface_chord hv\<^sub>0v\<^sub>2] by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
