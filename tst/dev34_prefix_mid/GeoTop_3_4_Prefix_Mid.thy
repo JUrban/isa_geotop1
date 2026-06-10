@@ -6883,6 +6883,24 @@ proof -
         \<sigma> \<inter> J = \<Union>E \<Longrightarrow>
         geotop_free_2_simplex K J \<sigma>"
     by (rule geotop_free_2_simplex_selected_edges_transfer_prefix[OF hK\<^sub>2_sub_K])
+  have hK\<^sub>1_canonical_selected_edges_transfer_to_parent:
+      "\<And>\<sigma>. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+        finite {e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        card {e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<Longrightarrow>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+    by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+        [OF hK\<^sub>1_sub_K])
+  have hK\<^sub>2_canonical_selected_edges_transfer_to_parent:
+      "\<And>\<sigma>. \<sigma> \<in> K\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+        finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        card {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<Longrightarrow>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+    by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+        [OF hK\<^sub>2_sub_K])
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
