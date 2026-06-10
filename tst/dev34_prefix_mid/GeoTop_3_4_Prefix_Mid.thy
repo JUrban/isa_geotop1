@@ -14664,6 +14664,111 @@ proof -
                             apply assumption+
                             done
                         qed
+                        have hside_oriented_primary_witnesses_distinct:
+                          "\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+                            \<and> geotop_simplex_dim \<sigma> 2
+                            \<and> \<sigma> \<noteq> \<theta>
+                            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                            \<and> \<sigma> \<inter> J\<^sub>1 =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+                            \<and> \<sigma>' \<in> L\<^sub>1
+                            \<and> geotop_simplex_dim \<sigma>' 2
+                            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                              \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                            \<and> \<sigma>' \<inter> J\<^sub>1 =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
+                            \<and> \<sigma> \<noteq> \<sigma>'
+                            \<and> \<tau> \<in> L\<^sub>2
+                            \<and> geotop_simplex_dim \<tau> 2
+                            \<and> \<tau> \<noteq> \<theta>
+                            \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                            \<and> \<tau> \<inter> J\<^sub>2 =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+                            \<and> \<tau>' \<in> L\<^sub>2
+                            \<and> geotop_simplex_dim \<tau>' 2
+                            \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                              \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                            \<and> \<tau>' \<inter> J\<^sub>2 =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}
+                            \<and> \<tau> \<noteq> \<tau>'
+                            \<and> \<sigma> \<noteq> \<tau>"
+                          (**
+                            The oriented primary side witnesses live in the
+                            disjoint side 2-simplex sets.  Recording this now
+                            preserves the distinctness needed after the later
+                            parent-boundary chord filter chooses the primary
+                            witnesses. **)
+                        proof -
+                          obtain \<sigma> \<sigma>' \<tau> \<tau>'
+                            where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+                              and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+                              and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
+                              and h\<sigma>_card:
+                                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                              and h\<sigma>_contact:
+                                "\<sigma> \<inter> J\<^sub>1 =
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                              and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+                              and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
+                              and h\<sigma>'_card:
+                                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                              and h\<sigma>'_contact:
+                                "\<sigma>' \<inter> J\<^sub>1 =
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}"
+                              and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
+                              and h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+                              and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+                              and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+                              and h\<tau>_card:
+                                "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                              and h\<tau>_contact:
+                                "\<tau> \<inter> J\<^sub>2 =
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+                              and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+                              and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
+                              and h\<tau>'_card:
+                                "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                              and h\<tau>'_contact:
+                                "\<tau>' \<inter> J\<^sub>2 =
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}"
+                              and h\<tau>_ne_\<tau>': "\<tau> \<noteq> \<tau>'"
+                            using hside_two_canonical_one_avoids_\<theta>_each
+                            by (elim exE conjE)
+                          have h\<sigma>T\<^sub>1: "\<sigma> \<in> ?T\<^sub>1"
+                            using h\<sigma>L\<^sub>1 h\<sigma>2 by (by100 simp)
+                          have h\<tau>T\<^sub>2: "\<tau> \<in> ?T\<^sub>2"
+                            using h\<tau>L\<^sub>2 h\<tau>2 by (by100 simp)
+                          have h\<sigma>_ne_\<tau>: "\<sigma> \<noteq> \<tau>"
+                            using hT\<^sub>1_T\<^sub>2_disjoint_book h\<sigma>T\<^sub>1 h\<tau>T\<^sub>2
+                            by (by100 blast)
+                          show ?thesis
+                            apply (rule exI[where x = \<sigma>])
+                            apply (rule exI[where x = "\<sigma>'"])
+                            apply (rule exI[where x = \<tau>])
+                            apply (rule exI[where x = "\<tau>'"])
+                            using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
+                              h\<sigma>'L\<^sub>1 h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact h\<sigma>_ne_\<sigma>'
+                              h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card h\<tau>_contact
+                              h\<tau>'L\<^sub>2 h\<tau>'2 h\<tau>'_card h\<tau>'_contact h\<tau>_ne_\<tau>'
+                              h\<sigma>_ne_\<tau>
+                            apply (intro conjI)
+                            apply assumption+
+                            done
+                        qed
                         have hside_selected_witnesses_book:
                           "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                             card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
