@@ -9778,6 +9778,64 @@ proof -
               \<union> (ball w r - (S \<union> T \<union> U))"
         using hlocal_punctured_carrier_sector_cover hSTU_eq hselected_union_eq
         by (by100 blast)
+      have hselected_three_ball_sector_cover:
+          "\<exists>M. M \<subseteq> geotop_polyhedron L - {w}
+            \<and> top1_connected_on M
+              (subspace_topology UNIV geotop_euclidean_topology M)
+            \<and> p \<in> M
+            \<and> y \<in> M
+            \<and> z \<in> M
+            \<and> M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hM_conn: "top1_connected_on M
+            (subspace_topology UNIV geotop_euclidean_topology M)"
+          and hpM: "p \<in> M"
+          and hyM: "y \<in> M"
+          and hzM: "z \<in> M"
+          using hselected_three_punctured_connected_witness
+          by (elim exE conjE)
+        have hM_ball_cover:
+            "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          using hM_sub hselected_punctured_carrier_sector_cover by (by100 blast)
+        show ?thesis
+        proof (rule exI[where x=M])
+          show "M \<subseteq> geotop_polyhedron L - {w}
+            \<and> top1_connected_on M
+              (subspace_topology UNIV geotop_euclidean_topology M)
+            \<and> p \<in> M
+            \<and> y \<in> M
+            \<and> z \<in> M
+            \<and> M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          proof (intro conjI)
+            show "M \<subseteq> geotop_polyhedron L - {w}" by (rule hM_sub)
+            show "top1_connected_on M
+              (subspace_topology UNIV geotop_euclidean_topology M)"
+              by (rule hM_conn)
+            show "p \<in> M" by (rule hpM)
+            show "y \<in> M" by (rule hyM)
+            show "z \<in> M" by (rule hzM)
+            show "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+              by (rule hM_ball_cover)
+          qed
+        qed
+      qed
       have hN_ball_sector_cover:
           "N \<inter> ball w r
             \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -9796,9 +9854,10 @@ proof -
           \<open>S\<close>- and \<open>T\<close>-germs.  The selected points \<open>p,y,z\<close> also have the
           global connected witness
           \<open>hselected_three_punctured_connected_witness\<close> inherited from the
-          punctured simple closed curve.  The remaining book argument is the
-          first-exit/local-star step that turns this connectedness and the
-          carrier-sector cover into one component of
+          punctured simple closed curve, packaged with the local sector cover
+          as \<open>hselected_three_ball_sector_cover\<close>.  The remaining book
+          argument is the first-exit/local-star step that turns this
+          connectedness and the carrier-sector cover into one component of
           \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three selected
           punctured germs.  This is not a general graph cutpoint claim; the
           SCC local-one-manifold hypothesis is essential. **)
