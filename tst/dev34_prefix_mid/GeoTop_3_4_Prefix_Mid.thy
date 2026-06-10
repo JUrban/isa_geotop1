@@ -8403,7 +8403,9 @@ lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
     \<and> (\<exists>\<rho>\<in>{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}.
         \<rho> \<notin> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2})
     \<and> card {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} > 1
-    \<and> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} \<noteq> {}"
+    \<and> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} \<noteq> {}
+    \<and> {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} \<inter>
+        {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} = {}"
   (**
     Moise Figure 3.2 side-complex geometric core.  The chord through the
     nonfree boundary triangle cuts the disk into two polygonal subdisks; each
@@ -11151,8 +11153,10 @@ proof -
     "(\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
     \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
     \<and> card ?T\<^sub>1 > 1
-    \<and> ?T\<^sub>2 \<noteq> {}"
-    using hside_omits_T\<^sub>1 hside_omits_T\<^sub>2 hside_card_residual by (by100 blast)
+    \<and> ?T\<^sub>2 \<noteq> {}
+    \<and> ?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
+    using hside_omits_T\<^sub>1 hside_omits_T\<^sub>2 hside_card_residual hT\<^sub>1_T\<^sub>2_disjoint
+    by (by100 blast)
   show ?thesis
     using hcarrier_side1 hcarrier_side2 hside_count_residual by (by100 blast)
 qed
@@ -14064,7 +14068,8 @@ proof -
                           \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
                           \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
                           \<and> card ?T\<^sub>1 > 1
-                          \<and> ?T\<^sub>2 \<noteq> {}"
+                          \<and> ?T\<^sub>2 \<noteq> {}
+                          \<and> ?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
                           (**
                             Moise Figure 3.2 geometric core for the two
                             chord-side subdisk complexes. Each side is proved
@@ -14076,6 +14081,8 @@ proof -
                               h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J
                               h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def]
                           by (by100 blast)
+                        have hT\<^sub>1_T\<^sub>2_disjoint_book: "?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
+                          using hside_geometric_core_book by (by100 blast)
                         show ?thesis
                         proof (cases "card ?T\<^sub>2 > 1")
                           case True
@@ -14541,6 +14548,9 @@ proof -
                               using h\<tau>T\<^sub>2 by (by100 simp)
                             have h\<tau>2: "geotop_simplex_dim \<tau> 2"
                               using h\<tau>T\<^sub>2 by (by100 simp)
+                            have hT\<^sub>1_distinct_from_\<tau>:
+                              "\<And>\<sigma>. \<sigma> \<in> ?T\<^sub>1 \<Longrightarrow> \<sigma> \<noteq> \<tau>"
+                              using hT\<^sub>1_T\<^sub>2_disjoint_book h\<tau>T\<^sub>2 by (by100 blast)
                             show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
                               \<sigma> \<inter> J' =
