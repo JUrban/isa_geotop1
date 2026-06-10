@@ -5358,6 +5358,34 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_two_distinct_free_2_simplexes_card_ge2_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma> \<tau> :: "(real^2) set"
+  assumes hK_fin: "finite K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes h\<sigma>free: "geotop_free_2_simplex K J \<sigma>"
+  assumes h\<tau>free: "geotop_free_2_simplex K J \<tau>"
+  shows "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+  (**
+    Final counting bridge for the subdisk-transfer argument: once the geometric
+    side analysis has produced two distinct parent-free triangles, the target
+    cardinal bound is purely finite set bookkeeping. **)
+proof -
+  let ?F = "{\<rho>\<in>K. geotop_free_2_simplex K J \<rho>}"
+  let ?P = "{\<sigma>, \<tau>}"
+  have hF_fin: "finite ?F"
+    using hK_fin by (by100 simp)
+  have hP_sub: "?P \<subseteq> ?F"
+    using h\<sigma>K h\<tau>K h\<sigma>free h\<tau>free by (by100 blast)
+  have hP_card: "card ?P = 2"
+    using h\<sigma>\<tau> by (by100 simp)
+  have hcard_mono: "card ?P \<le> card ?F"
+    by (rule card_mono[OF hF_fin hP_sub])
+  show ?thesis
+    using hP_card hcard_mono by (by100 simp)
+qed
+
 lemma geotop_theta_middle_arc_inline_decomposition_prefix:
   fixes M B\<^sub>1 B\<^sub>2 B\<^sub>3 E :: "(real^2) set"
   assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B\<^sub>1 B\<^sub>2 B\<^sub>3 E"
