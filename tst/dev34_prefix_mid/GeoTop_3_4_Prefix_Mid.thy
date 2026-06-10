@@ -9422,6 +9422,74 @@ proof -
       qed
     qed
   qed
+  have hcarrier_side1_singleton:
+    "\<And>x v. x \<in> ?B\<^sub>1 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v} \<Longrightarrow>
+      geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+  proof -
+    fix x v
+    assume hxB: "x \<in> ?B\<^sub>1"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_single:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v}"
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+    proof -
+      have hxB_union: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+        using hxB by (by100 blast)
+      have hdim_cases:
+        "geotop_simplex_dim (geotop_K_carrier K x) 1
+        \<or> geotop_simplex_dim (geotop_K_carrier K x) 2"
+        by (rule hcarrier_chord_singleton_dim_cases
+            [OF hxB_union hx_not_chord hinter_single])
+      show ?thesis
+      proof (rule disjE[OF hdim_cases])
+        assume hdim1: "geotop_simplex_dim (geotop_K_carrier K x) 1"
+        show ?thesis
+          by (rule hcarrier_side1_singleton_dim1
+              [OF hxB hx_not_chord hinter_single hdim1])
+      next
+        assume hdim2: "geotop_simplex_dim (geotop_K_carrier K x) 2"
+        show ?thesis
+          by (rule hcarrier_side1_singleton_dim2
+              [OF hxB hx_not_chord hinter_single hdim2])
+      qed
+    qed
+  qed
+  have hcarrier_side2_singleton:
+    "\<And>x v. x \<in> ?B\<^sub>2 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v} \<Longrightarrow>
+      geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+  proof -
+    fix x v
+    assume hxB: "x \<in> ?B\<^sub>2"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_single:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v}"
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+    proof -
+      have hxB_union: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+        using hxB by (by100 blast)
+      have hdim_cases:
+        "geotop_simplex_dim (geotop_K_carrier K x) 1
+        \<or> geotop_simplex_dim (geotop_K_carrier K x) 2"
+        by (rule hcarrier_chord_singleton_dim_cases
+            [OF hxB_union hx_not_chord hinter_single])
+      show ?thesis
+      proof (rule disjE[OF hdim_cases])
+        assume hdim1: "geotop_simplex_dim (geotop_K_carrier K x) 1"
+        show ?thesis
+          by (rule hcarrier_side2_singleton_dim1
+              [OF hxB hx_not_chord hinter_single hdim1])
+      next
+        assume hdim2: "geotop_simplex_dim (geotop_K_carrier K x) 2"
+        show ?thesis
+          by (rule hcarrier_side2_singleton_dim2
+              [OF hxB hx_not_chord hinter_single hdim2])
+      qed
+    qed
+  qed
   show ?thesis
     sorry
 qed
