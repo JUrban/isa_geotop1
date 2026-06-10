@@ -10026,6 +10026,52 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_open_component_frontier_split_from_notmem_prefix:
+  fixes U :: "'a::real_normed_vector set"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hP: "P \<in> U" and hQ: "Q \<in> U"
+  assumes hQ_not_comp:
+    "Q \<notin> geotop_component_at UNIV geotop_euclidean_topology U P"
+  assumes hX_front:
+    "X \<in> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_component_at UNIV geotop_euclidean_topology U P)"
+  assumes hY_front:
+    "Y \<in> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_component_at UNIV geotop_euclidean_topology U Q)"
+  assumes hY_not_U: "Y \<notin> U"
+  shows "\<exists>V W. U = V \<union> W
+      \<and> V \<inter> W = {}
+      \<and> V \<in> geotop_euclidean_topology
+      \<and> W \<in> geotop_euclidean_topology
+      \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology V
+      \<and> Y \<in> geotop_frontier UNIV geotop_euclidean_topology W"
+proof -
+  have hTU: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hQ_sing_conn:
+      "top1_connected_on {Q}
+        (subspace_topology UNIV geotop_euclidean_topology {Q})"
+    by (rule top1_connected_on_singleton[OF hTU], simp)
+  have hQ_compQ:
+      "Q \<in> geotop_component_at UNIV geotop_euclidean_topology U Q"
+    by (rule geotop_self_in_component_at[OF hQ hQ_sing_conn])
+  have hneq:
+      "geotop_component_at UNIV geotop_euclidean_topology U P \<noteq>
+       geotop_component_at UNIV geotop_euclidean_topology U Q"
+  proof
+    assume heq:
+      "geotop_component_at UNIV geotop_euclidean_topology U P =
+       geotop_component_at UNIV geotop_euclidean_topology U Q"
+    have "Q \<in> geotop_component_at UNIV geotop_euclidean_topology U P"
+      using heq hQ_compQ by (by100 simp)
+    thus False
+      using hQ_not_comp by (by100 blast)
+  qed
+  show ?thesis
+    by (rule geotop_open_component_complement_frontier_split_prefix
+        [OF hUopen hP hQ hneq hX_front hY_front hY_not_U])
+qed
+
 lemma geotop_polygon_interior_minus_arc_open_prefix:
   fixes J A :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
