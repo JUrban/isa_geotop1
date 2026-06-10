@@ -10318,6 +10318,46 @@ proof -
     show "R \<in> D\<^sub>2"
       using hD42_D\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
   qed
+  have hD42_A_meets_PR_broken_boundary_arcs:
+      "A \<inter> D\<^sub>1 = {P, R} \<and> A \<inter> D\<^sub>2 = {P, R}"
+  proof
+    have hD\<^sub>1_sub_J: "D\<^sub>1 \<subseteq> J"
+      using hD42_D_J_split by (by100 blast)
+    show "A \<inter> D\<^sub>1 = {P, R}"
+    proof
+      show "A \<inter> D\<^sub>1 \<subseteq> {P, R}"
+      proof
+        fix x
+        assume hx: "x \<in> A \<inter> D\<^sub>1"
+        have hxA: "x \<in> A"
+          using hx by (by100 blast)
+        have hxJ: "x \<in> J"
+          using hx hD\<^sub>1_sub_J by (by100 blast)
+        show "x \<in> {P, R}"
+          using hAJ hxA hxJ by (by100 blast)
+      qed
+      show "{P, R} \<subseteq> A \<inter> D\<^sub>1"
+        using hP_A hR_A hD42_PR_on_broken_boundary_arcs by (by100 blast)
+    qed
+    have hD\<^sub>2_sub_J: "D\<^sub>2 \<subseteq> J"
+      using hD42_D_J_split by (by100 blast)
+    show "A \<inter> D\<^sub>2 = {P, R}"
+    proof
+      show "A \<inter> D\<^sub>2 \<subseteq> {P, R}"
+      proof
+        fix x
+        assume hx: "x \<in> A \<inter> D\<^sub>2"
+        have hxA: "x \<in> A"
+          using hx by (by100 blast)
+        have hxJ: "x \<in> J"
+          using hx hD\<^sub>2_sub_J by (by100 blast)
+        show "x \<in> {P, R}"
+          using hAJ hxA hxJ by (by100 blast)
+      qed
+      show "{P, R} \<subseteq> A \<inter> D\<^sub>2"
+        using hP_A hR_A hD42_PR_on_broken_boundary_arcs by (by100 blast)
+    qed
+  qed
   have hD42_QS_on_PR_boundary_arc_interiors:
       "(Q \<in> geotop_arc_interior D\<^sub>1 {P, R}
           \<or> Q \<in> geotop_arc_interior D\<^sub>2 {P, R})
