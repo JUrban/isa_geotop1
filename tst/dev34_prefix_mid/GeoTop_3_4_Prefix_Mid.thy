@@ -8309,9 +8309,10 @@ lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
   assumes hsubdisk_book_facts:
     "geotop_is_polygon J\<^sub>1
-      \<and> geotop_is_polygon J\<^sub>2
-      \<and> J = C\<^sub>1 \<union> C\<^sub>2
-      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	      \<and> geotop_is_polygon J\<^sub>2
+	      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	      \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+	      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
       \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
       \<and> closure_on UNIV geotop_euclidean_topology
              (geotop_polygon_interior J) =
@@ -10514,6 +10515,7 @@ lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
 	    "geotop_is_polygon J\<^sub>1
 	      \<and> geotop_is_polygon J\<^sub>2
 	      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	      \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
 	      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	      \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	      \<and> closure_on UNIV geotop_euclidean_topology
@@ -10932,9 +10934,10 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   assumes hsubdisk_side_witnesses_from_split:
 	    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
 	      geotop_is_polygon J\<^sub>1
-	        \<and> geotop_is_polygon J\<^sub>2
-	        \<and> J = C\<^sub>1 \<union> C\<^sub>2
-	        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+		      \<and> geotop_is_polygon J\<^sub>2
+		      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+		      \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	        \<and> closure_on UNIV geotop_euclidean_topology
 	               (geotop_polygon_interior J) =
@@ -11655,9 +11658,10 @@ proof -
   define J\<^sub>2 where "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
 	  have hsubdisk_book_facts:
 	    "geotop_is_polygon J\<^sub>1
-	      \<and> geotop_is_polygon J\<^sub>2
-	      \<and> J = C\<^sub>1 \<union> C\<^sub>2
-	      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+		        \<and> geotop_is_polygon J\<^sub>2
+		        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+		        \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	      \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	      \<and> closure_on UNIV geotop_euclidean_topology
 	             (geotop_polygon_interior J) =
@@ -11680,8 +11684,8 @@ proof -
       Book Figure 3.2 subdisk package.  The two displayed polygons are the
       subdisks on either side of the chord, and the closure/separation data is
       exactly the already-proved chord decomposition rewritten with names. **)
-	    using hchord_decomposition hJ_boundary_split
-	    unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
+		    using hchord_decomposition hJ_boundary_split hv\<^sub>1_C\<^sub>1_int
+		    unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
   have hsubdisk_side_witnesses_exist_book:
     "\<And>L\<^sub>1 L\<^sub>2.
       L\<^sub>1 =
@@ -11748,9 +11752,10 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
 	  assumes hsubdisk_side_witnesses_from_decomposition:
 	    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
 	      geotop_is_polygon J\<^sub>1
-	        \<and> geotop_is_polygon J\<^sub>2
-	        \<and> J = C\<^sub>1 \<union> C\<^sub>2
-	        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+		      \<and> geotop_is_polygon J\<^sub>2
+		      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+		      \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	        \<and> closure_on UNIV geotop_euclidean_topology
 	               (geotop_polygon_interior J) =
@@ -12013,10 +12018,11 @@ proof -
     using hnot_both_nonbase_boundary_segments by (by100 blast)
 	  have hsubdisk_side_witnesses_from_split:
 	    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
-	      geotop_is_polygon J\<^sub>1
-	        \<and> geotop_is_polygon J\<^sub>2
-	        \<and> J = C\<^sub>1 \<union> C\<^sub>2
-	        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+		      geotop_is_polygon J\<^sub>1
+		        \<and> geotop_is_polygon J\<^sub>2
+		        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+		        \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	        \<and> closure_on UNIV geotop_euclidean_topology
 	               (geotop_polygon_interior J) =
@@ -12049,10 +12055,57 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
         \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
         card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+	        \<tau> \<inter> J =
+	          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+	        \<sigma> \<noteq> \<tau>"
+  proof -
+    fix J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2
+    assume hbook:
+      "geotop_is_polygon J\<^sub>1
+        \<and> geotop_is_polygon J\<^sub>2
+        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+        \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+        \<and> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J) =
+             closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1)
+             \<union> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>2)
+        \<and> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+             (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+             (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+        \<and> geotop_separated UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1 \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+               (geotop_polygon_interior J\<^sub>2 \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    assume hL\<^sub>1_def:
+      "L\<^sub>1 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)}"
+    assume hL\<^sub>2_def:
+      "L\<^sub>2 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)}"
+    show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
         \<tau> \<inter> J =
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
         \<sigma> \<noteq> \<tau>"
-    by (rule hsubdisk_side_witnesses_from_decomposition)
+      by (rule hsubdisk_side_witnesses_from_decomposition
+          [OF hbook hL\<^sub>1_def hL\<^sub>2_def])
+  qed
   show ?thesis
     by (rule geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
         [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
@@ -12667,9 +12720,10 @@ proof -
             have hsubdisk_side_witnesses_from_decomposition:
 	              "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
 	                geotop_is_polygon J\<^sub>1
-	                  \<and> geotop_is_polygon J\<^sub>2
-	                  \<and> J' = C\<^sub>1 \<union> C\<^sub>2
-	                  \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+		                          \<and> geotop_is_polygon J\<^sub>2
+		                          \<and> J' = C\<^sub>1 \<union> C\<^sub>2
+		                          \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		                          \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	                  \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	                  \<and> closure_on UNIV geotop_euclidean_topology
 	                         (geotop_polygon_interior J') =
@@ -12709,9 +12763,10 @@ proof -
                       fix J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2
 	                      assume hsubdisk_book:
 	                        "geotop_is_polygon J\<^sub>1
-	                          \<and> geotop_is_polygon J\<^sub>2
-	                          \<and> J' = C\<^sub>1 \<union> C\<^sub>2
-	                          \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+		                          \<and> geotop_is_polygon J\<^sub>2
+		                          \<and> J' = C\<^sub>1 \<union> C\<^sub>2
+		                          \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		                          \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	                          \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
 	                          \<and> closure_on UNIV geotop_euclidean_topology
 	                                 (geotop_polygon_interior J') =
@@ -13707,10 +13762,10 @@ proof -
                               the original polygon boundary rather than only
                               on the artificial chord. **)
                           sorry
-                          show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
-                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
-                              \<sigma> \<inter> J' =
-                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+	                      show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+	                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+	                          \<sigma> \<inter> J' =
+	                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
                               \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
                               card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
                               \<tau> \<inter> J' =
@@ -13734,11 +13789,11 @@ proof -
                           \<sigma> \<inter> J' =
                             \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
                           \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
-                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
-                          \<tau> \<inter> J' =
-                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
-                          \<sigma> \<noteq> \<tau>"
-                        by (rule hside_witnesses_from_IH)
+	                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+	                          \<tau> \<inter> J' =
+	                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+	                          \<sigma> \<noteq> \<tau>"
+	                        using hside_witnesses_from_IH by (by100 blast)
                     qed
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
