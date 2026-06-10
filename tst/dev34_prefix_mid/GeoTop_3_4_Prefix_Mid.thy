@@ -6951,6 +6951,44 @@ proof -
       by (rule hK\<^sub>2_canonical_selected_edges_transfer_to_parent
           [OF h\<sigma>K\<^sub>2 h\<sigma>2 hE_fin hE_card_le2 hcontact])
   qed
+  have hcanonical_side_witnesses_finish:
+      "\<And>\<sigma> \<tau>. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+        card {e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<Longrightarrow>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        \<tau> \<in> K\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow>
+        card {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<Longrightarrow>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<Longrightarrow>
+        \<sigma> \<noteq> \<tau> \<Longrightarrow>
+        card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+  proof -
+    fix \<sigma> \<tau>
+    assume h\<sigma>K\<^sub>1: "\<sigma> \<in> K\<^sub>1"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and h\<sigma>E_card_le2:
+        "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+      and h\<sigma>contact:
+        "\<sigma> \<inter> J =
+          \<Union>{e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      and h\<tau>K\<^sub>2: "\<tau> \<in> K\<^sub>2"
+      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      and h\<tau>E_card_le2:
+        "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2"
+      and h\<tau>contact:
+        "\<tau> \<inter> J =
+          \<Union>{e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    have h\<sigma>free: "geotop_free_2_simplex K J \<sigma>"
+      by (rule hK\<^sub>1_canonical_selected_edges_card_le2_transfer_to_parent
+          [OF h\<sigma>K\<^sub>1 h\<sigma>2 h\<sigma>E_card_le2 h\<sigma>contact])
+    have h\<tau>free: "geotop_free_2_simplex K J \<tau>"
+      by (rule hK\<^sub>2_canonical_selected_edges_card_le2_transfer_to_parent
+          [OF h\<tau>K\<^sub>2 h\<tau>2 h\<tau>E_card_le2 h\<tau>contact])
+    show "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+      by (rule hside_parent_free_witnesses_finish
+          [OF h\<sigma>K\<^sub>1 h\<tau>K\<^sub>2 h\<sigma>\<tau> h\<sigma>free h\<tau>free])
+  qed
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
