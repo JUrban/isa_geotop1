@@ -9940,6 +9940,76 @@ proof -
                               apply assumption+
                               done
                           qed
+                          have hside_free_witnesses_with_contact_cards:
+                            "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L E\<^sub>\<sigma> E\<^sub>\<tau>. \<sigma>\<^sub>L \<in> L\<^sub>1
+                              \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
+                              \<and> \<sigma>\<^sub>L \<noteq> \<theta>
+                              \<and> E\<^sub>\<sigma> \<subseteq> L\<^sub>1
+                              \<and> card E\<^sub>\<sigma> \<le> 2
+                              \<and> \<sigma>\<^sub>L \<inter> J\<^sub>1 = \<Union>E\<^sub>\<sigma>
+                              \<and> \<tau>\<^sub>L \<in> L\<^sub>2
+                              \<and> geotop_simplex_dim \<tau>\<^sub>L 2
+                              \<and> \<tau>\<^sub>L \<noteq> \<theta>
+                              \<and> E\<^sub>\<tau> \<subseteq> L\<^sub>2
+                              \<and> card E\<^sub>\<tau> \<le> 2
+                              \<and> \<tau>\<^sub>L \<inter> J\<^sub>2 = \<Union>E\<^sub>\<tau>"
+                          proof -
+                            obtain \<sigma>\<^sub>L \<tau>\<^sub>L E\<^sub>\<sigma> E\<^sub>\<tau>
+                              where h\<sigma>\<^sub>LL\<^sub>1: "\<sigma>\<^sub>L \<in> L\<^sub>1"
+                                and h\<sigma>\<^sub>L2: "geotop_simplex_dim \<sigma>\<^sub>L 2"
+                                and h\<sigma>\<^sub>L_ne_\<theta>: "\<sigma>\<^sub>L \<noteq> \<theta>"
+                                and hE\<^sub>\<sigma>sub: "E\<^sub>\<sigma> \<subseteq> L\<^sub>1"
+                                and hE\<^sub>\<sigma>allowed:
+                                  "E\<^sub>\<sigma> = {}
+                                    \<or> (\<exists>e. E\<^sub>\<sigma> = {e} \<and> geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1)
+                                    \<or> (\<exists>e1 e2. E\<^sub>\<sigma> = {e1, e2} \<and> e1 \<noteq> e2
+                                      \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+                                      \<and> geotop_is_face e1 \<sigma>\<^sub>L
+                                      \<and> geotop_is_face e2 \<sigma>\<^sub>L
+                                      \<and> e1 \<subseteq> J\<^sub>1 \<and> e2 \<subseteq> J\<^sub>1)"
+                                and h\<sigma>\<^sub>L_contact: "\<sigma>\<^sub>L \<inter> J\<^sub>1 = \<Union>E\<^sub>\<sigma>"
+                                and h\<tau>\<^sub>LL\<^sub>2: "\<tau>\<^sub>L \<in> L\<^sub>2"
+                                and h\<tau>\<^sub>L2: "geotop_simplex_dim \<tau>\<^sub>L 2"
+                                and h\<tau>\<^sub>L_ne_\<theta>: "\<tau>\<^sub>L \<noteq> \<theta>"
+                                and hE\<^sub>\<tau>sub: "E\<^sub>\<tau> \<subseteq> L\<^sub>2"
+                                and hE\<^sub>\<tau>allowed:
+                                  "E\<^sub>\<tau> = {}
+                                    \<or> (\<exists>e. E\<^sub>\<tau> = {e} \<and> geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2)
+                                    \<or> (\<exists>e1 e2. E\<^sub>\<tau> = {e1, e2} \<and> e1 \<noteq> e2
+                                      \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+                                      \<and> geotop_is_face e1 \<tau>\<^sub>L
+                                      \<and> geotop_is_face e2 \<tau>\<^sub>L
+                                      \<and> e1 \<subseteq> J\<^sub>2 \<and> e2 \<subseteq> J\<^sub>2)"
+                                and h\<tau>\<^sub>L_contact: "\<tau>\<^sub>L \<inter> J\<^sub>2 = \<Union>E\<^sub>\<tau>"
+                              using hside_free_witnesses_with_contacts by (elim exE conjE)
+                            have hE\<^sub>\<sigma>card: "card E\<^sub>\<sigma> \<le> 2"
+                              using hE\<^sub>\<sigma>allowed
+                              apply (elim disjE exE conjE)
+                              apply (by100 simp)
+                              apply (by100 simp)
+                              apply (by100 simp)
+                              done
+                            have hE\<^sub>\<tau>card: "card E\<^sub>\<tau> \<le> 2"
+                              using hE\<^sub>\<tau>allowed
+                              apply (elim disjE exE conjE)
+                              apply (by100 simp)
+                              apply (by100 simp)
+                              apply (by100 simp)
+                              done
+                            show ?thesis
+                              apply (rule exI[where x = "\<sigma>\<^sub>L"])
+                              apply (rule exI[where x = "\<tau>\<^sub>L"])
+                              apply (rule exI[where x = "E\<^sub>\<sigma>"])
+                              apply (rule exI[where x = "E\<^sub>\<tau>"])
+                              using h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_ne_\<theta> hE\<^sub>\<sigma>sub
+                                hE\<^sub>\<sigma>card h\<sigma>\<^sub>L_contact h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2
+                                h\<tau>\<^sub>L_ne_\<theta> hE\<^sub>\<tau>sub hE\<^sub>\<tau>card h\<tau>\<^sub>L_contact
+                              apply (intro conjI)
+                              apply assumption+
+                              done
+                          qed
                           have htransferable_side_witness_choice_book:
                             "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
