@@ -8155,6 +8155,102 @@ proof -
     unfolding geotop_polyhedron_def using hF_union by (by100 blast)
 qed
 
+lemma geotop_complex_2simplex_face_eq_prefix:
+  fixes K :: "(real^2) set set" and \<rho> \<theta> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<rho>K: "\<rho> \<in> K"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes hface: "geotop_is_face \<rho> \<theta>"
+  assumes h\<rho>2: "geotop_simplex_dim \<rho> 2"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  shows "\<rho> = \<theta>"
+proof (rule ccontr)
+  assume hne: "\<rho> \<noteq> \<theta>"
+  have hsub: "\<rho> \<subseteq> \<theta>"
+    by (rule geotop_is_face_imp_subset_prefix[OF hface])
+  have hproper: "\<rho> \<subset> \<theta>"
+    using hsub hne by (by100 blast)
+  have hlt: "(2::nat) < 2"
+    by (rule geotop_complex_proper_subset_dim_less
+        [OF hK h\<rho>K h\<theta>K hproper h\<rho>2 h\<theta>2])
+  show False
+    using hlt by (by100 simp)
+qed
+
+lemma geotop_theta_face_adjoin_side_two_simplex_count_lt_prefix:
+  fixes K L :: "(real^2) set set" and \<theta> \<rho> :: "(real^2) set"
+  assumes hK_fin: "finite K"
+  assumes hK: "geotop_is_complex K"
+  assumes hLsub: "L \<subseteq> K"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<rho>K: "\<rho> \<in> K"
+  assumes h\<rho>2: "geotop_simplex_dim \<rho> 2"
+  assumes h\<rho>notL: "\<rho> \<notin> L"
+  assumes h\<rho>ne: "\<rho> \<noteq> \<theta>"
+  shows "card {\<eta>\<in>L \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+      geotop_simplex_dim \<eta> 2}
+    < card {\<eta>\<in>K. geotop_simplex_dim \<eta> 2}"
+proof -
+  let ?F = "{\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}"
+  let ?A = "{\<eta>\<in>L \<union> ?F. geotop_simplex_dim \<eta> 2}"
+  let ?B = "{\<eta>\<in>K. geotop_simplex_dim \<eta> 2}"
+  have hface_closed:
+    "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hFsub: "?F \<subseteq> K"
+  proof
+    fix \<eta>
+    assume h\<eta>F: "\<eta> \<in> ?F"
+    have hcase: "geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>"
+      using h\<eta>F by (by100 blast)
+    show "\<eta> \<in> K"
+    proof (rule disjE[OF hcase])
+      assume hface: "geotop_is_face \<eta> \<theta>"
+      show ?thesis
+        using hface_closed h\<theta>K hface by (by100 blast)
+    next
+      assume "\<eta> = \<theta>"
+      thus ?thesis using h\<theta>K by (by100 simp)
+    qed
+  qed
+  have hA_sub_B: "?A \<subseteq> ?B"
+    using hLsub hFsub by (by100 blast)
+  have h\<rho>B: "\<rho> \<in> ?B"
+    using h\<rho>K h\<rho>2 by (by100 blast)
+  have h\<rho>notA: "\<rho> \<notin> ?A"
+  proof
+    assume h\<rho>A: "\<rho> \<in> ?A"
+    have h\<rho>LF: "\<rho> \<in> L \<union> ?F"
+      using h\<rho>A by (by100 blast)
+    show False
+    proof (rule UnE[OF h\<rho>LF])
+      assume "\<rho> \<in> L"
+      thus False using h\<rho>notL by (by100 blast)
+    next
+      assume h\<rho>F: "\<rho> \<in> ?F"
+      have hcase: "geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>"
+        using h\<rho>F by (by100 blast)
+      show False
+      proof (rule disjE[OF hcase])
+        assume hface: "geotop_is_face \<rho> \<theta>"
+        have "\<rho> = \<theta>"
+          by (rule geotop_complex_2simplex_face_eq_prefix
+              [OF hK h\<rho>K h\<theta>K hface h\<rho>2 h\<theta>2])
+        thus False using h\<rho>ne by (by100 blast)
+      next
+        assume "\<rho> = \<theta>"
+        thus False using h\<rho>ne by (by100 blast)
+      qed
+    qed
+  qed
+  have hB_fin: "finite ?B"
+    using hK_fin by (by100 simp)
+  show ?thesis
+    by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+        [OF hB_fin hA_sub_B h\<rho>B h\<rho>notA])
+qed
+
 lemma geotop_theta_face_adjoin_side_two_simplex_count_gt1_prefix:
   fixes L :: "(real^2) set set" and \<theta> \<rho> :: "(real^2) set"
   assumes hL_fin: "finite L"
