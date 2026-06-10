@@ -7344,6 +7344,25 @@ proof -
     using hsubdisk_book_facts by (by100 blast)
   have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
     using hT_gt2 by (by100 simp)
+  have h\<theta>_not_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (rule geotop_2simplex_vertices_not_collinear_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hbase_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>1] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"]
+    by (by100 simp)
+  have hbase_segment_sub_J: "closed_segment v\<^sub>0 v\<^sub>1 \<subseteq> J"
+    using hv\<^sub>0v\<^sub>1_sub_J hbase_hull_segment_eq by (by100 simp)
+  have hnot_both_nonbase_boundary_segments:
+    "\<not> (closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J)"
+    by (rule geotop_boundary_triangle_not_both_nonbase_segments_on_boundary_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J])
+  have hnonbase_boundary_segment_cases:
+    "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
+      \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+    using hnot_both_nonbase_boundary_segments by (by100 blast)
   have hnonfree_contact:
     "\<exists>x. x \<in> \<theta> \<inter> J
       \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
