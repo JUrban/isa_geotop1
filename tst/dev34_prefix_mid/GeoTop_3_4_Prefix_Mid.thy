@@ -10456,6 +10456,37 @@ proof -
   qed
   have hnot_both_sides_card_le1: "\<not> (card ?T\<^sub>1 \<le> 1 \<and> card ?T\<^sub>2 \<le> 1)"
     using hT_card_sides hT_gt2 by (by100 linarith)
+  have hT\<^sub>1_theta_adjoined_gt1_if_witness:
+    "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<rho> 2 \<Longrightarrow> \<rho> \<noteq> \<theta> \<Longrightarrow>
+      card {\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+        geotop_simplex_dim \<eta> 2} > 1"
+  proof -
+    fix \<rho>
+    assume h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+    assume h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    assume h\<rho>ne: "\<rho> \<noteq> \<theta>"
+    show "card {\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+        geotop_simplex_dim \<eta> 2} > 1"
+      by (rule geotop_theta_face_adjoin_side_two_simplex_count_gt1_prefix
+          [OF hL\<^sub>1_fin h\<theta>2 h\<rho>L\<^sub>1 h\<rho>2 h\<rho>ne])
+  qed
+  have hT\<^sub>1_theta_adjoined_lt_T_if_omits:
+    "\<And>\<rho>. \<rho> \<in> K \<Longrightarrow> geotop_simplex_dim \<rho> 2 \<Longrightarrow>
+      \<rho> \<notin> L\<^sub>1 \<Longrightarrow> \<rho> \<noteq> \<theta> \<Longrightarrow>
+      card {\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+        geotop_simplex_dim \<eta> 2} < card ?T"
+  proof -
+    fix \<rho>
+    assume h\<rho>K: "\<rho> \<in> K"
+    assume h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    assume h\<rho>notL\<^sub>1: "\<rho> \<notin> L\<^sub>1"
+    assume h\<rho>ne: "\<rho> \<noteq> \<theta>"
+    show "card {\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+        geotop_simplex_dim \<eta> 2} < card ?T"
+      by (rule geotop_theta_face_adjoin_side_two_simplex_count_lt_prefix
+          [OF hK_fin hK hL\<^sub>1_sub_K h\<theta>K h\<theta>2 h\<rho>K h\<rho>2
+            h\<rho>notL\<^sub>1 h\<rho>ne])
+  qed
   have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
     sorry
   have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
