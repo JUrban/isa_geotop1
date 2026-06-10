@@ -9949,6 +9949,83 @@ proof -
     using hUnion hDisj hV_open hW_open hP_V hQ_W by (by100 blast)
 qed
 
+lemma geotop_open_component_complement_frontier_split_prefix:
+  fixes U :: "'a::real_normed_vector set"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hP: "P \<in> U" and hQ: "Q \<in> U"
+  assumes hneq: "geotop_component_at UNIV geotop_euclidean_topology U P \<noteq>
+                 geotop_component_at UNIV geotop_euclidean_topology U Q"
+  assumes hX_front:
+    "X \<in> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_component_at UNIV geotop_euclidean_topology U P)"
+  assumes hY_front:
+    "Y \<in> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_component_at UNIV geotop_euclidean_topology U Q)"
+  assumes hY_not_U: "Y \<notin> U"
+  shows "\<exists>V W. U = V \<union> W
+      \<and> V \<inter> W = {}
+      \<and> V \<in> geotop_euclidean_topology
+      \<and> W \<in> geotop_euclidean_topology
+      \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology V
+      \<and> Y \<in> geotop_frontier UNIV geotop_euclidean_topology W"
+  (**
+    Frontier-preserving form of the component split.  If the second boundary
+    point is attached to the other component and lies outside the open set, then
+    it is also a frontier point of the open complement of the first component.
+  **)
+proof -
+  let ?V = "geotop_component_at UNIV geotop_euclidean_topology U P"
+  let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology U Q"
+  let ?W = "U - ?V"
+  have hsplit:
+      "U = ?V \<union> ?W
+        \<and> ?V \<inter> ?W = {}
+        \<and> ?V \<in> geotop_euclidean_topology
+        \<and> ?W \<in> geotop_euclidean_topology
+        \<and> P \<in> ?V
+        \<and> Q \<in> ?W"
+    by (rule geotop_open_component_complement_split_prefix
+        [OF hUopen hP hQ hneq])
+  have hU_eq: "U = ?V \<union> ?W"
+    using hsplit by (by100 blast)
+  have hVW_disj: "?V \<inter> ?W = {}"
+    using hsplit by (by100 blast)
+  have hV_open: "?V \<in> geotop_euclidean_topology"
+    using hsplit by (by100 blast)
+  have hW_open: "?W \<in> geotop_euclidean_topology"
+    using hsplit by (by100 blast)
+  have hTU: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hdisj_PQ:
+    "?V = ?CQ \<or> ?V \<inter> ?CQ = {}"
+    by (rule Theorem_GT_1_16[OF hTU subset_UNIV hP hQ])
+  have hV_disj_CQ: "?V \<inter> ?CQ = {}"
+    using hdisj_PQ hneq by (by100 blast)
+  have hCQ_sub_U: "?CQ \<subseteq> U"
+    unfolding geotop_component_at_def by (by100 blast)
+  have hCQ_sub_W: "?CQ \<subseteq> ?W"
+    using hCQ_sub_U hV_disj_CQ by (by100 blast)
+  have hY_front_HOL: "Y \<in> frontier ?CQ"
+    using hY_front geotop_frontier_UNIV_eq_frontier[of ?CQ] by (by100 simp)
+  have hY_cl_CQ: "Y \<in> closure ?CQ"
+    using hY_front_HOL unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hY_cl_W: "Y \<in> closure ?W"
+    using hCQ_sub_W hY_cl_CQ closure_mono by (by100 blast)
+  have hW_sub_U: "?W \<subseteq> U"
+    by (by100 blast)
+  have hY_not_int_W: "Y \<notin> interior ?W"
+    using hY_not_U hW_sub_U interior_subset by (by100 blast)
+  have hY_front_HOL_W: "Y \<in> frontier ?W"
+    using hY_cl_W hY_not_int_W
+    unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hY_front_W:
+      "Y \<in> geotop_frontier UNIV geotop_euclidean_topology ?W"
+    using hY_front_HOL_W geotop_frontier_UNIV_eq_frontier[of ?W] by (by100 simp)
+  show ?thesis
+    using hU_eq hVW_disj hV_open hW_open hX_front hY_front_W
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_interior_minus_arc_open_prefix:
   fixes J A :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
