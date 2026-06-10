@@ -9836,8 +9836,14 @@ proof -
       qed
     qed
   qed
-  show ?thesis
+  have hside_count_residual:
+    "(\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
+    \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
+    \<and> card ?T\<^sub>1 > 1
+    \<and> card ?T\<^sub>2 > 1"
     sorry
+  show ?thesis
+    using hcarrier_side1 hcarrier_side2 hside_count_residual by (by100 blast)
 qed
 
 lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
