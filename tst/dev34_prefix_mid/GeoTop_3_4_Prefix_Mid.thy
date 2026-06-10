@@ -9107,6 +9107,56 @@ proof -
     using hJ\<^sub>1_eq hJ\<^sub>1_sub_B\<^sub>1 by (by100 blast)
   have hchord_segment_sub_B\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?B\<^sub>2"
     using hJ\<^sub>2_eq hJ\<^sub>2_sub_B\<^sub>2 by (by100 blast)
+  have hB\<^sub>1_HOL_interior_eq:
+    "interior ?B\<^sub>1 = geotop_polygon_interior J\<^sub>1"
+  proof -
+    have hB\<^sub>1_closure:
+      "?B\<^sub>1 = closure (geotop_polygon_interior J\<^sub>1)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    show ?thesis
+      using hB\<^sub>1_closure geotop_polygon_interior_regular_closed_prefix[OF hJ\<^sub>1] by (by100 simp)
+  qed
+  have hB\<^sub>2_HOL_interior_eq:
+    "interior ?B\<^sub>2 = geotop_polygon_interior J\<^sub>2"
+  proof -
+    have hB\<^sub>2_closure:
+      "?B\<^sub>2 = closure (geotop_polygon_interior J\<^sub>2)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    show ?thesis
+      using hB\<^sub>2_closure geotop_polygon_interior_regular_closed_prefix[OF hJ\<^sub>2] by (by100 simp)
+  qed
+  have hchord_rel_interior_disjoint_B\<^sub>1_HOL_interior:
+    "rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<inter> interior ?B\<^sub>1 = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<inter> interior ?B\<^sub>1"
+    have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      using hx rel_interior_subset by (by100 blast)
+    have hxJ\<^sub>1: "x \<in> J\<^sub>1"
+      using hchord_sub_J\<^sub>1 hx_chord by (by100 blast)
+    have hxI\<^sub>1: "x \<in> geotop_polygon_interior J\<^sub>1"
+      using hx hB\<^sub>1_HOL_interior_eq by (by100 simp)
+    have "x \<in> geotop_polygon_interior J\<^sub>1 \<inter> J\<^sub>1"
+      using hxI\<^sub>1 hxJ\<^sub>1 by (by100 blast)
+    thus False
+      using polygon_interior_disjoint_polygon[OF hJ\<^sub>1] by (by100 blast)
+  qed
+  have hchord_rel_interior_disjoint_B\<^sub>2_HOL_interior:
+    "rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<inter> interior ?B\<^sub>2 = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<inter> interior ?B\<^sub>2"
+    have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      using hx rel_interior_subset by (by100 blast)
+    have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+      using hchord_sub_J\<^sub>2 hx_chord by (by100 blast)
+    have hxI\<^sub>2: "x \<in> geotop_polygon_interior J\<^sub>2"
+      using hx hB\<^sub>2_HOL_interior_eq by (by100 simp)
+    have "x \<in> geotop_polygon_interior J\<^sub>2 \<inter> J\<^sub>2"
+      using hxI\<^sub>2 hxJ\<^sub>2 by (by100 blast)
+    thus False
+      using polygon_interior_disjoint_polygon[OF hJ\<^sub>2] by (by100 blast)
+  qed
   have hchord_segment_L\<^sub>1: "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>1"
     using hL\<^sub>1_def hchord_segment_K hchord_segment_sub_B\<^sub>1 by (by100 blast)
   have hchord_segment_L\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>2"
