@@ -6718,10 +6718,30 @@ proof -
     using hK\<^sub>2_sub_K by (by100 blast)
   have hT_card_gt2: "card ?T > 2"
     by (rule hT_gt2)
+  have h\<theta>_T: "\<theta> \<in> ?T"
+    using h\<theta>K h\<theta>2 by (by100 blast)
   have hT\<^sub>1_card_le_T: "card ?T\<^sub>1 \<le> card ?T"
     by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
   have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
     by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
+  have hT\<^sub>1_card_lt_T_if_avoids_\<theta>:
+      "\<theta> \<notin> ?T\<^sub>1 \<Longrightarrow> card ?T\<^sub>1 < card ?T"
+  proof -
+    assume h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
+    have hproper: "?T\<^sub>1 \<subset> ?T"
+      using hT\<^sub>1_sub_T h\<theta>_T h\<theta>_not_T\<^sub>1 by (by100 blast)
+    show "card ?T\<^sub>1 < card ?T"
+      by (rule psubset_card_mono[OF hT_fin hproper])
+  qed
+  have hT\<^sub>2_card_lt_T_if_avoids_\<theta>:
+      "\<theta> \<notin> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 < card ?T"
+  proof -
+    assume h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+    have hproper: "?T\<^sub>2 \<subset> ?T"
+      using hT\<^sub>2_sub_T h\<theta>_T h\<theta>_not_T\<^sub>2 by (by100 blast)
+    show "card ?T\<^sub>2 < card ?T"
+      by (rule psubset_card_mono[OF hT_fin hproper])
+  qed
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
