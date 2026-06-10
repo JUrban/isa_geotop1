@@ -2829,6 +2829,46 @@ proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_pref
   qed
 qed
 
+lemma geotop_2simplex_punctured_connected_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "top1_connected_on (\<sigma> - {p})
+    (subspace_topology UNIV geotop_euclidean_topology (\<sigma> - {p}))"
+  (**
+    A 2-simplex remains connected after deleting one point; this is the
+    punctured convex-set step needed when a side carrier touches the artificial
+    chord only at an endpoint. **)
+proof -
+  have hconv: "convex \<sigma>"
+    by (rule geotop_simplex_dim_convex_HOL_prefix[OF h\<sigma>2])
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp_V: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h2_le_m hgp_V h\<sigma>_eq by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hV_aff_dim: "aff_dim V = 2"
+    using hV_ai hV_card affine_independent_iff_card[of V] by (by100 simp)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  have h\<sigma>_aff_dim: "aff_dim \<sigma> = 2"
+    using h\<sigma>_HOL hV_aff_dim aff_dim_convex_hull[of V] by (by100 simp)
+  have hconn_HOL: "connected (\<sigma> - {p})"
+  proof -
+    have "aff_dim \<sigma> \<noteq> 1"
+      using h\<sigma>_aff_dim by (by100 simp)
+    thus ?thesis
+      using connected_punctured_convex[OF hconv] by (by100 blast)
+  qed
+  show ?thesis
+    using hconn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix:
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -8821,6 +8861,79 @@ proof -
         qed
       qed
     qed
+  qed
+  have hcarrier_chord_singleton_dim_cases:
+    "\<And>x v. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v} \<Longrightarrow>
+      geotop_simplex_dim (geotop_K_carrier K x) 1
+      \<or> geotop_simplex_dim (geotop_K_carrier K x) 2"
+  proof -
+    fix x v
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_single:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v}"
+    show "geotop_simplex_dim (geotop_K_carrier K x) 1
+      \<or> geotop_simplex_dim (geotop_K_carrier K x) 2"
+    proof -
+      have hxK: "x \<in> geotop_polyhedron K"
+        using hB\<^sub>1_sub_K hB\<^sub>2_sub_K hxB by (by100 blast)
+      have hcarrierK: "geotop_K_carrier K x \<in> K"
+        by (rule geotop_K_carrier_in[OF hK hK_fin hxK])
+      have hx_carrier: "x \<in> geotop_K_carrier K x"
+        by (rule geotop_K_carrier_contains_point[OF hK hK_fin hxK])
+      have hv_carrier: "v \<in> geotop_K_carrier K x"
+        using hinter_single by (by100 blast)
+      have hv_chord: "v \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hinter_single by (by100 blast)
+      have hcarrier_simplex: "geotop_is_simplex (geotop_K_carrier K x)"
+        using geotop_is_complex_simplex[OF hK] hcarrierK by (by100 blast)
+      obtain n where hcarrier_dim:
+        "geotop_simplex_dim (geotop_K_carrier K x) n"
+        using hcarrier_simplex
+        unfolding geotop_is_simplex_def geotop_simplex_dim_def
+        by (by100 blast)
+      have hn_le2: "n \<le> 2"
+        by (rule geotop_simplex_dim_le_2_R2_prefix[OF hcarrier_dim])
+      have hn_ne0: "n \<noteq> 0"
+      proof
+        assume hn0: "n = 0"
+        obtain V m where hV_fin: "finite V"
+          and hV_card: "card V = 0 + 1"
+          and hcarrier_eq: "geotop_K_carrier K x = geotop_convex_hull V"
+          using hcarrier_dim hn0 unfolding geotop_simplex_dim_def
+          by (by100 blast)
+        have hV_card1: "card V = 1"
+          using hV_card by (by100 simp)
+        obtain c where hV_eq: "V = {c}"
+          using hV_card1 by (rule card_1_singletonE)
+        have hcarrier_sing: "geotop_K_carrier K x = {c}"
+          using hcarrier_eq hV_eq geotop_convex_hull_eq_HOL[of "{c}"]
+          by (by100 simp)
+        have "x = v"
+          using hx_carrier hv_carrier hcarrier_sing by (by100 simp)
+        thus False
+          using hx_not_chord hv_chord by (by100 simp)
+      qed
+      have hn_cases: "n = 1 \<or> n = 2"
+        using hn_le2 hn_ne0 by (by100 arith)
+      show ?thesis
+        using hcarrier_dim hn_cases by (by100 blast)
+    qed
+  qed
+  have hcarrier_chord_singleton_dim2_minus_connected:
+    "\<And>x v. geotop_simplex_dim (geotop_K_carrier K x) 2 \<Longrightarrow>
+      top1_connected_on (geotop_K_carrier K x - {v})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_K_carrier K x - {v}))"
+  proof -
+    fix x v
+    assume hdim2: "geotop_simplex_dim (geotop_K_carrier K x) 2"
+    show "top1_connected_on (geotop_K_carrier K x - {v})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_K_carrier K x - {v}))"
+      by (rule geotop_2simplex_punctured_connected_prefix[OF hdim2])
   qed
   show ?thesis
     sorry
