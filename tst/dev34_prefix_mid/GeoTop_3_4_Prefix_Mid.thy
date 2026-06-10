@@ -17146,9 +17146,332 @@ proof -
 	                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>_no_chord h\<sigma>card h\<sigma>contact
 	                                by (by100 blast)
 	                            qed
-                            show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
-                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
-                              \<sigma> \<inter> J' =
+	                            have hside1_singleton_branch_parent_witness:
+	                              "\<exists>\<sigma>. \<sigma> \<in> L\<^sub>1
+	                                \<and> geotop_simplex_dim \<sigma> 2
+	                                \<and> \<sigma> \<noteq> \<tau>
+	                                \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2
+	                                \<and> \<sigma> \<inter> J' =
+	                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                            proof -
+	                              obtain \<sigma> where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+	                                and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+	                                and h\<sigma>ne\<tau>: "\<sigma> \<noteq> \<tau>"
+	                                and h\<sigma>_no_chord:
+	                                  "\<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+	                                and h\<sigma>card_can:
+	                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                and h\<sigma>contact_can:
+	                                  "\<sigma> \<inter> J\<^sub>1 =
+	                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+	                                using hside1_singleton_branch_canonical_witness
+	                                by (elim exE conjE)
+	                              have h\<sigma>parent_transfer:
+	                                "\<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J'
+	                                \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+	                                  {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                              proof -
+	                                have h\<sigma>K: "\<sigma> \<in> K"
+	                                  using hL\<^sub>1_sub_K h\<sigma>L\<^sub>1 by (by100 blast)
+	                                have h\<sigma>_closure:
+	                                  "\<sigma> \<subseteq> closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>1)"
+	                                  using h\<sigma>L\<^sub>1 unfolding hL\<^sub>1_def by (by100 blast)
+	                                have hchord_hull_segment_eq_singleton_transfer:
+	                                  "geotop_convex_hull {v\<^sub>0, v\<^sub>2} =
+	                                    closed_segment v\<^sub>0 v\<^sub>2"
+	                                  using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+	                                    geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+	                                  by (by100 simp)
+	                                have hchord_segment_K_singleton_transfer:
+	                                  "closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
+	                                  using hv\<^sub>0v\<^sub>2K hchord_hull_segment_eq_singleton_transfer
+	                                  by (by100 simp)
+	                                have hchord_endpoints_sub_parent_singleton:
+	                                  "{v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+	                                proof -
+	                                  have hC\<^sub>1_end_data:
+	                                    "v\<^sub>0 \<noteq> v\<^sub>2 \<and> v\<^sub>0 \<in> C\<^sub>1 \<and> v\<^sub>2 \<in> C\<^sub>1"
+	                                    by (rule geotop_arc_endpoints_pair_data_prefix[OF hC\<^sub>1E])
+	                                  show ?thesis
+	                                    using hC\<^sub>1_end_data hC\<^sub>1_sub_J' by (by100 blast)
+	                                qed
+	                                have h\<sigma>_chord_contact_sub_parent:
+	                                  "\<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J'"
+	                                proof
+	                                  fix x
+	                                  assume hx: "x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+	                                  show "x \<in> J'"
+	                                  proof (cases "x \<in> {v\<^sub>0, v\<^sub>2}")
+	                                    case True
+	                                    show ?thesis
+	                                      using True hchord_endpoints_sub_parent_singleton
+	                                      by (by100 blast)
+	                                  next
+	                                    case False
+	                                    have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+	                                      using hv\<^sub>2_not by (by100 blast)
+	                                    have hx_cap:
+	                                      "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma>"
+	                                      using hx by (by100 blast)
+	                                    have hcap_nonempty:
+	                                      "closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma> \<noteq> {}"
+	                                      using hx_cap by (by100 blast)
+	                                    have hfaces:
+	                                      "geotop_is_face
+	                                        (closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma>)
+	                                        (closed_segment v\<^sub>0 v\<^sub>2)
+	                                      \<and> geotop_is_face
+	                                        (closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma>) \<sigma>"
+	                                      using geotop_is_complex_intersection[OF hK']
+	                                        hchord_segment_K_singleton_transfer h\<sigma>K hcap_nonempty
+	                                      by (by100 blast)
+	                                    have hface_chord:
+	                                      "geotop_is_face
+	                                        (closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma>)
+	                                        (closed_segment v\<^sub>0 v\<^sub>2)"
+	                                      using hfaces by (by100 blast)
+	                                    have hface_\<sigma>:
+	                                      "geotop_is_face
+	                                        (closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma>) \<sigma>"
+	                                      using hfaces by (by100 blast)
+	                                    have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+	                                      using False by (by100 blast)
+	                                    have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+	                                      using False by (by100 blast)
+	                                    have hcap_eq:
+	                                      "closed_segment v\<^sub>0 v\<^sub>2 \<inter> \<sigma> =
+	                                        closed_segment v\<^sub>0 v\<^sub>2"
+	                                      by (rule geotop_segment_face_with_nonendpoint_eq_prefix
+	                                          [OF hface_chord hv\<^sub>0v\<^sub>2 hx_cap hx_ne_v\<^sub>0 hx_ne_v\<^sub>2])
+	                                    have "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+	                                      using hface_\<sigma> hcap_eq by (by100 simp)
+	                                    thus ?thesis
+	                                      using h\<sigma>_no_chord by (by100 blast)
+	                                  qed
+	                                qed
+	                                have hC\<^sub>2_opposite_side1_singleton:
+	                                  "C\<^sub>2 \<inter> closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>1) \<subseteq> {v\<^sub>0, v\<^sub>2}"
+	                                proof
+	                                  have hB\<^sub>1_sub_closure_R\<^sub>1:
+	                                    "closure_on UNIV geotop_euclidean_topology
+	                                      (geotop_polygon_interior J\<^sub>1)
+	                                    \<subseteq> closure_on UNIV geotop_euclidean_topology
+	                                      (geotop_polygon_interior J\<^sub>1 \<union>
+	                                        geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})"
+	                                  proof -
+	                                    have hI_sub_R:
+	                                      "geotop_polygon_interior J\<^sub>1 \<subseteq>
+	                                        geotop_polygon_interior J\<^sub>1 \<union>
+	                                        geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+	                                      by (by100 blast)
+	                                    show ?thesis
+	                                      by (rule closure_on_mono[OF hI_sub_R])
+	                                  qed
+	                                  fix x
+	                                  assume hx:
+	                                    "x \<in> C\<^sub>2 \<inter> closure_on UNIV geotop_euclidean_topology
+	                                      (geotop_polygon_interior J\<^sub>1)"
+	                                  have hxC\<^sub>2: "x \<in> C\<^sub>2"
+	                                    using hx by (by100 blast)
+	                                  have hxclB\<^sub>1:
+	                                    "x \<in> closure_on UNIV geotop_euclidean_topology
+	                                      (geotop_polygon_interior J\<^sub>1)"
+	                                    using hx by (by100 blast)
+	                                  show "x \<in> {v\<^sub>0, v\<^sub>2}"
+	                                  proof (rule ccontr)
+	                                    assume hxnot: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+	                                    have hxarc\<^sub>2:
+	                                      "x \<in> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+	                                      using hxC\<^sub>2 hxnot unfolding geotop_arc_interior_def
+	                                      by (by100 blast)
+	                                    have hxR\<^sub>2:
+	                                      "x \<in> geotop_polygon_interior J\<^sub>2 \<union>
+	                                        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+	                                      using hxarc\<^sub>2 by (by100 blast)
+	                                    have hxclR\<^sub>1:
+	                                      "x \<in> closure_on UNIV geotop_euclidean_topology
+	                                        (geotop_polygon_interior J\<^sub>1 \<union>
+	                                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})"
+	                                      using hB\<^sub>1_sub_closure_R\<^sub>1 hxclB\<^sub>1 by (by100 blast)
+	                                    have "x \<in> closure_on UNIV geotop_euclidean_topology
+	                                        (geotop_polygon_interior J\<^sub>1 \<union>
+	                                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	                                      \<inter> (geotop_polygon_interior J\<^sub>2 \<union>
+	                                          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+	                                      using hxclR\<^sub>1 hxR\<^sub>2 by (by100 blast)
+	                                    thus False
+	                                      using hside_separated unfolding geotop_separated_def
+	                                      by (by100 blast)
+	                                  qed
+	                                qed
+	                                have hcontact_fwd: "\<sigma> \<inter> J\<^sub>1 \<subseteq> \<sigma> \<inter> J'"
+	                                proof
+	                                  fix x
+	                                  assume hx: "x \<in> \<sigma> \<inter> J\<^sub>1"
+	                                  have hx\<sigma>: "x \<in> \<sigma>"
+	                                    using hx by (by100 blast)
+	                                  have hxJ\<^sub>1: "x \<in> J\<^sub>1"
+	                                    using hx by (by100 blast)
+	                                  have hx_side:
+	                                    "x \<in> C\<^sub>1 \<or> x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+	                                    using hJ\<^sub>1_boundary_def hxJ\<^sub>1 by (by100 blast)
+	                                  show "x \<in> \<sigma> \<inter> J'"
+	                                  proof (rule disjE[OF hx_side])
+	                                    assume hxC\<^sub>1: "x \<in> C\<^sub>1"
+	                                    have "x \<in> J'"
+	                                      using hC\<^sub>1_sub_J' hxC\<^sub>1 by (by100 blast)
+	                                    thus ?thesis
+	                                      using hx\<sigma> by (by100 blast)
+	                                  next
+	                                    assume hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+	                                    have "x \<in> J'"
+	                                      using h\<sigma>_chord_contact_sub_parent hx\<sigma> hxchord
+	                                      by (by100 blast)
+	                                    thus ?thesis
+	                                      using hx\<sigma> by (by100 blast)
+	                                  qed
+	                                qed
+	                                have hcontact_rev: "\<sigma> \<inter> J' \<subseteq> \<sigma> \<inter> J\<^sub>1"
+	                                proof
+	                                  fix x
+	                                  assume hx: "x \<in> \<sigma> \<inter> J'"
+	                                  have hx\<sigma>: "x \<in> \<sigma>"
+	                                    using hx by (by100 blast)
+	                                  have hxJ': "x \<in> J'"
+	                                    using hx by (by100 blast)
+	                                  have hxside: "x \<in> C\<^sub>1 \<or> x \<in> C\<^sub>2"
+	                                    using hJ'_boundary_split hxJ' by (by100 blast)
+	                                  have hxJ\<^sub>1: "x \<in> J\<^sub>1"
+	                                  proof (rule disjE[OF hxside])
+	                                    assume hxC\<^sub>1: "x \<in> C\<^sub>1"
+	                                    show ?thesis
+	                                      using hxC\<^sub>1 hC\<^sub>1_sub_J\<^sub>1 by (by100 blast)
+	                                  next
+	                                    assume hxC\<^sub>2: "x \<in> C\<^sub>2"
+	                                    have hxcl:
+	                                      "x \<in> closure_on UNIV geotop_euclidean_topology
+	                                        (geotop_polygon_interior J\<^sub>1)"
+	                                      using hx\<sigma> h\<sigma>_closure by (by100 blast)
+	                                    have hxend: "x \<in> {v\<^sub>0, v\<^sub>2}"
+	                                      using hC\<^sub>2_opposite_side1_singleton hxC\<^sub>2 hxcl
+	                                      by (by100 blast)
+	                                    have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+	                                      by (rule ends_in_segment(1))
+	                                    have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+	                                      by (rule ends_in_segment(2))
+	                                    have hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+	                                      using hxend hv\<^sub>0_chord hv\<^sub>2_chord by (by100 blast)
+	                                    show ?thesis
+	                                      using hxchord hchord_sub_J\<^sub>1 by (by100 blast)
+	                                  qed
+	                                  show "x \<in> \<sigma> \<inter> J\<^sub>1"
+	                                    using hx\<sigma> hxJ\<^sub>1 by (by100 blast)
+	                                qed
+	                                have hcontact_eq: "\<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J'"
+	                                  by (rule subset_antisym[OF hcontact_fwd hcontact_rev])
+	                                have hedge_fwd:
+	                                  "{e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+	                                  \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                                proof
+	                                  fix e
+	                                  assume he:
+	                                    "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+	                                  have heL\<^sub>1: "e \<in> L\<^sub>1"
+	                                    using he by (by100 blast)
+	                                  have hedge: "geotop_is_edge e"
+	                                    using he by (by100 blast)
+	                                  have hface: "geotop_is_face e \<sigma>"
+	                                    using he by (by100 blast)
+	                                  have heJ\<^sub>1: "e \<subseteq> J\<^sub>1"
+	                                    using he by (by100 blast)
+	                                  have he\<sigma>: "e \<subseteq> \<sigma>"
+	                                    by (rule geotop_is_face_imp_subset_prefix[OF hface])
+	                                  have heJ': "e \<subseteq> J'"
+	                                  proof
+	                                    fix x
+	                                    assume hxe: "x \<in> e"
+	                                    have "x \<in> \<sigma> \<inter> J\<^sub>1"
+	                                      using hxe he\<sigma> heJ\<^sub>1 by (by100 blast)
+	                                    hence "x \<in> \<sigma> \<inter> J'"
+	                                      using hcontact_eq by (by100 blast)
+	                                    thus "x \<in> J'"
+	                                      by (by100 blast)
+	                                  qed
+	                                  show "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                                    using heL\<^sub>1 hedge hface heJ' by (by100 blast)
+	                                qed
+	                                have hedge_rev:
+	                                  "{e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+	                                  \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+	                                proof
+	                                  fix e
+	                                  assume he:
+	                                    "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                                  have heL\<^sub>1: "e \<in> L\<^sub>1"
+	                                    using he by (by100 blast)
+	                                  have hedge: "geotop_is_edge e"
+	                                    using he by (by100 blast)
+	                                  have hface: "geotop_is_face e \<sigma>"
+	                                    using he by (by100 blast)
+	                                  have heJ': "e \<subseteq> J'"
+	                                    using he by (by100 blast)
+	                                  have he\<sigma>: "e \<subseteq> \<sigma>"
+	                                    by (rule geotop_is_face_imp_subset_prefix[OF hface])
+	                                  have heJ\<^sub>1: "e \<subseteq> J\<^sub>1"
+	                                  proof
+	                                    fix x
+	                                    assume hxe: "x \<in> e"
+	                                    have "x \<in> \<sigma> \<inter> J'"
+	                                      using hxe he\<sigma> heJ' by (by100 blast)
+	                                    hence "x \<in> \<sigma> \<inter> J\<^sub>1"
+	                                      using hcontact_eq by (by100 blast)
+	                                    thus "x \<in> J\<^sub>1"
+	                                      by (by100 blast)
+	                                  qed
+	                                  show "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+	                                    using heL\<^sub>1 hedge hface heJ\<^sub>1 by (by100 blast)
+	                                qed
+	                                have hedge_eq:
+	                                  "{e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+	                                  {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                                  by (rule subset_antisym[OF hedge_fwd hedge_rev])
+	                                show ?thesis
+	                                  using hcontact_eq hedge_eq by (by100 blast)
+	                              qed
+	                              have h\<sigma>card_parent:
+	                                "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2"
+	                                using h\<sigma>card_can h\<sigma>parent_transfer by (by100 simp)
+	                              have h\<sigma>contact_parent:
+	                                "\<sigma> \<inter> J' =
+	                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                                using h\<sigma>contact_can h\<sigma>parent_transfer by (by100 simp)
+	                              show ?thesis
+	                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>card_parent h\<sigma>contact_parent
+	                                by (by100 blast)
+	                            qed
+	                            show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+	                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+	                              \<sigma> \<inter> J' =
                                 \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
                               \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
                               card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
