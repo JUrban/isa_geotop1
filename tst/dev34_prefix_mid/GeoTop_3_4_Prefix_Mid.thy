@@ -10807,6 +10807,160 @@ proof -
                                   by (rule h\<tau>\<theta>_inter_faces_if_chord_contact
                                       [OF h\<tau>_meets_chord])
                               qed
+                              have h\<sigma>_parent_uncovered_residue_cases:
+                                "\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  (\<exists>e. e \<in> L\<^sub>1 \<and> geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1
+                                    \<and> \<not> e \<subseteq> J' \<and> x \<in> e)
+                                  \<or> x \<in> \<sigma> \<inter> J\<^sub>2"
+                              proof -
+                                fix x
+                                assume hx_contact: "x \<in> \<sigma> \<inter> J'"
+                                assume hx_uncovered:
+                                  "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                have hx_reduced:
+                                  "x \<in>
+                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+                                    \<union> (\<sigma> \<inter> J\<^sub>2)"
+                                  using h\<sigma>_parent_contact_reduced hx_contact by (by100 blast)
+                                have hx_reduced_cases:
+                                  "x \<in> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+                                    \<or> x \<in> \<sigma> \<inter> J\<^sub>2"
+                                  using hx_reduced by (by100 blast)
+                                show "(\<exists>e. e \<in> L\<^sub>1 \<and> geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1
+                                    \<and> \<not> e \<subseteq> J' \<and> x \<in> e)
+                                  \<or> x \<in> \<sigma> \<inter> J\<^sub>2"
+                                proof (rule disjE[OF hx_reduced_cases])
+                                  assume hx_side:
+                                    "x \<in> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                                  then obtain e where he_set:
+                                    "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                                    and hxe: "x \<in> e"
+                                    by (by100 blast)
+                                  have heL\<^sub>1: "e \<in> L\<^sub>1"
+                                    using he_set by (by100 blast)
+                                  have he_edge: "geotop_is_edge e"
+                                    using he_set by (by100 blast)
+                                  have he_face: "geotop_is_face e \<sigma>"
+                                    using he_set by (by100 blast)
+                                  have he_sub_J\<^sub>1: "e \<subseteq> J\<^sub>1"
+                                    using he_set by (by100 blast)
+                                  have he_not_parent: "\<not> e \<subseteq> J'"
+                                  proof
+                                    assume he_parent: "e \<subseteq> J'"
+                                    have he_parent_set:
+                                      "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+                                        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                      using heL\<^sub>1 he_edge he_face he_parent by (by100 blast)
+                                    have "x \<in> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                      using he_parent_set hxe by (by100 blast)
+                                    thus False
+                                      using hx_uncovered by (by100 blast)
+                                  qed
+                                  show ?thesis
+                                    using heL\<^sub>1 he_edge he_face he_sub_J\<^sub>1 he_not_parent hxe
+                                    by (by100 blast)
+                                next
+                                  assume hx_other: "x \<in> \<sigma> \<inter> J\<^sub>2"
+                                  show ?thesis
+                                    using hx_other by (by100 blast)
+                                qed
+                              qed
+                              have h\<tau>_parent_uncovered_residue_cases:
+                                "\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  (\<exists>e. e \<in> L\<^sub>2 \<and> geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2
+                                    \<and> \<not> e \<subseteq> J' \<and> x \<in> e)
+                                  \<or> x \<in> \<tau> \<inter> J\<^sub>1"
+                              proof -
+                                fix x
+                                assume hx_contact: "x \<in> \<tau> \<inter> J'"
+                                assume hx_uncovered:
+                                  "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                have hx_reduced:
+                                  "x \<in>
+                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+                                    \<union> (\<tau> \<inter> J\<^sub>1)"
+                                  using h\<tau>_parent_contact_reduced hx_contact by (by100 blast)
+                                have hx_reduced_cases:
+                                  "x \<in> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+                                    \<or> x \<in> \<tau> \<inter> J\<^sub>1"
+                                  using hx_reduced by (by100 blast)
+                                show "(\<exists>e. e \<in> L\<^sub>2 \<and> geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2
+                                    \<and> \<not> e \<subseteq> J' \<and> x \<in> e)
+                                  \<or> x \<in> \<tau> \<inter> J\<^sub>1"
+                                proof (rule disjE[OF hx_reduced_cases])
+                                  assume hx_side:
+                                    "x \<in> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+                                  then obtain e where he_set:
+                                    "e \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+                                    and hxe: "x \<in> e"
+                                    by (by100 blast)
+                                  have heL\<^sub>2: "e \<in> L\<^sub>2"
+                                    using he_set by (by100 blast)
+                                  have he_edge: "geotop_is_edge e"
+                                    using he_set by (by100 blast)
+                                  have he_face: "geotop_is_face e \<tau>"
+                                    using he_set by (by100 blast)
+                                  have he_sub_J\<^sub>2: "e \<subseteq> J\<^sub>2"
+                                    using he_set by (by100 blast)
+                                  have he_not_parent: "\<not> e \<subseteq> J'"
+                                  proof
+                                    assume he_parent: "e \<subseteq> J'"
+                                    have he_parent_set:
+                                      "e \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+                                        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                      using heL\<^sub>2 he_edge he_face he_parent by (by100 blast)
+                                    have "x \<in> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                      using he_parent_set hxe by (by100 blast)
+                                    thus False
+                                      using hx_uncovered by (by100 blast)
+                                  qed
+                                  show ?thesis
+                                    using heL\<^sub>2 he_edge he_face he_sub_J\<^sub>2 he_not_parent hxe
+                                    by (by100 blast)
+                                next
+                                  assume hx_other: "x \<in> \<tau> \<inter> J\<^sub>1"
+                                  show ?thesis
+                                    using hx_other by (by100 blast)
+                                qed
+                              qed
+                              have h\<sigma>_parent_uncovered_side_edge_has_off_parent_chord_point:
+                                "\<And>x e. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                  e \<in> L\<^sub>1 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+                                  geotop_is_face e \<sigma> \<Longrightarrow> e \<subseteq> J\<^sub>1 \<Longrightarrow>
+                                  \<not> e \<subseteq> J' \<Longrightarrow> x \<in> e \<Longrightarrow>
+                                  \<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J'"
+                                using h\<sigma>_side_edge_nonparent_has_off_parent_chord_point
+                                by (by100 blast)
+                              have h\<tau>_parent_uncovered_side_edge_has_off_parent_chord_point:
+                                "\<And>x e. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                  e \<in> L\<^sub>2 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+                                  geotop_is_face e \<tau> \<Longrightarrow> e \<subseteq> J\<^sub>2 \<Longrightarrow>
+                                  \<not> e \<subseteq> J' \<Longrightarrow> x \<in> e \<Longrightarrow>
+                                  \<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J'"
+                                using h\<tau>_side_edge_nonparent_has_off_parent_chord_point
+                                by (by100 blast)
                               have hparent_contact_cover_and_distinct_book:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
