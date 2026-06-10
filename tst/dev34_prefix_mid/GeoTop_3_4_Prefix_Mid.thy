@@ -13456,6 +13456,15 @@ proof -
               by (rule geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix
                   [OF hJ' hK' hK_poly' hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
                     hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
+            have hneither_nonbase_boundary_segment_book:
+              "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J'
+                \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J'"
+              by (rule geotop_nonfree_boundary_triangle_neither_nonbase_segment_on_boundary_prefix
+                  [OF hJ' hK' hK_fin' hK_poly' hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
+                    hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
+            have hchord_not_parent_boundary_book:
+              "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J'"
+              using hneither_nonbase_boundary_segment_book by (by100 blast)
             have hsubdisk_side_witnesses_from_decomposition:
 	              "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
 	                geotop_is_polygon J\<^sub>1
