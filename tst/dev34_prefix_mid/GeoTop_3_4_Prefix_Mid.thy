@@ -2951,6 +2951,62 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_delete_edge_face_connected_prefix:
+  fixes \<sigma> e :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hface: "geotop_is_face e \<sigma>"
+  shows "top1_connected_on (\<sigma> - e)
+    (subspace_topology UNIV geotop_euclidean_topology (\<sigma> - e))"
+proof -
+  have hfront:
+    "frontier \<sigma> = \<Union>{d. geotop_is_edge d \<and> geotop_is_face d \<sigma>}"
+    by (rule geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<sigma>2])
+  have he_front: "e \<subseteq> frontier \<sigma>"
+  proof
+    fix x
+    assume hx: "x \<in> e"
+    have "x \<in> \<Union>{d. geotop_is_edge d \<and> geotop_is_face d \<sigma>}"
+      using hx hedge hface by (by100 blast)
+    thus "x \<in> frontier \<sigma>"
+      using hfront by (by100 simp)
+  qed
+  have hconv: "convex \<sigma>"
+    by (rule geotop_simplex_dim_convex_HOL_prefix[OF h\<sigma>2])
+  have hconv_int: "convex (interior \<sigma>)"
+    by (rule convex_interior[OF hconv])
+  have hconn_int: "connected (interior \<sigma>)"
+    by (rule convex_connected[OF hconv_int])
+  have hint_sub_delete: "interior \<sigma> \<subseteq> \<sigma> - e"
+  proof
+    fix x
+    assume hx_int: "x \<in> interior \<sigma>"
+    have hx\<sigma>: "x \<in> \<sigma>"
+      using hx_int interior_subset by (by100 blast)
+    have hx_not_e: "x \<notin> e"
+    proof
+      assume hx_e: "x \<in> e"
+      have hx_front: "x \<in> frontier \<sigma>"
+        using he_front hx_e by (by100 blast)
+      have "x \<notin> interior \<sigma>"
+        using hx_front unfolding Elementary_Topology.frontier_def by (by100 simp)
+      thus False
+        using hx_int by (by100 blast)
+    qed
+    show "x \<in> \<sigma> - e"
+      using hx\<sigma> hx_not_e by (by100 blast)
+  qed
+  have hclosure_int: "closure (interior \<sigma>) = \<sigma>"
+    by (rule geotop_2simplex_closure_HOL_interior_prefix[OF h\<sigma>2])
+  have hdelete_sub_closure: "\<sigma> - e \<subseteq> closure (interior \<sigma>)"
+    using hclosure_int by (by100 blast)
+  have hconn_HOL: "connected (\<sigma> - e)"
+    by (rule connected_intermediate_closure
+        [OF hconn_int hint_sub_delete hdelete_sub_closure])
+  show ?thesis
+    using hconn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix:
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -9487,6 +9543,296 @@ proof -
         show ?thesis
           by (rule hcarrier_side2_singleton_dim2
               [OF hxB hx_not_chord hinter_single hdim2])
+      qed
+    qed
+  qed
+  have hcarrier_chord_full_minus_connected:
+    "\<And>x. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      top1_connected_on
+        (geotop_K_carrier K x - closed_segment v\<^sub>0 v\<^sub>2)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_K_carrier K x - closed_segment v\<^sub>0 v\<^sub>2))"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_full:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2"
+    have hdim2:
+      "geotop_simplex_dim (geotop_K_carrier K x) 2"
+      by (rule hcarrier_chord_full_dim2
+          [OF hxB hx_not_chord hinter_full])
+    have hinter_ne:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+    proof -
+      have "v\<^sub>0 \<in> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+        using hinter_full by (by100 simp)
+      thus ?thesis
+        by (by100 blast)
+    qed
+    have hface_chord_carrier:
+      "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2)
+        (geotop_K_carrier K x)"
+    proof -
+      have "geotop_is_face
+        (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (geotop_K_carrier K x)"
+        using hcarrier_chord_inter_faces[OF hxB hinter_ne] by (by100 blast)
+      thus ?thesis
+        using hinter_full by (by100 simp)
+    qed
+    show "top1_connected_on
+      (geotop_K_carrier K x - closed_segment v\<^sub>0 v\<^sub>2)
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_K_carrier K x - closed_segment v\<^sub>0 v\<^sub>2))"
+      by (rule geotop_2simplex_delete_edge_face_connected_prefix
+          [OF hdim2 hchord_segment_edge hface_chord_carrier])
+  qed
+  have hcarrier_side1_full_chord:
+    "\<And>x. x \<in> ?B\<^sub>1 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_full:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2"
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+    proof -
+      let ?C = "geotop_K_carrier K x - closed_segment v\<^sub>0 v\<^sub>2"
+      have hxB_union: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+        using hxB by (by100 blast)
+      have hxK: "x \<in> geotop_polyhedron K"
+        using hB\<^sub>1_sub_K hxB by (by100 blast)
+      have hx_carrier: "x \<in> geotop_K_carrier K x"
+        by (rule geotop_K_carrier_contains_point[OF hK hK_fin hxK])
+      have hxC: "x \<in> ?C"
+        using hx_carrier hx_not_chord by (by100 blast)
+      have hC_conn:
+        "top1_connected_on ?C
+          (subspace_topology UNIV geotop_euclidean_topology ?C)"
+        by (rule hcarrier_chord_full_minus_connected
+            [OF hxB_union hx_not_chord hinter_full])
+      have hC_region_union: "?C \<subseteq> ?R\<^sub>1 \<union> ?R\<^sub>2"
+      proof
+        fix y
+        assume hyC: "y \<in> ?C"
+        have hycarrier: "y \<in> geotop_K_carrier K x"
+          using hyC by (by100 blast)
+        have hy_not_chord: "y \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+          using hyC by (by100 blast)
+        show "y \<in> ?R\<^sub>1 \<union> ?R\<^sub>2"
+          using hcarrier_side1_point_region_cases[OF hxB hycarrier hy_not_chord]
+          by (by100 blast)
+      qed
+      have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+      have hC_side: "?C \<subseteq> ?R\<^sub>1 \<or> ?C \<subseteq> ?R\<^sub>2"
+        by (rule Theorem_GT_1_10[OF hTU hside_separated hC_region_union hC_conn])
+      have hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+        by (rule hside1_off_chord_point_in_R\<^sub>1[OF hxB hx_not_chord])
+      show ?thesis
+      proof (rule disjE[OF hC_side])
+        assume hsubR\<^sub>1: "?C \<subseteq> ?R\<^sub>1"
+        show ?thesis
+        proof
+          fix y
+          assume hycarrier: "y \<in> geotop_K_carrier K x"
+          show "y \<in> ?B\<^sub>1"
+          proof (cases "y \<in> closed_segment v\<^sub>0 v\<^sub>2")
+            case True
+            show ?thesis
+              using True hchord_segment_sub_B\<^sub>1 by (by100 blast)
+          next
+            case False
+            have "y \<in> ?C"
+              using hycarrier False by (by100 blast)
+            hence "y \<in> ?R\<^sub>1"
+              using hsubR\<^sub>1 by (by100 blast)
+            thus ?thesis
+              using hR\<^sub>1_sub_B\<^sub>1 by (by100 blast)
+          qed
+        qed
+      next
+        assume hsubR\<^sub>2: "?C \<subseteq> ?R\<^sub>2"
+        have hxR\<^sub>2: "x \<in> ?R\<^sub>2"
+          using hsubR\<^sub>2 hxC by (by100 blast)
+        have False
+          using hxR\<^sub>1 hxR\<^sub>2 hside_open_regions_disjoint by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hcarrier_side2_full_chord:
+    "\<And>x. x \<in> ?B\<^sub>2 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>2"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_full:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2"
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+    proof -
+      let ?C = "geotop_K_carrier K x - closed_segment v\<^sub>0 v\<^sub>2"
+      have hxB_union: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+        using hxB by (by100 blast)
+      have hxK: "x \<in> geotop_polyhedron K"
+        using hB\<^sub>2_sub_K hxB by (by100 blast)
+      have hx_carrier: "x \<in> geotop_K_carrier K x"
+        by (rule geotop_K_carrier_contains_point[OF hK hK_fin hxK])
+      have hxC: "x \<in> ?C"
+        using hx_carrier hx_not_chord by (by100 blast)
+      have hC_conn:
+        "top1_connected_on ?C
+          (subspace_topology UNIV geotop_euclidean_topology ?C)"
+        by (rule hcarrier_chord_full_minus_connected
+            [OF hxB_union hx_not_chord hinter_full])
+      have hC_region_union: "?C \<subseteq> ?R\<^sub>1 \<union> ?R\<^sub>2"
+      proof
+        fix y
+        assume hyC: "y \<in> ?C"
+        have hycarrier: "y \<in> geotop_K_carrier K x"
+          using hyC by (by100 blast)
+        have hy_not_chord: "y \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+          using hyC by (by100 blast)
+        show "y \<in> ?R\<^sub>1 \<union> ?R\<^sub>2"
+          using hcarrier_side2_point_region_cases[OF hxB hycarrier hy_not_chord]
+          by (by100 blast)
+      qed
+      have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+      have hC_side: "?C \<subseteq> ?R\<^sub>1 \<or> ?C \<subseteq> ?R\<^sub>2"
+        by (rule Theorem_GT_1_10[OF hTU hside_separated hC_region_union hC_conn])
+      have hxR\<^sub>2: "x \<in> ?R\<^sub>2"
+        by (rule hside2_off_chord_point_in_R\<^sub>2[OF hxB hx_not_chord])
+      show ?thesis
+      proof (rule disjE[OF hC_side])
+        assume hsubR\<^sub>1: "?C \<subseteq> ?R\<^sub>1"
+        have hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+          using hsubR\<^sub>1 hxC by (by100 blast)
+        have False
+          using hxR\<^sub>1 hxR\<^sub>2 hside_open_regions_disjoint by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      next
+        assume hsubR\<^sub>2: "?C \<subseteq> ?R\<^sub>2"
+        show ?thesis
+        proof
+          fix y
+          assume hycarrier: "y \<in> geotop_K_carrier K x"
+          show "y \<in> ?B\<^sub>2"
+          proof (cases "y \<in> closed_segment v\<^sub>0 v\<^sub>2")
+            case True
+            show ?thesis
+              using True hchord_segment_sub_B\<^sub>2 by (by100 blast)
+          next
+            case False
+            have "y \<in> ?C"
+              using hycarrier False by (by100 blast)
+            hence "y \<in> ?R\<^sub>2"
+              using hsubR\<^sub>2 by (by100 blast)
+            thus ?thesis
+              using hR\<^sub>2_sub_B\<^sub>2 by (by100 blast)
+          qed
+        qed
+      qed
+    qed
+  qed
+  have hcarrier_side1:
+    "\<forall>x\<in>?B\<^sub>1. geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+  proof
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1"
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+    proof (cases "x \<in> closed_segment v\<^sub>0 v\<^sub>2")
+      case True
+      show ?thesis
+        by (rule hcarrier_side1_on_chord[OF hxB True])
+    next
+      case False
+      have hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+        using False by (by100 blast)
+      have hxB_union: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+        using hxB by (by100 blast)
+      show ?thesis
+      proof (cases "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {}")
+        case True
+        show ?thesis
+          by (rule hcarrier_side1_avoids_chord
+              [OF hxB hx_not_chord True])
+      next
+        case False
+        have hinter_ne:
+          "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+          using False by (by100 blast)
+        have hinter_cases:
+          "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}
+          \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}
+          \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+              closed_segment v\<^sub>0 v\<^sub>2"
+          by (rule hcarrier_chord_inter_cases[OF hxB_union hinter_ne])
+        show ?thesis
+          using hinter_cases
+            hcarrier_side1_singleton[OF hxB hx_not_chord, of v\<^sub>0]
+            hcarrier_side1_singleton[OF hxB hx_not_chord, of v\<^sub>2]
+            hcarrier_side1_full_chord[OF hxB hx_not_chord]
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hcarrier_side2:
+    "\<forall>x\<in>?B\<^sub>2. geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+  proof
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>2"
+    show "geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+    proof (cases "x \<in> closed_segment v\<^sub>0 v\<^sub>2")
+      case True
+      show ?thesis
+        by (rule hcarrier_side2_on_chord[OF hxB True])
+    next
+      case False
+      have hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+        using False by (by100 blast)
+      have hxB_union: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+        using hxB by (by100 blast)
+      show ?thesis
+      proof (cases "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {}")
+        case True
+        show ?thesis
+          by (rule hcarrier_side2_avoids_chord
+              [OF hxB hx_not_chord True])
+      next
+        case False
+        have hinter_ne:
+          "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+          using False by (by100 blast)
+        have hinter_cases:
+          "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}
+          \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}
+          \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+              closed_segment v\<^sub>0 v\<^sub>2"
+          by (rule hcarrier_chord_inter_cases[OF hxB_union hinter_ne])
+        show ?thesis
+          using hinter_cases
+            hcarrier_side2_singleton[OF hxB hx_not_chord, of v\<^sub>0]
+            hcarrier_side2_singleton[OF hxB hx_not_chord, of v\<^sub>2]
+            hcarrier_side2_full_chord[OF hxB hx_not_chord]
+          by (by100 blast)
       qed
     qed
   qed
