@@ -11830,6 +11830,9 @@ proof -
                                   "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                                       \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    ((\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
                                     \<sigma> \<inter> \<theta> \<subset> \<theta> \<longrightarrow>
                                     \<sigma> \<inter> \<theta> \<subseteq>
                                       geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
@@ -11839,6 +11842,9 @@ proof -
                                   \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                                       \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    ((\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
                                     \<tau> \<inter> \<theta> \<subset> \<theta> \<longrightarrow>
                                     \<tau> \<inter> \<theta> \<subseteq>
                                       geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
@@ -11855,84 +11861,6 @@ proof -
                                     boundary facts for \<open>\<theta>\<close> to rule out the
                                     uncovered parent-boundary point. **)
                                   sorry
-                                have hparent_contact_cover_and_distinct_obligations_book:
-                                  "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
-                                    x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
-                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
-                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma> \<and>
-                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<theta> \<longrightarrow>
-                                    False)
-                                  \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
-                                    x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
-                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
-                                    geotop_is_face (\<tau> \<inter> \<theta>) \<tau> \<and>
-                                    geotop_is_face (\<tau> \<inter> \<theta>) \<theta> \<longrightarrow>
-                                    False)"
-                                  (**
-                                    Remaining Moise Figure 3.2 geometry:
-                                    the theta-face contact forced by an
-                                    uncovered parent-boundary chord residue is
-                                    impossible for side witnesses avoiding the
-                                    cut triangle. **)
-                                proof (intro conjI allI impI)
-                                  fix x
-                                  assume hx: "x \<in> \<sigma> \<inter> J'"
-                                  assume hx_not:
-                                    "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
-                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
-                                  assume hfaces:
-                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma> \<and>
-                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
-                                  have hface_\<sigma>:
-                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>"
-                                    using hfaces by (by100 blast)
-                                  have hface_\<theta>:
-                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
-                                    using hfaces by (by100 blast)
-                                  have hproper: "\<sigma> \<inter> \<theta> \<subset> \<theta>"
-                                    by (rule h\<sigma>\<theta>_proper_in_\<theta>_from_faces
-                                        [OF hface_\<sigma> hface_\<theta>])
-                                  have hnamed:
-                                    "\<sigma> \<inter> \<theta> \<subseteq>
-                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-                                    by (rule h\<theta>_proper_face_sub_named_edges
-                                        [OF hface_\<theta> hproper])
-                                  show False
-                                    using hparent_contact_cover_and_distinct_named_obligations_book
-                                      hx hx_not hproper hnamed
-                                    by (by100 blast)
-                                next
-                                  fix x
-                                  assume hx: "x \<in> \<tau> \<inter> J'"
-                                  assume hx_not:
-                                    "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
-                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
-                                  assume hfaces:
-                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau> \<and>
-                                    geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
-                                  have hface_\<tau>:
-                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>"
-                                    using hfaces by (by100 blast)
-                                  have hface_\<theta>:
-                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
-                                    using hfaces by (by100 blast)
-                                  have hproper: "\<tau> \<inter> \<theta> \<subset> \<theta>"
-                                    by (rule h\<tau>\<theta>_proper_in_\<theta>_from_faces
-                                        [OF hface_\<tau> hface_\<theta>])
-                                  have hnamed:
-                                    "\<tau> \<inter> \<theta> \<subseteq>
-                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-                                    by (rule h\<theta>_proper_face_sub_named_edges
-                                        [OF hface_\<theta> hproper])
-                                  show False
-                                    using hparent_contact_cover_and_distinct_named_obligations_book
-                                      hx hx_not hproper hnamed
-                                    by (by100 blast)
-                                qed
                                 show ?thesis
                                 proof (rule hparent_contact_cover_and_distinct_from_obligations)
                                   fix x
@@ -11951,9 +11879,25 @@ proof -
                                     \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
                                     by (rule h\<sigma>_chord_residue_forces_\<sigma>\<theta>_faces
                                         [OF hres])
+                                  have hface_\<sigma>:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>"
+                                    using hfaces by (by100 blast)
+                                  have hface_\<theta>:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                    using hfaces by (by100 blast)
+                                  have hproper: "\<sigma> \<inter> \<theta> \<subset> \<theta>"
+                                    by (rule h\<sigma>\<theta>_proper_in_\<theta>_from_faces
+                                        [OF hface_\<sigma> hface_\<theta>])
+                                  have hnamed:
+                                    "\<sigma> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                    by (rule h\<theta>_proper_face_sub_named_edges
+                                        [OF hface_\<theta> hproper])
                                   show False
-                                    using hparent_contact_cover_and_distinct_obligations_book
-                                      hx hx_not hfaces
+                                    using hparent_contact_cover_and_distinct_named_obligations_book
+                                      hx hx_not hres hproper hnamed
                                     by (by100 blast)
                                 next
                                   fix x
@@ -11972,9 +11916,25 @@ proof -
                                     \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
                                     by (rule h\<tau>_chord_residue_forces_\<tau>\<theta>_faces
                                         [OF hres])
+                                  have hface_\<tau>:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>"
+                                    using hfaces by (by100 blast)
+                                  have hface_\<theta>:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                    using hfaces by (by100 blast)
+                                  have hproper: "\<tau> \<inter> \<theta> \<subset> \<theta>"
+                                    by (rule h\<tau>\<theta>_proper_in_\<theta>_from_faces
+                                        [OF hface_\<tau> hface_\<theta>])
+                                  have hnamed:
+                                    "\<tau> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                    by (rule h\<theta>_proper_face_sub_named_edges
+                                        [OF hface_\<theta> hproper])
                                   show False
-                                    using hparent_contact_cover_and_distinct_obligations_book
-                                      hx hx_not hfaces
+                                    using hparent_contact_cover_and_distinct_named_obligations_book
+                                      hx hx_not hres hproper hnamed
                                     by (by100 blast)
                                 next
                                   fix \<rho>
