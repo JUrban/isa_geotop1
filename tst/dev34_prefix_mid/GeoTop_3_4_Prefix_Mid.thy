@@ -14283,6 +14283,165 @@ proof -
                             apply assumption+
                             done
                         qed
+                        have hside_two_canonical_boundary_witnesses_each:
+                          "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+                            \<sigma>\<^sub>1 \<in> L\<^sub>1
+                            \<and> geotop_simplex_dim \<sigma>\<^sub>1 2
+                            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                              \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                            \<and> \<sigma>\<^sub>1 \<inter> J\<^sub>1 =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1}
+                            \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+                            \<and> geotop_simplex_dim \<sigma>\<^sub>2 2
+                            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                              \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                            \<and> \<sigma>\<^sub>2 \<inter> J\<^sub>1 =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1}
+                            \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+                            \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+                            \<and> geotop_simplex_dim \<tau>\<^sub>1 2
+                            \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                              \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                            \<and> \<tau>\<^sub>1 \<inter> J\<^sub>2 =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2}
+                            \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+                            \<and> geotop_simplex_dim \<tau>\<^sub>2 2
+                            \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                              \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                            \<and> \<tau>\<^sub>2 \<inter> J\<^sub>2 =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2}
+                            \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+                          (**
+                            Canonicalize both free choices on each side.  This
+                            preserves the two-candidate data needed to discard
+                            a possible chord-only witness later. **)
+                        proof -
+                          obtain \<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2
+                            where h\<sigma>\<^sub>1L\<^sub>1: "\<sigma>\<^sub>1 \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>1free:
+                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1"
+                              and h\<sigma>\<^sub>2L\<^sub>1: "\<sigma>\<^sub>2 \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>2free:
+                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2"
+                              and h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
+                              and h\<tau>\<^sub>1L\<^sub>2: "\<tau>\<^sub>1 \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>1free:
+                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1"
+                              and h\<tau>\<^sub>2L\<^sub>2: "\<tau>\<^sub>2 \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>2free:
+                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2"
+                              and h\<tau>\<^sub>1_ne_\<tau>\<^sub>2: "\<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+                            using hside_free_distinct_pairs_from_counts
+                            by (elim exE conjE)
+                          have h\<sigma>\<^sub>12: "geotop_simplex_dim \<sigma>\<^sub>1 2"
+                            using h\<sigma>\<^sub>1free unfolding geotop_free_2_simplex_def
+                            by (by100 blast)
+                          have h\<sigma>\<^sub>22: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+                            using h\<sigma>\<^sub>2free unfolding geotop_free_2_simplex_def
+                            by (by100 blast)
+                          have h\<tau>\<^sub>12: "geotop_simplex_dim \<tau>\<^sub>1 2"
+                            using h\<tau>\<^sub>1free unfolding geotop_free_2_simplex_def
+                            by (by100 blast)
+                          have h\<tau>\<^sub>22: "geotop_simplex_dim \<tau>\<^sub>2 2"
+                            using h\<tau>\<^sub>2free unfolding geotop_free_2_simplex_def
+                            by (by100 blast)
+                          have h\<sigma>\<^sub>1_can:
+                            "finite {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1}
+                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                              \<and> \<sigma>\<^sub>1 \<inter> J\<^sub>1 =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1}"
+                            by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+                                [OF hJ\<^sub>1 hL\<^sub>1_complex hL\<^sub>1_poly_eq h\<sigma>\<^sub>1L\<^sub>1
+                                  h\<sigma>\<^sub>12 hT\<^sub>1_gt1 h\<sigma>\<^sub>1free])
+                          have h\<sigma>\<^sub>2_can:
+                            "finite {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1}
+                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                              \<and> \<sigma>\<^sub>2 \<inter> J\<^sub>1 =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1}"
+                            by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+                                [OF hJ\<^sub>1 hL\<^sub>1_complex hL\<^sub>1_poly_eq h\<sigma>\<^sub>2L\<^sub>1
+                                  h\<sigma>\<^sub>22 hT\<^sub>1_gt1 h\<sigma>\<^sub>2free])
+                          have h\<tau>\<^sub>1_can:
+                            "finite {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2}
+                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                              \<and> \<tau>\<^sub>1 \<inter> J\<^sub>2 =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2}"
+                            by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+                                [OF hJ\<^sub>2 hL\<^sub>2_complex hL\<^sub>2_poly_eq h\<tau>\<^sub>1L\<^sub>2
+                                  h\<tau>\<^sub>12 hT\<^sub>2_gt1 h\<tau>\<^sub>1free])
+                          have h\<tau>\<^sub>2_can:
+                            "finite {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2}
+                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                              \<and> \<tau>\<^sub>2 \<inter> J\<^sub>2 =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2}"
+                            by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+                                [OF hJ\<^sub>2 hL\<^sub>2_complex hL\<^sub>2_poly_eq h\<tau>\<^sub>2L\<^sub>2
+                                  h\<tau>\<^sub>22 hT\<^sub>2_gt1 h\<tau>\<^sub>2free])
+                          have h\<sigma>\<^sub>1_card:
+                            "card {e\<in>L\<^sub>1. geotop_is_edge e
+                              \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                            using h\<sigma>\<^sub>1_can by (by100 blast)
+                          have h\<sigma>\<^sub>1_contact:
+                            "\<sigma>\<^sub>1 \<inter> J\<^sub>1 =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1}"
+                            using h\<sigma>\<^sub>1_can by (by100 blast)
+                          have h\<sigma>\<^sub>2_card:
+                            "card {e\<in>L\<^sub>1. geotop_is_edge e
+                              \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                            using h\<sigma>\<^sub>2_can by (by100 blast)
+                          have h\<sigma>\<^sub>2_contact:
+                            "\<sigma>\<^sub>2 \<inter> J\<^sub>1 =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1}"
+                            using h\<sigma>\<^sub>2_can by (by100 blast)
+                          have h\<tau>\<^sub>1_card:
+                            "card {e\<in>L\<^sub>2. geotop_is_edge e
+                              \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                            using h\<tau>\<^sub>1_can by (by100 blast)
+                          have h\<tau>\<^sub>1_contact:
+                            "\<tau>\<^sub>1 \<inter> J\<^sub>2 =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2}"
+                            using h\<tau>\<^sub>1_can by (by100 blast)
+                          have h\<tau>\<^sub>2_card:
+                            "card {e\<in>L\<^sub>2. geotop_is_edge e
+                              \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                            using h\<tau>\<^sub>2_can by (by100 blast)
+                          have h\<tau>\<^sub>2_contact:
+                            "\<tau>\<^sub>2 \<inter> J\<^sub>2 =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2}"
+                            using h\<tau>\<^sub>2_can by (by100 blast)
+                          show ?thesis
+                            apply (rule exI[where x = "\<sigma>\<^sub>1"])
+                            apply (rule exI[where x = "\<sigma>\<^sub>2"])
+                            apply (rule exI[where x = "\<tau>\<^sub>1"])
+                            apply (rule exI[where x = "\<tau>\<^sub>2"])
+                            using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>12 h\<sigma>\<^sub>1_card h\<sigma>\<^sub>1_contact
+                              h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>22 h\<sigma>\<^sub>2_card h\<sigma>\<^sub>2_contact h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2
+                              h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>12 h\<tau>\<^sub>1_card h\<tau>\<^sub>1_contact
+                              h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>22 h\<tau>\<^sub>2_card h\<tau>\<^sub>2_contact h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
+                            apply (intro conjI)
+                            apply assumption+
+                            done
+                        qed
                         have hside_selected_witnesses_book:
                           "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                             card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
