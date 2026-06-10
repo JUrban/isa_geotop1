@@ -10913,6 +10913,51 @@ proof -
     using h\<theta>\<^sub>cK h\<theta>\<^sub>c2 by (by100 blast)
   have h\<theta>\<^sub>c_side_cases: "\<theta>\<^sub>c \<in> ?T\<^sub>1 \<or> \<theta>\<^sub>c \<in> ?T\<^sub>2"
     using hT_eq_sides h\<theta>\<^sub>c_T by (by100 blast)
+  have h\<theta>\<^sub>c_simplex: "geotop_is_simplex \<theta>\<^sub>c"
+    using geotop_is_complex_simplex[OF hK] h\<theta>\<^sub>cK by (by100 blast)
+  have h\<theta>\<^sub>c_bary_in: "geotop_barycenter \<theta>\<^sub>c \<in> \<theta>\<^sub>c"
+    by (rule geotop_barycenter_in_simplex[OF h\<theta>\<^sub>c_simplex])
+  have h\<theta>\<^sub>c_bary_side: "geotop_barycenter \<theta>\<^sub>c \<in> ?B\<^sub>1 \<or> geotop_barycenter \<theta>\<^sub>c \<in> ?B\<^sub>2"
+  proof -
+    have hbary_poly: "geotop_barycenter \<theta>\<^sub>c \<in> geotop_polyhedron K"
+      unfolding geotop_polyhedron_def using h\<theta>\<^sub>cK h\<theta>\<^sub>c_bary_in by (by100 blast)
+    have hbary_parent:
+      "geotop_barycenter \<theta>\<^sub>c \<in>
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+      using hbary_poly hK_poly by (by100 blast)
+    show ?thesis
+      using hbary_parent hclosure_split by (by100 blast)
+  qed
+  have h\<theta>\<^sub>c_bary_carrier_eq: "geotop_K_carrier K (geotop_barycenter \<theta>\<^sub>c) = \<theta>\<^sub>c"
+    by (rule geotop_K_carrier_barycenter[OF hK h\<theta>\<^sub>cK])
+  have h\<theta>\<^sub>c_T\<^sub>1_if_bary_B\<^sub>1:
+    "geotop_barycenter \<theta>\<^sub>c \<in> ?B\<^sub>1 \<Longrightarrow> \<theta>\<^sub>c \<in> ?T\<^sub>1"
+  proof -
+    assume hbaryB\<^sub>1: "geotop_barycenter \<theta>\<^sub>c \<in> ?B\<^sub>1"
+    have hcarrier_sub_B\<^sub>1:
+      "geotop_K_carrier K (geotop_barycenter \<theta>\<^sub>c) \<subseteq> ?B\<^sub>1"
+      using hcarrier_side1 hbaryB\<^sub>1 by (by100 blast)
+    have h\<theta>c_sub_B\<^sub>1: "\<theta>\<^sub>c \<subseteq> ?B\<^sub>1"
+      using h\<theta>\<^sub>c_bary_carrier_eq hcarrier_sub_B\<^sub>1 by (by100 simp)
+    have h\<theta>cL\<^sub>1: "\<theta>\<^sub>c \<in> L\<^sub>1"
+      using hL\<^sub>1_def h\<theta>\<^sub>cK h\<theta>c_sub_B\<^sub>1 by (by100 blast)
+    show ?thesis
+      using h\<theta>cL\<^sub>1 h\<theta>\<^sub>c2 by (by100 blast)
+  qed
+  have h\<theta>\<^sub>c_T\<^sub>2_if_bary_B\<^sub>2:
+    "geotop_barycenter \<theta>\<^sub>c \<in> ?B\<^sub>2 \<Longrightarrow> \<theta>\<^sub>c \<in> ?T\<^sub>2"
+  proof -
+    assume hbaryB\<^sub>2: "geotop_barycenter \<theta>\<^sub>c \<in> ?B\<^sub>2"
+    have hcarrier_sub_B\<^sub>2:
+      "geotop_K_carrier K (geotop_barycenter \<theta>\<^sub>c) \<subseteq> ?B\<^sub>2"
+      using hcarrier_side2 hbaryB\<^sub>2 by (by100 blast)
+    have h\<theta>c_sub_B\<^sub>2: "\<theta>\<^sub>c \<subseteq> ?B\<^sub>2"
+      using h\<theta>\<^sub>c_bary_carrier_eq hcarrier_sub_B\<^sub>2 by (by100 simp)
+    have h\<theta>cL\<^sub>2: "\<theta>\<^sub>c \<in> L\<^sub>2"
+      using hL\<^sub>2_def h\<theta>\<^sub>cK h\<theta>c_sub_B\<^sub>2 by (by100 blast)
+    show ?thesis
+      using h\<theta>cL\<^sub>2 h\<theta>\<^sub>c2 by (by100 blast)
+  qed
   have hT\<^sub>2_gt1_if_distinct_from_\<theta>\<^sub>c:
     "\<And>\<rho>. \<rho> \<in> ?T\<^sub>2 \<Longrightarrow> \<rho> \<noteq> \<theta>\<^sub>c \<Longrightarrow> \<theta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 > 1"
   proof -
