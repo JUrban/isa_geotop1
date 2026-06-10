@@ -10128,7 +10128,43 @@ proof -
                               parent 2-simplex on the other side of the chord,
                               and still contains enough 2-simplexes for the
                               strong induction hypothesis. **)
-                            sorry
+                          proof -
+                            have hside1_carrier_closed_disk_book:
+                              "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1).
+                                  geotop_K_carrier K x \<subseteq>
+                                    closure_on UNIV geotop_euclidean_topology
+                                      (geotop_polygon_interior J\<^sub>1))"
+                              (**
+                                Moise Figure 3.2 side 1 carrier inheritance:
+                                every original K-simplex carrier meeting the
+                                first closed subdisk stays in that closed
+                                subdisk. This is the exact reverse-inclusion
+                                input for the restricted side complex. **)
+                              sorry
+                            have hside1_omits_parent_two_simplex_book:
+                              "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
+                              (**
+                                Side 1 is a proper subdisk complex: a parent
+                                two-simplex on the other side of the chord is
+                                not contained in the first side closure. This
+                                gives strict decrease for the induction. **)
+                              sorry
+                            have hside1_two_simplex_count_gt1_book:
+                              "card ?T\<^sub>1 > 1"
+                              (**
+                                Side 1 still has enough two-simplexes for the
+                                strong induction hypothesis. Book content:
+                                the cut side contains the boundary triangle
+                                contribution and at least one further
+                                two-simplex forced by non-freeness. **)
+                              sorry
+                            show ?thesis
+                              using hside1_carrier_closed_disk_book
+                                hside1_omits_parent_two_simplex_book
+                                hside1_two_simplex_count_gt1_book
+                              by (by100 blast)
+                          qed
                           have hside2_induction_geometry_book:
                             "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>2).
@@ -10143,7 +10179,42 @@ proof -
                               parent 2-simplex on the first side of the chord,
                               and still contains enough 2-simplexes for the
                               strong induction hypothesis. **)
-                            sorry
+                          proof -
+                            have hside2_carrier_closed_disk_book:
+                              "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2).
+                                  geotop_K_carrier K x \<subseteq>
+                                    closure_on UNIV geotop_euclidean_topology
+                                      (geotop_polygon_interior J\<^sub>2))"
+                              (**
+                                Moise Figure 3.2 side 2 carrier inheritance:
+                                every original K-simplex carrier meeting the
+                                second closed subdisk stays in that closed
+                                subdisk. This is symmetric to the first side
+                                and feeds the restricted-complex cover. **)
+                              sorry
+                            have hside2_omits_parent_two_simplex_book:
+                              "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2"
+                              (**
+                                Side 2 is a proper subdisk complex: a parent
+                                two-simplex on the first side of the chord is
+                                not contained in the second side closure. This
+                                is the independent strict-decrease witness. **)
+                              sorry
+                            have hside2_two_simplex_count_gt1_book:
+                              "card ?T\<^sub>2 > 1"
+                              (**
+                                Side 2 still has enough two-simplexes for the
+                                strong induction hypothesis, matching Moise's
+                                claim that each side complex has two free
+                                two-simplexes after induction. **)
+                              sorry
+                            show ?thesis
+                              using hside2_carrier_closed_disk_book
+                                hside2_omits_parent_two_simplex_book
+                                hside2_two_simplex_count_gt1_book
+                              by (by100 blast)
+                          qed
                           show ?thesis
                             using hside1_induction_geometry_book
                               hside2_induction_geometry_book
