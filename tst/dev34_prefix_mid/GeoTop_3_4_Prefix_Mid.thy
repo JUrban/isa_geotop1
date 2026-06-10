@@ -7033,6 +7033,22 @@ proof -
           [OF h\<sigma>K\<^sub>1 h\<sigma>2 h\<sigma>E_card_le2 h\<sigma>contact
             h\<tau>K\<^sub>2 h\<tau>2 h\<tau>E_card_le2 h\<tau>contact h\<sigma>\<tau>])
   qed
+  have hcanonical_side_witnesses_exist_book:
+      "\<exists>\<sigma> \<tau>. \<sigma> \<in> K\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>K\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> K\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+        \<sigma> \<noteq> \<tau>"
+    (**
+      Remaining Moise Figure 3.2 side-witness existence package: prove the two
+      chord-side complexes are smaller polygonal-disk triangulations, apply the
+      induction hypothesis on both sides, and choose transferred witnesses not
+      spoiled by the artificial chord. **)
+    sorry
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
@@ -7042,7 +7058,8 @@ proof -
       side away from \<open>\<theta>\<close>, and use the separation/closure facts to show their
       selected boundary-edge witnesses are still witnesses in the original
       complex \<open>K\<close> and polygon \<open>J\<close>. **)
-    sorry
+    by (rule hcanonical_side_witnesses_exist_finish
+        [OF hcanonical_side_witnesses_exist_book])
   show ?thesis
     by (rule hsubdisk_induction_transfer_book)
 qed
