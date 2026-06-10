@@ -335,6 +335,72 @@ proof -
     using hclosure_sub_front hclosure_e hfront_eq by (by100 simp)
 qed
 
+lemma geotop_polygon_disk_nonboundary_edge_has_other_2simplex_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hnot_boundary: "\<not> e \<subseteq> J"
+  shows "\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+    \<and> geotop_is_face e \<tau> \<and> \<tau> \<noteq> \<sigma>"
+proof (rule ccontr)
+  assume hno:
+    "\<not> (\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+      \<and> geotop_is_face e \<tau> \<and> \<tau> \<noteq> \<sigma>)"
+  let ?F = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+  have h\<sigma>F: "\<sigma> \<in> ?F"
+    using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  have hF_sub_single: "?F \<subseteq> {\<sigma>}"
+  proof
+    fix \<tau>
+    assume h\<tau>F: "\<tau> \<in> ?F"
+    have "\<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>"
+      using h\<tau>F by (by100 simp)
+    hence "\<tau> = \<sigma>"
+      using hno by (by100 blast)
+    thus "\<tau> \<in> {\<sigma>}"
+      by (by100 simp)
+  qed
+  have hsingle_sub_F: "{\<sigma>} \<subseteq> ?F"
+    using h\<sigma>F by (by100 simp)
+  have hfaces: "?F = {\<sigma>}"
+    using hF_sub_single hsingle_sub_F by (by100 blast)
+  have "e \<subseteq> J"
+    by (rule geotop_unique_incident_edge_subset_polygon_boundary_prefix
+        [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces])
+  thus False
+    using hnot_boundary by (by100 blast)
+qed
+
+lemma geotop_2simplex_not_subset_edge_prefix:
+  fixes \<sigma> e :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hedge: "geotop_is_edge e"
+  shows "\<not> \<sigma> \<subseteq> e"
+proof
+  assume hsub: "\<sigma> \<subseteq> e"
+  have he1: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have h\<sigma>hyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>2])
+  have hehyper: "geotop_hyperplane_dim (affine hull e) 1"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF he1])
+  have h\<sigma>aff: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF h\<sigma>hyper] by (by100 simp)
+  have heaff: "aff_dim e = 1"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hehyper] by (by100 simp)
+  have "aff_dim \<sigma> \<le> aff_dim e"
+    by (rule aff_dim_subset[OF hsub])
+  thus False
+    using h\<sigma>aff heaff by (by100 simp)
+qed
+
 lemma geotop_two_triangle_nonshared_edge_subset_boundary_prefix:
   fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -8867,6 +8933,31 @@ proof -
   have hchord_segment_face_\<theta>:
     "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>"
     using hchord_face hchord_hull_segment_eq by (by100 simp)
+  have hside_segment_edge: "geotop_is_edge (closed_segment v\<^sub>1 v\<^sub>2)"
+    using hside_edge hside_hull_segment_eq by (by100 simp)
+  have hside_segment_K: "closed_segment v\<^sub>1 v\<^sub>2 \<in> K"
+    using hside_edge_K hside_hull_segment_eq by (by100 simp)
+  have hside_segment_face_\<theta>:
+    "geotop_is_face (closed_segment v\<^sub>1 v\<^sub>2) \<theta>"
+    using hside_face hside_hull_segment_eq by (by100 simp)
+  obtain \<theta>\<^sub>c where h\<theta>\<^sub>cK: "\<theta>\<^sub>c \<in> K"
+    and h\<theta>\<^sub>c2: "geotop_simplex_dim \<theta>\<^sub>c 2"
+    and h\<theta>\<^sub>c_chord_face:
+      "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c"
+    and h\<theta>\<^sub>c_ne_\<theta>: "\<theta>\<^sub>c \<noteq> \<theta>"
+    by (rule exE[OF geotop_polygon_disk_nonboundary_edge_has_other_2simplex_prefix
+        [OF hJ hK hK_poly hchord_segment_K hchord_segment_edge h\<theta>K h\<theta>2
+          hchord_segment_face_\<theta> hnot_chord_boundary_segment]])
+      (by100 blast)
+  obtain \<theta>\<^sub>s where h\<theta>\<^sub>sK: "\<theta>\<^sub>s \<in> K"
+    and h\<theta>\<^sub>s2: "geotop_simplex_dim \<theta>\<^sub>s 2"
+    and h\<theta>\<^sub>s_side_face:
+      "geotop_is_face (closed_segment v\<^sub>1 v\<^sub>2) \<theta>\<^sub>s"
+    and h\<theta>\<^sub>s_ne_\<theta>: "\<theta>\<^sub>s \<noteq> \<theta>"
+    by (rule exE[OF geotop_polygon_disk_nonboundary_edge_has_other_2simplex_prefix
+        [OF hJ hK hK_poly hside_segment_K hside_segment_edge h\<theta>K h\<theta>2
+          hside_segment_face_\<theta> hnot_side_boundary_segment]])
+      (by100 blast)
   have hchord_no_third_2simplex:
     "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
       geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
@@ -9836,12 +9927,84 @@ proof -
       qed
     qed
   qed
+  have hB_inter_sub_chord:
+    "?B\<^sub>1 \<inter> ?B\<^sub>2 \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+  proof
+    fix x
+    assume hx: "x \<in> ?B\<^sub>1 \<inter> ?B\<^sub>2"
+    show "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+    proof (rule ccontr)
+      assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+      have hxB\<^sub>1: "x \<in> ?B\<^sub>1"
+        using hx by (by100 blast)
+      have hxB\<^sub>2: "x \<in> ?B\<^sub>2"
+        using hx by (by100 blast)
+      have hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+        using hB\<^sub>1_minus_chord_sub_R\<^sub>1 hxB\<^sub>1 hx_not_chord by (by100 blast)
+      have hxR\<^sub>2: "x \<in> ?R\<^sub>2"
+        using hB\<^sub>2_minus_chord_sub_R\<^sub>2 hxB\<^sub>2 hx_not_chord by (by100 blast)
+      have "x \<in> ?R\<^sub>1 \<inter> ?R\<^sub>2"
+        using hxR\<^sub>1 hxR\<^sub>2 by (by100 blast)
+      thus False
+        using hside_open_regions_disjoint by (by100 blast)
+    qed
+  qed
+  have hT\<^sub>1_T\<^sub>2_disjoint: "?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
+  proof (rule equals0I)
+    fix \<rho>
+    assume h\<rho>: "\<rho> \<in> ?T\<^sub>1 \<inter> ?T\<^sub>2"
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using h\<rho> by (by100 blast)
+    have h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+      using h\<rho> by (by100 blast)
+    have h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+      using h\<rho> by (by100 blast)
+    have h\<rho>subB\<^sub>1: "\<rho> \<subseteq> ?B\<^sub>1"
+      using h\<rho>L\<^sub>1 hL\<^sub>1_def by (by100 blast)
+    have h\<rho>subB\<^sub>2: "\<rho> \<subseteq> ?B\<^sub>2"
+      using h\<rho>L\<^sub>2 hL\<^sub>2_def by (by100 blast)
+    have h\<rho>sub_inter: "\<rho> \<subseteq> ?B\<^sub>1 \<inter> ?B\<^sub>2"
+      using h\<rho>subB\<^sub>1 h\<rho>subB\<^sub>2 by (by100 blast)
+    have h\<rho>sub_chord: "\<rho> \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+      using h\<rho>sub_inter hB_inter_sub_chord by (by100 blast)
+    show False
+      using geotop_2simplex_not_subset_edge_prefix[OF h\<rho>2 hchord_segment_edge]
+        h\<rho>sub_chord by (by100 blast)
+  qed
+  have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
+    sorry
+  have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
+  proof -
+    have hT\<^sub>2_ne: "?T\<^sub>2 \<noteq> {}"
+      using hside_card_residual by (by100 fastforce)
+    obtain \<rho> where h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
+      using hT\<^sub>2_ne by (by100 blast)
+    have h\<rho>T: "\<rho> \<in> ?T"
+      using hT\<^sub>2_sub_T h\<rho>T\<^sub>2 by (by100 blast)
+    have h\<rho>not_T\<^sub>1: "\<rho> \<notin> ?T\<^sub>1"
+      using hT\<^sub>1_T\<^sub>2_disjoint h\<rho>T\<^sub>2 by (by100 blast)
+    show ?thesis
+      using h\<rho>T h\<rho>not_T\<^sub>1 by (by100 blast)
+  qed
+  have hside_omits_T\<^sub>2: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2"
+  proof -
+    have hT\<^sub>1_ne: "?T\<^sub>1 \<noteq> {}"
+      using hside_card_residual by (by100 fastforce)
+    obtain \<rho> where h\<rho>T\<^sub>1: "\<rho> \<in> ?T\<^sub>1"
+      using hT\<^sub>1_ne by (by100 blast)
+    have h\<rho>T: "\<rho> \<in> ?T"
+      using hT\<^sub>1_sub_T h\<rho>T\<^sub>1 by (by100 blast)
+    have h\<rho>not_T\<^sub>2: "\<rho> \<notin> ?T\<^sub>2"
+      using hT\<^sub>1_T\<^sub>2_disjoint h\<rho>T\<^sub>1 by (by100 blast)
+    show ?thesis
+      using h\<rho>T h\<rho>not_T\<^sub>2 by (by100 blast)
+  qed
   have hside_count_residual:
     "(\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
     \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
     \<and> card ?T\<^sub>1 > 1
     \<and> card ?T\<^sub>2 > 1"
-    sorry
+    using hside_omits_T\<^sub>1 hside_omits_T\<^sub>2 hside_card_residual by (by100 blast)
   show ?thesis
     using hcarrier_side1 hcarrier_side2 hside_count_residual by (by100 blast)
 qed
