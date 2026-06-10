@@ -10620,6 +10620,108 @@ proof -
         hQ'_cut hS'_cut hsame_imp
       by (intro exI conjI)
   qed
+  have hD42_same_component_book_consequence:
+      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+        U\<^sub>Q0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+        \<and> Q' \<in> geotop_polygon_interior J - A
+        \<and> S' \<in> geotop_polygon_interior J - A
+        \<and> (S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'
+            \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> geotop_polygon_interior J - A
+              \<and> Q' \<in> B \<and> S' \<in> B
+              \<and> A \<inter> B = {}
+              \<and> A \<subseteq> closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior J) - B
+              \<and> P \<in> A
+              \<and> R \<in> A
+              \<and> top1_connected_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A)))"
+  proof -
+    obtain Q' S' U\<^sub>Q0 U\<^sub>S0 where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+      and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+      and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+      and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+      and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+      and hsame_imp:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'
+            \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> geotop_polygon_interior J - A
+              \<and> Q' \<in> B \<and> S' \<in> B
+              \<and> A \<inter> B = {})"
+      using hD42_same_component_broken_line
+      by (elim exE conjE)
+    have hsame_book_imp:
+      "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'
+            \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> geotop_polygon_interior J - A
+              \<and> Q' \<in> B \<and> S' \<in> B
+              \<and> A \<inter> B = {}
+              \<and> A \<subseteq> closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior J) - B
+              \<and> P \<in> A
+              \<and> R \<in> A
+              \<and> top1_connected_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A))"
+    proof
+      assume hS'_comp:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'"
+      obtain B where hB_bl: "geotop_is_broken_line B"
+        and hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+        and hQ'_B: "Q' \<in> B"
+        and hS'_B: "S' \<in> B"
+        and hA_B: "A \<inter> B = {}"
+        using hsame_imp hS'_comp by (by100 blast)
+      have hA_book:
+          "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B
+            \<and> P \<in> A
+            \<and> R \<in> A
+            \<and> top1_connected_on A
+                (subspace_topology UNIV geotop_euclidean_topology A)"
+        by (rule hD42_A_connected_PR_in_closed_disk_minus[OF hB_sub])
+      have hA_sub_closed_minus:
+          "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B"
+        using hA_book by (by100 blast)
+      have hP_A_book: "P \<in> A"
+        using hA_book by (by100 blast)
+      have hR_A_book: "R \<in> A"
+        using hA_book by (by100 blast)
+      have hA_conn_book:
+          "top1_connected_on A
+              (subspace_topology UNIV geotop_euclidean_topology A)"
+        using hA_book by (by100 blast)
+      show "\<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> geotop_polygon_interior J - A
+              \<and> Q' \<in> B \<and> S' \<in> B
+              \<and> A \<inter> B = {}
+              \<and> A \<subseteq> closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior J) - B
+              \<and> P \<in> A
+              \<and> R \<in> A
+              \<and> top1_connected_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A)"
+        using hB_bl hB_sub hQ'_B hS'_B hA_B hA_sub_closed_minus
+          hP_A_book hR_A_book hA_conn_book
+        by (intro exI conjI)
+    qed
+    show ?thesis
+      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
+        hQ'_cut hS'_cut hsame_book_imp
+      by (intro exI conjI)
+  qed
   have hD42_different_component_open_split:
       "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
         U\<^sub>Q0 \<in> geotop_euclidean_topology
