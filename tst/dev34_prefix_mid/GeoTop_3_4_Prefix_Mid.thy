@@ -14219,6 +14219,70 @@ proof -
                           "card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
                           by (rule hL\<^sub>2_free_count_from_IH
                               [OF hL\<^sub>2_poly_eq hT\<^sub>2_lt_T hT\<^sub>2_gt1])
+                        have hside_free_distinct_pairs_from_counts:
+                          "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+                            \<sigma>\<^sub>1 \<in> L\<^sub>1
+                            \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+                            \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+                            \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+                            \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+                            \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+                            \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+                            \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+                            \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+                            \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+                          (**
+                            The induction hypotheses give two free choices on
+                            each side.  This is the finite counting input for
+                            the later artificial-chord filtering step. **)
+                        proof -
+                          have hside1_two:
+                            "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2.
+                              \<sigma>\<^sub>1 \<in> L\<^sub>1
+                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+                              \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+                              \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
+                            by (rule geotop_two_distinct_members_from_card_ge2_prefix
+                                [OF hL\<^sub>1_fin hL\<^sub>1_free_count])
+                          have hside2_two:
+                            "\<exists>\<tau>\<^sub>1 \<tau>\<^sub>2.
+                              \<tau>\<^sub>1 \<in> L\<^sub>2
+                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+                              \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+                              \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+                            by (rule geotop_two_distinct_members_from_card_ge2_prefix
+                                [OF hL\<^sub>2_fin hL\<^sub>2_free_count])
+                          obtain \<sigma>\<^sub>1 \<sigma>\<^sub>2
+                            where h\<sigma>\<^sub>1L\<^sub>1: "\<sigma>\<^sub>1 \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>1free:
+                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1"
+                              and h\<sigma>\<^sub>2L\<^sub>1: "\<sigma>\<^sub>2 \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>2free:
+                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2"
+                              and h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
+                            using hside1_two by (elim exE conjE)
+                          obtain \<tau>\<^sub>1 \<tau>\<^sub>2
+                            where h\<tau>\<^sub>1L\<^sub>2: "\<tau>\<^sub>1 \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>1free:
+                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1"
+                              and h\<tau>\<^sub>2L\<^sub>2: "\<tau>\<^sub>2 \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>2free:
+                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2"
+                              and h\<tau>\<^sub>1_ne_\<tau>\<^sub>2: "\<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+                            using hside2_two by (elim exE conjE)
+                          show ?thesis
+                            apply (rule exI[where x = "\<sigma>\<^sub>1"])
+                            apply (rule exI[where x = "\<sigma>\<^sub>2"])
+                            apply (rule exI[where x = "\<tau>\<^sub>1"])
+                            apply (rule exI[where x = "\<tau>\<^sub>2"])
+                            using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>1free h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>2free h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2
+                              h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>1free h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>2free h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
+                            apply (intro conjI)
+                            apply assumption+
+                            done
+                        qed
                         have hside_selected_witnesses_book:
                           "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                             card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
