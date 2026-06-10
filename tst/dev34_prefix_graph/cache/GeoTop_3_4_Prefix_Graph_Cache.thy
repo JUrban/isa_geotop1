@@ -10133,6 +10133,39 @@ proof -
                 \<and> (T - {w}) \<inter> ball w r \<noteq> {}
                 \<and> (U - {w}) \<inter> ball w r \<noteq> {}"
             by (rule hselected_germs_nonempty)
+          have hp_selected_germ_cl:
+              "p \<in> closure ((S - {w}) \<inter> ball w r)"
+            using hselected_boundary_closure_data by (by100 blast)
+          have hy_selected_germ_cl:
+              "y \<in> closure ((T - {w}) \<inter> ball w r)"
+            using hselected_boundary_closure_data by (by100 blast)
+          have hz_selected_germ_cl:
+              "z \<in> closure ((U - {w}) \<inter> ball w r)"
+            using hselected_boundary_closure_data by (by100 blast)
+          have hp_not_ball: "p \<notin> ball w r"
+            using hselected_boundary_closure_data by (by100 blast)
+          have hy_not_ball: "y \<notin> ball w r"
+            using hselected_boundary_closure_data by (by100 blast)
+          have hz_not_ball: "z \<notin> ball w r"
+            using hselected_boundary_closure_data by (by100 blast)
+          have hS_selected_germ_nonempty:
+              "(S - {w}) \<inter> ball w r \<noteq> {}"
+            using hselected_local_germs_nonempty by (by100 blast)
+          have hT_selected_germ_nonempty:
+              "(T - {w}) \<inter> ball w r \<noteq> {}"
+            using hselected_local_germs_nonempty by (by100 blast)
+          have hU_selected_germ_nonempty:
+              "(U - {w}) \<inter> ball w r \<noteq> {}"
+            using hselected_local_germs_nonempty by (by100 blast)
+          have hS_selected_germ_avoids_local:
+              "((S - {w}) \<inter> ball w r) \<inter> ?Lcomp = {}"
+            by (by100 blast)
+          have hT_selected_germ_avoids_local:
+              "((T - {w}) \<inter> ball w r) \<inter> ?Lcomp = {}"
+            by (by100 blast)
+          have hU_selected_germ_avoids_local:
+              "((U - {w}) \<inter> ball w r) \<inter> ?Lcomp = {}"
+            by (by100 blast)
           have hlocal_selected_components_fin:
               "finite (components ?Lcomp)"
             using hlocal_components_fin hcomponents_selected_eq by (by100 simp)
