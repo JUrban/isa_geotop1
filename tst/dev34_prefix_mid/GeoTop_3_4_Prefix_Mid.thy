@@ -8403,13 +8403,14 @@ lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
     \<and> (\<exists>\<rho>\<in>{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}.
         \<rho> \<notin> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2})
     \<and> card {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} > 1
-    \<and> card {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} > 1"
+    \<and> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} \<noteq> {}"
   (**
     Moise Figure 3.2 side-complex geometric core.  The chord through the
     nonfree boundary triangle cuts the disk into two polygonal subdisks; each
-    side inherits K-carriers inside its closed disk, misses an explicit parent
-    two-simplex from the opposite side, and still contains more than one
-    two-simplex, so the strong induction hypotheses apply independently. **)
+    side inherits K-carriers inside its closed disk and misses an explicit
+    parent two-simplex from the opposite side.  Side 1 still contains more than
+    one two-simplex; side 2 is known nonempty here, with its
+    induction-vs-singleton fallback handled by the caller. **)
 proof -
   have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
     using hsubdisk_book_facts by (by100 blast)
@@ -11132,8 +11133,8 @@ proof -
     thus ?thesis
       by (by100 simp)
   qed
-  have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
-    sorry
+  have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> ?T\<^sub>2 \<noteq> {}"
+    using hT\<^sub>1_gt1_from_\<theta>\<^sub>s h\<theta>\<^sub>c_T\<^sub>2 by (by100 blast)
   have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
   proof -
     have h\<theta>c_not_T\<^sub>1: "\<theta>\<^sub>c \<notin> ?T\<^sub>1"
@@ -11150,7 +11151,7 @@ proof -
     "(\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
     \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
     \<and> card ?T\<^sub>1 > 1
-    \<and> card ?T\<^sub>2 > 1"
+    \<and> ?T\<^sub>2 \<noteq> {}"
     using hside_omits_T\<^sub>1 hside_omits_T\<^sub>2 hside_card_residual by (by100 blast)
   show ?thesis
     using hcarrier_side1 hcarrier_side2 hside_count_residual by (by100 blast)
@@ -14063,17 +14064,27 @@ proof -
                           \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
                           \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
                           \<and> card ?T\<^sub>1 > 1
-                          \<and> card ?T\<^sub>2 > 1"
+                          \<and> ?T\<^sub>2 \<noteq> {}"
                           (**
                             Moise Figure 3.2 geometric core for the two
                             chord-side subdisk complexes. Each side is proved
                             strictly smaller by an explicit parent two-simplex
                             omitted by that side, without assuming that the same
                             cutting triangle is omitted on both sides. **)
-                        by (rule geotop_polygon_disk_chord_side_complex_geometric_core_prefix
+                          using geotop_polygon_disk_chord_side_complex_geometric_core_prefix
                             [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2
                               h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J
-                              h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def])
+                              h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def]
+                          by (by100 blast)
+                        have hside2_induction_count_book: "card ?T\<^sub>2 > 1"
+                          (**
+                            Remaining Moise Figure 3.2 side-2 decision.  The
+                            geometric core now proves only that side 2 is
+                            nonempty; this residual must either prove that the
+                            side has enough triangles for the induction
+                            hypothesis, or replace the induction call below by
+                            the singleton-side parent-boundary fallback. **)
+                          sorry
                         have hside_complexes_reverse_and_counts_book:
                           "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                               (geotop_polygon_interior J\<^sub>1).
@@ -14113,7 +14124,7 @@ proof -
                           have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
                             using hside_geometric_core_book by (by100 blast)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
-                            using hside_geometric_core_book by (by100 blast)
+                            by (rule hside2_induction_count_book)
                           have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
                             by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
                                 [OF hT_fin hT\<^sub>1_sub_T hrho1_T hrho1_not_T\<^sub>1])
@@ -14163,14 +14174,14 @@ proof -
                             using hside_geometric_core_book
                             by (by100 blast)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
-                            using hside_geometric_core_book
-                            by (by100 blast)
+                            by (rule hside2_induction_count_book)
                           show ?thesis
-                            by (rule geotop_chord_side_complexes_exact_and_strict_from_carriers_prefix
+                            using geotop_chord_side_complexes_exact_and_strict_from_carriers_prefix
                                 [OF hK' hK_fin' hK_poly' hclosure_split hL\<^sub>1_def
                                   hL\<^sub>2_def hcarrier_side1 hcarrier_side2
                                   hrho1_T hrho1_not_T\<^sub>1 hrho2_T hrho2_not_T\<^sub>2
-                                  hT\<^sub>1_gt1 hT\<^sub>2_gt1])
+                                  hT\<^sub>1_gt1 hT\<^sub>2_gt1]
+                            by (by100 blast)
                         qed
                         have hL\<^sub>1_poly_eq:
                           "geotop_polyhedron L\<^sub>1 =
