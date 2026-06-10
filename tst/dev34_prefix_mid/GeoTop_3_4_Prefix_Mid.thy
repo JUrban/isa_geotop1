@@ -6715,11 +6715,17 @@ lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
              (geotop_polygon_interior J) =
            closure_on UNIV geotop_euclidean_topology
              (geotop_polygon_interior J\<^sub>1)
-           \<union> closure_on UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J\<^sub>2)
-      \<and> geotop_separated UNIV geotop_euclidean_topology
-         (geotop_polygon_interior J\<^sub>1 \<union>
-          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	           \<union> closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J\<^sub>2)
+	      \<and> closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+	           (geotop_polygon_interior J\<^sub>1 \<union>
+	            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	           (geotop_polygon_interior J\<^sub>2 \<union>
+	            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	      \<and> geotop_separated UNIV geotop_euclidean_topology
+	         (geotop_polygon_interior J\<^sub>1 \<union>
+	          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
          (geotop_polygon_interior J\<^sub>2 \<union>
           geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
   assumes hsubdisk_side_witnesses_exist:
@@ -7128,11 +7134,17 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
                (geotop_polygon_interior J) =
              closure_on UNIV geotop_euclidean_topology
                (geotop_polygon_interior J\<^sub>1)
-             \<union> closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>2)
-        \<and> geotop_separated UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>1 \<union>
-                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	             \<union> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>2)
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+	             (geotop_polygon_interior J\<^sub>1 \<union>
+	              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	             (geotop_polygon_interior J\<^sub>2 \<union>
+	              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	        \<and> geotop_separated UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>1 \<union>
+	                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                (geotop_polygon_interior J\<^sub>2 \<union>
                 geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
       L\<^sub>1 =
@@ -7983,13 +7995,19 @@ proof -
       \<and> geotop_is_polygon J\<^sub>2
       \<and> closure_on UNIV geotop_euclidean_topology
              (geotop_polygon_interior J) =
-           closure_on UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J\<^sub>1)
-           \<union> closure_on UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J\<^sub>2)
-      \<and> geotop_separated UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J\<^sub>1 \<union>
-              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	           closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J\<^sub>1)
+	           \<union> closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J\<^sub>2)
+	      \<and> closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+	           (geotop_polygon_interior J\<^sub>1 \<union>
+	            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	           (geotop_polygon_interior J\<^sub>2 \<union>
+	            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	      \<and> geotop_separated UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J\<^sub>1 \<union>
+	              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
              (geotop_polygon_interior J\<^sub>2 \<union>
               geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
     (**
@@ -8068,11 +8086,17 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
                (geotop_polygon_interior J) =
              closure_on UNIV geotop_euclidean_topology
                (geotop_polygon_interior J\<^sub>1)
-             \<union> closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>2)
-        \<and> geotop_separated UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>1 \<union>
-                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	             \<union> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>2)
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+	             (geotop_polygon_interior J\<^sub>1 \<union>
+	              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	             (geotop_polygon_interior J\<^sub>2 \<union>
+	              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	        \<and> geotop_separated UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>1 \<union>
+	                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                (geotop_polygon_interior J\<^sub>2 \<union>
                 geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
       L\<^sub>1 =
@@ -8604,13 +8628,19 @@ proof -
         \<and> geotop_is_polygon J\<^sub>2
         \<and> closure_on UNIV geotop_euclidean_topology
                (geotop_polygon_interior J) =
-             closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>1)
-             \<union> closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>2)
-        \<and> geotop_separated UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J\<^sub>1 \<union>
-                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	             closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>1)
+	             \<union> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>2)
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+	             (geotop_polygon_interior J\<^sub>1 \<union>
+	              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	             (geotop_polygon_interior J\<^sub>2 \<union>
+	              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	        \<and> geotop_separated UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J\<^sub>1 \<union>
+	                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                (geotop_polygon_interior J\<^sub>2 \<union>
                 geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
       L\<^sub>1 =
@@ -9293,13 +9323,19 @@ proof -
                   \<and> geotop_is_polygon J\<^sub>2
                   \<and> closure_on UNIV geotop_euclidean_topology
                          (geotop_polygon_interior J') =
-                       closure_on UNIV geotop_euclidean_topology
-                         (geotop_polygon_interior J\<^sub>1)
-                       \<union> closure_on UNIV geotop_euclidean_topology
-                         (geotop_polygon_interior J\<^sub>2)
-                  \<and> geotop_separated UNIV geotop_euclidean_topology
-                         (geotop_polygon_interior J\<^sub>1 \<union>
-                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	                       closure_on UNIV geotop_euclidean_topology
+	                         (geotop_polygon_interior J\<^sub>1)
+	                       \<union> closure_on UNIV geotop_euclidean_topology
+	                         (geotop_polygon_interior J\<^sub>2)
+	                  \<and> closure_on UNIV geotop_euclidean_topology
+	                         (geotop_polygon_interior J') - closed_segment v\<^sub>0 v\<^sub>2 =
+	                       (geotop_polygon_interior J\<^sub>1 \<union>
+	                        geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	                       (geotop_polygon_interior J\<^sub>2 \<union>
+	                        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	                  \<and> geotop_separated UNIV geotop_euclidean_topology
+	                         (geotop_polygon_interior J\<^sub>1 \<union>
+	                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                          (geotop_polygon_interior J\<^sub>2 \<union>
                           geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
                 L\<^sub>1 =
@@ -9326,13 +9362,19 @@ proof -
                           \<and> geotop_is_polygon J\<^sub>2
                           \<and> closure_on UNIV geotop_euclidean_topology
                                  (geotop_polygon_interior J') =
-                               closure_on UNIV geotop_euclidean_topology
-                                 (geotop_polygon_interior J\<^sub>1)
-                               \<union> closure_on UNIV geotop_euclidean_topology
-                                 (geotop_polygon_interior J\<^sub>2)
-                          \<and> geotop_separated UNIV geotop_euclidean_topology
-                                 (geotop_polygon_interior J\<^sub>1 \<union>
-                                  geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+	                               closure_on UNIV geotop_euclidean_topology
+	                                 (geotop_polygon_interior J\<^sub>1)
+	                               \<union> closure_on UNIV geotop_euclidean_topology
+	                                 (geotop_polygon_interior J\<^sub>2)
+	                          \<and> closure_on UNIV geotop_euclidean_topology
+	                                 (geotop_polygon_interior J') - closed_segment v\<^sub>0 v\<^sub>2 =
+	                               (geotop_polygon_interior J\<^sub>1 \<union>
+	                                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	                               (geotop_polygon_interior J\<^sub>2 \<union>
+	                                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+	                          \<and> geotop_separated UNIV geotop_euclidean_topology
+	                                 (geotop_polygon_interior J\<^sub>1 \<union>
+	                                  geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                                  (geotop_polygon_interior J\<^sub>2 \<union>
                                   geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
                       assume hL\<^sub>1_def:
@@ -9354,12 +9396,20 @@ proof -
                            (geotop_polygon_interior J') =
                          closure_on UNIV geotop_euclidean_topology
                            (geotop_polygon_interior J\<^sub>1)
-                         \<union> closure_on UNIV geotop_euclidean_topology
-                           (geotop_polygon_interior J\<^sub>2)"
-                        using hsubdisk_book by (by100 blast)
-                      have hside_separated:
-                        "geotop_separated UNIV geotop_euclidean_topology
-                           (geotop_polygon_interior J\<^sub>1 \<union>
+	                         \<union> closure_on UNIV geotop_euclidean_topology
+	                           (geotop_polygon_interior J\<^sub>2)"
+	                        using hsubdisk_book by (by100 blast)
+	                      have hclosure_minus_chord:
+	                        "closure_on UNIV geotop_euclidean_topology
+	                           (geotop_polygon_interior J') - closed_segment v\<^sub>0 v\<^sub>2 =
+	                         (geotop_polygon_interior J\<^sub>1 \<union>
+	                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+	                         (geotop_polygon_interior J\<^sub>2 \<union>
+	                          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+	                        using hsubdisk_book by (by100 blast)
+	                      have hside_separated:
+	                        "geotop_separated UNIV geotop_euclidean_topology
+	                           (geotop_polygon_interior J\<^sub>1 \<union>
                             geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                            (geotop_polygon_interior J\<^sub>2 \<union>
                             geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
