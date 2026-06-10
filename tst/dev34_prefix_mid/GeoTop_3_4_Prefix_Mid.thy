@@ -9316,10 +9316,81 @@ proof -
                     \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
                   \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
                   card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
-                  \<tau> \<inter> J' =
-                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
-                  \<sigma> \<noteq> \<tau>"
-              sorry
+                          \<tau> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                          \<sigma> \<noteq> \<tau>"
+                    proof -
+                      fix J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2
+                      assume hsubdisk_book:
+                        "geotop_is_polygon J\<^sub>1
+                          \<and> geotop_is_polygon J\<^sub>2
+                          \<and> closure_on UNIV geotop_euclidean_topology
+                                 (geotop_polygon_interior J') =
+                               closure_on UNIV geotop_euclidean_topology
+                                 (geotop_polygon_interior J\<^sub>1)
+                               \<union> closure_on UNIV geotop_euclidean_topology
+                                 (geotop_polygon_interior J\<^sub>2)
+                          \<and> geotop_separated UNIV geotop_euclidean_topology
+                                 (geotop_polygon_interior J\<^sub>1 \<union>
+                                  geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+                                 (geotop_polygon_interior J\<^sub>2 \<union>
+                                  geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                      assume hL\<^sub>1_def:
+                        "L\<^sub>1 =
+                          {\<rho>\<in>K. \<rho> \<subseteq>
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)}"
+                      assume hL\<^sub>2_def:
+                        "L\<^sub>2 =
+                          {\<rho>\<in>K. \<rho> \<subseteq>
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)}"
+                      have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
+                        using hsubdisk_book by (by100 blast)
+                      have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+                        using hsubdisk_book by (by100 blast)
+                      have hL\<^sub>1_complex: "geotop_is_complex L\<^sub>1"
+                        unfolding hL\<^sub>1_def
+                        by (rule geotop_complex_restrict_subset_is_complex[OF hK'])
+                      have hL\<^sub>2_complex: "geotop_is_complex L\<^sub>2"
+                        unfolding hL\<^sub>2_def
+                        by (rule geotop_complex_restrict_subset_is_complex[OF hK'])
+                      have hL\<^sub>1_fin: "finite L\<^sub>1"
+                        unfolding hL\<^sub>1_def using hK_fin' by (by100 simp)
+                      have hL\<^sub>2_fin: "finite L\<^sub>2"
+                        unfolding hL\<^sub>2_def using hK_fin' by (by100 simp)
+                      have hL\<^sub>1_poly_sub:
+                        "geotop_polyhedron L\<^sub>1 \<subseteq>
+                          closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>1)"
+                        unfolding hL\<^sub>1_def geotop_polyhedron_def by (by100 blast)
+                      have hL\<^sub>2_poly_sub:
+                        "geotop_polyhedron L\<^sub>2 \<subseteq>
+                          closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>2)"
+                        unfolding hL\<^sub>2_def geotop_polyhedron_def by (by100 blast)
+                      have hside_witnesses_from_IH:
+                        "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                          \<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                          \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                          \<tau> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                          \<sigma> \<noteq> \<tau>"
+                        sorry
+                      show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                          \<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                          \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                          \<tau> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                          \<sigma> \<noteq> \<tau>"
+                        by (rule hside_witnesses_from_IH)
+                    qed
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
