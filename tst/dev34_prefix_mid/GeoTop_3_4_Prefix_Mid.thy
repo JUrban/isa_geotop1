@@ -8069,6 +8069,12 @@ proof -
     unfolding hL\<^sub>1_def using hK_fin by (by100 simp)
   have hL\<^sub>2_fin: "finite L\<^sub>2"
     unfolding hL\<^sub>2_def using hK_fin by (by100 simp)
+  have hL\<^sub>1_poly_sub:
+    "geotop_polyhedron L\<^sub>1 \<subseteq> ?B\<^sub>1"
+    unfolding hL\<^sub>1_def geotop_polyhedron_def by (by100 blast)
+  have hL\<^sub>2_poly_sub:
+    "geotop_polyhedron L\<^sub>2 \<subseteq> ?B\<^sub>2"
+    unfolding hL\<^sub>2_def geotop_polyhedron_def by (by100 blast)
   have hB\<^sub>1_sub_K: "?B\<^sub>1 \<subseteq> geotop_polyhedron K"
     using hclosure_split hK_poly by (by100 blast)
   have hB\<^sub>2_sub_K: "?B\<^sub>2 \<subseteq> geotop_polyhedron K"
@@ -8083,6 +8089,14 @@ proof -
     using hL\<^sub>1_sub_K by (by100 blast)
   have hT\<^sub>2_sub_T: "?T\<^sub>2 \<subseteq> ?T"
     using hL\<^sub>2_sub_K by (by100 blast)
+  have hT_card_gt2: "card ?T > 2"
+    by (rule hT_gt2)
+  have h\<theta>_T: "\<theta> \<in> ?T"
+    using h\<theta>K h\<theta>2 by (by100 blast)
+  have hT\<^sub>1_card_le_T: "card ?T\<^sub>1 \<le> card ?T"
+    by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
+  have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
+    by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
   have hchord_segment_K: "closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
     using hchord_edge_K hchord_hull_segment_eq by (by100 simp)
   have hJ\<^sub>1_sub_B\<^sub>1: "J\<^sub>1 \<subseteq> ?B\<^sub>1"
