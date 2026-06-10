@@ -11657,6 +11657,204 @@ proof -
                                   side subcomplex, and the two side witnesses
                                   lie on opposite sides of the chord split. **)
                               proof -
+                                have h\<sigma>\<theta>_proper_in_\<theta>_from_faces:
+                                  "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma> \<Longrightarrow>
+                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<theta> \<Longrightarrow>
+                                    \<sigma> \<inter> \<theta> \<subset> \<theta>"
+                                  (**
+                                    The chord contact can only be a proper
+                                    face of the cut triangle: if it filled
+                                    \<open>\<theta>\<close>, then \<open>\<theta>\<close> would be contained
+                                    in the distinct 2-simplex \<open>\<sigma>\<close>. **)
+                                proof -
+                                  assume hface_\<sigma>:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>"
+                                  assume hface_\<theta>:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                  have hsub: "\<sigma> \<inter> \<theta> \<subseteq> \<theta>"
+                                    by (rule geotop_is_face_imp_subset_prefix[OF hface_\<theta>])
+                                  have hne: "\<sigma> \<inter> \<theta> \<noteq> \<theta>"
+                                  proof
+                                    assume heq: "\<sigma> \<inter> \<theta> = \<theta>"
+                                    have h\<theta>_sub_\<sigma>: "\<theta> \<subseteq> \<sigma>"
+                                      using heq by (by100 blast)
+                                    have h\<theta>_proper_\<sigma>: "\<theta> \<subset> \<sigma>"
+                                      using h\<theta>_sub_\<sigma> h\<sigma>_ne_\<theta> by (by100 blast)
+                                    have "(2::nat) < 2"
+                                      by (rule geotop_complex_proper_subset_dim_less
+                                          [OF hK' h\<theta>K h\<sigma>K h\<theta>_proper_\<sigma> h\<theta>2 h\<sigma>2])
+                                    thus False
+                                      by (by100 simp)
+                                  qed
+                                  show ?thesis
+                                    using hsub hne by (by100 blast)
+                                qed
+                                have h\<tau>\<theta>_proper_in_\<theta>_from_faces:
+                                  "geotop_is_face (\<tau> \<inter> \<theta>) \<tau> \<Longrightarrow>
+                                    geotop_is_face (\<tau> \<inter> \<theta>) \<theta> \<Longrightarrow>
+                                    \<tau> \<inter> \<theta> \<subset> \<theta>"
+                                  (**
+                                    Symmetric properness for the witness on
+                                    the other side of the chord split. **)
+                                proof -
+                                  assume hface_\<tau>:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>"
+                                  assume hface_\<theta>:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                  have hsub: "\<tau> \<inter> \<theta> \<subseteq> \<theta>"
+                                    by (rule geotop_is_face_imp_subset_prefix[OF hface_\<theta>])
+                                  have hne: "\<tau> \<inter> \<theta> \<noteq> \<theta>"
+                                  proof
+                                    assume heq: "\<tau> \<inter> \<theta> = \<theta>"
+                                    have h\<theta>_sub_\<tau>: "\<theta> \<subseteq> \<tau>"
+                                      using heq by (by100 blast)
+                                    have h\<theta>_proper_\<tau>: "\<theta> \<subset> \<tau>"
+                                      using h\<theta>_sub_\<tau> h\<tau>_ne_\<theta> by (by100 blast)
+                                    have "(2::nat) < 2"
+                                      by (rule geotop_complex_proper_subset_dim_less
+                                          [OF hK' h\<theta>K h\<tau>K h\<theta>_proper_\<tau> h\<theta>2 h\<tau>2])
+                                    thus False
+                                      by (by100 simp)
+                                  qed
+                                  show ?thesis
+                                    using hsub hne by (by100 blast)
+                                qed
+                                have h\<theta>_proper_face_sub_named_edges:
+                                  "\<And>F. geotop_is_face F \<theta> \<Longrightarrow>
+                                    F \<subset> \<theta> \<Longrightarrow>
+                                    F \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                  (**
+                                    Vertex-witness classification for a
+                                    proper face of the cut triangle: any
+                                    non-top face uses a proper nonempty subset
+                                    of the three displayed vertices, hence is
+                                    contained in one displayed edge hull. **)
+                                proof -
+                                  fix F
+                                  assume hF_face: "geotop_is_face F \<theta>"
+                                  assume hF_proper: "F \<subset> \<theta>"
+                                  obtain V W where h\<theta>V:
+                                      "geotop_simplex_vertices \<theta> V"
+                                    and hW_ne: "W \<noteq> {}"
+                                    and hW_sub: "W \<subseteq> V"
+                                    and hF_eq: "F = geotop_convex_hull W"
+                                    and hFW: "geotop_simplex_vertices F W"
+                                    by (rule geotop_face_witness_simplex_vertices_prefix
+                                        [OF hF_face])
+                                  have hV_eq: "V = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+                                    by (rule geotop_simplex_vertices_unique
+                                        [OF h\<theta>V h\<theta>_vertices])
+                                  have hW_sub_named: "W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+                                    using hW_sub hV_eq by (by100 simp)
+                                  have hW_ne_top: "W \<noteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+                                  proof
+                                    assume hW_eq: "W = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+                                    have h\<theta>_eq:
+                                      "\<theta> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+                                      using h\<theta>_vertices unfolding geotop_simplex_vertices_def
+                                      by (by100 blast)
+                                    have "F = \<theta>"
+                                      using hF_eq hW_eq h\<theta>_eq by (by100 simp)
+                                    thus False
+                                      using hF_proper by (by100 blast)
+                                  qed
+                                  have hW_pair_sub:
+                                    "W \<subseteq> {v\<^sub>0, v\<^sub>1}
+                                    \<or> W \<subseteq> {v\<^sub>0, v\<^sub>2}
+                                    \<or> W \<subseteq> {v\<^sub>1, v\<^sub>2}"
+                                    using hW_sub_named hW_ne_top by (by100 auto)
+                                  show "F \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                  proof (rule disjE[OF hW_pair_sub])
+                                    assume hW01: "W \<subseteq> {v\<^sub>0, v\<^sub>1}"
+                                    have hHull:
+                                      "geotop_convex_hull W
+                                        \<subseteq> geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+                                    proof -
+                                      have "convex hull W \<subseteq>
+                                          convex hull {v\<^sub>0, v\<^sub>1}"
+                                        by (rule hull_mono[OF hW01])
+                                      thus ?thesis
+                                        using geotop_convex_hull_eq_HOL[of W]
+                                          geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"]
+                                        by (by100 simp)
+                                    qed
+                                    show ?thesis
+                                      using hF_eq hHull by (by100 blast)
+                                  next
+                                    assume hrest:
+                                      "W \<subseteq> {v\<^sub>0, v\<^sub>2}
+                                      \<or> W \<subseteq> {v\<^sub>1, v\<^sub>2}"
+                                    show ?thesis
+                                    proof (rule disjE[OF hrest])
+                                      assume hW02: "W \<subseteq> {v\<^sub>0, v\<^sub>2}"
+                                      have hHull:
+                                        "geotop_convex_hull W
+                                          \<subseteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+                                      proof -
+                                        have "convex hull W \<subseteq>
+                                            convex hull {v\<^sub>0, v\<^sub>2}"
+                                          by (rule hull_mono[OF hW02])
+                                        thus ?thesis
+                                          using geotop_convex_hull_eq_HOL[of W]
+                                            geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+                                          by (by100 simp)
+                                      qed
+                                      show ?thesis
+                                        using hF_eq hHull by (by100 blast)
+                                    next
+                                      assume hW12: "W \<subseteq> {v\<^sub>1, v\<^sub>2}"
+                                      have hHull:
+                                        "geotop_convex_hull W
+                                          \<subseteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                      proof -
+                                        have "convex hull W \<subseteq>
+                                            convex hull {v\<^sub>1, v\<^sub>2}"
+                                          by (rule hull_mono[OF hW12])
+                                        thus ?thesis
+                                          using geotop_convex_hull_eq_HOL[of W]
+                                            geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+                                          by (by100 simp)
+                                      qed
+                                      show ?thesis
+                                        using hF_eq hHull by (by100 blast)
+                                    qed
+                                  qed
+                                qed
+                                have hparent_contact_cover_and_distinct_named_obligations_book:
+                                  "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    \<sigma> \<inter> \<theta> \<subset> \<theta> \<longrightarrow>
+                                    \<sigma> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<longrightarrow>
+                                    False)
+                                  \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    \<tau> \<inter> \<theta> \<subset> \<theta> \<longrightarrow>
+                                    \<tau> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<longrightarrow>
+                                    False)"
+                                  (**
+                                    Remaining Moise Figure 3.2 geometry after
+                                    the same-dimension reduction: an uncovered
+                                    parent-boundary residue would force a
+                                    proper named-edge face of the cut triangle
+                                    to account for the side witness contact.
+                                    The next step is to use the selected-
+                                    boundary facts for \<open>\<theta>\<close> to rule out the
+                                    uncovered parent-boundary point. **)
+                                  sorry
                                 have hparent_contact_cover_and_distinct_obligations_book:
                                   "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
@@ -11676,7 +11874,65 @@ proof -
                                     uncovered parent-boundary chord residue is
                                     impossible for side witnesses avoiding the
                                     cut triangle. **)
-                                  sorry
+                                proof (intro conjI allI impI)
+                                  fix x
+                                  assume hx: "x \<in> \<sigma> \<inter> J'"
+                                  assume hx_not:
+                                    "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                  assume hfaces:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma> \<and>
+                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                  have hface_\<sigma>:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>"
+                                    using hfaces by (by100 blast)
+                                  have hface_\<theta>:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                    using hfaces by (by100 blast)
+                                  have hproper: "\<sigma> \<inter> \<theta> \<subset> \<theta>"
+                                    by (rule h\<sigma>\<theta>_proper_in_\<theta>_from_faces
+                                        [OF hface_\<sigma> hface_\<theta>])
+                                  have hnamed:
+                                    "\<sigma> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                    by (rule h\<theta>_proper_face_sub_named_edges
+                                        [OF hface_\<theta> hproper])
+                                  show False
+                                    using hparent_contact_cover_and_distinct_named_obligations_book
+                                      hx hx_not hproper hnamed
+                                    by (by100 blast)
+                                next
+                                  fix x
+                                  assume hx: "x \<in> \<tau> \<inter> J'"
+                                  assume hx_not:
+                                    "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                  assume hfaces:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau> \<and>
+                                    geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                  have hface_\<tau>:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>"
+                                    using hfaces by (by100 blast)
+                                  have hface_\<theta>:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                    using hfaces by (by100 blast)
+                                  have hproper: "\<tau> \<inter> \<theta> \<subset> \<theta>"
+                                    by (rule h\<tau>\<theta>_proper_in_\<theta>_from_faces
+                                        [OF hface_\<tau> hface_\<theta>])
+                                  have hnamed:
+                                    "\<tau> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                    by (rule h\<theta>_proper_face_sub_named_edges
+                                        [OF hface_\<theta> hproper])
+                                  show False
+                                    using hparent_contact_cover_and_distinct_named_obligations_book
+                                      hx hx_not hproper hnamed
+                                    by (by100 blast)
+                                qed
                                 show ?thesis
                                 proof (rule hparent_contact_cover_and_distinct_from_obligations)
                                   fix x
