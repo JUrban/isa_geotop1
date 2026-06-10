@@ -8005,6 +8005,75 @@ proof -
     "geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}
       \<subseteq> interior (geotop_polyhedron K)"
     using hside_arc_interior_sub_polygon_interior hpoly_interior_eq_polygon by (by100 simp)
+  let ?B\<^sub>1 =
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>1)"
+  let ?B\<^sub>2 =
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>2)"
+  let ?T = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+  let ?T\<^sub>1 = "{\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2}"
+  let ?T\<^sub>2 = "{\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2}"
+  have hL\<^sub>1_sub_K: "L\<^sub>1 \<subseteq> K"
+    using hL\<^sub>1_def by (by100 blast)
+  have hL\<^sub>2_sub_K: "L\<^sub>2 \<subseteq> K"
+    using hL\<^sub>2_def by (by100 blast)
+  have hL\<^sub>1_complex: "geotop_is_complex L\<^sub>1"
+    unfolding hL\<^sub>1_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  have hL\<^sub>2_complex: "geotop_is_complex L\<^sub>2"
+    unfolding hL\<^sub>2_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  have hL\<^sub>1_fin: "finite L\<^sub>1"
+    unfolding hL\<^sub>1_def using hK_fin by (by100 simp)
+  have hL\<^sub>2_fin: "finite L\<^sub>2"
+    unfolding hL\<^sub>2_def using hK_fin by (by100 simp)
+  have hB\<^sub>1_sub_K: "?B\<^sub>1 \<subseteq> geotop_polyhedron K"
+    using hclosure_split hK_poly by (by100 blast)
+  have hB\<^sub>2_sub_K: "?B\<^sub>2 \<subseteq> geotop_polyhedron K"
+    using hclosure_split hK_poly by (by100 blast)
+  have hT_fin: "finite ?T"
+    using hK_fin by (by100 simp)
+  have hT\<^sub>1_fin: "finite ?T\<^sub>1"
+    using hL\<^sub>1_fin by (by100 simp)
+  have hT\<^sub>2_fin: "finite ?T\<^sub>2"
+    using hL\<^sub>2_fin by (by100 simp)
+  have hT\<^sub>1_sub_T: "?T\<^sub>1 \<subseteq> ?T"
+    using hL\<^sub>1_sub_K by (by100 blast)
+  have hT\<^sub>2_sub_T: "?T\<^sub>2 \<subseteq> ?T"
+    using hL\<^sub>2_sub_K by (by100 blast)
+  have hchord_segment_K: "closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
+    using hchord_edge_K hchord_hull_segment_eq by (by100 simp)
+  have hJ\<^sub>1_sub_B\<^sub>1: "J\<^sub>1 \<subseteq> ?B\<^sub>1"
+  proof -
+    have hB\<^sub>1_closure:
+      "?B\<^sub>1 = closure (geotop_polygon_interior J\<^sub>1)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hclosure_eq:
+      "closure (geotop_polygon_interior J\<^sub>1) =
+        geotop_polygon_interior J\<^sub>1 \<union> J\<^sub>1"
+      by (rule polygon_interior_closure_eq[OF hJ\<^sub>1])
+    show ?thesis
+      using hB\<^sub>1_closure hclosure_eq by (by100 blast)
+  qed
+  have hJ\<^sub>2_sub_B\<^sub>2: "J\<^sub>2 \<subseteq> ?B\<^sub>2"
+  proof -
+    have hB\<^sub>2_closure:
+      "?B\<^sub>2 = closure (geotop_polygon_interior J\<^sub>2)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hclosure_eq:
+      "closure (geotop_polygon_interior J\<^sub>2) =
+        geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
+      by (rule polygon_interior_closure_eq[OF hJ\<^sub>2])
+    show ?thesis
+      using hB\<^sub>2_closure hclosure_eq by (by100 blast)
+  qed
+  have hchord_segment_sub_B\<^sub>1: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?B\<^sub>1"
+    using hJ\<^sub>1_eq hJ\<^sub>1_sub_B\<^sub>1 by (by100 blast)
+  have hchord_segment_sub_B\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?B\<^sub>2"
+    using hJ\<^sub>2_eq hJ\<^sub>2_sub_B\<^sub>2 by (by100 blast)
+  have hchord_segment_L\<^sub>1: "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>1"
+    using hL\<^sub>1_def hchord_segment_K hchord_segment_sub_B\<^sub>1 by (by100 blast)
+  have hchord_segment_L\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>2"
+    using hL\<^sub>2_def hchord_segment_K hchord_segment_sub_B\<^sub>2 by (by100 blast)
   show ?thesis
     sorry
 qed
