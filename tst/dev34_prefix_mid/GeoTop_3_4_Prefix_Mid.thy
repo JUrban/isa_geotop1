@@ -10909,6 +10909,44 @@ proof -
     thus ?thesis
       using hpair_card by (by100 arith)
   qed
+  have h\<theta>\<^sub>c_T: "\<theta>\<^sub>c \<in> ?T"
+    using h\<theta>\<^sub>cK h\<theta>\<^sub>c2 by (by100 blast)
+  have h\<theta>\<^sub>c_side_cases: "\<theta>\<^sub>c \<in> ?T\<^sub>1 \<or> \<theta>\<^sub>c \<in> ?T\<^sub>2"
+    using hT_eq_sides h\<theta>\<^sub>c_T by (by100 blast)
+  have hT\<^sub>2_gt1_if_distinct_from_\<theta>\<^sub>c:
+    "\<And>\<rho>. \<rho> \<in> ?T\<^sub>2 \<Longrightarrow> \<rho> \<noteq> \<theta>\<^sub>c \<Longrightarrow> \<theta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 > 1"
+  proof -
+    fix \<rho>
+    assume h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
+    assume h\<rho>ne: "\<rho> \<noteq> \<theta>\<^sub>c"
+    assume h\<theta>cT\<^sub>2: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
+    have hpair_sub: "{\<rho>, \<theta>\<^sub>c} \<subseteq> ?T\<^sub>2"
+      using h\<rho>T\<^sub>2 h\<theta>cT\<^sub>2 by (by100 blast)
+    have hpair_card: "card {\<rho>, \<theta>\<^sub>c} = 2"
+      using h\<rho>ne by (by100 simp)
+    have "card {\<rho>, \<theta>\<^sub>c} \<le> card ?T\<^sub>2"
+      by (rule card_mono[OF hT\<^sub>2_fin hpair_sub])
+    thus ?thesis
+      using hpair_card by (by100 arith)
+  qed
+  have hT\<^sub>2_singleton_if_card_le1_and_contains_\<theta>\<^sub>c:
+    "\<theta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 \<le> 1 \<Longrightarrow> ?T\<^sub>2 = {\<theta>\<^sub>c}"
+  proof -
+    assume h\<theta>cT\<^sub>2: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
+    assume hcard_le1: "card ?T\<^sub>2 \<le> 1"
+    have hsingle_sub: "{\<theta>\<^sub>c} \<subseteq> ?T\<^sub>2"
+      using h\<theta>cT\<^sub>2 by (by100 blast)
+    have hsingle_card: "card {\<theta>\<^sub>c} = 1"
+      by (by100 simp)
+    have hcard_ge1: "card {\<theta>\<^sub>c} \<le> card ?T\<^sub>2"
+      by (rule card_mono[OF hT\<^sub>2_fin hsingle_sub])
+    have hcard_eq: "card {\<theta>\<^sub>c} = card ?T\<^sub>2"
+      using hsingle_card hcard_ge1 hcard_le1 by (by100 linarith)
+    have "{\<theta>\<^sub>c} = ?T\<^sub>2"
+      by (rule card_subset_eq[OF hT\<^sub>2_fin hsingle_sub hcard_eq])
+    thus ?thesis
+      by (by100 simp)
+  qed
   have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
     sorry
   have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
