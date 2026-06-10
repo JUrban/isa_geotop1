@@ -14214,6 +14214,19 @@ proof -
 	                          using hside_geometric_core_book by (by100 simp)
 	                        have hside_core_T\<^sub>2_nonempty_book: "?T\<^sub>2 \<noteq> {}"
 	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_chord_classification_book:
+	                          "\<exists>\<theta>\<^sub>c\<in>?T\<^sub>2.
+	                              \<theta>\<^sub>c \<notin> ?T\<^sub>1
+	                              \<and> \<theta>\<^sub>c \<noteq> \<theta>
+	                              \<and> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c
+	                              \<and> \<theta> \<notin> ?T\<^sub>2
+	                              \<and> (\<forall>\<rho>\<in>?T\<^sub>1.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>)
+	                              \<and> (\<forall>\<rho>\<in>?T\<^sub>2.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>\<^sub>c)"
+	                          using hside_geometric_core_book by (by100 simp)
 	                        show ?thesis
                         proof (cases "card ?T\<^sub>2 > 1")
                           case True
