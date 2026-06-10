@@ -8040,6 +8040,62 @@ proof -
     using hcomplex hsub by (by100 blast)
 qed
 
+lemma geotop_theta_face_adjoin_side_finite_prefix:
+  fixes L :: "(real^2) set set" and \<theta> :: "(real^2) set"
+  assumes hL_fin: "finite L"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  shows "finite (L \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})"
+proof -
+  let ?F = "{\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>}"
+  have h\<theta>simplex: "geotop_is_simplex \<theta>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<theta>2])
+  have hfaces_fin: "finite {\<rho>. geotop_is_face \<rho> \<theta>}"
+    by (rule geotop_simplex_faces_finite[OF h\<theta>simplex])
+  have hF_eq: "?F = {\<rho>. geotop_is_face \<rho> \<theta>} \<union> {\<theta>}"
+    by (by100 blast)
+  have hF_fin: "finite ?F"
+    using hfaces_fin hF_eq by (by100 simp)
+  show ?thesis
+    using hL_fin hF_fin by (by100 simp)
+qed
+
+lemma geotop_theta_face_adjoin_side_polyhedron_prefix:
+  fixes L :: "(real^2) set set" and \<theta> :: "(real^2) set"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  shows "geotop_polyhedron
+      (L \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})
+    = geotop_polyhedron L \<union> \<theta>"
+proof -
+  let ?F = "{\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>}"
+  have h\<theta>F: "\<theta> \<in> ?F"
+    by (by100 blast)
+  have hF_sub: "\<Union>?F \<subseteq> \<theta>"
+  proof
+    fix x
+    assume hx: "x \<in> \<Union>?F"
+    then obtain \<rho> where h\<rho>F: "\<rho> \<in> ?F" and hx\<rho>: "x \<in> \<rho>"
+      by (by100 blast)
+    have hcase: "geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>"
+      using h\<rho>F by (by100 blast)
+    show "x \<in> \<theta>"
+    proof (rule disjE[OF hcase])
+      assume hface: "geotop_is_face \<rho> \<theta>"
+      have "\<rho> \<subseteq> \<theta>"
+        by (rule geotop_is_face_imp_subset_prefix[OF hface])
+      thus ?thesis using hx\<rho> by (by100 blast)
+    next
+      assume "\<rho> = \<theta>"
+      thus ?thesis using hx\<rho> by (by100 simp)
+    qed
+  qed
+  have h\<theta>_sub_F: "\<theta> \<subseteq> \<Union>?F"
+    using h\<theta>F by (by100 blast)
+  have hF_union: "\<Union>?F = \<theta>"
+    using hF_sub h\<theta>_sub_F by (by100 blast)
+  show ?thesis
+    unfolding geotop_polyhedron_def using hF_union by (by100 blast)
+qed
+
 lemma geotop_theta_face_adjoin_side_two_simplex_count_gt1_prefix:
   fixes L :: "(real^2) set set" and \<theta> \<rho> :: "(real^2) set"
   assumes hL_fin: "finite L"
