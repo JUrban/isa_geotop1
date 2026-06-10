@@ -17469,25 +17469,59 @@ proof -
 	                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>card_parent h\<sigma>contact_parent
 	                                by (by100 blast)
 	                            qed
+	                            have h\<tau>_parent_contact:
+	                              "\<tau> \<inter> J' =
+	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+	                              (**
+	                                Exact remaining singleton side-2 contact
+	                                package.  Since \<open>L\<^sub>2\<close> has only the one
+	                                2-simplex \<open>\<tau>\<close>, its side-disk boundary is
+	                                the frontier of \<open>\<tau>\<close>; deleting the artificial
+	                                chord interior leaves precisely the two
+	                                parent-boundary edge faces. **)
+	                              sorry
 	                            show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
 	                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
 	                              \<sigma> \<inter> J' =
-                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+	                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
                               \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
                               card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
                               \<tau> \<inter> J' =
                                 \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
                               \<sigma> \<noteq> \<tau>"
                               (**
-                                Singleton side-2 fallback for Moise Figure 3.2.
-                                Here the geometric core gives a nonempty side-2
-                                complex, while \<open>False\<close> says it is not a
-                                multi-triangle side.  The remaining book step is
-                                to use the unique side-2 triangle as the second
-                                parent-boundary witness, while side 1 still
-                                supplies a witness by induction. **)
-                              sorry
-                          qed
+	                                Singleton side-2 fallback for Moise Figure 3.2.
+	                                Here the geometric core gives a nonempty side-2
+	                                complex, while \<open>False\<close> says it is not a
+	                                multi-triangle side.  The remaining book step is
+	                                to use the unique side-2 triangle as the second
+	                                parent-boundary witness, while side 1 still
+	                                supplies a witness by induction. **)
+	                            proof -
+	                              obtain \<sigma> where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+	                                and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+	                                and h\<sigma>ne\<tau>: "\<sigma> \<noteq> \<tau>"
+	                                and h\<sigma>card_parent:
+	                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2"
+	                                and h\<sigma>contact_parent:
+	                                  "\<sigma> \<inter> J' =
+	                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+	                                using hside1_singleton_branch_parent_witness
+	                                by (elim exE conjE)
+	                              show ?thesis
+	                                apply (rule exI[where x = \<sigma>])
+	                                apply (rule exI[where x = \<tau>])
+	                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>card_parent h\<sigma>contact_parent
+	                                  h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_parent_selected_edges_card_le2
+	                                  h\<tau>_parent_contact h\<sigma>ne\<tau>
+	                                apply (intro conjI)
+	                                apply assumption+
+	                                done
+	                            qed
+	                          qed
                         qed
 	                      show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
 	                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
