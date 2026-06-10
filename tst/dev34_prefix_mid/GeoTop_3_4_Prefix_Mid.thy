@@ -10261,6 +10261,54 @@ proof -
                               using hL\<^sub>1_sub_K h\<sigma>L\<^sub>1 by (by100 blast)
                             have h\<tau>K: "\<tau> \<in> K"
                               using hL\<^sub>2_sub_K h\<tau>L\<^sub>2 by (by100 blast)
+                            have hJ\<^sub>1_closure_eq:
+                              "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1) =
+                               geotop_polygon_interior J\<^sub>1 \<union> J\<^sub>1"
+                            proof -
+                              have hclos_on:
+                                "closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1) =
+                                 closure (geotop_polygon_interior J\<^sub>1)"
+                                by (rule closure_on_geotop_UNIV_eq_closure)
+                              have hclos:
+                                "closure (geotop_polygon_interior J\<^sub>1) =
+                                 geotop_polygon_interior J\<^sub>1 \<union> J\<^sub>1"
+                                by (rule polygon_interior_closure_eq[OF hJ\<^sub>1])
+                              show ?thesis
+                                using hclos_on hclos by (by100 simp)
+                            qed
+                            have hJ\<^sub>2_closure_eq:
+                              "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2) =
+                               geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
+                            proof -
+                              have hclos_on:
+                                "closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2) =
+                                 closure (geotop_polygon_interior J\<^sub>2)"
+                                by (rule closure_on_geotop_UNIV_eq_closure)
+                              have hclos:
+                                "closure (geotop_polygon_interior J\<^sub>2) =
+                                 geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
+                                by (rule polygon_interior_closure_eq[OF hJ\<^sub>2])
+                              show ?thesis
+                                using hclos_on hclos by (by100 simp)
+                            qed
+                            have h\<sigma>_sub_closure_J\<^sub>1:
+                              "\<sigma> \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)"
+                              using h\<sigma>L\<^sub>1 unfolding hL\<^sub>1_def by (by100 blast)
+                            have h\<tau>_sub_closure_J\<^sub>2:
+                              "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)"
+                              using h\<tau>L\<^sub>2 unfolding hL\<^sub>2_def by (by100 blast)
+                            have h\<sigma>_sub_interior_or_boundary_J\<^sub>1:
+                              "\<sigma> \<subseteq> geotop_polygon_interior J\<^sub>1 \<union> J\<^sub>1"
+                              using h\<sigma>_sub_closure_J\<^sub>1 hJ\<^sub>1_closure_eq by (by100 simp)
+                            have h\<tau>_sub_interior_or_boundary_J\<^sub>2:
+                              "\<tau> \<subseteq> geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
+                              using h\<tau>_sub_closure_J\<^sub>2 hJ\<^sub>2_closure_eq by (by100 simp)
                             have hT_gt1: "card ?T > 1"
                               using hT_gt2 by (by100 simp)
                             have h\<sigma>_parent_card_data:
