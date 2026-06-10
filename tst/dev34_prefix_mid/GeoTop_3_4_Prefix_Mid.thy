@@ -8493,6 +8493,54 @@ proof -
         using hsubR\<^sub>2 hR\<^sub>2_sub_B\<^sub>2 by (by100 blast)
     qed
   qed
+  have hcarrier_chord_inter_faces:
+    "\<And>x. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {} \<Longrightarrow>
+      geotop_is_face (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (geotop_K_carrier K x)
+      \<and> geotop_is_face (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (closed_segment v\<^sub>0 v\<^sub>2)"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hinter:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+    have hxK: "x \<in> geotop_polyhedron K"
+      using hB\<^sub>1_sub_K hB\<^sub>2_sub_K hxB by (by100 blast)
+    have hcarrierK: "geotop_K_carrier K x \<in> K"
+      by (rule geotop_K_carrier_in[OF hK hK_fin hxK])
+    have hinter_faces:
+      "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+        \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule geotop_is_complex_intersection[OF hK])
+    show
+      "geotop_is_face (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (geotop_K_carrier K x)
+      \<and> geotop_is_face (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (closed_segment v\<^sub>0 v\<^sub>2)"
+      using hinter_faces hcarrierK hchord_segment_K hinter by (by100 blast)
+  qed
+  have hcarrier_chord_inter_K:
+    "\<And>x. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {} \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hinter:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+    have hxK: "x \<in> geotop_polyhedron K"
+      using hB\<^sub>1_sub_K hB\<^sub>2_sub_K hxB by (by100 blast)
+    have hcarrierK: "geotop_K_carrier K x \<in> K"
+      by (rule geotop_K_carrier_in[OF hK hK_fin hxK])
+    have hface:
+      "geotop_is_face (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+        (geotop_K_carrier K x)"
+      using hcarrier_chord_inter_faces[OF hxB hinter] by (by100 blast)
+    show "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
+      using hface_closed_K hcarrierK hface by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
