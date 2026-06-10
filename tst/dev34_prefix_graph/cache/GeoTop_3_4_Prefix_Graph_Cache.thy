@@ -9672,6 +9672,88 @@ proof -
           qed
         qed
       qed
+      have hpz_same_component_from_three:
+          "top1_in_same_component_on (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) p z"
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hM_conn: "top1_connected_on M
+            (subspace_topology UNIV geotop_euclidean_topology M)"
+          and hpM: "p \<in> M"
+          and hyM: "y \<in> M"
+          and hzM: "z \<in> M"
+          using hselected_three_punctured_connected_witness
+          by (elim exE conjE)
+        have hM_subtop:
+            "subspace_topology (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) M
+              = subspace_topology UNIV geotop_euclidean_topology M"
+          by (rule subspace_topology_trans[OF hM_sub])
+        show ?thesis
+          unfolding top1_in_same_component_on_def
+        proof (rule exI[where x=M])
+          show "M \<subseteq> geotop_polyhedron L - {w}
+            \<and> p \<in> M
+            \<and> z \<in> M
+            \<and> top1_connected_on M
+              (subspace_topology (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) M)"
+          proof (intro conjI)
+            show "M \<subseteq> geotop_polyhedron L - {w}" by (rule hM_sub)
+            show "p \<in> M" by (rule hpM)
+            show "z \<in> M" by (rule hzM)
+            show "top1_connected_on M
+              (subspace_topology (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) M)"
+              unfolding hM_subtop by (rule hM_conn)
+          qed
+        qed
+      qed
+      have hyz_same_component_from_three:
+          "top1_in_same_component_on (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) y z"
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hM_conn: "top1_connected_on M
+            (subspace_topology UNIV geotop_euclidean_topology M)"
+          and hpM: "p \<in> M"
+          and hyM: "y \<in> M"
+          and hzM: "z \<in> M"
+          using hselected_three_punctured_connected_witness
+          by (elim exE conjE)
+        have hM_subtop:
+            "subspace_topology (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) M
+              = subspace_topology UNIV geotop_euclidean_topology M"
+          by (rule subspace_topology_trans[OF hM_sub])
+        show ?thesis
+          unfolding top1_in_same_component_on_def
+        proof (rule exI[where x=M])
+          show "M \<subseteq> geotop_polyhedron L - {w}
+            \<and> y \<in> M
+            \<and> z \<in> M
+            \<and> top1_connected_on M
+              (subspace_topology (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) M)"
+          proof (intro conjI)
+            show "M \<subseteq> geotop_polyhedron L - {w}" by (rule hM_sub)
+            show "y \<in> M" by (rule hyM)
+            show "z \<in> M" by (rule hzM)
+            show "top1_connected_on M
+              (subspace_topology (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) M)"
+              unfolding hM_subtop by (rule hM_conn)
+          qed
+        qed
+      qed
       have hlocal_open:
           "open (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
       proof -
