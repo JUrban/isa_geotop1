@@ -10096,7 +10096,55 @@ proof -
             connected witness to HOL components via \<open>connected_component_maximal\<close>,
             then use the selected boundary closure data to show all three
             germs accumulate on the same component. **)
-          sorry
+        proof -
+          fix M
+          assume hM_sub_arg: "M \<subseteq> geotop_polyhedron L - {w}"
+          assume hM_conn_arg: "connected M"
+          assume hpM_arg: "p \<in> M"
+          assume hyM_arg: "y \<in> M"
+          assume hzM_arg: "z \<in> M"
+          assume hM_ball_cover_arg:
+            "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          let ?Lcomp = "ball w r - (S \<union> T \<union> U)"
+          let ?Ecomp = "ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)"
+          have hlocal_complement_eq:
+              "?Lcomp = ?Ecomp"
+            using hselected_union_eq by (by100 simp)
+          have hcomponents_selected_eq:
+              "components ?Lcomp = components ?Ecomp"
+            using hlocal_complement_eq by (by100 simp)
+          have hlocal_selected_open:
+              "open ?Lcomp"
+            by (rule hlocal_open_selected)
+          have hselected_boundary_closure_data:
+              "p \<in> closure ((S - {w}) \<inter> ball w r)
+                \<and> y \<in> closure ((T - {w}) \<inter> ball w r)
+                \<and> z \<in> closure ((U - {w}) \<inter> ball w r)
+                \<and> p \<notin> ball w r
+                \<and> y \<notin> ball w r
+                \<and> z \<notin> ball w r"
+            using hselected_sphere_germ_boundary_data by (by100 blast)
+          have hselected_local_germs_nonempty:
+              "(S - {w}) \<inter> ball w r \<noteq> {}
+                \<and> (T - {w}) \<inter> ball w r \<noteq> {}
+                \<and> (U - {w}) \<inter> ball w r \<noteq> {}"
+            by (rule hselected_germs_nonempty)
+          show "\<exists>C. C \<in> components ?Ecomp
+            \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+            \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+            \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+            (**
+              Remaining nontrivial first-exit/local-star inference.  The
+              next step should work in \<open>?Lcomp\<close>, use
+              \<open>hcomponents_selected_eq\<close> to return to \<open>?Ecomp\<close>, and
+              identify the component forced by the connected witness and the
+              local sector cover. **)
+            sorry
+        qed
         show ?thesis
           by (rule hfirst_exit_component_from_connected_witness
               [OF hM_sub hM_conn hpM hyM hzM hM_ball_cover])
