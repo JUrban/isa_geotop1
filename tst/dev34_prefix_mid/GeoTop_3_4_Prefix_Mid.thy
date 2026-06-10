@@ -5630,6 +5630,134 @@ proof -
         [OF h\<theta>_not_col hselected_contact_on_other_nonbase_segment])
 qed
 
+lemma geotop_boundary_triangle_not_both_nonbase_segments_on_boundary_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+  shows "\<not> (closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J)"
+  (**
+    Figure 3.2 boundary-edge exclusion: with the base edge already on the
+    polygon boundary, the two nonbase edge faces of the same 2-simplex cannot
+    both also lie on the polygon boundary in a multi-triangle disk. **)
+proof -
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have h\<theta>_vertices_chord_order:
+    "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  proof -
+    have "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      by (by100 blast)
+    thus ?thesis using h\<theta>_vertices by (by100 simp)
+  qed
+  have hv\<^sub>1_not_chord: "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2}"
+    using hv\<^sub>0v\<^sub>1 hv\<^sub>1v\<^sub>2 by (by100 blast)
+  have hbase_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta>"
+  proof -
+    have hdata:
+      "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<and>
+        geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta> \<and>
+        geotop_is_edge (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<and>
+        geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<theta>"
+      by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+          [OF h\<theta>_vertices_chord_order hv\<^sub>0v\<^sub>2 hv\<^sub>1_not_chord])
+    show ?thesis using hdata by (by100 blast)
+  qed
+  have hnonbase_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta> \<and>
+      geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hface_closed_K:
+    "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hbase_edge_K:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<in> K"
+    using hface_closed_K h\<theta>K hbase_edge_face_data by (by100 blast)
+  have hchord_edge_K:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hside_edge_K:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hbase_edge_selected:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<in>
+      {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hbase_edge_K hbase_edge_face_data hv\<^sub>0v\<^sub>1_sub_J by (by100 blast)
+  have hchord_edge_selected_if:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J \<Longrightarrow>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in>
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hchord_edge_K hnonbase_edge_face_data by (by100 blast)
+  have hside_edge_selected_if:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J \<Longrightarrow>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in>
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hside_edge_K hnonbase_edge_face_data by (by100 blast)
+  have htriangle_edge_hulls_distinct:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_vertices_edge_hulls_distinct_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hbase_ne_chord_edge:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+    using htriangle_edge_hulls_distinct by (by100 simp)
+  have hbase_ne_side_edge:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    using htriangle_edge_hulls_distinct by (by100 simp)
+  have hchord_ne_side_edge:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    using htriangle_edge_hulls_distinct by (by100 simp)
+  have hE\<theta>_fin:
+    "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hK_fin by (by100 simp)
+  have hE\<theta>_card_data:
+    "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<and> card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
+  have hE\<theta>_card_le2:
+    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+    using hE\<theta>_card_data by (by100 blast)
+  have hnot_both_nonbase_boundary_edges:
+    "\<not> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J
+      \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J)"
+    by (rule geotop_selected_boundary_edge_set_not_both_other_edges_card_le2_prefix
+        [OF hE\<theta>_fin hbase_edge_selected
+          hchord_edge_selected_if hside_edge_selected_if
+          hbase_ne_chord_edge hbase_ne_side_edge hchord_ne_side_edge
+          hE\<theta>_card_le2])
+  have hchord_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have hside_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>1 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+    by (by100 simp)
+  show ?thesis
+    using hnot_both_nonbase_boundary_edges hchord_hull_segment_eq hside_hull_segment_eq
+    by (by100 simp)
+qed
+
 lemma geotop_two_distinct_free_2_simplexes_card_ge2_prefix:
   fixes K :: "(real^2) set set" and J \<sigma> \<tau> :: "(real^2) set"
   assumes hK_fin: "finite K"
@@ -8869,97 +8997,8 @@ proof -
     using h\<theta>_frontier_segments closed_segment_commute[of v\<^sub>2 v\<^sub>1] by (by100 blast)
   have h\<theta>_frontier_chord_polygon: "geotop_is_polygon (frontier \<theta>)"
     using h\<theta>_frontier_chord_segments htriangle_boundary_chord_polygon by (by100 simp)
-  have h\<theta>_vertices_chord_order:
-    "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
-  proof -
-    have "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
-      by (by100 blast)
-    thus ?thesis using h\<theta>_vertices by (by100 simp)
-  qed
-  have hv\<^sub>1_not_chord: "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2}"
-    using hv\<^sub>0v\<^sub>1 hv\<^sub>1v\<^sub>2 by (by100 blast)
-  have hbase_edge_face_data:
-    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<and>
-      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta>"
-  proof -
-    have hdata:
-      "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<and>
-        geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta> \<and>
-        geotop_is_edge (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<and>
-        geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<theta>"
-      by (rule geotop_2simplex_vertices_other_edge_faces_prefix
-          [OF h\<theta>_vertices_chord_order hv\<^sub>0v\<^sub>2 hv\<^sub>1_not_chord])
-    show ?thesis using hdata by (by100 blast)
-  qed
-  have hnonbase_edge_face_data:
-    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<and>
-      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta> \<and>
-      geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<and>
-      geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
-    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
-        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
-  have hface_closed_K:
-    "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
-    using hK unfolding geotop_is_complex_def by (by100 blast)
-  have hbase_edge_K:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<in> K"
-    using hface_closed_K h\<theta>K hbase_edge_face_data by (by100 blast)
-  have hchord_edge_K:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in> K"
-    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
-  have hside_edge_K:
-    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
-    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
-  have hbase_edge_selected:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<in>
-      {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-    using hbase_edge_K hbase_edge_face_data hv\<^sub>0v\<^sub>1_sub_J by (by100 blast)
-  have hchord_edge_selected_if:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J \<Longrightarrow>
-      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in>
-        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-    using hchord_edge_K hnonbase_edge_face_data by (by100 blast)
-  have hside_edge_selected_if:
-    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J \<Longrightarrow>
-      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in>
-        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-    using hside_edge_K hnonbase_edge_face_data by (by100 blast)
-  have htriangle_edge_hulls_distinct:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
-      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}
-      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-    by (rule geotop_2simplex_vertices_edge_hulls_distinct_prefix
-        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
-  have hbase_ne_chord_edge:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
-    using htriangle_edge_hulls_distinct by (by100 simp)
-  have hbase_ne_side_edge:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-    using htriangle_edge_hulls_distinct by (by100 simp)
-  have hchord_ne_side_edge:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-    using htriangle_edge_hulls_distinct by (by100 simp)
-  have hE\<theta>_fin:
-    "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-    using hK_fin by (by100 simp)
   have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
     using hT_gt2 by (by100 simp)
-  have hE\<theta>_card_data:
-    "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
-      \<and> card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
-    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
-        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
-  have hE\<theta>_card_le2:
-    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
-    using hE\<theta>_card_data by (by100 blast)
-  have hnot_both_nonbase_boundary_edges:
-    "\<not> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J
-      \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J)"
-    by (rule geotop_selected_boundary_edge_set_not_both_other_edges_card_le2_prefix
-        [OF hE\<theta>_fin hbase_edge_selected
-          hchord_edge_selected_if hside_edge_selected_if
-          hbase_ne_chord_edge hbase_ne_side_edge hchord_ne_side_edge
-          hE\<theta>_card_le2])
   have hderived_contact_other_segment_off_base:
     "\<exists>x. x \<in> \<theta> \<inter> J
       \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
@@ -8968,19 +9007,12 @@ proof -
     by (rule geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix
         [OF hJ hK hK_poly hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
           hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
-  have hchord_hull_segment_eq:
-    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
-    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
-    by (by100 simp)
-  have hside_hull_segment_eq:
-    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>1 v\<^sub>2"
-    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
-    by (by100 simp)
   have hnot_both_nonbase_boundary_segments:
     "\<not> (closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
       \<and> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J)"
-    using hnot_both_nonbase_boundary_edges hchord_hull_segment_eq hside_hull_segment_eq
-    by (by100 simp)
+    by (rule geotop_boundary_triangle_not_both_nonbase_segments_on_boundary_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J])
   have hnonbase_boundary_segment_cases:
     "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
       \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
