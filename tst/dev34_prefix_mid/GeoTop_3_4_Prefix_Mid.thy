@@ -10548,6 +10548,10 @@ proof -
     using hL\<^sub>1_poly_sub hL\<^sub>1_poly_rev by (by100 blast)
   have hL\<^sub>2_poly_eq_B\<^sub>2: "geotop_polyhedron L\<^sub>2 = ?B\<^sub>2"
     using hL\<^sub>2_poly_sub hL\<^sub>2_poly_rev by (by100 blast)
+  have hL\<^sub>1_theta_poly_eq_B\<^sub>1:
+    "geotop_polyhedron
+      (L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>}) = ?B\<^sub>1"
+    using hL\<^sub>1_theta_poly_eq hL\<^sub>1_poly_eq_B\<^sub>1 h\<theta>_sub_B\<^sub>1 by (by100 blast)
   have hB_inter_sub_chord:
     "?B\<^sub>1 \<inter> ?B\<^sub>2 \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
   proof
