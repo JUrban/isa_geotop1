@@ -5594,13 +5594,18 @@ lemma geotop_free_2_simplex_witness_avoids_given_prefix:
     triangle.  This is the formal version of Moise's sentence that each
     side has a free 2-simplex different from \<open>v\<^sub>0v\<^sub>1v\<^sub>2\<close>. **)
 proof -
+  have htwo:
+    "\<exists>\<sigma> \<tau>. \<sigma> \<in> K \<and> geotop_free_2_simplex K J \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_free_2_simplex K J \<tau>
+      \<and> \<sigma> \<noteq> \<tau>"
+    by (rule geotop_two_distinct_members_from_card_ge2_prefix
+        [OF hK_fin hcard])
   obtain \<sigma> \<tau> where h\<sigma>K: "\<sigma> \<in> K"
     and h\<sigma>free: "geotop_free_2_simplex K J \<sigma>"
     and h\<tau>K: "\<tau> \<in> K"
     and h\<tau>free: "geotop_free_2_simplex K J \<tau>"
     and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
-    by (rule geotop_two_distinct_members_from_card_ge2_prefix
-        [OF hK_fin hcard])
+    using htwo by (by100 blast)
   show ?thesis
   proof (cases "\<sigma> = \<theta>")
     case True
