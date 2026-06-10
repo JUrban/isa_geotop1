@@ -8060,6 +8060,38 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
+  assumes hsubdisk_side_witnesses_from_decomposition:
+    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+      geotop_is_polygon J\<^sub>1
+        \<and> geotop_is_polygon J\<^sub>2
+        \<and> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J) =
+             closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1)
+             \<union> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>2)
+        \<and> geotop_separated UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1 \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+               (geotop_polygon_interior J\<^sub>2 \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
+      L\<^sub>1 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)} \<Longrightarrow>
+      L\<^sub>2 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)} \<Longrightarrow>
+      \<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+        \<sigma> \<noteq> \<tau>"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
   (**
     Moise Figure 3.2 step for Theorem 3.3.  A nonfree boundary triangle
@@ -8598,7 +8630,7 @@ proof -
         \<tau> \<inter> J =
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
         \<sigma> \<noteq> \<tau>"
-    sorry
+    by (rule hsubdisk_side_witnesses_from_decomposition)
   show ?thesis
     by (rule geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
         [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
@@ -9220,10 +9252,44 @@ proof -
                     \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
               by (rule geotop_nonbase_segment_contact_avoids_base_segment_prefix
                   [OF h\<theta>_not_col h\<theta>_contact_on_other_nonbase_segment])
+            have hsubdisk_side_witnesses_from_decomposition:
+              "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+                geotop_is_polygon J\<^sub>1
+                  \<and> geotop_is_polygon J\<^sub>2
+                  \<and> closure_on UNIV geotop_euclidean_topology
+                         (geotop_polygon_interior J') =
+                       closure_on UNIV geotop_euclidean_topology
+                         (geotop_polygon_interior J\<^sub>1)
+                       \<union> closure_on UNIV geotop_euclidean_topology
+                         (geotop_polygon_interior J\<^sub>2)
+                  \<and> geotop_separated UNIV geotop_euclidean_topology
+                         (geotop_polygon_interior J\<^sub>1 \<union>
+                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+                         (geotop_polygon_interior J\<^sub>2 \<union>
+                          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
+                L\<^sub>1 =
+                  {\<rho>\<in>K. \<rho> \<subseteq>
+                    closure_on UNIV geotop_euclidean_topology
+                      (geotop_polygon_interior J\<^sub>1)} \<Longrightarrow>
+                L\<^sub>2 =
+                  {\<rho>\<in>K. \<rho> \<subseteq>
+                    closure_on UNIV geotop_euclidean_topology
+                      (geotop_polygon_interior J\<^sub>2)} \<Longrightarrow>
+                \<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                  card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                  \<sigma> \<inter> J' =
+                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                  \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                  card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                  \<tau> \<inter> J' =
+                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                  \<sigma> \<noteq> \<tau>"
+              sorry
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
-                    hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
+                    hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
+                    hsubdisk_side_witnesses_from_decomposition])
           qed
         qed
         show ?thesis
