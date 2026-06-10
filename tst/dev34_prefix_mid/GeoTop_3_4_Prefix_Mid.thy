@@ -6826,6 +6826,28 @@ proof -
     show "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
       by (rule hparent_free_pair_finishes[OF h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>free h\<tau>free])
   qed
+  have hK\<^sub>1_selected_edges_transfer_to_parent:
+      "\<And>\<sigma> E. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow> E \<subseteq> K\<^sub>1 \<Longrightarrow>
+        (E = {} \<or>
+         (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J) \<or>
+         (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+            geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+            e1 \<subseteq> J \<and> e2 \<subseteq> J)) \<Longrightarrow>
+        \<sigma> \<inter> J = \<Union>E \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+    by (rule geotop_free_2_simplex_selected_edges_transfer_prefix[OF hK\<^sub>1_sub_K])
+  have hK\<^sub>2_selected_edges_transfer_to_parent:
+      "\<And>\<sigma> E. \<sigma> \<in> K\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow> E \<subseteq> K\<^sub>2 \<Longrightarrow>
+        (E = {} \<or>
+         (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J) \<or>
+         (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+            geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+            e1 \<subseteq> J \<and> e2 \<subseteq> J)) \<Longrightarrow>
+        \<sigma> \<inter> J = \<Union>E \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+    by (rule geotop_free_2_simplex_selected_edges_transfer_prefix[OF hK\<^sub>2_sub_K])
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
