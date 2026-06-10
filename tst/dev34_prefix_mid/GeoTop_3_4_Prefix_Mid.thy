@@ -10365,6 +10365,28 @@ proof -
                             have h\<tau>_sub_interior_or_boundary_J\<^sub>2:
                               "\<tau> \<subseteq> geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
                               using h\<tau>_sub_closure_J\<^sub>2 hJ\<^sub>2_closure_eq by (by100 simp)
+                            have h\<sigma>_simplex: "geotop_is_simplex \<sigma>"
+                              by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>2])
+                            have h\<tau>_simplex: "geotop_is_simplex \<tau>"
+                              by (rule geotop_simplex_dim_imp_is_simplex[OF h\<tau>2])
+                            have h\<sigma>_path_connected:
+                              "top1_path_connected_on \<sigma>
+                                (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+                              by (rule Theorem_GT_1_3[OF h\<sigma>_simplex])
+                            have h\<tau>_path_connected:
+                              "top1_path_connected_on \<tau>
+                                (subspace_topology UNIV geotop_euclidean_topology \<tau>)"
+                              by (rule Theorem_GT_1_3[OF h\<tau>_simplex])
+                            have h\<sigma>_connected:
+                              "top1_connected_on \<sigma>
+                                (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+                              by (rule top1_path_connected_on_geotop_imp_connected
+                                  [OF h\<sigma>_path_connected])
+                            have h\<tau>_connected:
+                              "top1_connected_on \<tau>
+                                (subspace_topology UNIV geotop_euclidean_topology \<tau>)"
+                              by (rule top1_path_connected_on_geotop_imp_connected
+                                  [OF h\<tau>_path_connected])
                             have hT_gt1: "card ?T > 1"
                               using hT_gt2 by (by100 simp)
                             have h\<sigma>_parent_card_data:
