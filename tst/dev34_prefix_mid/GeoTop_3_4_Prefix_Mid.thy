@@ -9402,6 +9402,96 @@ proof -
                         by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
                       have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
                         by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
+                      have hL\<^sub>1_selected_edges_fin:
+                        "\<And>\<sigma>. finite
+                          {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                        using hL\<^sub>1_fin by (by100 simp)
+                      have hL\<^sub>2_selected_edges_fin:
+                        "\<And>\<sigma>. finite
+                          {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                        using hL\<^sub>2_fin by (by100 simp)
+                      have hL\<^sub>1_canonical_selected_edges_transfer_to_parent:
+                        "\<And>\<sigma>. \<sigma> \<in> L\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+                          finite {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<Longrightarrow>
+                          \<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                          geotop_free_2_simplex K J' \<sigma>"
+                        by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+                            [OF hL\<^sub>1_sub_K])
+                      have hL\<^sub>2_canonical_selected_edges_transfer_to_parent:
+                        "\<And>\<sigma>. \<sigma> \<in> L\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+                          finite {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<Longrightarrow>
+                          \<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                          geotop_free_2_simplex K J' \<sigma>"
+                        by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+                            [OF hL\<^sub>2_sub_K])
+                      have hL\<^sub>1_canonical_selected_edges_card_le2_transfer_to_parent:
+                        "\<And>\<sigma>. \<sigma> \<in> L\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<Longrightarrow>
+                          \<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                          geotop_free_2_simplex K J' \<sigma>"
+                      proof -
+                        fix \<sigma>
+                        assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+                        assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+                        assume hE_card_le2:
+                          "card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2"
+                        assume hcontact:
+                          "\<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                        have hE_fin:
+                          "finite {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                          by (rule hL\<^sub>1_selected_edges_fin)
+                        show "geotop_free_2_simplex K J' \<sigma>"
+                          by (rule hL\<^sub>1_canonical_selected_edges_transfer_to_parent
+                              [OF h\<sigma>L\<^sub>1 h\<sigma>2 hE_fin hE_card_le2 hcontact])
+                      qed
+                      have hL\<^sub>2_canonical_selected_edges_card_le2_transfer_to_parent:
+                        "\<And>\<sigma>. \<sigma> \<in> L\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<Longrightarrow>
+                          \<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                          geotop_free_2_simplex K J' \<sigma>"
+                      proof -
+                        fix \<sigma>
+                        assume h\<sigma>L\<^sub>2: "\<sigma> \<in> L\<^sub>2"
+                        assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+                        assume hE_card_le2:
+                          "card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2"
+                        assume hcontact:
+                          "\<sigma> \<inter> J' =
+                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                        have hE_fin:
+                          "finite {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                          by (rule hL\<^sub>2_selected_edges_fin)
+                        show "geotop_free_2_simplex K J' \<sigma>"
+                          by (rule hL\<^sub>2_canonical_selected_edges_transfer_to_parent
+                              [OF h\<sigma>L\<^sub>2 h\<sigma>2 hE_fin hE_card_le2 hcontact])
+                      qed
+                      have hparent_free_pair_finishes:
+                        "\<And>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<Longrightarrow> \<tau> \<in> L\<^sub>2 \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
+                          geotop_free_2_simplex K J' \<sigma> \<Longrightarrow>
+                          geotop_free_2_simplex K J' \<tau> \<Longrightarrow>
+                          card ?F \<ge> 2"
+                      proof -
+                        fix \<sigma> \<tau>
+                        assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+                        assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+                        assume h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+                        assume h\<sigma>free: "geotop_free_2_simplex K J' \<sigma>"
+                        assume h\<tau>free: "geotop_free_2_simplex K J' \<tau>"
+                        have h\<sigma>K: "\<sigma> \<in> K"
+                          using hL\<^sub>1_sub_K h\<sigma>L\<^sub>1 by (by100 blast)
+                        have h\<tau>K: "\<tau> \<in> K"
+                          using hL\<^sub>2_sub_K h\<tau>L\<^sub>2 by (by100 blast)
+                        show "card ?F \<ge> 2"
+                          by (rule hboth_free_case
+                              [OF h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>free h\<tau>free])
+                      qed
                       have hside_witnesses_from_IH:
                         "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                           card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
