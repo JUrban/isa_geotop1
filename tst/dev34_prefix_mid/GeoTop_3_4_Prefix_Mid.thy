@@ -6854,6 +6854,81 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
+  fixes J J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 \<theta> :: "(real^2) set"
+    and K L\<^sub>1 L\<^sub>2 :: "(real^2) set set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+  assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
+  assumes hsubdisk_book_facts:
+    "geotop_is_polygon J\<^sub>1
+      \<and> geotop_is_polygon J\<^sub>2
+      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+      \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1)
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>2)
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+           (geotop_polygon_interior J\<^sub>1 \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+           (geotop_polygon_interior J\<^sub>2 \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+           (geotop_polygon_interior J\<^sub>1 \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+           (geotop_polygon_interior J\<^sub>2 \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+  assumes hL\<^sub>1_def:
+    "L\<^sub>1 =
+      {\<rho>\<in>K. \<rho> \<subseteq>
+        closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>1)}"
+  assumes hL\<^sub>2_def:
+    "L\<^sub>2 =
+      {\<rho>\<in>K. \<rho> \<subseteq>
+        closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>2)}"
+  shows
+    "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>1).
+        geotop_K_carrier K x \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1))
+    \<and> (\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2).
+        geotop_K_carrier K x \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2))
+    \<and> (\<exists>\<rho>\<in>{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}.
+        \<rho> \<notin> {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2})
+    \<and> (\<exists>\<rho>\<in>{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}.
+        \<rho> \<notin> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2})
+    \<and> card {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} > 1
+    \<and> card {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} > 1"
+  (**
+    Moise Figure 3.2 side-complex geometric core.  The chord through the
+    nonfree boundary triangle cuts the disk into two polygonal subdisks; each
+    side inherits K-carriers inside its closed disk, misses an explicit parent
+    two-simplex from the opposite side, and still contains more than one
+    two-simplex, so the strong induction hypotheses apply independently. **)
+  sorry
+
 lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
   fixes J J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 \<theta> :: "(real^2) set"
     and K :: "(real^2) set set"
@@ -10113,113 +10188,10 @@ proof -
                             strictly smaller by an explicit parent two-simplex
                             omitted by that side, without assuming that the same
                             cutting triangle is omitted on both sides. **)
-                        proof -
-                          have hside1_induction_geometry_book:
-                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>1).
-                                geotop_K_carrier K x \<subseteq>
-                                  closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>1))
-                            \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
-                            \<and> card ?T\<^sub>1 > 1"
-                            (**
-                              Figure 3.2 side 1 package: the first chord-side
-                              closed disk is a K-subcomplex carrier, omits a
-                              parent 2-simplex on the other side of the chord,
-                              and still contains enough 2-simplexes for the
-                              strong induction hypothesis. **)
-                          proof -
-                            have hside1_carrier_closed_disk_book:
-                              "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                  (geotop_polygon_interior J\<^sub>1).
-                                  geotop_K_carrier K x \<subseteq>
-                                    closure_on UNIV geotop_euclidean_topology
-                                      (geotop_polygon_interior J\<^sub>1))"
-                              (**
-                                Moise Figure 3.2 side 1 carrier inheritance:
-                                every original K-simplex carrier meeting the
-                                first closed subdisk stays in that closed
-                                subdisk. This is the exact reverse-inclusion
-                                input for the restricted side complex. **)
-                              sorry
-                            have hside1_omits_parent_two_simplex_book:
-                              "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
-                              (**
-                                Side 1 is a proper subdisk complex: a parent
-                                two-simplex on the other side of the chord is
-                                not contained in the first side closure. This
-                                gives strict decrease for the induction. **)
-                              sorry
-                            have hside1_two_simplex_count_gt1_book:
-                              "card ?T\<^sub>1 > 1"
-                              (**
-                                Side 1 still has enough two-simplexes for the
-                                strong induction hypothesis. Book content:
-                                the cut side contains the boundary triangle
-                                contribution and at least one further
-                                two-simplex forced by non-freeness. **)
-                              sorry
-                            show ?thesis
-                              using hside1_carrier_closed_disk_book
-                                hside1_omits_parent_two_simplex_book
-                                hside1_two_simplex_count_gt1_book
-                              by (by100 blast)
-                          qed
-                          have hside2_induction_geometry_book:
-                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>2).
-                                geotop_K_carrier K x \<subseteq>
-                                  closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>2))
-                            \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
-                            \<and> card ?T\<^sub>2 > 1"
-                            (**
-                              Figure 3.2 side 2 package: the second chord-side
-                              closed disk is a K-subcomplex carrier, omits a
-                              parent 2-simplex on the first side of the chord,
-                              and still contains enough 2-simplexes for the
-                              strong induction hypothesis. **)
-                          proof -
-                            have hside2_carrier_closed_disk_book:
-                              "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                  (geotop_polygon_interior J\<^sub>2).
-                                  geotop_K_carrier K x \<subseteq>
-                                    closure_on UNIV geotop_euclidean_topology
-                                      (geotop_polygon_interior J\<^sub>2))"
-                              (**
-                                Moise Figure 3.2 side 2 carrier inheritance:
-                                every original K-simplex carrier meeting the
-                                second closed subdisk stays in that closed
-                                subdisk. This is symmetric to the first side
-                                and feeds the restricted-complex cover. **)
-                              sorry
-                            have hside2_omits_parent_two_simplex_book:
-                              "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2"
-                              (**
-                                Side 2 is a proper subdisk complex: a parent
-                                two-simplex on the first side of the chord is
-                                not contained in the second side closure. This
-                                is the independent strict-decrease witness. **)
-                              sorry
-                            have hside2_two_simplex_count_gt1_book:
-                              "card ?T\<^sub>2 > 1"
-                              (**
-                                Side 2 still has enough two-simplexes for the
-                                strong induction hypothesis, matching Moise's
-                                claim that each side complex has two free
-                                two-simplexes after induction. **)
-                              sorry
-                            show ?thesis
-                              using hside2_carrier_closed_disk_book
-                                hside2_omits_parent_two_simplex_book
-                                hside2_two_simplex_count_gt1_book
-                              by (by100 blast)
-                          qed
-                          show ?thesis
-                            using hside1_induction_geometry_book
-                              hside2_induction_geometry_book
-                            by (by100 blast)
-                        qed
+                        by (rule geotop_polygon_disk_chord_side_complex_geometric_core_prefix
+                            [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2
+                              h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J
+                              h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def])
                         have hside_complexes_reverse_and_counts_book:
                           "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                               (geotop_polygon_interior J\<^sub>1).
