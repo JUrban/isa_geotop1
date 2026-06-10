@@ -9797,6 +9797,75 @@ proof -
                             \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
                           \<sigma> \<noteq> \<tau>"
                       proof -
+                        have hside_complexes_smaller_from_reverse_and_counts:
+                          "closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)
+                            \<subseteq> geotop_polyhedron L\<^sub>1 \<Longrightarrow>
+                           closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)
+                            \<subseteq> geotop_polyhedron L\<^sub>2 \<Longrightarrow>
+                           card ?T\<^sub>1 < card ?T \<Longrightarrow>
+                           card ?T\<^sub>2 < card ?T \<Longrightarrow>
+                           card ?T\<^sub>1 > 1 \<Longrightarrow>
+                           card ?T\<^sub>2 > 1 \<Longrightarrow>
+                           geotop_polyhedron L\<^sub>1 =
+                              closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                           \<and> geotop_polyhedron L\<^sub>2 =
+                              closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                           \<and> card ?T\<^sub>1 < card ?T
+                           \<and> card ?T\<^sub>2 < card ?T
+                           \<and> card ?T\<^sub>1 > 1
+                           \<and> card ?T\<^sub>2 > 1"
+                        proof -
+                          assume hL\<^sub>1_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1"
+                          assume hL\<^sub>2_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2"
+                          assume hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                          assume hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                          assume hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                          assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+                          have hL\<^sub>1_poly_eq:
+                            "geotop_polyhedron L\<^sub>1 =
+                              closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)"
+                            using hL\<^sub>1_poly_sub hL\<^sub>1_poly_rev by (by100 blast)
+                          have hL\<^sub>2_poly_eq:
+                            "geotop_polyhedron L\<^sub>2 =
+                              closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)"
+                            using hL\<^sub>2_poly_sub hL\<^sub>2_poly_rev by (by100 blast)
+                          show ?thesis
+                            using hL\<^sub>1_poly_eq hL\<^sub>2_poly_eq hT\<^sub>1_lt_T hT\<^sub>2_lt_T
+                              hT\<^sub>1_gt1 hT\<^sub>2_gt1
+                            by (by100 blast)
+                        qed
+                        have hside_complexes_reverse_and_counts_book:
+                          "closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)
+                            \<subseteq> geotop_polyhedron L\<^sub>1
+                          \<and> closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)
+                            \<subseteq> geotop_polyhedron L\<^sub>2
+                          \<and> card ?T\<^sub>1 < card ?T
+                          \<and> card ?T\<^sub>2 < card ?T
+                          \<and> card ?T\<^sub>1 > 1
+                          \<and> card ?T\<^sub>2 > 1"
+                          (**
+                            Remaining Moise Figure 3.2 side-complex package.
+                            The forward polyhedron inclusions are already
+                            proved from the restriction definitions.  The
+                            residual content is the reverse carrier inclusion
+                            for both chord-side disks, strict decrease of the
+                            side 2-simplex counts, and nontriviality of both
+                            side triangulations. **)
+                          sorry
                         have hside_complexes_smaller_book:
                           "geotop_polyhedron L\<^sub>1 =
                             closure_on UNIV geotop_euclidean_topology
@@ -9808,12 +9877,36 @@ proof -
                           \<and> card ?T\<^sub>2 < card ?T
                           \<and> card ?T\<^sub>1 > 1
                           \<and> card ?T\<^sub>2 > 1"
-                          (**
-                            Moise Figure 3.2 side-complex package.  The two
-                            closure restrictions are exactly the triangulated
-                            subdisks on either side of the chord, and each has
-                            strictly fewer 2-simplexes than the parent disk. **)
-                          sorry
+                        proof -
+                          have hL\<^sub>1_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1"
+                            using hside_complexes_reverse_and_counts_book
+                            by (by100 blast)
+                          have hL\<^sub>2_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2"
+                            using hside_complexes_reverse_and_counts_book
+                            by (by100 blast)
+                          have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                            using hside_complexes_reverse_and_counts_book
+                            by (by100 blast)
+                          have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                            using hside_complexes_reverse_and_counts_book
+                            by (by100 blast)
+                          have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                            using hside_complexes_reverse_and_counts_book
+                            by (by100 blast)
+                          have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+                            using hside_complexes_reverse_and_counts_book
+                            by (by100 blast)
+                          show ?thesis
+                            by (rule hside_complexes_smaller_from_reverse_and_counts
+                                [OF hL\<^sub>1_poly_rev hL\<^sub>2_poly_rev hT\<^sub>1_lt_T
+                                  hT\<^sub>2_lt_T hT\<^sub>1_gt1 hT\<^sub>2_gt1])
+                        qed
                         have hL\<^sub>1_poly_eq:
                           "geotop_polyhedron L\<^sub>1 =
                             closure_on UNIV geotop_euclidean_topology
