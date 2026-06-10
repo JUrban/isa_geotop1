@@ -13465,6 +13465,27 @@ proof -
             have hchord_not_parent_boundary_book:
               "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J'"
               using hneither_nonbase_boundary_segment_book by (by100 blast)
+            have hchord_arc_interior_disjoint_parent_book:
+              "J' \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} = {}"
+              (**
+                Since the cut chord is not a parent-boundary edge, its open
+                arc lies off the parent boundary.  This is the local geometric
+                fact needed to separate artificial-chord-only side contact from
+                genuine parent-boundary contact in the transfer step. **)
+            proof -
+              have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+                using hv\<^sub>2_not by (by100 blast)
+              have hchord_hull_segment_eq:
+                "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+                using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+                  geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+                by (by100 simp)
+              show ?thesis
+                by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix
+                    [OF hJ' hK' hK_poly' hv\<^sub>0v\<^sub>2 hchord_hull_segment_eq
+                      hv\<^sub>0v\<^sub>2K hv\<^sub>0v\<^sub>2_edge h\<theta>K h\<theta>2 hv\<^sub>0v\<^sub>2_face
+                      hchord_not_parent_boundary_book])
+            qed
             have hsubdisk_side_witnesses_from_decomposition:
 	              "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
 	                geotop_is_polygon J\<^sub>1
