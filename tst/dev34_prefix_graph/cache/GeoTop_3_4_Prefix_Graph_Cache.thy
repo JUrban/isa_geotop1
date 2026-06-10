@@ -10133,6 +10133,30 @@ proof -
                 \<and> (T - {w}) \<inter> ball w r \<noteq> {}
                 \<and> (U - {w}) \<inter> ball w r \<noteq> {}"
             by (rule hselected_germs_nonempty)
+          have hlocal_selected_components_fin:
+              "finite (components ?Lcomp)"
+            using hlocal_components_fin hcomponents_selected_eq by (by100 simp)
+          have hselected_component_at:
+              "\<And>x. x \<in> ?Lcomp
+                \<Longrightarrow> connected_component_set ?Lcomp x \<in> components ?Ecomp"
+          proof -
+            fix x
+            assume hx: "x \<in> ?Lcomp"
+            have hcomp: "connected_component_set ?Lcomp x \<in> components ?Lcomp"
+              by (rule componentsI[OF hx])
+            show "connected_component_set ?Lcomp x \<in> components ?Ecomp"
+              using hcomp hcomponents_selected_eq by (by100 simp)
+          qed
+          have hselected_component_contains:
+              "\<And>x. x \<in> ?Lcomp
+                \<Longrightarrow> x \<in> connected_component_set ?Lcomp x"
+            by (by100 simp)
+          have hconnected_subset_selected_component:
+              "\<And>A x. x \<in> A
+                \<Longrightarrow> connected A
+                \<Longrightarrow> A \<subseteq> ?Lcomp
+                \<Longrightarrow> A \<subseteq> connected_component_set ?Lcomp x"
+            by (rule connected_component_maximal)
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
             \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
