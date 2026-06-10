@@ -7702,6 +7702,117 @@ proof -
     by (rule geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix
         [OF hJ hK hK_poly hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
           hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
+  have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+  proof -
+    have "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hv\<^sub>1J: "v\<^sub>1 \<in> J"
+  proof -
+    have "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hv\<^sub>2J: "v\<^sub>2 \<in> J"
+  proof -
+    obtain x where hx\<theta>J: "x \<in> \<theta> \<inter> J"
+      and hx_not_base: "x \<notin> closed_segment v\<^sub>0 v\<^sub>1"
+      and hx_nonbase:
+        "x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+      using hnonfree_contact by (elim exE conjE)
+    have hxJ: "x \<in> J"
+      using hx\<theta>J by (by100 blast)
+    have hx_nonbase_cases:
+      "x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0}
+        \<or> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1}"
+      using hx_nonbase by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hx_nonbase_cases])
+      assume hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0}"
+      have hxseg: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx_chord by (by100 blast)
+      have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+        using hx_chord by (by100 blast)
+      have hx_eq_v\<^sub>2: "x = v\<^sub>2"
+      proof (rule ccontr)
+        assume hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+        have hx_arc:
+          "x \<in> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+          using hxseg hx_ne_v\<^sub>0 hx_ne_v\<^sub>2
+          unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in> J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+          using hxJ hx_arc by (by100 blast)
+        thus False
+          using hchord_arc_interior_disjoint_J by (by100 blast)
+      qed
+      show ?thesis
+        using hxJ hx_eq_v\<^sub>2 by (by100 blast)
+    next
+      assume hx_side: "x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1}"
+      have hxseg: "x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+        using hx_side by (by100 blast)
+      have hx_ne_v\<^sub>1: "x \<noteq> v\<^sub>1"
+        using hx_side by (by100 blast)
+      have hx_eq_v\<^sub>2: "x = v\<^sub>2"
+      proof (rule ccontr)
+        assume hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+        have hx_arc:
+          "x \<in> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}"
+          using hxseg hx_ne_v\<^sub>1 hx_ne_v\<^sub>2
+          unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in> J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}"
+          using hxJ hx_arc by (by100 blast)
+        thus False
+          using hside_arc_interior_disjoint_J by (by100 blast)
+      qed
+      show ?thesis
+        using hxJ hx_eq_v\<^sub>2 by (by100 blast)
+    qed
+  qed
+  have hchord_segment_inter_J:
+    "closed_segment v\<^sub>0 v\<^sub>2 \<inter> J = {v\<^sub>0, v\<^sub>2}"
+  proof
+    show "closed_segment v\<^sub>0 v\<^sub>2 \<inter> J \<subseteq> {v\<^sub>0, v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<inter> J"
+      have hxseg: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hx_not_arc:
+        "x \<notin> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+        using hchord_arc_interior_disjoint_J hxJ by (by100 blast)
+      show "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxseg hx_not_arc unfolding geotop_arc_interior_def by (by100 blast)
+    qed
+    show "{v\<^sub>0, v\<^sub>2} \<subseteq> closed_segment v\<^sub>0 v\<^sub>2 \<inter> J"
+      using hv\<^sub>0J hv\<^sub>2J by (by100 simp)
+  qed
+  have hside_segment_inter_J:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<inter> J = {v\<^sub>1, v\<^sub>2}"
+  proof
+    show "closed_segment v\<^sub>1 v\<^sub>2 \<inter> J \<subseteq> {v\<^sub>1, v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment v\<^sub>1 v\<^sub>2 \<inter> J"
+      have hxseg: "x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hx_not_arc:
+        "x \<notin> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}"
+        using hside_arc_interior_disjoint_J hxJ by (by100 blast)
+      show "x \<in> {v\<^sub>1, v\<^sub>2}"
+        using hxseg hx_not_arc unfolding geotop_arc_interior_def by (by100 blast)
+    qed
+    show "{v\<^sub>1, v\<^sub>2} \<subseteq> closed_segment v\<^sub>1 v\<^sub>2 \<inter> J"
+      using hv\<^sub>1J hv\<^sub>2J by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
