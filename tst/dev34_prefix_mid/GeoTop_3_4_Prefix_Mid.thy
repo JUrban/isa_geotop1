@@ -2869,6 +2869,88 @@ proof -
     using hconn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
 qed
 
+lemma geotop_closed_segment_delete_left_connected_prefix:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  shows "top1_connected_on (closed_segment a b - {a})
+    (subspace_topology UNIV geotop_euclidean_topology (closed_segment a b - {a}))"
+proof -
+  have hconn_open: "connected (open_segment a b)"
+    by (rule convex_connected[OF convex_open_segment])
+  have hopen_sub: "open_segment a b \<subseteq> closed_segment a b - {a}"
+    using open_segment_def by (by100 blast)
+  have hdelete_sub_closure:
+    "closed_segment a b - {a} \<subseteq> closure (open_segment a b)"
+    using hab by (by100 simp)
+  have hconn_HOL: "connected (closed_segment a b - {a})"
+    by (rule connected_intermediate_closure
+        [OF hconn_open hopen_sub hdelete_sub_closure])
+  show ?thesis
+    using hconn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
+lemma geotop_closed_segment_delete_right_connected_prefix:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  shows "top1_connected_on (closed_segment a b - {b})
+    (subspace_topology UNIV geotop_euclidean_topology (closed_segment a b - {b}))"
+proof -
+  have hconn:
+    "top1_connected_on (closed_segment b a - {b})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (closed_segment b a - {b}))"
+    using geotop_closed_segment_delete_left_connected_prefix[of b a] hab
+    by (by100 blast)
+  have hseg_eq: "closed_segment b a = closed_segment a b"
+    by (rule closed_segment_commute)
+  show ?thesis
+    using hconn hseg_eq by (by100 simp)
+qed
+
+lemma geotop_edge_delete_singleton_face_connected_prefix:
+  fixes e :: "(real^2) set"
+  assumes he1: "geotop_simplex_dim e 1"
+  assumes hface: "geotop_is_face {p} e"
+  shows "top1_connected_on (e - {p})
+    (subspace_topology UNIV geotop_euclidean_topology (e - {p}))"
+proof -
+  have hedge: "geotop_is_edge e"
+    using he1 unfolding geotop_is_edge_def by (by100 simp)
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hface_seg: "geotop_is_face {p} (closed_segment a b)"
+    using hface he_seg by (by100 simp)
+  have hface_cases:
+    "{p} = {a} \<or> {p} = {b} \<or> {p} = closed_segment a b"
+    by (rule geotop_segment_face_cases_prefix[OF hface_seg hab])
+  have hnot_full: "{p} \<noteq> closed_segment a b"
+  proof
+    assume hp_full: "{p} = closed_segment a b"
+    have "a \<in> {p}"
+      using hp_full by (by100 simp)
+    moreover have "b \<in> {p}"
+      using hp_full by (by100 simp)
+    ultimately have "a = b"
+      by (by100 blast)
+    thus False
+      using hab by (by100 blast)
+  qed
+  have hp_cases: "p = a \<or> p = b"
+    using hface_cases hnot_full by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hp_cases])
+    assume hp: "p = a"
+    show ?thesis
+      using geotop_closed_segment_delete_left_connected_prefix[OF hab] he_seg hp
+      by (by100 simp)
+  next
+    assume hp: "p = b"
+    show ?thesis
+      using geotop_closed_segment_delete_right_connected_prefix[OF hab] he_seg hp
+      by (by100 simp)
+  qed
+qed
+
 lemma geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix:
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -8934,6 +9016,41 @@ proof -
       (subspace_topology UNIV geotop_euclidean_topology
         (geotop_K_carrier K x - {v}))"
       by (rule geotop_2simplex_punctured_connected_prefix[OF hdim2])
+  qed
+  have hcarrier_chord_singleton_dim1_minus_connected:
+    "\<And>x v. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v} \<Longrightarrow>
+      geotop_simplex_dim (geotop_K_carrier K x) 1 \<Longrightarrow>
+      top1_connected_on (geotop_K_carrier K x - {v})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_K_carrier K x - {v}))"
+  proof -
+    fix x v
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hinter_single:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v}"
+    assume hdim1: "geotop_simplex_dim (geotop_K_carrier K x) 1"
+    show "top1_connected_on (geotop_K_carrier K x - {v})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_K_carrier K x - {v}))"
+    proof -
+      have hinter_ne:
+        "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+        using hinter_single by (by100 blast)
+      have hface_single_carrier:
+        "geotop_is_face {v} (geotop_K_carrier K x)"
+      proof -
+        have "geotop_is_face
+          (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+          (geotop_K_carrier K x)"
+          using hcarrier_chord_inter_faces[OF hxB hinter_ne] by (by100 blast)
+        thus ?thesis
+          using hinter_single by (by100 simp)
+      qed
+      show ?thesis
+        by (rule geotop_edge_delete_singleton_face_connected_prefix
+            [OF hdim1 hface_single_carrier])
+    qed
   qed
   have hcarrier_side1_singleton_dim2:
     "\<And>x v. x \<in> ?B\<^sub>1 \<Longrightarrow>
