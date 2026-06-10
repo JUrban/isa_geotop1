@@ -6708,11 +6708,14 @@ lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
-  assumes hsubdisk_book_facts:
-    "geotop_is_polygon J\<^sub>1
-      \<and> geotop_is_polygon J\<^sub>2
-      \<and> closure_on UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J) =
+	  assumes hsubdisk_book_facts:
+	    "geotop_is_polygon J\<^sub>1
+	      \<and> geotop_is_polygon J\<^sub>2
+	      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	      \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	      \<and> closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J) =
            closure_on UNIV geotop_euclidean_topology
              (geotop_polygon_interior J\<^sub>1)
 	           \<union> closure_on UNIV geotop_euclidean_topology
@@ -7127,11 +7130,14 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
     "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
       \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
   assumes hsubdisk_side_witnesses_from_split:
-    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
-      geotop_is_polygon J\<^sub>1
-        \<and> geotop_is_polygon J\<^sub>2
-        \<and> closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J) =
+	    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+	      geotop_is_polygon J\<^sub>1
+	        \<and> geotop_is_polygon J\<^sub>2
+	        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J) =
              closure_on UNIV geotop_euclidean_topology
                (geotop_polygon_interior J\<^sub>1)
 	             \<union> closure_on UNIV geotop_euclidean_topology
@@ -7990,11 +7996,14 @@ proof -
         [OF hJ_boundary_split hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2])
   define J\<^sub>1 where "J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
   define J\<^sub>2 where "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
-  have hsubdisk_book_facts:
-    "geotop_is_polygon J\<^sub>1
-      \<and> geotop_is_polygon J\<^sub>2
-      \<and> closure_on UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J) =
+	  have hsubdisk_book_facts:
+	    "geotop_is_polygon J\<^sub>1
+	      \<and> geotop_is_polygon J\<^sub>2
+	      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	      \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	      \<and> closure_on UNIV geotop_euclidean_topology
+	             (geotop_polygon_interior J) =
 	           closure_on UNIV geotop_euclidean_topology
 	             (geotop_polygon_interior J\<^sub>1)
 	           \<union> closure_on UNIV geotop_euclidean_topology
@@ -8014,7 +8023,8 @@ proof -
       Book Figure 3.2 subdisk package.  The two displayed polygons are the
       subdisks on either side of the chord, and the closure/separation data is
       exactly the already-proved chord decomposition rewritten with names. **)
-    using hchord_decomposition unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
+	    using hchord_decomposition hJ_boundary_split
+	    unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
   have hsubdisk_side_witnesses_exist_book:
     "\<And>L\<^sub>1 L\<^sub>2.
       L\<^sub>1 =
@@ -8078,12 +8088,15 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
-  assumes hsubdisk_side_witnesses_from_decomposition:
-    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
-      geotop_is_polygon J\<^sub>1
-        \<and> geotop_is_polygon J\<^sub>2
-        \<and> closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J) =
+	  assumes hsubdisk_side_witnesses_from_decomposition:
+	    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+	      geotop_is_polygon J\<^sub>1
+	        \<and> geotop_is_polygon J\<^sub>2
+	        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J) =
              closure_on UNIV geotop_euclidean_topology
                (geotop_polygon_interior J\<^sub>1)
 	             \<union> closure_on UNIV geotop_euclidean_topology
@@ -8622,12 +8635,15 @@ proof -
     "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
       \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
     using hnot_both_nonbase_boundary_segments by (by100 blast)
-  have hsubdisk_side_witnesses_from_split:
-    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
-      geotop_is_polygon J\<^sub>1
-        \<and> geotop_is_polygon J\<^sub>2
-        \<and> closure_on UNIV geotop_euclidean_topology
-               (geotop_polygon_interior J) =
+	  have hsubdisk_side_witnesses_from_split:
+	    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+	      geotop_is_polygon J\<^sub>1
+	        \<and> geotop_is_polygon J\<^sub>2
+	        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+	        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	               (geotop_polygon_interior J) =
 	             closure_on UNIV geotop_euclidean_topology
 	               (geotop_polygon_interior J\<^sub>1)
 	             \<union> closure_on UNIV geotop_euclidean_topology
@@ -9318,11 +9334,14 @@ proof -
               by (rule geotop_nonbase_segment_contact_avoids_base_segment_prefix
                   [OF h\<theta>_not_col h\<theta>_contact_on_other_nonbase_segment])
             have hsubdisk_side_witnesses_from_decomposition:
-              "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
-                geotop_is_polygon J\<^sub>1
-                  \<and> geotop_is_polygon J\<^sub>2
-                  \<and> closure_on UNIV geotop_euclidean_topology
-                         (geotop_polygon_interior J') =
+	              "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+	                geotop_is_polygon J\<^sub>1
+	                  \<and> geotop_is_polygon J\<^sub>2
+	                  \<and> J' = C\<^sub>1 \<union> C\<^sub>2
+	                  \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	                  \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	                  \<and> closure_on UNIV geotop_euclidean_topology
+	                         (geotop_polygon_interior J') =
 	                       closure_on UNIV geotop_euclidean_topology
 	                         (geotop_polygon_interior J\<^sub>1)
 	                       \<union> closure_on UNIV geotop_euclidean_topology
@@ -9357,11 +9376,14 @@ proof -
                           \<sigma> \<noteq> \<tau>"
                     proof -
                       fix J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2
-                      assume hsubdisk_book:
-                        "geotop_is_polygon J\<^sub>1
-                          \<and> geotop_is_polygon J\<^sub>2
-                          \<and> closure_on UNIV geotop_euclidean_topology
-                                 (geotop_polygon_interior J') =
+	                      assume hsubdisk_book:
+	                        "geotop_is_polygon J\<^sub>1
+	                          \<and> geotop_is_polygon J\<^sub>2
+	                          \<and> J' = C\<^sub>1 \<union> C\<^sub>2
+	                          \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+	                          \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+	                          \<and> closure_on UNIV geotop_euclidean_topology
+	                                 (geotop_polygon_interior J') =
 	                               closure_on UNIV geotop_euclidean_topology
 	                                 (geotop_polygon_interior J\<^sub>1)
 	                               \<union> closure_on UNIV geotop_euclidean_topology
@@ -9389,11 +9411,19 @@ proof -
                               (geotop_polygon_interior J\<^sub>2)}"
                       have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
                         using hsubdisk_book by (by100 blast)
-                      have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
-                        using hsubdisk_book by (by100 blast)
-                      have hclosure_split:
-                        "closure_on UNIV geotop_euclidean_topology
-                           (geotop_polygon_interior J') =
+	                      have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+	                        using hsubdisk_book by (by100 blast)
+	                      have hJ'_boundary_split: "J' = C\<^sub>1 \<union> C\<^sub>2"
+	                        using hsubdisk_book by (by100 blast)
+	                      have hJ\<^sub>1_boundary_def:
+	                        "J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
+	                        using hsubdisk_book by (by100 blast)
+	                      have hJ\<^sub>2_boundary_def:
+	                        "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
+	                        using hsubdisk_book by (by100 blast)
+	                      have hclosure_split:
+	                        "closure_on UNIV geotop_euclidean_topology
+	                           (geotop_polygon_interior J') =
                          closure_on UNIV geotop_euclidean_topology
                            (geotop_polygon_interior J\<^sub>1)
 	                         \<union> closure_on UNIV geotop_euclidean_topology
