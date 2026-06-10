@@ -10395,6 +10395,20 @@ proof -
                                   \<union> (\<tau> \<inter> J\<^sub>1)"
                                 using h\<tau>_parent_contact_side_split h\<tau>_side_contact
                                 by (by100 blast)
+                              have hJ\<^sub>2_sub_chord_or_parent:
+                                "J\<^sub>2 \<subseteq> closed_segment v\<^sub>0 v\<^sub>2 \<union> J'"
+                                using hJ'_boundary_split hJ\<^sub>2_boundary_def by (by100 blast)
+                              have hJ\<^sub>1_sub_parent_or_chord:
+                                "J\<^sub>1 \<subseteq> J' \<union> closed_segment v\<^sub>0 v\<^sub>2"
+                                using hJ'_boundary_split hJ\<^sub>1_boundary_def by (by100 blast)
+                              have h\<sigma>_other_side_contact_chord_or_parent:
+                                "\<sigma> \<inter> J\<^sub>2 \<subseteq>
+                                  (\<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<union> (\<sigma> \<inter> J')"
+                                using hJ\<^sub>2_sub_chord_or_parent by (by100 blast)
+                              have h\<tau>_other_side_contact_parent_or_chord:
+                                "\<tau> \<inter> J\<^sub>1 \<subseteq>
+                                  (\<tau> \<inter> J') \<union> (\<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2)"
+                                using hJ\<^sub>1_sub_parent_or_chord by (by100 blast)
                               have hparent_contact_cover_and_distinct_book:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
