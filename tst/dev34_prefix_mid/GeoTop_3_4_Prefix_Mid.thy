@@ -16915,27 +16915,36 @@ proof -
                             have hT\<^sub>1_distinct_from_\<tau>:
                               "\<And>\<sigma>. \<sigma> \<in> ?T\<^sub>1 \<Longrightarrow> \<sigma> \<noteq> \<tau>"
                               using hT\<^sub>1_T\<^sub>2_disjoint_book h\<tau>T\<^sub>2 by (by100 blast)
-                            have hside1_singleton_branch_canonical_witness:
-                              "\<exists>\<sigma>. \<sigma> \<in> L\<^sub>1
-                                \<and> geotop_simplex_dim \<sigma> 2
-                                \<and> \<sigma> \<noteq> \<tau>
-                                \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
-                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
-                                \<and> \<sigma> \<inter> J\<^sub>1 =
-                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                            have hside1_singleton_branch_canonical_witness:
+	                              "\<exists>\<sigma>. \<sigma> \<in> L\<^sub>1
+	                                \<and> geotop_simplex_dim \<sigma> 2
+	                                \<and> \<sigma> \<noteq> \<tau>
+	                                \<and> \<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>
+	                                \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                \<and> \<sigma> \<inter> J\<^sub>1 =
+	                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                                     \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
                               (**
-                                In the singleton side-2 branch, side 1 is still
-                                a genuine multi-triangle side disk.  The
-                                induction hypothesis therefore supplies a
-                                canonical side-1 free witness; the remaining
-                                work is only to transfer its contact from
-                                \<open>J\<^sub>1\<close> to the parent boundary \<open>J'\<close>. **)
-                            proof -
-                              have hcarrier_side1:
-	                                "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-	                                    (geotop_polygon_interior J\<^sub>1).
-	                                    geotop_K_carrier K x \<subseteq>
+	                                In the singleton side-2 branch, side 1 is still
+	                                a genuine multi-triangle side disk.  The
+	                                induction hypothesis therefore supplies a
+	                                canonical side-1 free witness avoiding the
+	                                original cut triangle; chord classification
+	                                then rules out an artificial-chord face before
+	                                parent-boundary transfer. **)
+	                            proof -
+	                              obtain \<theta>\<^sub>c where h\<theta>cT\<^sub>2_singleton: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
+	                                and hT\<^sub>1_chord_only_\<theta>_singleton:
+	                                  "\<forall>\<rho>\<in>?T\<^sub>1.
+	                                    geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                    \<longrightarrow> \<rho> = \<theta>"
+	                                using hside_core_chord_classification_book
+	                                by (elim bexE conjE)
+	                              have hcarrier_side1:
+		                                "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+		                                    (geotop_polygon_interior J\<^sub>1).
+		                                    geotop_K_carrier K x \<subseteq>
 	                                      closure_on UNIV geotop_euclidean_topology
 	                                        (geotop_polygon_interior J\<^sub>1))"
 	                                by (rule hside_core_carrier1_book)
@@ -16975,18 +16984,33 @@ proof -
                                 "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
                                 by (rule hL\<^sub>1_free_count_from_IH
                                     [OF hL\<^sub>1_poly_eq hT\<^sub>1_lt_T hT\<^sub>1_gt1])
-                              obtain \<sigma> where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
-                                and h\<sigma>free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
-                                and h\<sigma>ne\<tau>: "\<sigma> \<noteq> \<tau>"
-                                using geotop_free_2_simplex_witness_avoids_given_prefix
-                                  [OF hL\<^sub>1_fin hL\<^sub>1_free_count, where \<theta> = \<tau>]
-                                by (elim exE conjE)
-                              have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-                                using h\<sigma>free unfolding geotop_free_2_simplex_def
-                                by (by100 blast)
-                              have h\<sigma>_can:
-                                "finite {e\<in>L\<^sub>1. geotop_is_edge e
-                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+	                              obtain \<sigma> where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+	                                and h\<sigma>free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
+	                                and h\<sigma>ne\<theta>: "\<sigma> \<noteq> \<theta>"
+	                                using geotop_free_2_simplex_witness_avoids_given_prefix
+	                                  [OF hL\<^sub>1_fin hL\<^sub>1_free_count, where \<theta> = \<theta>]
+	                                by (elim exE conjE)
+	                              have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+	                                using h\<sigma>free unfolding geotop_free_2_simplex_def
+	                                by (by100 blast)
+	                              have h\<sigma>T\<^sub>1: "\<sigma> \<in> ?T\<^sub>1"
+	                                using h\<sigma>L\<^sub>1 h\<sigma>2 by (by100 simp)
+	                              have h\<sigma>ne\<tau>: "\<sigma> \<noteq> \<tau>"
+	                                by (rule hT\<^sub>1_distinct_from_\<tau>[OF h\<sigma>T\<^sub>1])
+	                              have h\<sigma>_no_chord:
+	                                "\<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+	                              proof
+	                                assume hface:
+	                                  "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+	                                have "\<sigma> = \<theta>"
+	                                  using hT\<^sub>1_chord_only_\<theta>_singleton h\<sigma>T\<^sub>1 hface
+	                                  by (by100 blast)
+	                                thus False
+	                                  using h\<sigma>ne\<theta> by (by100 blast)
+	                              qed
+	                              have h\<sigma>_can:
+	                                "finite {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
                                   \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
                                     \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
                                   \<and> \<sigma> \<inter> J\<^sub>1 =
@@ -17003,11 +17027,11 @@ proof -
                                 "\<sigma> \<inter> J\<^sub>1 =
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                                     \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
-                                using h\<sigma>_can by (by100 blast)
-                              show ?thesis
-                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>card h\<sigma>contact
-                                by (by100 blast)
-                            qed
+	                                using h\<sigma>_can by (by100 blast)
+	                              show ?thesis
+	                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>_no_chord h\<sigma>card h\<sigma>contact
+	                                by (by100 blast)
+	                            qed
                             show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
                               \<sigma> \<inter> J' =
