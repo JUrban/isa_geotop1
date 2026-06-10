@@ -9541,6 +9541,35 @@ proof -
         using hR\<^sub>1_sub_B\<^sub>1 hxR\<^sub>1 by (by100 blast)
     qed
   qed
+  have h\<theta>_L\<^sub>1: "\<theta> \<in> L\<^sub>1"
+    using hL\<^sub>1_def h\<theta>K h\<theta>_sub_B\<^sub>1 by (by100 blast)
+  have h\<theta>_faces_sub_L\<^sub>1:
+    "{\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>} \<subseteq> L\<^sub>1"
+  proof
+    fix \<rho>
+    assume h\<rho>: "\<rho> \<in> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>}"
+    have hcases: "geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>"
+      using h\<rho> by (by100 blast)
+    show "\<rho> \<in> L\<^sub>1"
+    proof (rule disjE[OF hcases])
+      assume hface: "geotop_is_face \<rho> \<theta>"
+      have h\<rho>K: "\<rho> \<in> K"
+        using hface_closed_K h\<theta>K hface by (by100 blast)
+      have h\<rho>sub_\<theta>: "\<rho> \<subseteq> \<theta>"
+        by (rule geotop_is_face_imp_subset_prefix[OF hface])
+      have h\<rho>sub_B\<^sub>1: "\<rho> \<subseteq> ?B\<^sub>1"
+        using h\<rho>sub_\<theta> h\<theta>_sub_B\<^sub>1 by (by100 blast)
+      show ?thesis
+        using hL\<^sub>1_def h\<rho>K h\<rho>sub_B\<^sub>1 by (by100 blast)
+    next
+      assume h\<rho>eq: "\<rho> = \<theta>"
+      show ?thesis
+        using h\<rho>eq h\<theta>_L\<^sub>1 by (by100 blast)
+    qed
+  qed
+  have hL\<^sub>1_theta_eq_L\<^sub>1:
+    "L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>} = L\<^sub>1"
+    using h\<theta>_faces_sub_L\<^sub>1 by (by100 blast)
   obtain \<theta>\<^sub>c where h\<theta>\<^sub>cK: "\<theta>\<^sub>c \<in> K"
     and h\<theta>\<^sub>c2: "geotop_simplex_dim \<theta>\<^sub>c 2"
     and h\<theta>\<^sub>c_chord_face:
