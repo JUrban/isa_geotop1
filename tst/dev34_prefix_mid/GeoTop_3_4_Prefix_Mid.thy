@@ -5480,6 +5480,33 @@ proof -
     using hP_card hcard_mono by (by100 simp)
 qed
 
+lemma geotop_two_distinct_members_from_card_ge2_prefix:
+  fixes A :: "'a set" and P :: "'a \<Rightarrow> bool"
+  assumes hA_fin: "finite A"
+  assumes hcard: "card {x\<in>A. P x} \<ge> 2"
+  shows "\<exists>x y. x \<in> A \<and> P x \<and> y \<in> A \<and> P y \<and> x \<noteq> y"
+  (**
+    Finite-set extraction used by the Figure 3.2 side-witness transfer:
+    a side free-count bound of at least two gives two distinct witnesses,
+    leaving the remaining proof to handle the artificial-chord transfer
+    rather than duplicating cardinality bookkeeping. **)
+proof -
+  let ?F = "{x\<in>A. P x}"
+  have hF_fin: "finite ?F"
+    using hA_fin by (by100 simp)
+  have hnot_le1: "\<not> card ?F \<le> Suc 0"
+    using hcard by (by100 simp)
+  have hcard_le1_iff:
+    "card ?F \<le> Suc 0 \<longleftrightarrow> (\<forall>x\<in>?F. \<forall>y\<in>?F. x = y)"
+    by (rule card_le_Suc0_iff_eq[OF hF_fin])
+  have hnot_all_eq: "\<not> (\<forall>x\<in>?F. \<forall>y\<in>?F. x = y)"
+    using hnot_le1 hcard_le1_iff by (by100 blast)
+  obtain x y where hx: "x \<in> ?F" and hy: "y \<in> ?F" and hxy: "x \<noteq> y"
+    using hnot_all_eq by (by100 blast)
+  show ?thesis
+    using hx hy hxy by (by100 blast)
+qed
+
 lemma geotop_theta_middle_arc_inline_decomposition_prefix:
   fixes M B\<^sub>1 B\<^sub>2 B\<^sub>3 E :: "(real^2) set"
   assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B\<^sub>1 B\<^sub>2 B\<^sub>3 E"
@@ -10102,27 +10129,9 @@ proof -
                               \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1'
                               \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
                           proof -
-                            let ?F\<^sub>1 =
-                              "{\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>}"
-                            have hF\<^sub>1_fin: "finite ?F\<^sub>1"
-                              using hL\<^sub>1_fin by (by100 simp)
-                            have hF\<^sub>1_card_gt0: "card ?F\<^sub>1 > 0"
-                              using hL\<^sub>1_free_count by (by100 simp)
-                            have hF\<^sub>1_not_le1: "\<not> card ?F\<^sub>1 \<le> Suc 0"
-                              using hL\<^sub>1_free_count by (by100 simp)
-                            have hF\<^sub>1_card_le1_iff:
-                              "card ?F\<^sub>1 \<le> Suc 0 \<longleftrightarrow>
-                                (\<forall>a\<in>?F\<^sub>1. \<forall>b\<in>?F\<^sub>1. a = b)"
-                              by (rule card_le_Suc0_iff_eq[OF hF\<^sub>1_fin])
-                            have hF\<^sub>1_not_all_eq:
-                              "\<not> (\<forall>a\<in>?F\<^sub>1. \<forall>b\<in>?F\<^sub>1. a = b)"
-                              using hF\<^sub>1_not_le1 hF\<^sub>1_card_le1_iff by (by100 blast)
-                            obtain \<sigma>\<^sub>1 \<sigma>\<^sub>1' where h\<sigma>\<^sub>1F: "\<sigma>\<^sub>1 \<in> ?F\<^sub>1"
-                              and h\<sigma>\<^sub>1'F: "\<sigma>\<^sub>1' \<in> ?F\<^sub>1"
-                              and h\<sigma>\<^sub>1_ne: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
-                              using hF\<^sub>1_not_all_eq by (by100 blast)
                             show ?thesis
-                              using h\<sigma>\<^sub>1F h\<sigma>\<^sub>1'F h\<sigma>\<^sub>1_ne by (by100 blast)
+                              by (rule geotop_two_distinct_members_from_card_ge2_prefix
+                                  [OF hL\<^sub>1_fin hL\<^sub>1_free_count])
                           qed
                           have hL\<^sub>2_two_free_witnesses:
                             "\<exists>\<tau>\<^sub>2 \<tau>\<^sub>2'. \<tau>\<^sub>2 \<in> L\<^sub>2
@@ -10131,27 +10140,9 @@ proof -
                               \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2'
                               \<and> \<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
                           proof -
-                            let ?F\<^sub>2 =
-                              "{\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>}"
-                            have hF\<^sub>2_fin: "finite ?F\<^sub>2"
-                              using hL\<^sub>2_fin by (by100 simp)
-                            have hF\<^sub>2_card_gt0: "card ?F\<^sub>2 > 0"
-                              using hL\<^sub>2_free_count by (by100 simp)
-                            have hF\<^sub>2_not_le1: "\<not> card ?F\<^sub>2 \<le> Suc 0"
-                              using hL\<^sub>2_free_count by (by100 simp)
-                            have hF\<^sub>2_card_le1_iff:
-                              "card ?F\<^sub>2 \<le> Suc 0 \<longleftrightarrow>
-                                (\<forall>a\<in>?F\<^sub>2. \<forall>b\<in>?F\<^sub>2. a = b)"
-                              by (rule card_le_Suc0_iff_eq[OF hF\<^sub>2_fin])
-                            have hF\<^sub>2_not_all_eq:
-                              "\<not> (\<forall>a\<in>?F\<^sub>2. \<forall>b\<in>?F\<^sub>2. a = b)"
-                              using hF\<^sub>2_not_le1 hF\<^sub>2_card_le1_iff by (by100 blast)
-                            obtain \<tau>\<^sub>2 \<tau>\<^sub>2' where h\<tau>\<^sub>2F: "\<tau>\<^sub>2 \<in> ?F\<^sub>2"
-                              and h\<tau>\<^sub>2'F: "\<tau>\<^sub>2' \<in> ?F\<^sub>2"
-                              and h\<tau>\<^sub>2_ne: "\<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
-                              using hF\<^sub>2_not_all_eq by (by100 blast)
                             show ?thesis
-                              using h\<tau>\<^sub>2F h\<tau>\<^sub>2'F h\<tau>\<^sub>2_ne by (by100 blast)
+                              by (rule geotop_two_distinct_members_from_card_ge2_prefix
+                                  [OF hL\<^sub>2_fin hL\<^sub>2_free_count])
                           qed
                           have hL\<^sub>1_free_witness_avoids_\<theta>:
                             "\<exists>\<sigma>\<^sub>1. \<sigma>\<^sub>1 \<in> L\<^sub>1
