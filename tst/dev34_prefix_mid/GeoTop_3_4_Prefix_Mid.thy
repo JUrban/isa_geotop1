@@ -10243,7 +10243,76 @@ proof -
                                 \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                                   \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
                               \<and> \<sigma> \<noteq> \<tau>"
-                              sorry
+                            proof -
+                              have h\<sigma>_union_sub_contact:
+                                "\<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                                  \<subseteq> \<sigma> \<inter> J'"
+                                by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+                              have h\<tau>_union_sub_contact:
+                                "\<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                                  \<subseteq> \<tau> \<inter> J'"
+                                by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+                              have hparent_contact_cover_and_distinct_book:
+                                "\<sigma> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                                \<and> \<tau> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                                \<and> \<sigma> \<noteq> \<tau>"
+                                (**
+                                  Remaining geometric side-to-parent contact
+                                  cover: every parent-boundary contact point
+                                  of a side witness avoiding \<open>\<theta>\<close> is covered
+                                  by parent-boundary selected edges in the same
+                                  side subcomplex, and the two side witnesses
+                                  lie on opposite sides of the chord split. **)
+                                sorry
+                              have h\<sigma>_contact_sub_union:
+                                "\<sigma> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                using hparent_contact_cover_and_distinct_book by (by100 blast)
+                              have h\<tau>_contact_sub_union:
+                                "\<tau> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                using hparent_contact_cover_and_distinct_book by (by100 blast)
+                              have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+                                using hparent_contact_cover_and_distinct_book by (by100 blast)
+                              have h\<sigma>_contact_eq:
+                                "\<sigma> \<inter> J' =
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                              proof
+                                show "\<sigma> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                  by (rule h\<sigma>_contact_sub_union)
+                                show "\<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                                  \<subseteq> \<sigma> \<inter> J'"
+                                  by (rule h\<sigma>_union_sub_contact)
+                              qed
+                              have h\<tau>_contact_eq:
+                                "\<tau> \<inter> J' =
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                              proof
+                                show "\<tau> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                  by (rule h\<tau>_contact_sub_union)
+                                show "\<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                                  \<subseteq> \<tau> \<inter> J'"
+                                  by (rule h\<tau>_union_sub_contact)
+                              qed
+                              show ?thesis
+                                using h\<sigma>_contact_eq h\<tau>_contact_eq h\<sigma>\<tau> by (by100 blast)
+                            qed
                             show "card {e\<in>L\<^sub>1. geotop_is_edge e
                                 \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2
                               \<and> \<sigma> \<inter> J' =
