@@ -9611,6 +9611,18 @@ proof -
       have hselected_union_eq:
           "S \<union> T \<union> U = e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3"
         using hSTU_eq by (by100 blast)
+      have hp_sphere: "p \<in> sphere w r"
+        using hpS by (by100 blast)
+      have hy_sphere: "y \<in> sphere w r"
+        using hyT by (by100 blast)
+      have hz_sphere: "z \<in> sphere w r"
+        using hzU by (by100 blast)
+      have hp_not_ball: "p \<notin> ball w r"
+        using hp_sphere by (by100 simp)
+      have hy_not_ball: "y \<notin> ball w r"
+        using hy_sphere by (by100 simp)
+      have hz_not_ball: "z \<notin> ball w r"
+        using hz_sphere by (by100 simp)
       have hselected_three_punctured_connected_witness:
           "\<exists>M. M \<subseteq> geotop_polyhedron L - {w}
             \<and> top1_connected_on M
@@ -9670,6 +9682,30 @@ proof -
             show "y \<in> M" by (rule hyM)
             show "z \<in> M" by (rule hzM)
           qed
+        qed
+      qed
+      have hselected_points_punctured_carrier:
+          "p \<in> geotop_polyhedron L - {w}
+            \<and> y \<in> geotop_polyhedron L - {w}
+            \<and> z \<in> geotop_polyhedron L - {w}"
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hpM: "p \<in> M"
+          and hyM: "y \<in> M"
+          and hzM: "z \<in> M"
+          using hselected_three_punctured_connected_witness
+          by (elim exE conjE)
+        have hp_carrier: "p \<in> geotop_polyhedron L - {w}"
+          using hM_sub hpM by (by100 blast)
+        have hy_carrier: "y \<in> geotop_polyhedron L - {w}"
+          using hM_sub hyM by (by100 blast)
+        have hz_carrier: "z \<in> geotop_polyhedron L - {w}"
+          using hM_sub hzM by (by100 blast)
+        show ?thesis
+        proof (intro conjI)
+          show "p \<in> geotop_polyhedron L - {w}" by (rule hp_carrier)
+          show "y \<in> geotop_polyhedron L - {w}" by (rule hy_carrier)
+          show "z \<in> geotop_polyhedron L - {w}" by (rule hz_carrier)
         qed
       qed
       have hpz_same_component_from_three:
@@ -9854,8 +9890,11 @@ proof -
           \<open>S\<close>- and \<open>T\<close>-germs.  The selected points \<open>p,y,z\<close> also have the
           global connected witness
           \<open>hselected_three_punctured_connected_witness\<close> inherited from the
-          punctured simple closed curve, packaged with the local sector cover
-          as \<open>hselected_three_ball_sector_cover\<close>.  The remaining book
+          punctured simple closed curve; they are sphere-boundary points outside
+          the open small ball and lie in the punctured carrier
+          (\<open>hselected_points_punctured_carrier\<close>).  This connected witness is
+          packaged with the local sector cover as
+          \<open>hselected_three_ball_sector_cover\<close>.  The remaining book
           argument is the first-exit/local-star step that turns this
           connectedness and the carrier-sector cover into one component of
           \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three selected
