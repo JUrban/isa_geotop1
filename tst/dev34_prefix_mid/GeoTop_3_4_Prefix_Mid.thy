@@ -9422,6 +9422,62 @@ proof -
                         show "card ?T\<^sub>2 < card ?T"
                           by (rule psubset_card_mono[OF hT_fin hproper])
                       qed
+                      have hL\<^sub>1_free_count_from_IH:
+                        "geotop_polyhedron L\<^sub>1 =
+                          closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>1) \<Longrightarrow>
+                         card ?T\<^sub>1 < card ?T \<Longrightarrow>
+                         card ?T\<^sub>1 > 1 \<Longrightarrow>
+                         card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+                        by (rule hIH_less[OF hJ\<^sub>1 hL\<^sub>1_complex hL\<^sub>1_fin])
+                      have hL\<^sub>2_free_count_from_IH:
+                        "geotop_polyhedron L\<^sub>2 =
+                          closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>2) \<Longrightarrow>
+                         card ?T\<^sub>2 < card ?T \<Longrightarrow>
+                         card ?T\<^sub>2 > 1 \<Longrightarrow>
+                         card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+                        by (rule hIH_less[OF hJ\<^sub>2 hL\<^sub>2_complex hL\<^sub>2_fin])
+                      have hL\<^sub>1_free_count_if_exact_and_avoids_\<theta>:
+                        "geotop_polyhedron L\<^sub>1 =
+                          closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>1) \<Longrightarrow>
+                         \<theta> \<notin> ?T\<^sub>1 \<Longrightarrow>
+                         card ?T\<^sub>1 > 1 \<Longrightarrow>
+                         card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+                      proof -
+                        assume hL\<^sub>1_poly_eq:
+                          "geotop_polyhedron L\<^sub>1 =
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)"
+                        assume h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
+                        assume hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                        have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                          by (rule hT\<^sub>1_card_lt_T_if_avoids_\<theta>[OF h\<theta>_not_T\<^sub>1])
+                        show "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+                          by (rule hL\<^sub>1_free_count_from_IH
+                              [OF hL\<^sub>1_poly_eq hT\<^sub>1_lt_T hT\<^sub>1_gt1])
+                      qed
+                      have hL\<^sub>2_free_count_if_exact_and_avoids_\<theta>:
+                        "geotop_polyhedron L\<^sub>2 =
+                          closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>2) \<Longrightarrow>
+                         \<theta> \<notin> ?T\<^sub>2 \<Longrightarrow>
+                         card ?T\<^sub>2 > 1 \<Longrightarrow>
+                         card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+                      proof -
+                        assume hL\<^sub>2_poly_eq:
+                          "geotop_polyhedron L\<^sub>2 =
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)"
+                        assume h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+                        assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+                        have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                          by (rule hT\<^sub>2_card_lt_T_if_avoids_\<theta>[OF h\<theta>_not_T\<^sub>2])
+                        show "card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+                          by (rule hL\<^sub>2_free_count_from_IH
+                              [OF hL\<^sub>2_poly_eq hT\<^sub>2_lt_T hT\<^sub>2_gt1])
+                      qed
                       have hL\<^sub>1_selected_edges_fin:
                         "\<And>\<sigma>. finite
                           {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
