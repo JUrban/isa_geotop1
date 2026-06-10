@@ -10537,6 +10537,142 @@ proof -
                                   using hside_open_regions_disjoint by (by100 blast)
                               qed
                             qed
+                            have hJ\<^sub>1_minus_chord_sub_left_side:
+                              "J\<^sub>1 - closed_segment v\<^sub>0 v\<^sub>2
+                               \<subseteq> geotop_polygon_interior J\<^sub>1
+                                 \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                            proof
+                              fix x
+                              assume hx: "x \<in> J\<^sub>1 - closed_segment v\<^sub>0 v\<^sub>2"
+                              have hxJ\<^sub>1: "x \<in> J\<^sub>1"
+                                using hx by (by100 blast)
+                              have hx_not_chord:
+                                "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+                                using hx by (by100 blast)
+                              have hx_C\<^sub>1_or_chord:
+                                "x \<in> C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
+                                using hJ\<^sub>1_boundary_def hxJ\<^sub>1 by (by100 blast)
+                              have hx_C\<^sub>1: "x \<in> C\<^sub>1"
+                                using hx_C\<^sub>1_or_chord hx_not_chord by (by100 blast)
+                              have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                by (by100 simp)
+                              have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                by (by100 simp)
+                              have hx_not_endpoints: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+                                using hx_not_chord hv\<^sub>0_chord hv\<^sub>2_chord by (by100 blast)
+                              have "x \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                using hx_C\<^sub>1 hx_not_endpoints
+                                unfolding geotop_arc_interior_def by (by100 blast)
+                              thus "x \<in> geotop_polygon_interior J\<^sub>1
+                                \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                by (by100 blast)
+                            qed
+                            have hJ\<^sub>2_minus_chord_sub_right_side:
+                              "J\<^sub>2 - closed_segment v\<^sub>0 v\<^sub>2
+                               \<subseteq> geotop_polygon_interior J\<^sub>2
+                                 \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                            proof
+                              fix x
+                              assume hx: "x \<in> J\<^sub>2 - closed_segment v\<^sub>0 v\<^sub>2"
+                              have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+                                using hx by (by100 blast)
+                              have hx_not_chord:
+                                "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+                                using hx by (by100 blast)
+                              have hx_chord_or_C\<^sub>2:
+                                "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
+                                using hJ\<^sub>2_boundary_def hxJ\<^sub>2 by (by100 blast)
+                              have hx_C\<^sub>2: "x \<in> C\<^sub>2"
+                                using hx_chord_or_C\<^sub>2 hx_not_chord by (by100 blast)
+                              have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                by (by100 simp)
+                              have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                by (by100 simp)
+                              have hx_not_endpoints: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+                                using hx_not_chord hv\<^sub>0_chord hv\<^sub>2_chord by (by100 blast)
+                              have "x \<in> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                using hx_C\<^sub>2 hx_not_endpoints
+                                unfolding geotop_arc_interior_def by (by100 blast)
+                              thus "x \<in> geotop_polygon_interior J\<^sub>2
+                                \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                by (by100 blast)
+                            qed
+                            have hL\<^sub>1_contact_J\<^sub>2_sub_chord:
+                              "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow>
+                                \<rho> \<inter> J\<^sub>2 \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                            proof
+                              fix \<rho> x
+                              assume h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+                              assume hx: "x \<in> \<rho> \<inter> J\<^sub>2"
+                              show "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                              proof (rule ccontr)
+                                assume hx_not_chord:
+                                  "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+                                have hx_\<rho>_minus:
+                                  "x \<in> \<rho> - closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hx hx_not_chord by (by100 blast)
+                                have hx_J\<^sub>2_minus:
+                                  "x \<in> J\<^sub>2 - closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hx hx_not_chord by (by100 blast)
+                                have hx_left:
+                                  "x \<in> geotop_polygon_interior J\<^sub>1
+                                    \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                  using hL\<^sub>1_minus_chord_sub_left_side[OF h\<rho>L\<^sub>1]
+                                    hx_\<rho>_minus
+                                  by (by100 blast)
+                                have hx_right:
+                                  "x \<in> geotop_polygon_interior J\<^sub>2
+                                    \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                  using hJ\<^sub>2_minus_chord_sub_right_side hx_J\<^sub>2_minus
+                                  by (by100 blast)
+                                have "x \<in>
+                                  (geotop_polygon_interior J\<^sub>1 \<union>
+                                    geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<inter>
+                                  (geotop_polygon_interior J\<^sub>2 \<union>
+                                    geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                                  using hx_left hx_right by (by100 blast)
+                                thus False
+                                  using hside_open_regions_disjoint by (by100 blast)
+                              qed
+                            qed
+                            have hL\<^sub>2_contact_J\<^sub>1_sub_chord:
+                              "\<And>\<rho>. \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                \<rho> \<inter> J\<^sub>1 \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                            proof
+                              fix \<rho> x
+                              assume h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+                              assume hx: "x \<in> \<rho> \<inter> J\<^sub>1"
+                              show "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                              proof (rule ccontr)
+                                assume hx_not_chord:
+                                  "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+                                have hx_\<rho>_minus:
+                                  "x \<in> \<rho> - closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hx hx_not_chord by (by100 blast)
+                                have hx_J\<^sub>1_minus:
+                                  "x \<in> J\<^sub>1 - closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hx hx_not_chord by (by100 blast)
+                                have hx_right:
+                                  "x \<in> geotop_polygon_interior J\<^sub>2
+                                    \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                  using hL\<^sub>2_minus_chord_sub_right_side[OF h\<rho>L\<^sub>2]
+                                    hx_\<rho>_minus
+                                  by (by100 blast)
+                                have hx_left:
+                                  "x \<in> geotop_polygon_interior J\<^sub>1
+                                    \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                  using hJ\<^sub>1_minus_chord_sub_left_side hx_J\<^sub>1_minus
+                                  by (by100 blast)
+                                have "x \<in>
+                                  (geotop_polygon_interior J\<^sub>1 \<union>
+                                    geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<inter>
+                                  (geotop_polygon_interior J\<^sub>2 \<union>
+                                    geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                                  using hx_left hx_right by (by100 blast)
+                                thus False
+                                  using hside_open_regions_disjoint by (by100 blast)
+                              qed
+                            qed
                             have h2simplex_not_subset_chord:
                               "\<And>(\<rho>::(real^2) set). geotop_simplex_dim \<rho> 2 \<Longrightarrow>
                                 \<not> \<rho> \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
@@ -11204,6 +11340,140 @@ proof -
                                     \<and> y \<notin> J'"
                                 using h\<tau>_side_edge_nonparent_has_off_parent_chord_point
                                 by (by100 blast)
+                              have h\<sigma>_parent_uncovered_opposite_side_on_chord:
+                                "\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  x \<in> \<sigma> \<inter> J\<^sub>2 \<Longrightarrow>
+                                  x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                              proof -
+                                fix x
+                                assume hx_other: "x \<in> \<sigma> \<inter> J\<^sub>2"
+                                have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hL\<^sub>1_contact_J\<^sub>2_sub_chord[OF h\<sigma>L\<^sub>1]
+                                    hx_other
+                                  by (by100 blast)
+                                show "x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hx_other hx_chord by (by100 blast)
+                              qed
+                              have h\<tau>_parent_uncovered_opposite_side_on_chord:
+                                "\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  x \<in> \<tau> \<inter> J\<^sub>1 \<Longrightarrow>
+                                  x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                              proof -
+                                fix x
+                                assume hx_other: "x \<in> \<tau> \<inter> J\<^sub>1"
+                                have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hL\<^sub>2_contact_J\<^sub>1_sub_chord[OF h\<tau>L\<^sub>2]
+                                    hx_other
+                                  by (by100 blast)
+                                show "x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hx_other hx_chord by (by100 blast)
+                              qed
+                              have h\<sigma>_parent_uncovered_forces_chord_residue:
+                                "\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  (\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J')
+                                  \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                              proof -
+                                fix x
+                                assume hx_contact: "x \<in> \<sigma> \<inter> J'"
+                                assume hx_uncovered:
+                                  "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                have hcases:
+                                  "(\<exists>e. e \<in> L\<^sub>1 \<and> geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1
+                                    \<and> \<not> e \<subseteq> J' \<and> x \<in> e)
+                                  \<or> x \<in> \<sigma> \<inter> J\<^sub>2"
+                                  by (rule h\<sigma>_parent_uncovered_residue_cases
+                                      [OF hx_contact hx_uncovered])
+                                show "(\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J')
+                                  \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                proof (rule disjE[OF hcases])
+                                  assume hside:
+                                    "\<exists>e. e \<in> L\<^sub>1 \<and> geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1
+                                      \<and> \<not> e \<subseteq> J' \<and> x \<in> e"
+                                  then obtain e where heL\<^sub>1: "e \<in> L\<^sub>1"
+                                    and he_edge: "geotop_is_edge e"
+                                    and he_face: "geotop_is_face e \<sigma>"
+                                    and he_sub_J\<^sub>1: "e \<subseteq> J\<^sub>1"
+                                    and he_not_parent: "\<not> e \<subseteq> J'"
+                                    and hxe: "x \<in> e"
+                                    by (elim exE conjE)
+                                  have "\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J'"
+                                    by (rule h\<sigma>_parent_uncovered_side_edge_has_off_parent_chord_point
+                                        [OF hx_contact heL\<^sub>1 he_edge he_face he_sub_J\<^sub>1
+                                          he_not_parent hxe])
+                                  thus ?thesis
+                                    by (by100 blast)
+                                next
+                                  assume hx_other: "x \<in> \<sigma> \<inter> J\<^sub>2"
+                                  have "x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                    by (rule h\<sigma>_parent_uncovered_opposite_side_on_chord
+                                        [OF hx_contact hx_uncovered hx_other])
+                                  thus ?thesis
+                                    by (by100 blast)
+                                qed
+                              qed
+                              have h\<tau>_parent_uncovered_forces_chord_residue:
+                                "\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  (\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J')
+                                  \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                              proof -
+                                fix x
+                                assume hx_contact: "x \<in> \<tau> \<inter> J'"
+                                assume hx_uncovered:
+                                  "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                have hcases:
+                                  "(\<exists>e. e \<in> L\<^sub>2 \<and> geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2
+                                    \<and> \<not> e \<subseteq> J' \<and> x \<in> e)
+                                  \<or> x \<in> \<tau> \<inter> J\<^sub>1"
+                                  by (rule h\<tau>_parent_uncovered_residue_cases
+                                      [OF hx_contact hx_uncovered])
+                                show "(\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J')
+                                  \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                proof (rule disjE[OF hcases])
+                                  assume hside:
+                                    "\<exists>e. e \<in> L\<^sub>2 \<and> geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2
+                                      \<and> \<not> e \<subseteq> J' \<and> x \<in> e"
+                                  then obtain e where heL\<^sub>2: "e \<in> L\<^sub>2"
+                                    and he_edge: "geotop_is_edge e"
+                                    and he_face: "geotop_is_face e \<tau>"
+                                    and he_sub_J\<^sub>2: "e \<subseteq> J\<^sub>2"
+                                    and he_not_parent: "\<not> e \<subseteq> J'"
+                                    and hxe: "x \<in> e"
+                                    by (elim exE conjE)
+                                  have "\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J'"
+                                    by (rule h\<tau>_parent_uncovered_side_edge_has_off_parent_chord_point
+                                        [OF hx_contact heL\<^sub>2 he_edge he_face he_sub_J\<^sub>2
+                                          he_not_parent hxe])
+                                  thus ?thesis
+                                    by (by100 blast)
+                                next
+                                  assume hx_other: "x \<in> \<tau> \<inter> J\<^sub>1"
+                                  have "x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                    by (rule h\<tau>_parent_uncovered_opposite_side_on_chord
+                                        [OF hx_contact hx_uncovered hx_other])
+                                  thus ?thesis
+                                    by (by100 blast)
+                                qed
+                              qed
                               have h\<sigma>_parent_contact_cover_from_no_uncovered:
                                 "(\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
                                   x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
@@ -11351,16 +11621,23 @@ proof -
                                   "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                                       \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    ((\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                      \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
                                     False)
                                   \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                                       \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    ((\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                      \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
                                     False)"
                                   (**
                                     Remaining Moise Figure 3.2 geometry:
-                                    uncovered parent-boundary contact cannot
-                                    be pushed onto the artificial chord/other
-                                    side boundary. **)
+                                    the chord-residue alternatives produced
+                                    from an uncovered parent-boundary contact
+                                    are impossible for side witnesses avoiding
+                                    the cut triangle. **)
                                   sorry
                                 show ?thesis
                                 proof (rule hparent_contact_cover_and_distinct_from_obligations)
@@ -11369,9 +11646,15 @@ proof -
                                   assume hx_not:
                                     "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                                       \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                  have hres:
+                                    "(\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                    by (rule h\<sigma>_parent_uncovered_forces_chord_residue
+                                        [OF hx hx_not])
                                   show False
                                     using hparent_contact_cover_and_distinct_obligations_book
-                                      hx hx_not
+                                      hx hx_not hres
                                     by (by100 blast)
                                 next
                                   fix x
@@ -11379,9 +11662,15 @@ proof -
                                   assume hx_not:
                                     "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                                       \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                  have hres:
+                                    "(\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                    by (rule h\<tau>_parent_uncovered_forces_chord_residue
+                                        [OF hx hx_not])
                                   show False
                                     using hparent_contact_cover_and_distinct_obligations_book
-                                      hx hx_not
+                                      hx hx_not hres
                                     by (by100 blast)
                                 next
                                   fix \<rho>
