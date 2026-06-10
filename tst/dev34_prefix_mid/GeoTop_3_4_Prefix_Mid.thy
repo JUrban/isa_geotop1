@@ -8290,6 +8290,52 @@ proof -
     using hpair_card by (by100 simp)
 qed
 
+lemma geotop_theta_face_adjoin_side_exact_and_count_prefix:
+  fixes K L :: "(real^2) set set"
+    and \<theta> \<rho>\<^sub>w \<rho>\<^sub>o B :: "(real^2) set"
+  assumes hK_fin: "finite K"
+  assumes hK: "geotop_is_complex K"
+  assumes hL_fin: "finite L"
+  assumes hL_sub_K: "L \<subseteq> K"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes hL_poly: "geotop_polyhedron L = B"
+  assumes h\<theta>_sub_B: "\<theta> \<subseteq> B"
+  assumes h\<rho>wL: "\<rho>\<^sub>w \<in> L"
+  assumes h\<rho>w2: "geotop_simplex_dim \<rho>\<^sub>w 2"
+  assumes h\<rho>w_ne: "\<rho>\<^sub>w \<noteq> \<theta>"
+  assumes h\<rho>oK: "\<rho>\<^sub>o \<in> K"
+  assumes h\<rho>o2: "geotop_simplex_dim \<rho>\<^sub>o 2"
+  assumes h\<rho>o_not_L: "\<rho>\<^sub>o \<notin> L"
+  assumes h\<rho>o_ne: "\<rho>\<^sub>o \<noteq> \<theta>"
+  shows
+    "geotop_polyhedron (L \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}) = B
+    \<and> card {\<eta>\<in>L \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+        geotop_simplex_dim \<eta> 2} > 1
+    \<and> card {\<eta>\<in>L \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+        geotop_simplex_dim \<eta> 2}
+      < card {\<eta>\<in>K. geotop_simplex_dim \<eta> 2}"
+proof -
+  let ?F = "{\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}"
+  have hpoly_adjoin:
+    "geotop_polyhedron (L \<union> ?F) = geotop_polyhedron L \<union> \<theta>"
+    by (rule geotop_theta_face_adjoin_side_polyhedron_prefix[OF h\<theta>2])
+  have hpoly_eq: "geotop_polyhedron (L \<union> ?F) = B"
+    using hpoly_adjoin hL_poly h\<theta>_sub_B by (by100 blast)
+  have hgt:
+    "card {\<eta>\<in>L \<union> ?F. geotop_simplex_dim \<eta> 2} > 1"
+    by (rule geotop_theta_face_adjoin_side_two_simplex_count_gt1_prefix
+        [OF hL_fin h\<theta>2 h\<rho>wL h\<rho>w2 h\<rho>w_ne])
+  have hlt:
+    "card {\<eta>\<in>L \<union> ?F. geotop_simplex_dim \<eta> 2}
+      < card {\<eta>\<in>K. geotop_simplex_dim \<eta> 2}"
+    by (rule geotop_theta_face_adjoin_side_two_simplex_count_lt_prefix
+        [OF hK_fin hK hL_sub_K h\<theta>K h\<theta>2 h\<rho>oK h\<rho>o2
+          h\<rho>o_not_L h\<rho>o_ne])
+  show ?thesis
+    using hpoly_eq hgt hlt by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
   fixes J J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 \<theta> :: "(real^2) set"
     and K L\<^sub>1 L\<^sub>2 :: "(real^2) set set"
