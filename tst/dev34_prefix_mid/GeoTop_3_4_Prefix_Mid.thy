@@ -10463,7 +10463,7 @@ proof -
         \<and> top1_connected_on A
               (subspace_topology UNIV geotop_euclidean_topology A)"
   proof (intro conjI)
-    fix B
+    fix B :: "(real^2) set"
     assume hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
     show "A \<subseteq> closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior J) - B"
@@ -11121,6 +11121,75 @@ proof -
     show False
       by (rule hD42_theta_sides_forbid_PR_same_component_swapped
           [OF hclosure_minus hseparated hP_C\<^sub>2 hR_C\<^sub>1 hsame])
+  qed
+  have hD42_same_component_contradiction_from_QS_chord:
+      "\<And>B. geotop_is_broken_line B \<Longrightarrow>
+        geotop_arc_endpoints B {Q, S} \<Longrightarrow>
+        geotop_arc_interior F\<^sub>1 {Q, S} \<inter> geotop_arc_interior B {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior B {Q, S} \<inter> geotop_arc_interior F\<^sub>2 {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J \<Longrightarrow>
+        top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B))
+          P R \<Longrightarrow>
+        ((P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+            \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+          \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+            \<and> R \<in> geotop_arc_interior F\<^sub>1 {Q, S})) \<Longrightarrow>
+        False"
+  proof -
+    fix B :: "(real^2) set"
+    assume hB_bl: "geotop_is_broken_line B"
+    assume hBE: "geotop_arc_endpoints B {Q, S}"
+    assume hF\<^sub>1B:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter> geotop_arc_interior B {Q, S} = {}"
+    assume hBF\<^sub>2:
+      "geotop_arc_interior B {Q, S} \<inter> geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    assume hB_inner:
+      "geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J"
+    assume hsame:
+      "top1_in_same_component_on
+        (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B))
+        P R"
+    assume hopposite:
+      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> R \<in> geotop_arc_interior F\<^sub>1 {Q, S})"
+    have hF\<^sub>1F\<^sub>2:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter> geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+      by (rule hD42_F\<^sub>1F\<^sub>2_int_disj)
+    from hopposite show False
+    proof
+      assume hcase:
+        "P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+      have hP_F\<^sub>1: "P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+        using hcase by (by100 blast)
+      have hR_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+        using hcase by (by100 blast)
+      show False
+        by (rule hD42_QS_boundary_chord_theta_contradiction
+            [OF hD42_F_J_split hD42_F\<^sub>1_bl hB_bl hD42_F\<^sub>2_bl
+              hD42_F\<^sub>1E hBE hD42_F\<^sub>2E hF\<^sub>1B hF\<^sub>1F\<^sub>2 hBF\<^sub>2
+              hB_inner hP_F\<^sub>1 hR_F\<^sub>2 hsame])
+    next
+      assume hcase:
+        "P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> R \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      have hP_F\<^sub>2: "P \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+        using hcase by (by100 blast)
+      have hR_F\<^sub>1: "R \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+        using hcase by (by100 blast)
+      show False
+        by (rule hD42_QS_boundary_chord_theta_contradiction_swapped
+            [OF hD42_F_J_split hD42_F\<^sub>1_bl hB_bl hD42_F\<^sub>2_bl
+              hD42_F\<^sub>1E hBE hD42_F\<^sub>2E hF\<^sub>1B hF\<^sub>1F\<^sub>2 hBF\<^sub>2
+              hB_inner hP_F\<^sub>2 hR_F\<^sub>1 hsame])
+    qed
   qed
   have hD42_different_component_open_split:
       "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
