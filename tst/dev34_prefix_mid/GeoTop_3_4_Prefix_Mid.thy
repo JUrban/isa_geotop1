@@ -8064,6 +8064,12 @@ proof -
     "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>1)"
   let ?B\<^sub>2 =
     "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>2)"
+  let ?R\<^sub>1 =
+    "geotop_polygon_interior J\<^sub>1 \<union>
+      geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+  let ?R\<^sub>2 =
+    "geotop_polygon_interior J\<^sub>2 \<union>
+      geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
   let ?T = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
   let ?T\<^sub>1 = "{\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2}"
   let ?T\<^sub>2 = "{\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2}"
@@ -8091,6 +8097,100 @@ proof -
     using hclosure_split hK_poly by (by100 blast)
   have hB\<^sub>2_sub_K: "?B\<^sub>2 \<subseteq> geotop_polyhedron K"
     using hclosure_split hK_poly by (by100 blast)
+  have hB\<^sub>1_sub_closure_R\<^sub>1:
+    "?B\<^sub>1 \<subseteq> closure_on UNIV geotop_euclidean_topology ?R\<^sub>1"
+  proof -
+    have hI_sub_R: "geotop_polygon_interior J\<^sub>1 \<subseteq> ?R\<^sub>1"
+      by (by100 blast)
+    have hmono:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>1)
+        \<subseteq> closure_on UNIV geotop_euclidean_topology ?R\<^sub>1"
+      by (rule closure_on_mono[OF hI_sub_R])
+    show ?thesis
+      using hmono by (by100 simp)
+  qed
+  have hB\<^sub>2_sub_closure_R\<^sub>2:
+    "?B\<^sub>2 \<subseteq> closure_on UNIV geotop_euclidean_topology ?R\<^sub>2"
+  proof -
+    have hI_sub_R: "geotop_polygon_interior J\<^sub>2 \<subseteq> ?R\<^sub>2"
+      by (by100 blast)
+    have hmono:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>2)
+        \<subseteq> closure_on UNIV geotop_euclidean_topology ?R\<^sub>2"
+      by (rule closure_on_mono[OF hI_sub_R])
+    show ?thesis
+      using hmono by (by100 simp)
+  qed
+  have hB\<^sub>1_minus_chord_sub_R\<^sub>1:
+    "?B\<^sub>1 - closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?R\<^sub>1"
+  proof
+    fix x
+    assume hx: "x \<in> ?B\<^sub>1 - closed_segment v\<^sub>0 v\<^sub>2"
+    have hxB: "x \<in> ?B\<^sub>1"
+      using hx by (by100 blast)
+    have hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+      using hx by (by100 blast)
+    have hx_parent_closure:
+      "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+      using hB\<^sub>1_sub_K hK_poly hxB by (by100 blast)
+    have hx_parent_minus:
+      "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2"
+      using hx_parent_closure hx_not_chord by (by100 blast)
+    have hx_cases: "x \<in> ?R\<^sub>1 \<or> x \<in> ?R\<^sub>2"
+      using hclosure_minus hx_parent_minus by (by100 blast)
+    show "x \<in> ?R\<^sub>1"
+    proof (rule disjE[OF hx_cases])
+      assume hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+      show ?thesis
+        by (rule hxR\<^sub>1)
+    next
+      assume hxR\<^sub>2: "x \<in> ?R\<^sub>2"
+      have hxclR\<^sub>1:
+        "x \<in> closure_on UNIV geotop_euclidean_topology ?R\<^sub>1"
+        using hB\<^sub>1_sub_closure_R\<^sub>1 hxB by (by100 blast)
+      have "x \<in> closure_on UNIV geotop_euclidean_topology ?R\<^sub>1 \<inter> ?R\<^sub>2"
+        using hxclR\<^sub>1 hxR\<^sub>2 by (by100 blast)
+      thus ?thesis
+        using hside_separated unfolding geotop_separated_def by (by100 blast)
+    qed
+  qed
+  have hB\<^sub>2_minus_chord_sub_R\<^sub>2:
+    "?B\<^sub>2 - closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?R\<^sub>2"
+  proof
+    fix x
+    assume hx: "x \<in> ?B\<^sub>2 - closed_segment v\<^sub>0 v\<^sub>2"
+    have hxB: "x \<in> ?B\<^sub>2"
+      using hx by (by100 blast)
+    have hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+      using hx by (by100 blast)
+    have hx_parent_closure:
+      "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+      using hB\<^sub>2_sub_K hK_poly hxB by (by100 blast)
+    have hx_parent_minus:
+      "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2"
+      using hx_parent_closure hx_not_chord by (by100 blast)
+    have hx_cases: "x \<in> ?R\<^sub>1 \<or> x \<in> ?R\<^sub>2"
+      using hclosure_minus hx_parent_minus by (by100 blast)
+    show "x \<in> ?R\<^sub>2"
+    proof (rule disjE[OF hx_cases])
+      assume hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+      have hxclR\<^sub>2:
+        "x \<in> closure_on UNIV geotop_euclidean_topology ?R\<^sub>2"
+        using hB\<^sub>2_sub_closure_R\<^sub>2 hxB by (by100 blast)
+      have "x \<in> ?R\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology ?R\<^sub>2"
+        using hxR\<^sub>1 hxclR\<^sub>2 by (by100 blast)
+      thus ?thesis
+        using hside_separated unfolding geotop_separated_def by (by100 blast)
+    next
+      assume hxR\<^sub>2: "x \<in> ?R\<^sub>2"
+      show ?thesis
+        by (rule hxR\<^sub>2)
+    qed
+  qed
   have hT_fin: "finite ?T"
     using hK_fin by (by100 simp)
   have hT\<^sub>1_fin: "finite ?T\<^sub>1"
