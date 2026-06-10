@@ -10454,6 +10454,45 @@ proof -
           \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))"
     using hD42_PR_on_QS_boundary_arc_interiors hD42_F\<^sub>1F\<^sub>2_int_disj
     by (by100 blast)
+  have hD42_A_connected_PR_in_closed_disk_minus:
+      "\<And>B. B \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
+        A \<subseteq> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B
+        \<and> P \<in> A
+        \<and> R \<in> A
+        \<and> top1_connected_on A
+              (subspace_topology UNIV geotop_euclidean_topology A)"
+  proof (intro conjI)
+    fix B
+    assume hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+    show "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - B"
+    proof
+      fix x
+      assume hxA: "x \<in> A"
+      have hx_cl: "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+        using hAsub hxA by (by100 blast)
+      have hx_not_B: "x \<notin> B"
+      proof
+        assume hxB: "x \<in> B"
+        have "x \<in> geotop_polygon_interior J - A"
+          using hB_sub hxB by (by100 blast)
+        thus False
+          using hxA by (by100 blast)
+      qed
+      show "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - B"
+        using hx_cl hx_not_B by (by100 blast)
+    qed
+    show "P \<in> A"
+      by (rule hP_A)
+    show "R \<in> A"
+      by (rule hR_A)
+    show "top1_connected_on A
+          (subspace_topology UNIV geotop_euclidean_topology A)"
+      by (rule hA_connected)
+  qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
