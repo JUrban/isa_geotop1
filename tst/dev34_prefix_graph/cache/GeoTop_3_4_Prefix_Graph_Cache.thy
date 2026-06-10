@@ -9708,6 +9708,57 @@ proof -
           show "z \<in> geotop_polyhedron L - {w}" by (rule hz_carrier)
         qed
       qed
+      have hS_germ_ball_sub_carrier_ball:
+          "(S - {w}) \<inter> ball w r
+            \<subseteq> ball w r \<inter> (geotop_polyhedron L - {w})"
+      proof
+        fix a
+        assume ha: "a \<in> (S - {w}) \<inter> ball w r"
+        have hS_sub_poly: "S \<subseteq> geotop_polyhedron L"
+          using hS_E unfolding E_def geotop_polyhedron_def by (by100 blast)
+        show "a \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+          using ha hS_sub_poly by (by100 blast)
+      qed
+      have hT_germ_ball_sub_carrier_ball:
+          "(T - {w}) \<inter> ball w r
+            \<subseteq> ball w r \<inter> (geotop_polyhedron L - {w})"
+      proof
+        fix a
+        assume ha: "a \<in> (T - {w}) \<inter> ball w r"
+        have hT_sub_poly: "T \<subseteq> geotop_polyhedron L"
+          using hT_E unfolding E_def geotop_polyhedron_def by (by100 blast)
+        show "a \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+          using ha hT_sub_poly by (by100 blast)
+      qed
+      have hU_germ_ball_sub_carrier_ball:
+          "(U - {w}) \<inter> ball w r
+            \<subseteq> ball w r \<inter> (geotop_polyhedron L - {w})"
+      proof
+        fix a
+        assume ha: "a \<in> (U - {w}) \<inter> ball w r"
+        have hU_sub_poly: "U \<subseteq> geotop_polyhedron L"
+          using hU_E unfolding E_def geotop_polyhedron_def by (by100 blast)
+        show "a \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+          using ha hU_sub_poly by (by100 blast)
+      qed
+      have hselected_points_carrier_ball_closure:
+          "p \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))
+            \<and> y \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))
+            \<and> z \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+      proof (intro conjI)
+        show "p \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+          using hp_selected_germ_closure
+            closure_mono[OF hS_germ_ball_sub_carrier_ball]
+          by (by100 blast)
+        show "y \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+          using hy_selected_germ_closure
+            closure_mono[OF hT_germ_ball_sub_carrier_ball]
+          by (by100 blast)
+        show "z \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+          using hz_selected_germ_closure
+            closure_mono[OF hU_germ_ball_sub_carrier_ball]
+          by (by100 blast)
+      qed
       have hpz_same_component_from_three:
           "top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
@@ -9892,8 +9943,10 @@ proof -
           \<open>hselected_three_punctured_connected_witness\<close> inherited from the
           punctured simple closed curve; they are sphere-boundary points outside
           the open small ball and lie in the punctured carrier
-          (\<open>hselected_points_punctured_carrier\<close>).  This connected witness is
-          packaged with the local sector cover as
+          (\<open>hselected_points_punctured_carrier\<close>), and each lies in the
+          closure of the punctured carrier inside the small ball
+          (\<open>hselected_points_carrier_ball_closure\<close>).  This connected witness
+          is packaged with the local sector cover as
           \<open>hselected_three_ball_sector_cover\<close>.  The remaining book
           argument is the first-exit/local-star step that turns this
           connectedness and the carrier-sector cover into one component of
