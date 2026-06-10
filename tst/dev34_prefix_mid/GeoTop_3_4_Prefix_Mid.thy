@@ -14560,6 +14560,99 @@ proof -
                             have hT\<^sub>1_distinct_from_\<tau>:
                               "\<And>\<sigma>. \<sigma> \<in> ?T\<^sub>1 \<Longrightarrow> \<sigma> \<noteq> \<tau>"
                               using hT\<^sub>1_T\<^sub>2_disjoint_book h\<tau>T\<^sub>2 by (by100 blast)
+                            have hside1_singleton_branch_canonical_witness:
+                              "\<exists>\<sigma>. \<sigma> \<in> L\<^sub>1
+                                \<and> geotop_simplex_dim \<sigma> 2
+                                \<and> \<sigma> \<noteq> \<tau>
+                                \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                                \<and> \<sigma> \<inter> J\<^sub>1 =
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                              (**
+                                In the singleton side-2 branch, side 1 is still
+                                a genuine multi-triangle side disk.  The
+                                induction hypothesis therefore supplies a
+                                canonical side-1 free witness; the remaining
+                                work is only to transfer its contact from
+                                \<open>J\<^sub>1\<close> to the parent boundary \<open>J'\<close>. **)
+                            proof -
+                              have hcarrier_side1:
+                                "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>1).
+                                    geotop_K_carrier K x \<subseteq>
+                                      closure_on UNIV geotop_euclidean_topology
+                                        (geotop_polygon_interior J\<^sub>1))"
+                                using hside_geometric_core_book by (by100 blast)
+                              obtain rho1 where hrho1_T: "rho1 \<in> ?T"
+                                and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
+                                using hside_geometric_core_book by (by100 blast)
+                              have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                                by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+                                    [OF hT_fin hT\<^sub>1_sub_T hrho1_T hrho1_not_T\<^sub>1])
+                              have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                                using hside_geometric_core_book by (by100 blast)
+                              have hJ\<^sub>1_closure_sub_K:
+                                "closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)
+                                  \<subseteq> geotop_polyhedron K"
+                                using hclosure_split hK_poly' by (by100 blast)
+                              have hcarrier_side1_point:
+                                "\<And>x. x \<in> closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>1) \<Longrightarrow>
+                                  geotop_K_carrier K x \<subseteq>
+                                    closure_on UNIV geotop_euclidean_topology
+                                      (geotop_polygon_interior J\<^sub>1)"
+                                using hcarrier_side1 by (by100 blast)
+                              have hL\<^sub>1_poly_rev:
+                                "closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)
+                                  \<subseteq> geotop_polyhedron L\<^sub>1"
+                                unfolding hL\<^sub>1_def
+                                by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+                                    [OF hK' hK_fin' hJ\<^sub>1_closure_sub_K hcarrier_side1_point])
+                              have hL\<^sub>1_poly_eq:
+                                "geotop_polyhedron L\<^sub>1 =
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>1)"
+                                using hL\<^sub>1_poly_sub hL\<^sub>1_poly_rev by (by100 blast)
+                              have hL\<^sub>1_free_count:
+                                "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+                                by (rule hL\<^sub>1_free_count_from_IH
+                                    [OF hL\<^sub>1_poly_eq hT\<^sub>1_lt_T hT\<^sub>1_gt1])
+                              obtain \<sigma> where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+                                and h\<sigma>free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
+                                and h\<sigma>ne\<tau>: "\<sigma> \<noteq> \<tau>"
+                                using geotop_free_2_simplex_witness_avoids_given_prefix
+                                  [OF hL\<^sub>1_fin hL\<^sub>1_free_count, where \<theta> = \<tau>]
+                                by (elim exE conjE)
+                              have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+                                using h\<sigma>free unfolding geotop_free_2_simplex_def
+                                by (by100 blast)
+                              have h\<sigma>_can:
+                                "finite {e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+                                  \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                                  \<and> \<sigma> \<inter> J\<^sub>1 =
+                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                                by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+                                    [OF hJ\<^sub>1 hL\<^sub>1_complex hL\<^sub>1_poly_eq h\<sigma>L\<^sub>1
+                                      h\<sigma>2 hT\<^sub>1_gt1 h\<sigma>free])
+                              have h\<sigma>card:
+                                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                                using h\<sigma>_can by (by100 blast)
+                              have h\<sigma>contact:
+                                "\<sigma> \<inter> J\<^sub>1 =
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                                using h\<sigma>_can by (by100 blast)
+                              show ?thesis
+                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>card h\<sigma>contact
+                                by (by100 blast)
+                            qed
                             show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
                               \<sigma> \<inter> J' =
