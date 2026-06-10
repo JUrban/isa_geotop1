@@ -6652,6 +6652,31 @@ proof -
     by (rule finite_subset[OF hK\<^sub>1_sub_K hK_fin])
   have hK\<^sub>2_fin: "finite K\<^sub>2"
     by (rule finite_subset[OF hK\<^sub>2_sub_K hK_fin])
+  have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
+    using hsubdisk_book_facts by (by100 blast)
+  have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+    using hsubdisk_book_facts by (by100 blast)
+  have hclosure_split:
+      "closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J) =
+       closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J\<^sub>1)
+       \<union> closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J\<^sub>2)"
+    using hsubdisk_book_facts by (by100 blast)
+  have hside_separated:
+      "geotop_separated UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J\<^sub>1 \<union>
+          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+         (geotop_polygon_interior J\<^sub>2 \<union>
+          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    using hsubdisk_book_facts by (by100 blast)
+  have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1"
+    unfolding K\<^sub>1_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2"
+    unfolding K\<^sub>2_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK])
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
