@@ -6677,6 +6677,32 @@ proof -
   have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2"
     unfolding K\<^sub>2_def
     by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  have hK\<^sub>1_poly_sub_side:
+      "geotop_polyhedron K\<^sub>1 \<subseteq>
+       closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J\<^sub>1)"
+    unfolding K\<^sub>1_def geotop_polyhedron_def by (by100 blast)
+  have hK\<^sub>2_poly_sub_side:
+      "geotop_polyhedron K\<^sub>2 \<subseteq>
+       closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J\<^sub>2)"
+    unfolding K\<^sub>2_def geotop_polyhedron_def by (by100 blast)
+  have hK\<^sub>1_poly_sub_K:
+      "geotop_polyhedron K\<^sub>1 \<subseteq> geotop_polyhedron K"
+    unfolding geotop_polyhedron_def using hK\<^sub>1_sub_K by (by100 blast)
+  have hK\<^sub>2_poly_sub_K:
+      "geotop_polyhedron K\<^sub>2 \<subseteq> geotop_polyhedron K"
+    unfolding geotop_polyhedron_def using hK\<^sub>2_sub_K by (by100 blast)
+  have hK\<^sub>1_poly_sub_J:
+      "geotop_polyhedron K\<^sub>1 \<subseteq>
+       closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J)"
+    using hK\<^sub>1_poly_sub_K hK_poly by (by100 simp)
+  have hK\<^sub>2_poly_sub_J:
+      "geotop_polyhedron K\<^sub>2 \<subseteq>
+       closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J)"
+    using hK\<^sub>2_poly_sub_K hK_poly by (by100 simp)
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
