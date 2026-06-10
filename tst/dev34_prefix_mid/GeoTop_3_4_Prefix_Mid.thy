@@ -10864,6 +10864,17 @@ proof -
           [OF hK_fin hK hL\<^sub>1_sub_K h\<theta>K h\<theta>2 h\<rho>K h\<rho>2
             h\<rho>notL\<^sub>1 h\<rho>ne])
   qed
+  have hT\<^sub>1_gt1_from_\<theta>\<^sub>s: "card ?T\<^sub>1 > 1"
+  proof -
+    have hpair_sub: "{\<theta>, \<theta>\<^sub>s} \<subseteq> ?T\<^sub>1"
+      using h\<theta>_L\<^sub>1 h\<theta>2 h\<theta>\<^sub>s_L\<^sub>1 h\<theta>\<^sub>s2 by (by100 blast)
+    have hpair_card: "card {\<theta>, \<theta>\<^sub>s} = 2"
+      using h\<theta>\<^sub>s_ne_\<theta> by (by100 simp)
+    have "card {\<theta>, \<theta>\<^sub>s} \<le> card ?T\<^sub>1"
+      by (rule card_mono[OF hT\<^sub>1_fin hpair_sub])
+    thus ?thesis
+      using hpair_card by (by100 arith)
+  qed
   have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
     sorry
   have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
