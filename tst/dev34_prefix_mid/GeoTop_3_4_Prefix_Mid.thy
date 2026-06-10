@@ -7866,6 +7866,65 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix:
+  fixes L :: "(real^2) set set" and P Q R :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  assumes hR_poly: "R \<in> geotop_polyhedron L"
+  assumes hR_not: "R \<notin> {P, Q}"
+  shows "\<exists>C\<^sub>R C\<^sub>O.
+      geotop_polyhedron L = C\<^sub>R \<union> C\<^sub>O
+      \<and> geotop_is_broken_line C\<^sub>R
+      \<and> geotop_is_broken_line C\<^sub>O
+      \<and> geotop_arc_endpoints C\<^sub>R {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>O {P, Q}
+      \<and> geotop_arc_interior C\<^sub>R {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>O {P, Q} = {}
+      \<and> R \<in> geotop_arc_interior C\<^sub>R {P, Q}"
+proof -
+  obtain C\<^sub>1 C\<^sub>2 where hpoly: "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2"
+      and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+      and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+      and hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {P, Q}"
+      and hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {P, Q}"
+      and hC\<^sub>1C\<^sub>2:
+        "geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+      [OF hL_linear hL_fin hL_conn hL_polygon hPL hQL hPQ]
+    by (by100 blast)
+  have hR_union: "R \<in> C\<^sub>1 \<union> C\<^sub>2"
+    using hR_poly hpoly by (by100 simp)
+  show ?thesis
+  proof (cases "R \<in> C\<^sub>1")
+    case True
+    have hR_int: "R \<in> geotop_arc_interior C\<^sub>1 {P, Q}"
+      using True hR_not unfolding geotop_arc_interior_def by (by100 blast)
+    show ?thesis
+      using hpoly hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2 hR_int by (by100 blast)
+  next
+    case False
+    have hR_C\<^sub>2: "R \<in> C\<^sub>2"
+      using hR_union False by (by100 blast)
+    have hR_int: "R \<in> geotop_arc_interior C\<^sub>2 {P, Q}"
+      using hR_C\<^sub>2 hR_not unfolding geotop_arc_interior_def by (by100 blast)
+    have hpoly_swap: "geotop_polyhedron L = C\<^sub>2 \<union> C\<^sub>1"
+      using hpoly by (by100 blast)
+    have hdisj_swap:
+      "geotop_arc_interior C\<^sub>2 {P, Q} \<inter>
+        geotop_arc_interior C\<^sub>1 {P, Q} = {}"
+      using hC\<^sub>1C\<^sub>2 by (by100 blast)
+    show ?thesis
+      using hpoly_swap hC\<^sub>2_bl hC\<^sub>1_bl hC\<^sub>2E hC\<^sub>1E hdisj_swap hR_int
+      by (by100 blast)
+  qed
+qed
+
 lemma geotop_is_face_trans_prefix:
   fixes \<rho> \<tau> \<sigma> :: "(real^2) set"
   assumes h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
