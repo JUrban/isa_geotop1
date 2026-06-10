@@ -9720,7 +9720,93 @@ proof -
                             subdisks, choose witnesses whose selected boundary
                             data lies on the original boundary \<open>J'\<close>, avoiding
                             the artificial chord-only exceptional choice. **)
-                          sorry
+                        proof -
+                          have hL\<^sub>1_two_free_witnesses:
+                            "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>1'. \<sigma>\<^sub>1 \<in> L\<^sub>1
+                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+                              \<and> \<sigma>\<^sub>1' \<in> L\<^sub>1
+                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1'
+                              \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
+                          proof -
+                            let ?F\<^sub>1 =
+                              "{\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>}"
+                            have hF\<^sub>1_fin: "finite ?F\<^sub>1"
+                              using hL\<^sub>1_fin by (by100 simp)
+                            have hF\<^sub>1_card_gt0: "card ?F\<^sub>1 > 0"
+                              using hL\<^sub>1_free_count by (by100 simp)
+                            have hF\<^sub>1_not_le1: "\<not> card ?F\<^sub>1 \<le> Suc 0"
+                              using hL\<^sub>1_free_count by (by100 simp)
+                            have hF\<^sub>1_card_le1_iff:
+                              "card ?F\<^sub>1 \<le> Suc 0 \<longleftrightarrow>
+                                (\<forall>a\<in>?F\<^sub>1. \<forall>b\<in>?F\<^sub>1. a = b)"
+                              by (rule card_le_Suc0_iff_eq[OF hF\<^sub>1_fin])
+                            have hF\<^sub>1_not_all_eq:
+                              "\<not> (\<forall>a\<in>?F\<^sub>1. \<forall>b\<in>?F\<^sub>1. a = b)"
+                              using hF\<^sub>1_not_le1 hF\<^sub>1_card_le1_iff by (by100 blast)
+                            obtain \<sigma>\<^sub>1 \<sigma>\<^sub>1' where h\<sigma>\<^sub>1F: "\<sigma>\<^sub>1 \<in> ?F\<^sub>1"
+                              and h\<sigma>\<^sub>1'F: "\<sigma>\<^sub>1' \<in> ?F\<^sub>1"
+                              and h\<sigma>\<^sub>1_ne: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
+                              using hF\<^sub>1_not_all_eq by (by100 blast)
+                            show ?thesis
+                              using h\<sigma>\<^sub>1F h\<sigma>\<^sub>1'F h\<sigma>\<^sub>1_ne by (by100 blast)
+                          qed
+                          have hL\<^sub>2_two_free_witnesses:
+                            "\<exists>\<tau>\<^sub>2 \<tau>\<^sub>2'. \<tau>\<^sub>2 \<in> L\<^sub>2
+                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+                              \<and> \<tau>\<^sub>2' \<in> L\<^sub>2
+                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2'
+                              \<and> \<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
+                          proof -
+                            let ?F\<^sub>2 =
+                              "{\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>}"
+                            have hF\<^sub>2_fin: "finite ?F\<^sub>2"
+                              using hL\<^sub>2_fin by (by100 simp)
+                            have hF\<^sub>2_card_gt0: "card ?F\<^sub>2 > 0"
+                              using hL\<^sub>2_free_count by (by100 simp)
+                            have hF\<^sub>2_not_le1: "\<not> card ?F\<^sub>2 \<le> Suc 0"
+                              using hL\<^sub>2_free_count by (by100 simp)
+                            have hF\<^sub>2_card_le1_iff:
+                              "card ?F\<^sub>2 \<le> Suc 0 \<longleftrightarrow>
+                                (\<forall>a\<in>?F\<^sub>2. \<forall>b\<in>?F\<^sub>2. a = b)"
+                              by (rule card_le_Suc0_iff_eq[OF hF\<^sub>2_fin])
+                            have hF\<^sub>2_not_all_eq:
+                              "\<not> (\<forall>a\<in>?F\<^sub>2. \<forall>b\<in>?F\<^sub>2. a = b)"
+                              using hF\<^sub>2_not_le1 hF\<^sub>2_card_le1_iff by (by100 blast)
+                            obtain \<tau>\<^sub>2 \<tau>\<^sub>2' where h\<tau>\<^sub>2F: "\<tau>\<^sub>2 \<in> ?F\<^sub>2"
+                              and h\<tau>\<^sub>2'F: "\<tau>\<^sub>2' \<in> ?F\<^sub>2"
+                              and h\<tau>\<^sub>2_ne: "\<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
+                              using hF\<^sub>2_not_all_eq by (by100 blast)
+                            show ?thesis
+                              using h\<tau>\<^sub>2F h\<tau>\<^sub>2'F h\<tau>\<^sub>2_ne by (by100 blast)
+                          qed
+                          have htransferable_side_witness_choice_book:
+                            "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                              \<sigma> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                              \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                              card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                              \<tau> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                              \<sigma> \<noteq> \<tau>"
+                            (**
+                              Book choice step: among the two free
+                              2-simplexes available on each side, choose
+                              side witnesses whose boundary witness is on
+                              the original polygon boundary rather than only
+                              on the artificial chord. **)
+                            sorry
+                          show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                              \<sigma> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                              \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                              card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                              \<tau> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                              \<sigma> \<noteq> \<tau>"
+                            by (rule htransferable_side_witness_choice_book)
+                        qed
                         show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                             card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
                             \<sigma> \<inter> J' =
