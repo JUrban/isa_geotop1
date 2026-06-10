@@ -7866,6 +7866,219 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_is_face_trans_prefix:
+  fixes \<rho> \<tau> \<sigma> :: "(real^2) set"
+  assumes h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+  assumes h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+  shows "geotop_is_face \<rho> \<sigma>"
+proof -
+  obtain V\<^sub>\<tau> W\<^sub>\<rho> where h\<tau>V: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+    and hW\<^sub>\<rho>_ne: "W\<^sub>\<rho> \<noteq> {}"
+    and hW\<^sub>\<rho>_sub: "W\<^sub>\<rho> \<subseteq> V\<^sub>\<tau>"
+    and h\<rho>_eq: "\<rho> = geotop_convex_hull W\<^sub>\<rho>"
+    and h\<rho>W: "geotop_simplex_vertices \<rho> W\<^sub>\<rho>"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF h\<rho>\<tau>])
+  obtain V\<^sub>\<sigma> W\<^sub>\<tau> where h\<sigma>V: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    and hW\<^sub>\<tau>_ne: "W\<^sub>\<tau> \<noteq> {}"
+    and hW\<^sub>\<tau>_sub: "W\<^sub>\<tau> \<subseteq> V\<^sub>\<sigma>"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W\<^sub>\<tau>"
+    and h\<tau>W: "geotop_simplex_vertices \<tau> W\<^sub>\<tau>"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF h\<tau>\<sigma>])
+  have hV_eq: "V\<^sub>\<tau> = W\<^sub>\<tau>"
+    by (rule geotop_simplex_vertices_unique[OF h\<tau>V h\<tau>W])
+  have hW\<^sub>\<rho>_sub_\<sigma>: "W\<^sub>\<rho> \<subseteq> V\<^sub>\<sigma>"
+    using hW\<^sub>\<rho>_sub hV_eq hW\<^sub>\<tau>_sub by (by100 blast)
+  show ?thesis
+    unfolding geotop_is_face_def
+    using h\<sigma>V hW\<^sub>\<rho>_ne hW\<^sub>\<rho>_sub_\<sigma> h\<rho>_eq by (by100 blast)
+qed
+
+lemma geotop_complex_union_subcomplexes_in_ambient_prefix:
+  fixes K L M :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hL: "geotop_is_complex L"
+  assumes hM_faces: "\<And>\<sigma> \<tau>. \<sigma> \<in> M \<Longrightarrow> geotop_is_face \<tau> \<sigma> \<Longrightarrow> \<tau> \<in> M"
+  assumes hLsub: "L \<subseteq> K"
+  assumes hMsub: "M \<subseteq> K"
+  shows "geotop_is_complex (L \<union> M)"
+proof -
+  have hLMsub: "L \<union> M \<subseteq> K"
+    using hLsub hMsub by (by100 blast)
+  have hsimplex: "\<forall>\<sigma>\<in>L \<union> M. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma>
+    assume h\<sigma>LM: "\<sigma> \<in> L \<union> M"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using hLMsub h\<sigma>LM by (by100 blast)
+    show "geotop_is_simplex \<sigma>"
+      using geotop_is_complex_simplex[OF hK] h\<sigma>K by (by100 blast)
+  qed
+  have hfaces:
+    "\<forall>\<sigma>\<in>L \<union> M. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L \<union> M"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>: "\<sigma> \<in> L \<union> M"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    show "\<tau> \<in> L \<union> M"
+    proof (rule UnE[OF h\<sigma>])
+      assume h\<sigma>L: "\<sigma> \<in> L"
+      have "\<tau> \<in> L"
+        using hL h\<sigma>L hface unfolding geotop_is_complex_def by (by100 blast)
+      thus ?thesis by (by100 blast)
+    next
+      assume h\<sigma>M: "\<sigma> \<in> M"
+      have "\<tau> \<in> M"
+        by (rule hM_faces[OF h\<sigma>M hface])
+      thus ?thesis by (by100 blast)
+    qed
+  qed
+  have hinter:
+    "\<forall>\<sigma>\<in>L \<union> M. \<forall>\<tau>\<in>L \<union> M.
+      \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>LM: "\<sigma> \<in> L \<union> M"
+    assume h\<tau>LM: "\<tau> \<in> L \<union> M"
+    assume hinter_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using hLMsub h\<sigma>LM by (by100 blast)
+    have h\<tau>K: "\<tau> \<in> K"
+      using hLMsub h\<tau>LM by (by100 blast)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using geotop_is_complex_intersection[OF hK] h\<sigma>K h\<tau>K hinter_ne
+      by (by100 blast)
+  qed
+  have hlocal:
+    "\<forall>\<sigma>\<in>L \<union> M. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+      finite {\<tau>\<in>L \<union> M. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma>
+    assume h\<sigma>LM: "\<sigma> \<in> L \<union> M"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using hLMsub h\<sigma>LM by (by100 blast)
+    have hK_local_all:
+      "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+        finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      by (rule geotop_is_complex_locally_finite[OF hK])
+    have hK_local_\<sigma>:
+      "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      by (rule bspec[OF hK_local_all h\<sigma>K])
+    obtain U where hUopen: "open U" and h\<sigma>U: "\<sigma> \<subseteq> U"
+      and hUfin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hK_local_\<sigma> by (by100 blast)
+    have hsub:
+      "{\<tau>\<in>L \<union> M. \<tau> \<inter> U \<noteq> {}} \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hLMsub by (by100 blast)
+    have hfin: "finite {\<tau>\<in>L \<union> M. \<tau> \<inter> U \<noteq> {}}"
+      by (rule finite_subset[OF hsub hUfin])
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+      finite {\<tau>\<in>L \<union> M. \<tau> \<inter> U \<noteq> {}}"
+      using hUopen h\<sigma>U hfin by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
+qed
+
+lemma geotop_theta_face_adjoin_side_complex_prefix:
+  fixes K L :: "(real^2) set set" and \<theta> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hL: "geotop_is_complex L"
+  assumes hLsub: "L \<subseteq> K"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  shows "geotop_is_complex
+      (L \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})
+    \<and> L \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>} \<subseteq> K"
+proof -
+  let ?F = "{\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>}"
+  have hface_closed:
+    "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hFsub: "?F \<subseteq> K"
+  proof
+    fix \<rho>
+    assume h\<rho>F: "\<rho> \<in> ?F"
+    show "\<rho> \<in> K"
+    proof (rule disjE)
+      show "geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>"
+        using h\<rho>F by (by100 blast)
+    next
+      assume hface: "geotop_is_face \<rho> \<theta>"
+      show ?thesis
+        using hface_closed h\<theta>K hface by (by100 blast)
+    next
+      assume "\<rho> = \<theta>"
+      thus ?thesis using h\<theta>K by (by100 simp)
+    qed
+  qed
+  have hF_faces:
+    "\<And>\<sigma> \<rho>. \<sigma> \<in> ?F \<Longrightarrow> geotop_is_face \<rho> \<sigma> \<Longrightarrow> \<rho> \<in> ?F"
+  proof -
+    fix \<sigma> \<rho>
+    assume h\<sigma>F: "\<sigma> \<in> ?F"
+    assume h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
+    have hcase: "geotop_is_face \<sigma> \<theta> \<or> \<sigma> = \<theta>"
+      using h\<sigma>F by (by100 blast)
+    show "\<rho> \<in> ?F"
+    proof (rule disjE[OF hcase])
+      assume h\<sigma>\<theta>: "geotop_is_face \<sigma> \<theta>"
+      have "geotop_is_face \<rho> \<theta>"
+        by (rule geotop_is_face_trans_prefix[OF h\<rho>\<sigma> h\<sigma>\<theta>])
+      thus ?thesis by (by100 blast)
+    next
+      assume "\<sigma> = \<theta>"
+      thus ?thesis using h\<rho>\<sigma> by (by100 blast)
+    qed
+  qed
+  have hcomplex: "geotop_is_complex (L \<union> ?F)"
+    by (rule geotop_complex_union_subcomplexes_in_ambient_prefix
+        [OF hK hL hF_faces hLsub hFsub])
+  have hsub: "L \<union> ?F \<subseteq> K"
+    using hLsub hFsub by (by100 blast)
+  show ?thesis
+    using hcomplex hsub by (by100 blast)
+qed
+
+lemma geotop_theta_face_adjoin_side_two_simplex_count_gt1_prefix:
+  fixes L :: "(real^2) set set" and \<theta> \<rho> :: "(real^2) set"
+  assumes hL_fin: "finite L"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<rho>L: "\<rho> \<in> L"
+  assumes h\<rho>2: "geotop_simplex_dim \<rho> 2"
+  assumes h\<rho>ne: "\<rho> \<noteq> \<theta>"
+  shows "card {\<eta>\<in>L \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+      geotop_simplex_dim \<eta> 2} > 1"
+proof -
+  let ?F = "{\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}"
+  let ?T = "{\<eta>\<in>L \<union> ?F. geotop_simplex_dim \<eta> 2}"
+  have hF_fin: "finite ?F"
+  proof -
+    have h\<theta>simplex: "geotop_is_simplex \<theta>"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF h\<theta>2])
+    have hfaces_fin: "finite {\<eta>. geotop_is_face \<eta> \<theta>}"
+      by (rule geotop_simplex_faces_finite[OF h\<theta>simplex])
+    have "?F = {\<eta>. geotop_is_face \<eta> \<theta>} \<union> {\<theta>}"
+      by (by100 blast)
+    thus ?thesis
+      using hfaces_fin by (by100 simp)
+  qed
+  have hT_fin: "finite ?T"
+    using hL_fin hF_fin by (by100 simp)
+  have h\<theta>T: "\<theta> \<in> ?T"
+    using h\<theta>2 by (by100 blast)
+  have h\<rho>T: "\<rho> \<in> ?T"
+    using h\<rho>L h\<rho>2 by (by100 blast)
+  have hpair_sub: "{\<theta>, \<rho>} \<subseteq> ?T"
+    using h\<theta>T h\<rho>T by (by100 blast)
+  have hpair_card: "card {\<theta>, \<rho>} = 2"
+    using h\<rho>ne by (by100 simp)
+  have "card {\<theta>, \<rho>} \<le> card ?T"
+    by (rule card_mono[OF hT_fin hpair_sub])
+  thus ?thesis
+    using hpair_card by (by100 simp)
+qed
+
 lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
   fixes J J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 \<theta> :: "(real^2) set"
     and K L\<^sub>1 L\<^sub>2 :: "(real^2) set set"
