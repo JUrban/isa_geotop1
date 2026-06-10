@@ -10351,6 +10351,192 @@ proof -
                               show ?thesis
                                 using hclos_on hclos by (by100 simp)
                             qed
+                            have hJ\<^sub>1_closure_minus_chord_sub_left_side:
+                              "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                               - closed_segment v\<^sub>0 v\<^sub>2
+                               \<subseteq> geotop_polygon_interior J\<^sub>1
+                                 \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                            proof
+                              fix x
+                              assume hx:
+                                "x \<in> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)
+                                 - closed_segment v\<^sub>0 v\<^sub>2"
+                              have hx_closure:
+                                "x \<in> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)"
+                                using hx by (by100 blast)
+                              have hx_not_chord:
+                                "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+                                using hx by (by100 blast)
+                              have hx_int_or_boundary:
+                                "x \<in> geotop_polygon_interior J\<^sub>1 \<union> J\<^sub>1"
+                                using hJ\<^sub>1_closure_eq hx_closure by (by100 simp)
+                              have hx_int_or_boundary_cases:
+                                "x \<in> geotop_polygon_interior J\<^sub>1 \<or> x \<in> J\<^sub>1"
+                                using hx_int_or_boundary by (by100 blast)
+                              show "x \<in> geotop_polygon_interior J\<^sub>1
+                                \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                              proof (rule disjE[OF hx_int_or_boundary_cases])
+                                assume hx_int: "x \<in> geotop_polygon_interior J\<^sub>1"
+                                show ?thesis
+                                  using hx_int by (by100 blast)
+                              next
+                                assume hx_boundary: "x \<in> J\<^sub>1"
+                                have hx_C\<^sub>1_or_chord:
+                                  "x \<in> C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using hJ\<^sub>1_boundary_def hx_boundary by (by100 blast)
+                                have hx_C\<^sub>1: "x \<in> C\<^sub>1"
+                                  using hx_C\<^sub>1_or_chord hx_not_chord by (by100 blast)
+                                have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  by (by100 simp)
+                                have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  by (by100 simp)
+                                have hx_not_endpoints: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+                                  using hx_not_chord hv\<^sub>0_chord hv\<^sub>2_chord by (by100 blast)
+                                have "x \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                  using hx_C\<^sub>1 hx_not_endpoints
+                                  unfolding geotop_arc_interior_def by (by100 blast)
+                                thus ?thesis
+                                  by (by100 blast)
+                              qed
+                            qed
+                            have hJ\<^sub>2_closure_minus_chord_sub_right_side:
+                              "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                               - closed_segment v\<^sub>0 v\<^sub>2
+                               \<subseteq> geotop_polygon_interior J\<^sub>2
+                                 \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                            proof
+                              fix x
+                              assume hx:
+                                "x \<in> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2)
+                                 - closed_segment v\<^sub>0 v\<^sub>2"
+                              have hx_closure:
+                                "x \<in> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2)"
+                                using hx by (by100 blast)
+                              have hx_not_chord:
+                                "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+                                using hx by (by100 blast)
+                              have hx_int_or_boundary:
+                                "x \<in> geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
+                                using hJ\<^sub>2_closure_eq hx_closure by (by100 simp)
+                              have hx_int_or_boundary_cases:
+                                "x \<in> geotop_polygon_interior J\<^sub>2 \<or> x \<in> J\<^sub>2"
+                                using hx_int_or_boundary by (by100 blast)
+                              show "x \<in> geotop_polygon_interior J\<^sub>2
+                                \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                              proof (rule disjE[OF hx_int_or_boundary_cases])
+                                assume hx_int: "x \<in> geotop_polygon_interior J\<^sub>2"
+                                show ?thesis
+                                  using hx_int by (by100 blast)
+                              next
+                                assume hx_boundary: "x \<in> J\<^sub>2"
+                                have hx_chord_or_C\<^sub>2:
+                                  "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
+                                  using hJ\<^sub>2_boundary_def hx_boundary by (by100 blast)
+                                have hx_C\<^sub>2: "x \<in> C\<^sub>2"
+                                  using hx_chord_or_C\<^sub>2 hx_not_chord by (by100 blast)
+                                have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  by (by100 simp)
+                                have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  by (by100 simp)
+                                have hx_not_endpoints: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+                                  using hx_not_chord hv\<^sub>0_chord hv\<^sub>2_chord by (by100 blast)
+                                have "x \<in> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                  using hx_C\<^sub>2 hx_not_endpoints
+                                  unfolding geotop_arc_interior_def by (by100 blast)
+                                thus ?thesis
+                                  by (by100 blast)
+                              qed
+                            qed
+                            have hL\<^sub>1_minus_chord_sub_left_side:
+                              "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow>
+                                \<rho> - closed_segment v\<^sub>0 v\<^sub>2
+                                \<subseteq> geotop_polygon_interior J\<^sub>1
+                                  \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                            proof -
+                              fix \<rho>
+                              assume h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+                              have h\<rho>_sub_closure:
+                                "\<rho> \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)"
+                                using h\<rho>L\<^sub>1 unfolding hL\<^sub>1_def by (by100 blast)
+                              have h\<rho>_minus_sub_closure_minus:
+                                "\<rho> - closed_segment v\<^sub>0 v\<^sub>2
+                                \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)
+                                  - closed_segment v\<^sub>0 v\<^sub>2"
+                                using h\<rho>_sub_closure by (by100 blast)
+                              show "\<rho> - closed_segment v\<^sub>0 v\<^sub>2
+                                \<subseteq> geotop_polygon_interior J\<^sub>1
+                                  \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                using h\<rho>_minus_sub_closure_minus
+                                  hJ\<^sub>1_closure_minus_chord_sub_left_side
+                                by (by100 blast)
+                            qed
+                            have hL\<^sub>2_minus_chord_sub_right_side:
+                              "\<And>\<rho>. \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                \<rho> - closed_segment v\<^sub>0 v\<^sub>2
+                                \<subseteq> geotop_polygon_interior J\<^sub>2
+                                  \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                            proof -
+                              fix \<rho>
+                              assume h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+                              have h\<rho>_sub_closure:
+                                "\<rho> \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2)"
+                                using h\<rho>L\<^sub>2 unfolding hL\<^sub>2_def by (by100 blast)
+                              have h\<rho>_minus_sub_closure_minus:
+                                "\<rho> - closed_segment v\<^sub>0 v\<^sub>2
+                                \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2)
+                                  - closed_segment v\<^sub>0 v\<^sub>2"
+                                using h\<rho>_sub_closure by (by100 blast)
+                              show "\<rho> - closed_segment v\<^sub>0 v\<^sub>2
+                                \<subseteq> geotop_polygon_interior J\<^sub>2
+                                  \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                using h\<rho>_minus_sub_closure_minus
+                                  hJ\<^sub>2_closure_minus_chord_sub_right_side
+                                by (by100 blast)
+                            qed
+                            have hcommon_side_simplex_minus_chord_empty:
+                              "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                \<rho> - closed_segment v\<^sub>0 v\<^sub>2 = {}"
+                            proof -
+                              fix \<rho>
+                              assume h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+                              assume h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+                              show "\<rho> - closed_segment v\<^sub>0 v\<^sub>2 = {}"
+                              proof (rule equals0I)
+                                fix x
+                                assume hx:
+                                  "x \<in> \<rho> - closed_segment v\<^sub>0 v\<^sub>2"
+                                have hx_left:
+                                  "x \<in> geotop_polygon_interior J\<^sub>1
+                                    \<union> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                                  using hL\<^sub>1_minus_chord_sub_left_side[OF h\<rho>L\<^sub>1]
+                                    hx
+                                  by (by100 blast)
+                                have hx_right:
+                                  "x \<in> geotop_polygon_interior J\<^sub>2
+                                    \<union> geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                                  using hL\<^sub>2_minus_chord_sub_right_side[OF h\<rho>L\<^sub>2]
+                                    hx
+                                  by (by100 blast)
+                                have "x \<in>
+                                  (geotop_polygon_interior J\<^sub>1 \<union>
+                                    geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<inter>
+                                  (geotop_polygon_interior J\<^sub>2 \<union>
+                                    geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                                  using hx_left hx_right by (by100 blast)
+                                thus False
+                                  using hside_open_regions_disjoint by (by100 blast)
+                              qed
+                            qed
                             have h\<sigma>_sub_closure_J\<^sub>1:
                               "\<sigma> \<subseteq> closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>1)"
