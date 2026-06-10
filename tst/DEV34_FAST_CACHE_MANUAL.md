@@ -1,8 +1,16 @@
 # Manual: `.dev34_fast_cache` and `check_dev34_fast.sh`
 
+Last reviewed against the script on 2026-06-10.
+
 This note documents the fast checking workflow used for the GeoTop Sections 3-4 development. It is intentionally about the local implementation in `check_dev34_fast.sh`, not a general Isabelle caching guide. The short version is that the script turns the large `GeoTop` development into a sequence of reusable dirty sessions, records content hashes in `.dev34_fast_cache`, and generates temporary split theories so that a proof can be checked against a cached prefix instead of reparsing and replaying the whole active stack on every iteration.
 
 The mechanism is useful, and it is faster for the kind of work we are doing now. It also has real limits. It is a development accelerator, not a replacement for final full builds, and the split modes can only certify the slice that they actually process. The right workflow is to use the fast modes many times while editing, then run broader checks whenever a named proof package closes or a statement changes.
+
+At the time of this review, the local `.dev34_fast_cache` directory is about
+71 MB and contains hundreds of stamps plus roughly 150 generated split
+directories. That is normal for this style of development. The large proof
+objects are still Isabelle heaps, stored by Isabelle's heap mechanism; the
+cache directory mostly contains hashes and small generated theories.
 
 ## 1. The Problem It Solves
 
@@ -75,6 +83,54 @@ Split cache entries are directories and stamps such as:
 The short split directory key is derived from the file, the target pattern, the parent logic, and any chained split pattern. The generated `ROOT` defines a temporary session. The generated prefix theory imports the real parent or another generated prefix session. The generated slice or tail theory imports the prefix session and contains only the target region being checked.
 
 This is why the directory can contain many split folders. They are cheap compared to Isabelle heaps, and they make repeated checks of a specific large theorem much faster once the prefix is warm.
+
+The split directories are intentionally content-addressed by a short key. A
+change to the file, split pattern, parent logic, or chained split pattern leads
+to a different key or a stale stamp. The old directory can remain on disk
+without being trusted, because freshness is decided by the stamp digest rather
+than by the directory name alone.
+
+There are also process stamps:
+
+```text
+.dev34_fast_cache/proc-<hash>.sha256
+```
+
+These are useful when asking "has this exact file already processed against
+this exact fresh parent?". They are less useful when asking "how long does this
+take?", because a fresh process stamp will skip the run. Disable that behavior
+with `DEV34_FAST_PROC_CACHE=0` when measuring runtime.
+
+## 2.1. How the Script Chooses a Parent
+
+The central engineering decision is the parent mapping. `parent_context` maps a
+file to the logic that should already be available, and `parent_target_for_file`
+maps the same file to the cache layer that can be warmed.
+
+The important mappings are:
+
+```text
+file under dev34_prefix_base     parent logic GeoTopPre3Dirty
+file under dev34_prefix_graph    parent logic GeoTop34PrefixBaseDirty
+file under dev34_prefix_mid      parent logic GeoTop34PrefixGraphDirty
+file under dev34_prefix          parent logic GeoTop34PrefixMidDirty
+file under dev34_facts           parent logic GeoTop34PrefixDirty
+file under dev34_workfacts       parent logic GeoTop34FactsDirty
+file under dev34_linkfacts       parent logic GeoTop34WorkFactsDirty
+file under dev34_graphfacts      parent logic GeoTop34LinkFactsDirty
+file under dev34_graphwork       parent logic GeoTop34GraphFactsDirty
+file under dev34_openstar        parent logic GeoTop34GraphWorkDirty
+file under dev34_core            parent logic GeoTop34OpenStarDirty
+file under dev34                 parent logic GeoTop34CoreDirty
+```
+
+This is why `hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy` does not need to
+start from the original `GeoTop` base every time. It can load the graph prefix
+heap and then process the mid-prefix theory.
+
+The `auto_target` function is separate. It maps dirty or explicit files to the
+smallest layer build target that would cover them. That is what powers `quick`,
+`dirty`, `auto`, `cache`, and `cache-through`.
 
 ## 3. The Main Modes
 
@@ -152,6 +208,23 @@ The known focus targets are listed by:
 
 The focus list encodes the currently important Moise packages: graph branch/cycle work, mid-prefix split/free/fold/support/D42 work, prefix D44 work, and active `dev34` cycle/fan/semicircle work.
 
+There are two graph-specific compatibility commands:
+
+```bash
+./check_dev34_fast.sh graph-focus "branch vertex local component"
+./check_dev34_fast.sh graph-warm
+```
+
+These use the active graph target variables in the script. For the present
+branch-local work, the more exact named focus target is usually better:
+
+```bash
+./check_dev34_fast.sh focus graph-branch-local
+```
+
+That command scans the full indexes for the target's scan phrase and then runs
+the corresponding `slice-hot`.
+
 `cache-through`, `cache-parents`, `cache-status`, and `cache-all` control layer heap stamps:
 
 ```bash
@@ -162,6 +235,45 @@ The focus list encodes the currently important Moise packages: graph branch/cycl
 ```
 
 Use these when switching targets or after a broad statement change. `cache-all` is intentionally heavier; it is for preparing the whole stack, not for every edit.
+
+## 3.1. Environment Flags
+
+Several options are controlled by environment variables rather than command
+line flags. The ones worth remembering are:
+
+```text
+TIMEOUT=120s
+  Override the default timeout. Later layers have larger defaults.
+
+FORCE_PROOFS=1
+  Pass skip_proofs=false into builds and include that choice in cache digests.
+  Use this for stricter milestone checks, not for every small edit.
+
+SKIP_PROOFS=1
+  Used by outline paths. This is for scaffold and statement checking only.
+
+DEV34_FAST_PROC_CACHE=0
+  Disable process-result skipping. Use when measuring actual runtime or when
+  you want Isabelle to rerun an otherwise identical process_theories command.
+
+DEV34_FAST_AUTOWARM=0
+  Do not automatically warm parent heaps before hot/split checks.
+
+DEV34_FAST_DEEP_AUTOWARM=0
+  Warm only the immediate parent instead of the whole parent chain.
+
+DEV34_FAST_SKIP_FRESH_TARGET=0
+  Force a file-level process even when the whole target layer cache is fresh.
+
+FORCE_CACHE=1
+  Rebuild a layer cache even if its stamp currently matches.
+
+DEV34_FAST_VERBOSE=1
+  Print generated split-session details while running split-hot/slice-hot.
+```
+
+The default settings favor fast theorem iteration. The stricter settings are
+for milestone verification and timing audits.
 
 ## 4. Why It Is Faster
 
@@ -182,6 +294,12 @@ Holes/index/plan/status: near-instant; use constantly.
 
 The script does not promise a fixed runtime. A target slice can still be slow if the theorem itself contains expensive automation, if the generated prefix is stale, if the parent heap is stale, or if the machine has lost Isabelle heap locality. But it changes the default iteration from "recheck too much" to "recheck the named package I am actually editing."
 
+The first run after a target switch is often not representative. If output says
+`cache build`, `cache warm-through`, or `building prefix cache`, the script is
+buying future speed. The run to compare is the next one after the parent and
+prefix are fresh. If the next run still spends most of its time after
+`processing slice`, the slow part is inside the active theorem.
+
 ## 5. Correctness Boundaries
 
 The fast cache is conservative about content hashes for the files it knows are relevant. It includes source checksums, `ROOT` files, parent digests, and proof-mode flags. That makes stale-cache false positives unlikely for the normal dev34 stack.
@@ -199,6 +317,19 @@ Fourth, split theories are generated approximations of a region of a file. They 
 Fifth, pattern selection matters. `slice-hot FILE PAT` splits at the first `rg` match. If the pattern is too broad and matches a comment, an earlier helper, or an old generated name, the split point can be wrong. Use exact theorem names where possible. `focus` helps by encoding known good patterns.
 
 Sixth, the cache is local. `.dev34_fast_cache` records local successful checks and generated helper theories. It should not be treated as a portable proof artifact. Another clone or machine needs to rebuild.
+
+Seventh, generated split theories intentionally run with a generated session
+that imports a prefix session. That means error line numbers can point into a
+generated file under `.dev34_fast_cache/split-*`. The source text is copied
+from the real theory, so the usual fix is still made in the original file. Use
+the printed source line interval, or search the copied phrase in the original
+file, when translating an error back.
+
+Eighth, cache freshness is content based, but only over files the script knows
+to hash. If we add new session files, move theory files, or change index
+generation conventions, the script's file lists and session mappings may need
+to be updated. This is why `CLAUDE.md` now explicitly reminds us to refresh
+the index-generating scripts when session layout changes.
 
 ## 6. Downsides and Failure Modes
 
@@ -235,6 +366,12 @@ FORCE_PROOFS=1 ./check_dev34_fast.sh prove dev34_prefix_mid/GeoTop_3_4_Prefix_Mi
 ```
 
 The fifth downside is that generated split sessions may fail for reasons the original file would not, especially if the target theorem depends on local context that is not preserved by a top-level split. The current splitter is designed for the style of these theories: top-level declarations between `begin` and `end`. It is not a general Isabelle document slicer.
+
+The sixth downside is that the tool can make us over-focus. A fast theorem
+slice is exactly what we want while closing one Moise theorem, but it can hide
+breakage in later layers until we broaden the check. The antidote is procedural:
+after a meaningful package closes, run a layer/cache-through check, regenerate
+the indexes, and record the plan and result in the commit message.
 
 ## 7. Recommended Workflow for the Current Goal
 
