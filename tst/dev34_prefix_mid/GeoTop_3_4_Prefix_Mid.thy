@@ -7630,6 +7630,62 @@ proof -
     using hneither_nonbase_boundary_segment by (by100 blast)
   have hnot_side_boundary_segment: "\<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
     using hneither_nonbase_boundary_segment by (by100 blast)
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hnonbase_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta> \<and>
+      geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hface_closed_K:
+    "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hchord_edge_K: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hside_edge_K: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hchord_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have hside_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>1 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+    by (by100 simp)
+  have hchord_edge: "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2})"
+    using hnonbase_edge_face_data by (by100 blast)
+  have hchord_face: "geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta>"
+    using hnonbase_edge_face_data by (by100 blast)
+  have hside_edge: "geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2})"
+    using hnonbase_edge_face_data by (by100 blast)
+  have hside_face: "geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+    using hnonbase_edge_face_data by (by100 blast)
+  have hchord_arc_interior_sub_polygon_interior:
+    "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<subseteq>
+      geotop_polygon_interior J"
+    by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_subset_polygon_interior_prefix
+        [OF hJ hK hK_poly hv\<^sub>0v\<^sub>2 hchord_hull_segment_eq hchord_edge_K
+          hchord_edge h\<theta>K h\<theta>2 hchord_face hnot_chord_boundary_segment])
+  have hside_arc_interior_sub_polygon_interior:
+    "geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<subseteq>
+      geotop_polygon_interior J"
+    by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_subset_polygon_interior_prefix
+        [OF hJ hK hK_poly hv\<^sub>1v\<^sub>2 hside_hull_segment_eq hside_edge_K
+          hside_edge h\<theta>K h\<theta>2 hside_face hnot_side_boundary_segment])
+  have hchord_arc_interior_disjoint_J:
+    "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} = {}"
+    by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix
+        [OF hJ hK hK_poly hv\<^sub>0v\<^sub>2 hchord_hull_segment_eq hchord_edge_K
+          hchord_edge h\<theta>K h\<theta>2 hchord_face hnot_chord_boundary_segment])
+  have hside_arc_interior_disjoint_J:
+    "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} = {}"
+    by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix
+        [OF hJ hK hK_poly hv\<^sub>1v\<^sub>2 hside_hull_segment_eq hside_edge_K
+          hside_edge h\<theta>K h\<theta>2 hside_face hnot_side_boundary_segment])
   have hnot_both_nonbase_boundary_segments:
     "\<not> (closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
       \<and> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J)"
