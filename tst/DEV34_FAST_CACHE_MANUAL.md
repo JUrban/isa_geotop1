@@ -291,3 +291,81 @@ When should I clean it? Clean it when cache behavior seems confusing, when gener
 Which modes should I use most often? `scan`, `holes`, `focus`, `slice-hot`, and `hot`. Use `cache-through` at package boundaries. Use broad builds at milestones.
 
 What is the main operational rule? Search first, edit narrowly, check with the narrowest meaningful proof command, then broaden verification before claiming a theorem package is closed.
+
+## 9. Confidence Ladder
+
+It is useful to treat the commands as a ladder rather than as synonyms.
+
+The first rung is pure inspection. `quick`, `holes`, `dirty`, `plan`, and
+`focus-status` do not ask Isabelle to validate new proof text. They answer
+questions about where the remaining holes are, which files are dirty, and
+whether a cache looks fresh. They are appropriate before editing and after
+commits.
+
+The second rung is search. `scan`, `index`, `names`, and `stmts` are part of
+proof development because they prevent duplicate lemmas. They carry no proof
+confidence by themselves, but they strongly affect whether the next proof edit
+is pointed at the right existing fact.
+
+The third rung is scaffold checking. `outline` and `focus-outline` use
+`SKIP_PROOFS=1`. They are for the `sorry`-first phase: statement shape, imports,
+local context, and generated split structure. They are not evidence that a
+tactic replacement works.
+
+The fourth rung is hot processing. `hot`, `proc`, `split-hot`, `slice-hot`, and
+`focus` process proof text against a warmed parent. This is the main iteration
+loop. A successful `slice-hot` result is meaningful for the active generated
+slice, but it says nothing about later top-level declarations outside the slice.
+
+The fifth rung is layer building. `auto`, `cache-through`, and explicit layer
+commands such as `prefix-mid` check a wider session boundary. Use this after
+statement changes, after closing a named package, or before trusting a sequence
+of local slice successes.
+
+The sixth rung is proof-forced building. `FORCE_PROOFS=1 ./check_dev34_fast.sh
+prove FILE` is the wrapper's stricter milestone check. It is slower and should
+be used when a theorem package is being claimed as closed, not after every
+line-level edit.
+
+The final rung is the project build policy outside the fast helper. The fast
+cache is there to make this reachable without wasting days on duplicate
+iteration, but the end condition for Sections 3-4 is still source-level closure:
+no target `sorry`s, no stale generated indexes, and a broad Isabelle build that
+matches the project's final verification requirement.
+
+## 10. Timing Playbook
+
+When an iteration still takes too long, first decide whether the slowness is a
+cold-cache cost or an active-proof cost.
+
+Cold-cache cost is visible when the output says it is building a parent cache or
+a split prefix. This is expected after changing text before a split point,
+changing parent layers, cleaning `.dev34_fast_cache`, or switching
+`FORCE_PROOFS`. The fix is usually to let the warm step finish once, then keep
+edits inside the active slice.
+
+Active-proof cost is visible when the prefix is skipped but the slice processing
+itself runs for a long time. That is a proof-engine problem, not a cache
+problem. The remedy is to split the proof step, replace broad automation with
+bounded methods such as `by (by100 blast)` or restricted `rule`/`erule` steps,
+and use the indexes to find a sharper lemma.
+
+Process-cache skips are useful but can hide timing measurements. If the question
+is "did this exact content already pass?", leave the process cache on. If the
+question is "how long does this proof actually take now?", run with:
+
+```bash
+DEV34_FAST_PROC_CACHE=0 ./check_dev34_fast.sh slice-hot FILE PATTERN
+```
+
+For the current Section 3 work, the practical rhythm is:
+
+```bash
+./check_dev34_fast.sh scan "contact cover selected boundary edge"
+./check_dev34_fast.sh slice-hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy "theorem Theorem_GT_3_3"
+```
+
+When the local `Theorem_GT_3_3` bridge changes statements or moves facts above
+the active split point, expect one slower prefix rebuild. When only the proof
+inside the current bridge changes, the warmed `slice-hot` path should be much
+faster than a layer build.
