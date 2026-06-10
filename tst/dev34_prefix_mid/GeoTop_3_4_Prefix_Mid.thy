@@ -7960,6 +7960,51 @@ proof -
   have h\<theta>_inter_J_minus_base:
     "(\<theta> \<inter> J) - closed_segment v\<^sub>0 v\<^sub>1 = {v\<^sub>2}"
     using h\<theta>_inter_J hv\<^sub>2_not_base_segment by (by100 blast)
+  have hchord_segment_sub_polyhedron:
+    "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> geotop_polyhedron K"
+    using hchord_edge_K hchord_hull_segment_eq
+    unfolding geotop_polyhedron_def by (by100 blast)
+  have hchord_arc_interior_sub_polyhedron:
+    "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
+      \<subseteq> geotop_polyhedron K"
+    using hchord_segment_sub_polyhedron
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hpoly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+  have hpoly_interior_eq_polygon:
+    "interior (geotop_polyhedron K) = geotop_polygon_interior J"
+  proof -
+    have hclos_on:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) =
+        closure (geotop_polygon_interior J)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hpoly_closure:
+      "geotop_polyhedron K = closure (geotop_polygon_interior J)"
+      using hK_poly hclos_on by (by100 simp)
+    have hregular:
+      "interior (closure (geotop_polygon_interior J)) = geotop_polygon_interior J"
+      by (rule geotop_polygon_interior_regular_closed_prefix[OF hJ])
+    show ?thesis
+      using hpoly_closure hregular by (by100 simp)
+  qed
+  have hchord_segment_inter_poly_frontier:
+    "closed_segment v\<^sub>0 v\<^sub>2 \<inter> frontier (geotop_polyhedron K) = {v\<^sub>0, v\<^sub>2}"
+    using hchord_segment_inter_J hpoly_frontier_eq_J by (by100 simp)
+  have hchord_arc_interior_sub_poly_interior:
+    "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
+      \<subseteq> interior (geotop_polyhedron K)"
+    using hchord_arc_interior_sub_polygon_interior hpoly_interior_eq_polygon by (by100 simp)
+  have hside_segment_sub_polyhedron:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> geotop_polyhedron K"
+    using hside_edge_K hside_hull_segment_eq
+    unfolding geotop_polyhedron_def by (by100 blast)
+  have hside_segment_inter_poly_frontier:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<inter> frontier (geotop_polyhedron K) = {v\<^sub>1, v\<^sub>2}"
+    using hside_segment_inter_J hpoly_frontier_eq_J by (by100 simp)
+  have hside_arc_interior_sub_poly_interior:
+    "geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}
+      \<subseteq> interior (geotop_polyhedron K)"
+    using hside_arc_interior_sub_polygon_interior hpoly_interior_eq_polygon by (by100 simp)
   show ?thesis
     sorry
 qed
