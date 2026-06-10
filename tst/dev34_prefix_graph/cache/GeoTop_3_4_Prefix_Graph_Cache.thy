@@ -10056,7 +10056,51 @@ proof -
           \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three selected
           punctured germs.  This is not a general graph cutpoint claim; the
           SCC local-one-manifold hypothesis is essential. **)
-        sorry
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hM_conn: "connected M"
+          and hpM: "p \<in> M"
+          and hyM: "y \<in> M"
+          and hzM: "z \<in> M"
+          and hM_ball_cover:
+            "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          using hselected_three_ball_sector_cover_HOL
+          by (elim exE conjE)
+        have hfirst_exit_component_from_connected_witness:
+            "\<And>M. M \<subseteq> geotop_polyhedron L - {w}
+              \<Longrightarrow> connected M
+              \<Longrightarrow> p \<in> M
+              \<Longrightarrow> y \<in> M
+              \<Longrightarrow> z \<in> M
+              \<Longrightarrow> M \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))
+              \<Longrightarrow> \<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+                \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+                \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+                \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+          (**
+            Narrow remaining first-exit step.  The already-proved ambient
+            facts available here are:
+            \<open>hselected_sphere_germ_boundary_data\<close>,
+            \<open>hselected_germs_nonempty\<close>,
+            \<open>hN_conn_HOL\<close>, \<open>hN_ball_sector_cover\<close>,
+            \<open>hlocal_open_selected\<close>, and \<open>hselected_union_eq\<close>.  The intended
+            next proof is to assign the local-complement pieces met by the
+            connected witness to HOL components via \<open>connected_component_maximal\<close>,
+            then use the selected boundary closure data to show all three
+            germs accumulate on the same component. **)
+          sorry
+        show ?thesis
+          by (rule hfirst_exit_component_from_connected_witness
+              [OF hM_sub hM_conn hpM hyM hzM hM_ball_cover])
+      qed
       show "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
         \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
         \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
