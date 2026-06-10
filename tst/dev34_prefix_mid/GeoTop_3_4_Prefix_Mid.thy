@@ -9444,6 +9444,103 @@ proof -
   have hside_segment_face_\<theta>:
     "geotop_is_face (closed_segment v\<^sub>1 v\<^sub>2) \<theta>"
     using hside_face hside_hull_segment_eq by (by100 simp)
+  have h\<theta>_minus_chord_connected:
+    "top1_connected_on (\<theta> - closed_segment v\<^sub>0 v\<^sub>2)
+      (subspace_topology UNIV geotop_euclidean_topology
+        (\<theta> - closed_segment v\<^sub>0 v\<^sub>2))"
+    by (rule geotop_2simplex_delete_edge_face_connected_prefix
+        [OF h\<theta>2 hchord_segment_edge hchord_segment_face_\<theta>])
+  have h\<theta>_minus_chord_sub_R\<^sub>1:
+    "\<theta> - closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?R\<^sub>1"
+  proof -
+    let ?C = "\<theta> - closed_segment v\<^sub>0 v\<^sub>2"
+    have hC_region_union: "?C \<subseteq> ?R\<^sub>1 \<union> ?R\<^sub>2"
+    proof
+      fix x
+      assume hxC: "x \<in> ?C"
+      have hx\<theta>: "x \<in> \<theta>"
+        using hxC by (by100 blast)
+      have hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+        using hxC by (by100 blast)
+      have hxK: "x \<in> geotop_polyhedron K"
+        unfolding geotop_polyhedron_def using h\<theta>K hx\<theta> by (by100 blast)
+      have hx_parent_closure:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+        using hxK hK_poly by (by100 blast)
+      have hx_parent_minus:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2"
+        using hx_parent_closure hx_not_chord by (by100 blast)
+      show "x \<in> ?R\<^sub>1 \<union> ?R\<^sub>2"
+        using hclosure_minus hx_parent_minus by (by100 blast)
+    qed
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hC_side: "?C \<subseteq> ?R\<^sub>1 \<or> ?C \<subseteq> ?R\<^sub>2"
+      by (rule Theorem_GT_1_10
+          [OF hTU hside_separated hC_region_union h\<theta>_minus_chord_connected])
+    have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+    proof -
+      have h\<theta>_eq_hull: "\<theta> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+        using h\<theta>_vertices unfolding geotop_simplex_vertices_def by (by100 blast)
+      have "v\<^sub>1 \<in> convex hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+        by (rule hull_inc) (by100 simp)
+      hence "v\<^sub>1 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+        using geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1, v\<^sub>2}"] by (by100 simp)
+      thus ?thesis
+        using h\<theta>_eq_hull by (by100 simp)
+    qed
+    have hv\<^sub>1_not_chord_segment: "v\<^sub>1 \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    proof
+      assume hv\<^sub>1_chord: "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      have hchord_col: "collinear (closed_segment v\<^sub>0 v\<^sub>2)"
+        by (rule collinear_closed_segment)
+      have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+        using hv\<^sub>1_chord by (by100 simp)
+      have hcol: "collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+        by (rule collinear_subset[OF hchord_col hverts_sub])
+      show False
+        using h\<theta>_not_col hcol by (by100 blast)
+    qed
+    have hv\<^sub>1C: "v\<^sub>1 \<in> ?C"
+      using hv\<^sub>1_\<theta> hv\<^sub>1_not_chord_segment by (by100 blast)
+    have hv\<^sub>1R\<^sub>1: "v\<^sub>1 \<in> ?R\<^sub>1"
+      using hv\<^sub>1_C\<^sub>1_int by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hC_side])
+      assume hC_sub_R\<^sub>1: "?C \<subseteq> ?R\<^sub>1"
+      show ?thesis
+        by (rule hC_sub_R\<^sub>1)
+    next
+      assume hC_sub_R\<^sub>2: "?C \<subseteq> ?R\<^sub>2"
+      have hv\<^sub>1R\<^sub>2: "v\<^sub>1 \<in> ?R\<^sub>2"
+        using hC_sub_R\<^sub>2 hv\<^sub>1C by (by100 blast)
+      have False
+        using hv\<^sub>1R\<^sub>1 hv\<^sub>1R\<^sub>2 hside_open_regions_disjoint by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+  have h\<theta>_sub_B\<^sub>1: "\<theta> \<subseteq> ?B\<^sub>1"
+  proof
+    fix x
+    assume hx\<theta>: "x \<in> \<theta>"
+    show "x \<in> ?B\<^sub>1"
+    proof (cases "x \<in> closed_segment v\<^sub>0 v\<^sub>2")
+      case True
+      show ?thesis
+        using True hchord_segment_sub_B\<^sub>1 by (by100 blast)
+    next
+      case False
+      have hx_minus: "x \<in> \<theta> - closed_segment v\<^sub>0 v\<^sub>2"
+        using hx\<theta> False by (by100 blast)
+      have hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+        using h\<theta>_minus_chord_sub_R\<^sub>1 hx_minus by (by100 blast)
+      show ?thesis
+        using hR\<^sub>1_sub_B\<^sub>1 hxR\<^sub>1 by (by100 blast)
+    qed
+  qed
   obtain \<theta>\<^sub>c where h\<theta>\<^sub>cK: "\<theta>\<^sub>c \<in> K"
     and h\<theta>\<^sub>c2: "geotop_simplex_dim \<theta>\<^sub>c 2"
     and h\<theta>\<^sub>c_chord_face:
