@@ -9588,6 +9588,16 @@ proof -
         [OF hJ hK hK_poly hside_segment_K hside_segment_edge h\<theta>K h\<theta>2
           hside_segment_face_\<theta> hnot_side_boundary_segment]])
       (by100 blast)
+  have h\<theta>_\<theta>\<^sub>s_inter_side:
+    "\<theta> \<inter> \<theta>\<^sub>s = closed_segment v\<^sub>1 v\<^sub>2"
+  proof -
+    have h\<theta>_ne_\<theta>\<^sub>s: "\<theta> \<noteq> \<theta>\<^sub>s"
+      using h\<theta>\<^sub>s_ne_\<theta> by (by100 blast)
+    show ?thesis
+      by (rule geotop_complex_two_2simplex_shared_edge_inter_eq_edge_prefix
+          [OF hK h\<theta>K h\<theta>\<^sub>sK h\<theta>2 h\<theta>\<^sub>s2 h\<theta>_ne_\<theta>\<^sub>s
+            hside_segment_face_\<theta> h\<theta>\<^sub>s_side_face hside_segment_edge])
+  qed
   have hchord_no_third_2simplex:
     "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
       geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
