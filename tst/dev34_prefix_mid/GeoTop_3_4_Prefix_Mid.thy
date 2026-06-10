@@ -10322,6 +10322,17 @@ proof -
           \<or> S \<in> geotop_arc_interior D\<^sub>2 {P, R})"
     using hD42_D_J_split hQ hS hQ_ne_PR hS_ne_PR
     unfolding geotop_arc_interior_def by (by100 blast)
+  have hD42_QS_unique_PR_boundary_arc_interiors:
+      "((Q \<in> geotop_arc_interior D\<^sub>1 {P, R}
+          \<and> Q \<notin> geotop_arc_interior D\<^sub>2 {P, R})
+        \<or> (Q \<in> geotop_arc_interior D\<^sub>2 {P, R}
+          \<and> Q \<notin> geotop_arc_interior D\<^sub>1 {P, R}))
+        \<and> ((S \<in> geotop_arc_interior D\<^sub>1 {P, R}
+          \<and> S \<notin> geotop_arc_interior D\<^sub>2 {P, R})
+        \<or> (S \<in> geotop_arc_interior D\<^sub>2 {P, R}
+          \<and> S \<notin> geotop_arc_interior D\<^sub>1 {P, R}))"
+    using hD42_QS_on_PR_boundary_arc_interiors hD42_D\<^sub>1D\<^sub>2_int_disj
+    by (by100 blast)
   have hD42_QS_broken_boundary_arc_split:
       "\<exists>F\<^sub>1 F\<^sub>2.
         J = F\<^sub>1 \<union> F\<^sub>2
@@ -10386,6 +10397,17 @@ proof -
           \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})"
     using hD42_F_J_split hP hR hQ_ne_PR hS_ne_PR
     unfolding geotop_arc_interior_def by (by100 blast)
+  have hD42_PR_unique_QS_boundary_arc_interiors:
+      "((P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))
+        \<and> ((R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (R \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))"
+    using hD42_PR_on_QS_boundary_arc_interiors hD42_F\<^sub>1F\<^sub>2_int_disj
+    by (by100 blast)
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
