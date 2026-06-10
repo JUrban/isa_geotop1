@@ -5389,6 +5389,34 @@ proof -
       (by100 simp)
 qed
 
+lemma geotop_restrict_polyhedron_contains_if_carriers_subset_prefix:
+  fixes K :: "(real^2) set set" and B :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hB_sub: "B \<subseteq> geotop_polyhedron K"
+  assumes hcarrier: "\<And>x. x \<in> B \<Longrightarrow> geotop_K_carrier K x \<subseteq> B"
+  shows "B \<subseteq> geotop_polyhedron {\<sigma>\<in>K. \<sigma> \<subseteq> B}"
+  (**
+    Carrier form of the reverse inclusion needed for restricted subcomplexes:
+    if every point of the target set has its original K-carrier still inside
+    the target set, then the restriction of K to that set covers it. **)
+proof
+  fix x
+  assume hxB: "x \<in> B"
+  have hxK: "x \<in> geotop_polyhedron K"
+    using hB_sub hxB by (by100 blast)
+  have hcarrierK: "geotop_K_carrier K x \<in> K"
+    by (rule geotop_K_carrier_in[OF hK hK_fin hxK])
+  have hx_carrier: "x \<in> geotop_K_carrier K x"
+    by (rule geotop_K_carrier_contains_point[OF hK hK_fin hxK])
+  have hcarrier_sub_B: "geotop_K_carrier K x \<subseteq> B"
+    by (rule hcarrier[OF hxB])
+  have "geotop_K_carrier K x \<in> {\<sigma>\<in>K. \<sigma> \<subseteq> B}"
+    using hcarrierK hcarrier_sub_B by (by100 simp)
+  thus "x \<in> geotop_polyhedron {\<sigma>\<in>K. \<sigma> \<subseteq> B}"
+    using hx_carrier unfolding geotop_polyhedron_def by (by100 blast)
+qed
+
 lemma geotop_nonfree_selected_edges_contact_outside_prefix:
   fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
   assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
@@ -9846,25 +9874,114 @@ proof -
                               hT\<^sub>1_gt1 hT\<^sub>2_gt1
                             by (by100 blast)
                         qed
-                        have hside_complexes_reverse_and_counts_book:
-                          "closure_on UNIV geotop_euclidean_topology
+                        have hside_reverse_and_counts_from_carriers:
+                          "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1).
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1))
+                           \<Longrightarrow> (\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2).
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2))
+                           \<Longrightarrow> card ?T\<^sub>1 < card ?T
+                           \<Longrightarrow> card ?T\<^sub>2 < card ?T
+                           \<Longrightarrow> card ?T\<^sub>1 > 1
+                           \<Longrightarrow> card ?T\<^sub>2 > 1
+                           \<Longrightarrow> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1
+                            \<and> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2
+                            \<and> card ?T\<^sub>1 < card ?T
+                            \<and> card ?T\<^sub>2 < card ?T
+                            \<and> card ?T\<^sub>1 > 1
+                            \<and> card ?T\<^sub>2 > 1"
+                        proof -
+                          assume hcarrier_side1:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1).
+                                geotop_K_carrier K x \<subseteq>
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>1))"
+                          assume hcarrier_side2:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2).
+                                geotop_K_carrier K x \<subseteq>
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>2))"
+                          assume hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                          assume hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                          assume hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                          assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+                          have hJ\<^sub>1_closure_sub_K:
+                            "closure_on UNIV geotop_euclidean_topology
                               (geotop_polygon_interior J\<^sub>1)
-                            \<subseteq> geotop_polyhedron L\<^sub>1
-                          \<and> closure_on UNIV geotop_euclidean_topology
+                              \<subseteq> geotop_polyhedron K"
+                            using hclosure_split hK_poly' by (by100 blast)
+                          have hJ\<^sub>2_closure_sub_K:
+                            "closure_on UNIV geotop_euclidean_topology
                               (geotop_polygon_interior J\<^sub>2)
-                            \<subseteq> geotop_polyhedron L\<^sub>2
+                              \<subseteq> geotop_polyhedron K"
+                            using hclosure_split hK_poly' by (by100 blast)
+                          have hcarrier_side1_point:
+                            "\<And>x. x \<in> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1) \<Longrightarrow>
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1)"
+                            using hcarrier_side1 by (by100 blast)
+                          have hcarrier_side2_point:
+                            "\<And>x. x \<in> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2) \<Longrightarrow>
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2)"
+                            using hcarrier_side2 by (by100 blast)
+                          have hL\<^sub>1_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1"
+                            unfolding hL\<^sub>1_def
+                            by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+                                [OF hK' hK_fin' hJ\<^sub>1_closure_sub_K hcarrier_side1_point])
+                          have hL\<^sub>2_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2"
+                            unfolding hL\<^sub>2_def
+                            by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+                                [OF hK' hK_fin' hJ\<^sub>2_closure_sub_K hcarrier_side2_point])
+                          show ?thesis
+                            using hL\<^sub>1_poly_rev hL\<^sub>2_poly_rev hT\<^sub>1_lt_T hT\<^sub>2_lt_T
+                              hT\<^sub>1_gt1 hT\<^sub>2_gt1
+                            by (by100 blast)
+                        qed
+                        have hside_complexes_reverse_and_counts_book:
+                          "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1).
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1))
+                          \<and> (\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2).
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2))
                           \<and> card ?T\<^sub>1 < card ?T
                           \<and> card ?T\<^sub>2 < card ?T
                           \<and> card ?T\<^sub>1 > 1
                           \<and> card ?T\<^sub>2 > 1"
                           (**
                             Remaining Moise Figure 3.2 side-complex package.
-                            The forward polyhedron inclusions are already
-                            proved from the restriction definitions.  The
-                            residual content is the reverse carrier inclusion
-                            for both chord-side disks, strict decrease of the
-                            side 2-simplex counts, and nontriviality of both
-                            side triangulations. **)
+                            The generic restriction-carrier bridge is now
+                            proved above.  The residual content is that every
+                            point of a chord-side closed disk has its original
+                            K-carrier still inside that side, plus strict
+                            decrease and nontriviality of the two side
+                            triangulations. **)
                           sorry
                         have hside_complexes_smaller_book:
                           "geotop_polyhedron L\<^sub>1 =
@@ -9878,16 +9995,20 @@ proof -
                           \<and> card ?T\<^sub>1 > 1
                           \<and> card ?T\<^sub>2 > 1"
                         proof -
-                          have hL\<^sub>1_poly_rev:
-                            "closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>1)
-                              \<subseteq> geotop_polyhedron L\<^sub>1"
+                          have hcarrier_side1:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1).
+                                geotop_K_carrier K x \<subseteq>
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>1))"
                             using hside_complexes_reverse_and_counts_book
                             by (by100 blast)
-                          have hL\<^sub>2_poly_rev:
-                            "closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>2)
-                              \<subseteq> geotop_polyhedron L\<^sub>2"
+                          have hcarrier_side2:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2).
+                                geotop_K_carrier K x \<subseteq>
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>2))"
                             using hside_complexes_reverse_and_counts_book
                             by (by100 blast)
                           have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
@@ -9902,6 +10023,30 @@ proof -
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
                             using hside_complexes_reverse_and_counts_book
                             by (by100 blast)
+                          have hreverse_counts:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1
+                            \<and> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2
+                            \<and> card ?T\<^sub>1 < card ?T
+                            \<and> card ?T\<^sub>2 < card ?T
+                            \<and> card ?T\<^sub>1 > 1
+                            \<and> card ?T\<^sub>2 > 1"
+                            by (rule hside_reverse_and_counts_from_carriers
+                                [OF hcarrier_side1 hcarrier_side2 hT\<^sub>1_lt_T
+                                  hT\<^sub>2_lt_T hT\<^sub>1_gt1 hT\<^sub>2_gt1])
+                          have hL\<^sub>1_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1"
+                            using hreverse_counts by (by100 blast)
+                          have hL\<^sub>2_poly_rev:
+                            "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2"
+                            using hreverse_counts by (by100 blast)
                           show ?thesis
                             by (rule hside_complexes_smaller_from_reverse_and_counts
                                 [OF hL\<^sub>1_poly_rev hL\<^sub>2_poly_rev hT\<^sub>1_lt_T
