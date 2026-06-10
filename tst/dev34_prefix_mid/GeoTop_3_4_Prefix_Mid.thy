@@ -17469,19 +17469,136 @@ proof -
 	                                using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>ne\<tau> h\<sigma>card_parent h\<sigma>contact_parent
 	                                by (by100 blast)
 	                            qed
-	                            have h\<tau>_parent_contact:
-	                              "\<tau> \<inter> J' =
-	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
-	                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+		                            have h\<tau>_parent_contact:
+		                              "\<tau> \<inter> J' =
+		                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+		                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
 	                              (**
 	                                Exact remaining singleton side-2 contact
 	                                package.  Since \<open>L\<^sub>2\<close> has only the one
 	                                2-simplex \<open>\<tau>\<close>, its side-disk boundary is
-	                                the frontier of \<open>\<tau>\<close>; deleting the artificial
-	                                chord interior leaves precisely the two
-	                                parent-boundary edge faces. **)
-	                              sorry
-	                            show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+		                                the frontier of \<open>\<tau>\<close>; deleting the artificial
+		                                chord interior leaves precisely the two
+		                                parent-boundary edge faces. **)
+		                            proof (rule subset_antisym)
+		                              have hC\<^sub>1_opposite_singleton:
+		                                "C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+		                                  (geotop_polygon_interior J\<^sub>2) \<subseteq> {v\<^sub>0, v\<^sub>2}"
+		                              proof
+		                                have hB\<^sub>2_sub_closure_R\<^sub>2:
+		                                  "closure_on UNIV geotop_euclidean_topology
+		                                    (geotop_polygon_interior J\<^sub>2)
+		                                  \<subseteq> closure_on UNIV geotop_euclidean_topology
+		                                    (geotop_polygon_interior J\<^sub>2 \<union>
+		                                      geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+		                                proof -
+		                                  have hI_sub_R:
+		                                    "geotop_polygon_interior J\<^sub>2 \<subseteq>
+		                                      geotop_polygon_interior J\<^sub>2 \<union>
+		                                      geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+		                                    by (by100 blast)
+		                                  show ?thesis
+		                                    by (rule closure_on_mono[OF hI_sub_R])
+		                                qed
+		                                fix x
+		                                assume hx:
+		                                  "x \<in> C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+		                                    (geotop_polygon_interior J\<^sub>2)"
+		                                have hxC\<^sub>1: "x \<in> C\<^sub>1"
+		                                  using hx by (by100 blast)
+		                                have hxclB\<^sub>2:
+		                                  "x \<in> closure_on UNIV geotop_euclidean_topology
+		                                    (geotop_polygon_interior J\<^sub>2)"
+		                                  using hx by (by100 blast)
+		                                show "x \<in> {v\<^sub>0, v\<^sub>2}"
+		                                proof (rule ccontr)
+		                                  assume hxnot: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+		                                  have hxarc\<^sub>1:
+		                                    "x \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+		                                    using hxC\<^sub>1 hxnot unfolding geotop_arc_interior_def
+		                                    by (by100 blast)
+		                                  have hxR\<^sub>1:
+		                                    "x \<in> geotop_polygon_interior J\<^sub>1 \<union>
+		                                      geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+		                                    using hxarc\<^sub>1 by (by100 blast)
+		                                  have hxclR\<^sub>2:
+		                                    "x \<in> closure_on UNIV geotop_euclidean_topology
+		                                      (geotop_polygon_interior J\<^sub>2 \<union>
+		                                        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+		                                    using hB\<^sub>2_sub_closure_R\<^sub>2 hxclB\<^sub>2 by (by100 blast)
+		                                  have "x \<in> (geotop_polygon_interior J\<^sub>1 \<union>
+		                                        geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+		                                    \<inter> closure_on UNIV geotop_euclidean_topology
+		                                      (geotop_polygon_interior J\<^sub>2 \<union>
+		                                        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+		                                    using hxR\<^sub>1 hxclR\<^sub>2 by (by100 blast)
+		                                  thus False
+		                                    using hside_separated unfolding geotop_separated_def
+		                                    by (by100 blast)
+		                                qed
+		                              qed
+		                              have h\<tau>_closure_singleton:
+		                                "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology
+		                                  (geotop_polygon_interior J\<^sub>2)"
+		                                using h\<tau>L\<^sub>2 unfolding hL\<^sub>2_def by (by100 blast)
+		                              have h\<tau>_parent_contact_sub_side:
+		                                "\<tau> \<inter> J' \<subseteq> \<tau> \<inter> J\<^sub>2"
+		                              proof
+		                                fix x
+		                                assume hx: "x \<in> \<tau> \<inter> J'"
+		                                have hx\<tau>: "x \<in> \<tau>"
+		                                  using hx by (by100 blast)
+		                                have hxJ': "x \<in> J'"
+		                                  using hx by (by100 blast)
+		                                have hxside: "x \<in> C\<^sub>1 \<or> x \<in> C\<^sub>2"
+		                                  using hJ'_boundary_split hxJ' by (by100 blast)
+		                                have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+		                                proof (rule disjE[OF hxside])
+		                                  assume hxC\<^sub>1: "x \<in> C\<^sub>1"
+		                                  have hxcl:
+		                                    "x \<in> closure_on UNIV geotop_euclidean_topology
+		                                      (geotop_polygon_interior J\<^sub>2)"
+		                                    using hx\<tau> h\<tau>_closure_singleton by (by100 blast)
+		                                  have hxend: "x \<in> {v\<^sub>0, v\<^sub>2}"
+		                                    using hC\<^sub>1_opposite_singleton hxC\<^sub>1 hxcl by (by100 blast)
+		                                  have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+		                                    by (rule ends_in_segment(1))
+		                                  have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+		                                    by (rule ends_in_segment(2))
+		                                  have hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+		                                    using hxend hv\<^sub>0_chord hv\<^sub>2_chord by (by100 blast)
+		                                  show ?thesis
+		                                    using hxchord hchord_sub_J\<^sub>2 by (by100 blast)
+		                                next
+		                                  assume hxC\<^sub>2: "x \<in> C\<^sub>2"
+		                                  show ?thesis
+		                                    using hxC\<^sub>2 hC\<^sub>2_sub_J\<^sub>2 by (by100 blast)
+		                                qed
+		                                show "x \<in> \<tau> \<inter> J\<^sub>2"
+		                                  using hx\<tau> hxJ\<^sub>2 by (by100 blast)
+		                              qed
+		                              have h\<tau>_parent_contact_sub:
+		                                "\<tau> \<inter> J' \<subseteq>
+		                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+		                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+		                                (**
+		                                  Remaining endpoint/edge conversion for the
+		                                  singleton side-2 disk: after
+		                                  \<open>h\<tau>_parent_contact_sub_side\<close>, side-boundary
+		                                  contact on \<open>C\<^sub>2\<close> must be expressed as the two
+		                                  non-chord edge faces of \<open>\<tau>\<close> selected by the
+		                                  parent boundary. **)
+		                                sorry
+		                              show "\<tau> \<inter> J' \<subseteq>
+		                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+		                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+		                                by (rule h\<tau>_parent_contact_sub)
+		                              show "\<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+		                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+		                                \<subseteq> \<tau> \<inter> J'"
+		                                by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+		                            qed
+		                            show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
 	                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
 	                              \<sigma> \<inter> J' =
 	                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
