@@ -10260,6 +10260,9 @@ proof -
         geotop_arc_interior D\<^sub>2 {P, R} = {}"
     using hD42_broken_boundary_arc_split
     by (elim exE conjE)
+  have hD42_D\<^sub>1D\<^sub>2_inter: "D\<^sub>1 \<inter> D\<^sub>2 = {P, R}"
+    by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+        [OF hD42_D\<^sub>1E hD42_D\<^sub>2E hD42_D\<^sub>1D\<^sub>2_int_disj])
   have hD42_A_misses_broken_boundary_arc_interiors:
       "geotop_arc_interior D\<^sub>1 {P, R} \<inter> A = {}
         \<and> geotop_arc_interior D\<^sub>2 {P, R} \<inter> A = {}"
@@ -10378,6 +10381,9 @@ proof -
         geotop_arc_interior F\<^sub>2 {Q, S} = {}"
     using hD42_QS_broken_boundary_arc_split
     by (elim exE conjE)
+  have hD42_F\<^sub>1F\<^sub>2_inter: "F\<^sub>1 \<inter> F\<^sub>2 = {Q, S}"
+    by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+        [OF hD42_F\<^sub>1E hD42_F\<^sub>2E hD42_F\<^sub>1F\<^sub>2_int_disj])
   have hD42_QS_on_broken_boundary_arcs:
       "Q \<in> F\<^sub>1 \<and> S \<in> F\<^sub>1 \<and> Q \<in> F\<^sub>2 \<and> S \<in> F\<^sub>2"
   proof (intro conjI)
