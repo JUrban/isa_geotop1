@@ -10315,6 +10315,44 @@ proof -
                               show ?thesis
                                 by (rule le_trans[OF hcard_le hcardK])
                             qed
+                            have h\<sigma>_parent_fin_L\<^sub>1:
+                              "finite {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                              using hL\<^sub>1_fin by (by100 simp)
+                            have h\<tau>_parent_fin_L\<^sub>2:
+                              "finite {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                              using hL\<^sub>2_fin by (by100 simp)
+                            have h\<sigma>_parent_allowed_L\<^sub>1:
+                              "{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} = {}
+                              \<or> (\<exists>e. {d\<in>L\<^sub>1. geotop_is_edge d
+                                  \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J'} = {e}
+                                \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>
+                                \<and> e \<subseteq> J')
+                              \<or> (\<exists>e1 e2. {d\<in>L\<^sub>1. geotop_is_edge d
+                                  \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J'} = {e1, e2}
+                                \<and> e1 \<noteq> e2
+                                \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+                                \<and> geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma>
+                                \<and> e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+                              by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+                                  [OF h\<sigma>_parent_fin_L\<^sub>1 h\<sigma>_parent_card_L\<^sub>1])
+                            have h\<tau>_parent_allowed_L\<^sub>2:
+                              "{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} = {}
+                              \<or> (\<exists>e. {d\<in>L\<^sub>2. geotop_is_edge d
+                                  \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J'} = {e}
+                                \<and> geotop_is_edge e \<and> geotop_is_face e \<tau>
+                                \<and> e \<subseteq> J')
+                              \<or> (\<exists>e1 e2. {d\<in>L\<^sub>2. geotop_is_edge d
+                                  \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J'} = {e1, e2}
+                                \<and> e1 \<noteq> e2
+                                \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+                                \<and> geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau>
+                                \<and> e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+                              by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+                                  [OF h\<tau>_parent_fin_L\<^sub>2 h\<tau>_parent_card_L\<^sub>2])
                             have hparent_contact_and_distinct_book:
                               "\<sigma> \<inter> J' =
                                 \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
