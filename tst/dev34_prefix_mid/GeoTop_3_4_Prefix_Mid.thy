@@ -5354,6 +5354,41 @@ proof -
         [OF h\<sigma>K h\<sigma>2 hEsubK hEallowed hcontact])
 qed
 
+lemma geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix:
+  fixes K K' :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set"
+  assumes hK'_sub: "K' \<subseteq> K"
+  assumes h\<sigma>K': "\<sigma>\<^sub>2 \<in> K'"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hE_fin:
+    "finite {e\<in>K'. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J}"
+  assumes hE_card_le2:
+    "card {e\<in>K'. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J} \<le> 2"
+  assumes hcontact:
+    "\<sigma>\<^sub>2 \<inter> J =
+      \<Union>{e\<in>K'. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J}"
+  shows "geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  (**
+    Side-transfer endpoint using the canonical selected-edge family.  After a
+    side proof establishes that the parent-boundary selected edges have at
+    most two members and exactly cover the parent boundary contact, this lemma
+    turns that data into parent freeness. **)
+proof -
+  let ?E = "{e\<in>K'. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J}"
+  have hEallowed:
+    "?E = {} \<or>
+     (\<exists>e. ?E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. ?E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+        [OF hE_fin hE_card_le2])
+  show ?thesis
+    by (rule geotop_free_2_simplex_selected_edges_transfer_prefix
+        [OF hK'_sub h\<sigma>K' h\<sigma>2 _ hEallowed hcontact])
+      (by100 simp)
+qed
+
 lemma geotop_nonfree_selected_edges_contact_outside_prefix:
   fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
   assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
