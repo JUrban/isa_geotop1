@@ -10814,6 +10814,67 @@ proof -
       using hB_bl hB_sub hQ'_B hS'_B hA_B hPR_same
       by (intro exI conjI)
   qed
+  have hD42_separated_sides_forbid_PR_same_component:
+      "\<And>H K X :: (real^2) set.
+        geotop_separated UNIV geotop_euclidean_topology H K \<Longrightarrow>
+        X = H \<union> K \<Longrightarrow>
+        P \<in> H \<Longrightarrow> R \<in> K \<Longrightarrow>
+        \<not> top1_in_same_component_on X
+          (subspace_topology UNIV geotop_euclidean_topology X) P R"
+  proof
+    fix H K X :: "(real^2) set"
+    assume hsep: "geotop_separated UNIV geotop_euclidean_topology H K"
+    assume hX: "X = H \<union> K"
+    assume hP_H: "P \<in> H"
+    assume hR_K: "R \<in> K"
+    assume hsame:
+      "top1_in_same_component_on X
+        (subspace_topology UNIV geotop_euclidean_topology X) P R"
+    obtain C where hC_sub_X: "C \<subseteq> X"
+      and hP_C: "P \<in> C"
+      and hR_C: "R \<in> C"
+      and hC_conn_X:
+        "top1_connected_on C
+          (subspace_topology X
+            (subspace_topology UNIV geotop_euclidean_topology X) C)"
+      using hsame unfolding top1_in_same_component_on_def by (by100 blast)
+    have hsubspace:
+        "subspace_topology X
+          (subspace_topology UNIV geotop_euclidean_topology X) C =
+         subspace_topology UNIV geotop_euclidean_topology C"
+      by (rule subspace_topology_trans[OF hC_sub_X])
+    have hC_conn_UNIV:
+        "top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+      using hC_conn_X hsubspace by (by100 simp)
+    have hC_sub_HK: "C \<subseteq> H \<union> K"
+      using hC_sub_X hX by (by100 blast)
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hC_side: "C \<subseteq> H \<or> C \<subseteq> K"
+      by (rule Theorem_GT_1_10[OF hTU hsep hC_sub_HK hC_conn_UNIV])
+    have hK_cl: "K \<subseteq> closure_on UNIV geotop_euclidean_topology K"
+      by (rule subset_closure_on)
+    have hdisj: "H \<inter> K = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx: "x \<in> H \<inter> K"
+      have hxH: "x \<in> H"
+        using hx by (by100 blast)
+      have hxKcl: "x \<in> closure_on UNIV geotop_euclidean_topology K"
+        using hx hK_cl by (by100 blast)
+      have "x \<in> H \<inter> closure_on UNIV geotop_euclidean_topology K"
+        using hxH hxKcl by (by100 blast)
+      thus False
+        using hsep unfolding geotop_separated_def by (by100 blast)
+    qed
+    have hP_not_K: "P \<notin> K"
+      using hP_H hdisj by (by100 blast)
+    have hR_not_H: "R \<notin> H"
+      using hR_K hdisj by (by100 blast)
+    show False
+      using hC_side hP_C hR_C hP_not_K hR_not_H by (by100 blast)
+  qed
   have hD42_different_component_open_split:
       "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
         U\<^sub>Q0 \<in> geotop_euclidean_topology
