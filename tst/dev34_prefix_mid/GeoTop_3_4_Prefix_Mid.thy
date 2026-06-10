@@ -6770,6 +6770,31 @@ proof -
     show "card ?T\<^sub>2 < card ?T"
       by (rule psubset_card_mono[OF hT_fin hproper])
   qed
+  have hparent_free_pair_finishes:
+      "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma> \<Longrightarrow>
+        geotop_free_2_simplex K J \<tau> \<Longrightarrow>
+        card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+    by (rule geotop_two_distinct_free_2_simplexes_card_ge2_prefix[OF hK_fin])
+  have hside_parent_free_witnesses_finish:
+      "\<And>\<sigma> \<tau>. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> \<tau> \<in> K\<^sub>2 \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma> \<Longrightarrow>
+        geotop_free_2_simplex K J \<tau> \<Longrightarrow>
+        card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+  proof -
+    fix \<sigma> \<tau>
+    assume h\<sigma>K\<^sub>1: "\<sigma> \<in> K\<^sub>1"
+      and h\<tau>K\<^sub>2: "\<tau> \<in> K\<^sub>2"
+      and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+      and h\<sigma>free: "geotop_free_2_simplex K J \<sigma>"
+      and h\<tau>free: "geotop_free_2_simplex K J \<tau>"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using hK\<^sub>1_sub_K h\<sigma>K\<^sub>1 by (by100 blast)
+    have h\<tau>K: "\<tau> \<in> K"
+      using hK\<^sub>2_sub_K h\<tau>K\<^sub>2 by (by100 blast)
+    show "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+      by (rule hparent_free_pair_finishes[OF h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>free h\<tau>free])
+  qed
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
