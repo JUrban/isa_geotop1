@@ -9411,35 +9411,35 @@ proof -
                               (geotop_polygon_interior J\<^sub>2)}"
                       have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
                         using hsubdisk_book by (by100 blast)
-	                      have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
-	                        using hsubdisk_book by (by100 blast)
-	                      have hJ'_boundary_split: "J' = C\<^sub>1 \<union> C\<^sub>2"
-	                        using hsubdisk_book by (by100 blast)
-	                      have hJ\<^sub>1_boundary_def:
-	                        "J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
-	                        using hsubdisk_book by (by100 blast)
-	                      have hJ\<^sub>2_boundary_def:
-	                        "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
-	                        using hsubdisk_book by (by100 blast)
-	                      have hclosure_split:
-	                        "closure_on UNIV geotop_euclidean_topology
-	                           (geotop_polygon_interior J') =
+                      have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+                        using hsubdisk_book by (by100 blast)
+                      have hJ'_boundary_split: "J' = C\<^sub>1 \<union> C\<^sub>2"
+                        using hsubdisk_book by (by100 blast)
+                      have hJ\<^sub>1_boundary_def:
+                        "J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
+                        using hsubdisk_book by (by100 blast)
+                      have hJ\<^sub>2_boundary_def:
+                        "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
+                        using hsubdisk_book by (by100 blast)
+                      have hclosure_split:
+                        "closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J') =
                          closure_on UNIV geotop_euclidean_topology
                            (geotop_polygon_interior J\<^sub>1)
-	                         \<union> closure_on UNIV geotop_euclidean_topology
-	                           (geotop_polygon_interior J\<^sub>2)"
-	                        using hsubdisk_book by (by100 blast)
-	                      have hclosure_minus_chord:
-	                        "closure_on UNIV geotop_euclidean_topology
-	                           (geotop_polygon_interior J') - closed_segment v\<^sub>0 v\<^sub>2 =
-	                         (geotop_polygon_interior J\<^sub>1 \<union>
-	                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
-	                         (geotop_polygon_interior J\<^sub>2 \<union>
-	                          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
-	                        using hsubdisk_book by (by100 blast)
-	                      have hside_separated:
-	                        "geotop_separated UNIV geotop_euclidean_topology
-	                           (geotop_polygon_interior J\<^sub>1 \<union>
+                         \<union> closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J\<^sub>2)"
+                        using hsubdisk_book by (by100 blast)
+                      have hclosure_minus_chord:
+                        "closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J') - closed_segment v\<^sub>0 v\<^sub>2 =
+                         (geotop_polygon_interior J\<^sub>1 \<union>
+                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+                         (geotop_polygon_interior J\<^sub>2 \<union>
+                          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                        using hsubdisk_book by (by100 blast)
+                      have hside_separated:
+                        "geotop_separated UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J\<^sub>1 \<union>
                             geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
                            (geotop_polygon_interior J\<^sub>2 \<union>
                             geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
@@ -10334,6 +10334,29 @@ proof -
                                   \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
                                   \<subseteq> \<tau> \<inter> J'"
                                 by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+                              have hJ'_sub_side_boundaries: "J' \<subseteq> J\<^sub>1 \<union> J\<^sub>2"
+                                using hJ'_boundary_split hJ\<^sub>1_boundary_def hJ\<^sub>2_boundary_def
+                                by (by100 blast)
+                              have h\<sigma>_parent_contact_side_split:
+                                "\<sigma> \<inter> J' \<subseteq> (\<sigma> \<inter> J\<^sub>1) \<union> (\<sigma> \<inter> J\<^sub>2)"
+                                using hJ'_sub_side_boundaries by (by100 blast)
+                              have h\<tau>_parent_contact_side_split:
+                                "\<tau> \<inter> J' \<subseteq> (\<tau> \<inter> J\<^sub>1) \<union> (\<tau> \<inter> J\<^sub>2)"
+                                using hJ'_sub_side_boundaries by (by100 blast)
+                              have h\<sigma>_parent_contact_reduced:
+                                "\<sigma> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+                                  \<union> (\<sigma> \<inter> J\<^sub>2)"
+                                using h\<sigma>_parent_contact_side_split h\<sigma>_side_contact
+                                by (by100 blast)
+                              have h\<tau>_parent_contact_reduced:
+                                "\<tau> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+                                  \<union> (\<tau> \<inter> J\<^sub>1)"
+                                using h\<tau>_parent_contact_side_split h\<tau>_side_contact
+                                by (by100 blast)
                               have hparent_contact_cover_and_distinct_book:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
