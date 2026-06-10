@@ -9736,6 +9736,22 @@ proof -
   qed
   have h\<theta>\<^sub>s_L\<^sub>1: "\<theta>\<^sub>s \<in> L\<^sub>1"
     using hL\<^sub>1_def h\<theta>\<^sub>sK h\<theta>\<^sub>s_sub_B\<^sub>1 by (by100 blast)
+  have h\<theta>_\<theta>\<^sub>c_inter_chord:
+    "\<theta> \<inter> \<theta>\<^sub>c = closed_segment v\<^sub>0 v\<^sub>2"
+  proof -
+    have h\<theta>_ne_\<theta>\<^sub>c: "\<theta> \<noteq> \<theta>\<^sub>c"
+      using h\<theta>\<^sub>c_ne_\<theta> by (by100 blast)
+    show ?thesis
+      by (rule geotop_complex_two_2simplex_shared_edge_inter_eq_edge_prefix
+          [OF hK h\<theta>K h\<theta>\<^sub>cK h\<theta>2 h\<theta>\<^sub>c2 h\<theta>_ne_\<theta>\<^sub>c
+            hchord_segment_face_\<theta> h\<theta>\<^sub>c_chord_face hchord_segment_edge])
+  qed
+  have h\<theta>\<^sub>c_minus_chord_connected:
+    "top1_connected_on (\<theta>\<^sub>c - closed_segment v\<^sub>0 v\<^sub>2)
+      (subspace_topology UNIV geotop_euclidean_topology
+        (\<theta>\<^sub>c - closed_segment v\<^sub>0 v\<^sub>2))"
+    by (rule geotop_2simplex_delete_edge_face_connected_prefix
+        [OF h\<theta>\<^sub>c2 hchord_segment_edge h\<theta>\<^sub>c_chord_face])
   have hchord_no_third_2simplex:
     "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
       geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
