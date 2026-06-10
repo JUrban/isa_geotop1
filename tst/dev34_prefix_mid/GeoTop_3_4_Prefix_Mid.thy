@@ -10619,6 +10619,98 @@ proof -
                                 using h\<tau>_chord_contact_sub_\<theta>
                                   h\<tau>\<theta>_inter_faces_if_nonempty
                                 by (by100 blast)
+                              have hL\<^sub>1_side_edge_nonparent_meets_chord:
+                                "\<And>e. e \<in> L\<^sub>1 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+                                  geotop_is_face e \<sigma> \<Longrightarrow> e \<subseteq> J\<^sub>1 \<Longrightarrow>
+                                  \<not> e \<subseteq> J' \<Longrightarrow>
+                                  e \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                              proof -
+                                fix e
+                                assume he_sub_J\<^sub>1: "e \<subseteq> J\<^sub>1"
+                                assume he_not_parent: "\<not> e \<subseteq> J'"
+                                have he_sub_parent_or_chord:
+                                  "e \<subseteq> J' \<union> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using he_sub_J\<^sub>1 hJ\<^sub>1_sub_parent_or_chord by (by100 blast)
+                                obtain x where hxe: "x \<in> e" and hx_not_parent: "x \<notin> J'"
+                                  using he_not_parent by (by100 blast)
+                                have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using he_sub_parent_or_chord hxe hx_not_parent by (by100 blast)
+                                show "e \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  using hxe hx_chord by (by100 blast)
+                              qed
+                              have hL\<^sub>2_side_edge_nonparent_meets_chord:
+                                "\<And>e. e \<in> L\<^sub>2 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+                                  geotop_is_face e \<tau> \<Longrightarrow> e \<subseteq> J\<^sub>2 \<Longrightarrow>
+                                  \<not> e \<subseteq> J' \<Longrightarrow>
+                                  e \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                              proof -
+                                fix e
+                                assume he_sub_J\<^sub>2: "e \<subseteq> J\<^sub>2"
+                                assume he_not_parent: "\<not> e \<subseteq> J'"
+                                have he_sub_chord_or_parent:
+                                  "e \<subseteq> closed_segment v\<^sub>0 v\<^sub>2 \<union> J'"
+                                  using he_sub_J\<^sub>2 hJ\<^sub>2_sub_chord_or_parent by (by100 blast)
+                                obtain x where hxe: "x \<in> e" and hx_not_parent: "x \<notin> J'"
+                                  using he_not_parent by (by100 blast)
+                                have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+                                  using he_sub_chord_or_parent hxe hx_not_parent by (by100 blast)
+                                show "e \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  using hxe hx_chord by (by100 blast)
+                              qed
+                              have h\<sigma>_side_edge_nonparent_forces_\<sigma>\<theta>_faces:
+                                "\<And>e. e \<in> L\<^sub>1 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+                                  geotop_is_face e \<sigma> \<Longrightarrow> e \<subseteq> J\<^sub>1 \<Longrightarrow>
+                                  \<not> e \<subseteq> J' \<Longrightarrow>
+                                  geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                  \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                              proof -
+                                fix e
+                                assume heL\<^sub>1: "e \<in> L\<^sub>1"
+                                assume he_edge: "geotop_is_edge e"
+                                assume he_face: "geotop_is_face e \<sigma>"
+                                assume he_sub_J\<^sub>1: "e \<subseteq> J\<^sub>1"
+                                assume he_not_parent: "\<not> e \<subseteq> J'"
+                                have he_meets_chord:
+                                  "e \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  by (rule hL\<^sub>1_side_edge_nonparent_meets_chord
+                                      [OF heL\<^sub>1 he_edge he_face he_sub_J\<^sub>1 he_not_parent])
+                                have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+                                  by (rule geotop_is_face_imp_subset_prefix[OF he_face])
+                                have h\<sigma>_meets_chord:
+                                  "\<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  using he_meets_chord he_sub_\<sigma> by (by100 blast)
+                                show "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                  \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                  by (rule h\<sigma>\<theta>_inter_faces_if_chord_contact
+                                      [OF h\<sigma>_meets_chord])
+                              qed
+                              have h\<tau>_side_edge_nonparent_forces_\<tau>\<theta>_faces:
+                                "\<And>e. e \<in> L\<^sub>2 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+                                  geotop_is_face e \<tau> \<Longrightarrow> e \<subseteq> J\<^sub>2 \<Longrightarrow>
+                                  \<not> e \<subseteq> J' \<Longrightarrow>
+                                  geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                  \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                              proof -
+                                fix e
+                                assume heL\<^sub>2: "e \<in> L\<^sub>2"
+                                assume he_edge: "geotop_is_edge e"
+                                assume he_face: "geotop_is_face e \<tau>"
+                                assume he_sub_J\<^sub>2: "e \<subseteq> J\<^sub>2"
+                                assume he_not_parent: "\<not> e \<subseteq> J'"
+                                have he_meets_chord:
+                                  "e \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  by (rule hL\<^sub>2_side_edge_nonparent_meets_chord
+                                      [OF heL\<^sub>2 he_edge he_face he_sub_J\<^sub>2 he_not_parent])
+                                have he_sub_\<tau>: "e \<subseteq> \<tau>"
+                                  by (rule geotop_is_face_imp_subset_prefix[OF he_face])
+                                have h\<tau>_meets_chord:
+                                  "\<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  using he_meets_chord he_sub_\<tau> by (by100 blast)
+                                show "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                  \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                  by (rule h\<tau>\<theta>_inter_faces_if_chord_contact
+                                      [OF h\<tau>_meets_chord])
+                              qed
                               have hparent_contact_cover_and_distinct_book:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
