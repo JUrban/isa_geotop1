@@ -9598,6 +9598,70 @@ proof -
           [OF hK h\<theta>K h\<theta>\<^sub>sK h\<theta>2 h\<theta>\<^sub>s2 h\<theta>_ne_\<theta>\<^sub>s
             hside_segment_face_\<theta> h\<theta>\<^sub>s_side_face hside_segment_edge])
   qed
+  have hside_chord_inter_v\<^sub>2:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}"
+  proof -
+    have hset: "{v\<^sub>1, v\<^sub>2, v\<^sub>0} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+      by (by100 blast)
+    have hnot_col: "\<not> collinear {v\<^sub>1, v\<^sub>2, v\<^sub>0}"
+      using h\<theta>_not_col hset by (by100 simp)
+    have hraw:
+      "closed_segment v\<^sub>1 v\<^sub>2 \<inter> closed_segment v\<^sub>2 v\<^sub>0 = {v\<^sub>2}"
+      by (rule Int_closed_segment[OF disjI2[OF hnot_col]])
+    show ?thesis
+      using hraw closed_segment_commute[of v\<^sub>0 v\<^sub>2] by (by100 simp)
+  qed
+  have h\<theta>\<^sub>s_chord_inter_v\<^sub>2:
+    "\<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}"
+  proof
+    show "\<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> {v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> \<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+      have hx\<theta>s: "x \<in> \<theta>\<^sub>s"
+        using hx by (by100 blast)
+      have hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx by (by100 blast)
+      have hchord_sub_\<theta>: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
+        by (rule geotop_is_face_imp_subset_prefix[OF hchord_segment_face_\<theta>])
+      have hx\<theta>: "x \<in> \<theta>"
+        using hchord_sub_\<theta> hxchord by (by100 blast)
+      have hxside: "x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+        using h\<theta>_\<theta>\<^sub>s_inter_side hx\<theta> hx\<theta>s by (by100 blast)
+      have "x \<in> closed_segment v\<^sub>1 v\<^sub>2 \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+        using hxside hxchord by (by100 blast)
+      thus "x \<in> {v\<^sub>2}"
+        using hside_chord_inter_v\<^sub>2 by (by100 simp)
+    qed
+    show "{v\<^sub>2} \<subseteq> \<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+    proof
+      fix x
+      assume hx: "x \<in> {v\<^sub>2}"
+      have hxside: "x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+        using hx by (by100 simp)
+      have hx\<theta>s: "x \<in> \<theta>\<^sub>s"
+        using h\<theta>_\<theta>\<^sub>s_inter_side hxside by (by100 blast)
+      have hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx by (by100 simp)
+      show "x \<in> \<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx\<theta>s hxchord by (by100 blast)
+    qed
+  qed
+  have h\<theta>\<^sub>s_minus_chord_connected:
+    "top1_connected_on (\<theta>\<^sub>s - closed_segment v\<^sub>0 v\<^sub>2)
+      (subspace_topology UNIV geotop_euclidean_topology
+        (\<theta>\<^sub>s - closed_segment v\<^sub>0 v\<^sub>2))"
+  proof -
+    have hminus_eq: "\<theta>\<^sub>s - closed_segment v\<^sub>0 v\<^sub>2 = \<theta>\<^sub>s - {v\<^sub>2}"
+      using h\<theta>\<^sub>s_chord_inter_v\<^sub>2 by (by100 blast)
+    have hconn:
+      "top1_connected_on (\<theta>\<^sub>s - {v\<^sub>2})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (\<theta>\<^sub>s - {v\<^sub>2}))"
+      by (rule geotop_2simplex_punctured_connected_prefix[OF h\<theta>\<^sub>s2])
+    show ?thesis
+      using hconn hminus_eq by (by100 simp)
+  qed
   have hchord_no_third_2simplex:
     "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
       geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
