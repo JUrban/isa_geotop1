@@ -10986,6 +10986,142 @@ proof -
     show False
       using hnot_same hsame by (by100 blast)
   qed
+  have hD42_QS_boundary_chord_theta_contradiction:
+      "\<And>B C\<^sub>1 C\<^sub>2 :: (real^2) set.
+        J = C\<^sub>1 \<union> C\<^sub>2 \<Longrightarrow>
+        geotop_is_broken_line C\<^sub>1 \<Longrightarrow>
+        geotop_is_broken_line B \<Longrightarrow>
+        geotop_is_broken_line C\<^sub>2 \<Longrightarrow>
+        geotop_arc_endpoints C\<^sub>1 {Q, S} \<Longrightarrow>
+        geotop_arc_endpoints B {Q, S} \<Longrightarrow>
+        geotop_arc_endpoints C\<^sub>2 {Q, S} \<Longrightarrow>
+        geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior B {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior B {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J \<Longrightarrow>
+        P \<in> geotop_arc_interior C\<^sub>1 {Q, S} \<Longrightarrow>
+        R \<in> geotop_arc_interior C\<^sub>2 {Q, S} \<Longrightarrow>
+        top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B))
+          P R \<Longrightarrow> False"
+  proof -
+    fix B C\<^sub>1 C\<^sub>2 :: "(real^2) set"
+    assume hJ_eq: "J = C\<^sub>1 \<union> C\<^sub>2"
+    assume hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+    assume hB_bl: "geotop_is_broken_line B"
+    assume hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+    assume hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {Q, S}"
+    assume hBE: "geotop_arc_endpoints B {Q, S}"
+    assume hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {Q, S}"
+    assume hC\<^sub>1B:
+      "geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior B {Q, S} = {}"
+    assume hC\<^sub>1C\<^sub>2:
+      "geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {}"
+    assume hBC\<^sub>2:
+      "geotop_arc_interior B {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {}"
+    assume hB_inner:
+      "geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J"
+    assume hP_C\<^sub>1: "P \<in> geotop_arc_interior C\<^sub>1 {Q, S}"
+    assume hR_C\<^sub>2: "R \<in> geotop_arc_interior C\<^sub>2 {Q, S}"
+    assume hsame:
+      "top1_in_same_component_on
+        (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B))
+        P R"
+    have hclosure_minus:
+      "closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J) - B =
+       (geotop_polygon_interior (C\<^sub>1 \<union> B) \<union>
+        geotop_arc_interior C\<^sub>1 {Q, S}) \<union>
+       (geotop_polygon_interior (B \<union> C\<^sub>2) \<union>
+        geotop_arc_interior C\<^sub>2 {Q, S})"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(6)
+          [OF hJ_eq hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+            hC\<^sub>1B hC\<^sub>1C\<^sub>2 hBC\<^sub>2 hB_inner])
+    have hseparated:
+      "geotop_separated UNIV geotop_euclidean_topology
+         (geotop_polygon_interior (C\<^sub>1 \<union> B) \<union>
+          geotop_arc_interior C\<^sub>1 {Q, S})
+         (geotop_polygon_interior (B \<union> C\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>2 {Q, S})"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(9)
+          [OF hJ_eq hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+            hC\<^sub>1B hC\<^sub>1C\<^sub>2 hBC\<^sub>2 hB_inner])
+    show False
+      by (rule hD42_theta_sides_forbid_PR_same_component
+          [OF hclosure_minus hseparated hP_C\<^sub>1 hR_C\<^sub>2 hsame])
+  qed
+  have hD42_QS_boundary_chord_theta_contradiction_swapped:
+      "\<And>B C\<^sub>1 C\<^sub>2 :: (real^2) set.
+        J = C\<^sub>1 \<union> C\<^sub>2 \<Longrightarrow>
+        geotop_is_broken_line C\<^sub>1 \<Longrightarrow>
+        geotop_is_broken_line B \<Longrightarrow>
+        geotop_is_broken_line C\<^sub>2 \<Longrightarrow>
+        geotop_arc_endpoints C\<^sub>1 {Q, S} \<Longrightarrow>
+        geotop_arc_endpoints B {Q, S} \<Longrightarrow>
+        geotop_arc_endpoints C\<^sub>2 {Q, S} \<Longrightarrow>
+        geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior B {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior B {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {} \<Longrightarrow>
+        geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J \<Longrightarrow>
+        P \<in> geotop_arc_interior C\<^sub>2 {Q, S} \<Longrightarrow>
+        R \<in> geotop_arc_interior C\<^sub>1 {Q, S} \<Longrightarrow>
+        top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B))
+          P R \<Longrightarrow> False"
+  proof -
+    fix B C\<^sub>1 C\<^sub>2 :: "(real^2) set"
+    assume hJ_eq: "J = C\<^sub>1 \<union> C\<^sub>2"
+    assume hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+    assume hB_bl: "geotop_is_broken_line B"
+    assume hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+    assume hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {Q, S}"
+    assume hBE: "geotop_arc_endpoints B {Q, S}"
+    assume hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {Q, S}"
+    assume hC\<^sub>1B:
+      "geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior B {Q, S} = {}"
+    assume hC\<^sub>1C\<^sub>2:
+      "geotop_arc_interior C\<^sub>1 {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {}"
+    assume hBC\<^sub>2:
+      "geotop_arc_interior B {Q, S} \<inter> geotop_arc_interior C\<^sub>2 {Q, S} = {}"
+    assume hB_inner:
+      "geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J"
+    assume hP_C\<^sub>2: "P \<in> geotop_arc_interior C\<^sub>2 {Q, S}"
+    assume hR_C\<^sub>1: "R \<in> geotop_arc_interior C\<^sub>1 {Q, S}"
+    assume hsame:
+      "top1_in_same_component_on
+        (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B))
+        P R"
+    have hclosure_minus:
+      "closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J) - B =
+       (geotop_polygon_interior (C\<^sub>1 \<union> B) \<union>
+        geotop_arc_interior C\<^sub>1 {Q, S}) \<union>
+       (geotop_polygon_interior (B \<union> C\<^sub>2) \<union>
+        geotop_arc_interior C\<^sub>2 {Q, S})"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(6)
+          [OF hJ_eq hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+            hC\<^sub>1B hC\<^sub>1C\<^sub>2 hBC\<^sub>2 hB_inner])
+    have hseparated:
+      "geotop_separated UNIV geotop_euclidean_topology
+         (geotop_polygon_interior (C\<^sub>1 \<union> B) \<union>
+          geotop_arc_interior C\<^sub>1 {Q, S})
+         (geotop_polygon_interior (B \<union> C\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>2 {Q, S})"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(9)
+          [OF hJ_eq hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+            hC\<^sub>1B hC\<^sub>1C\<^sub>2 hBC\<^sub>2 hB_inner])
+    show False
+      by (rule hD42_theta_sides_forbid_PR_same_component_swapped
+          [OF hclosure_minus hseparated hP_C\<^sub>2 hR_C\<^sub>1 hsame])
+  qed
   have hD42_different_component_open_split:
       "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
         U\<^sub>Q0 \<in> geotop_euclidean_topology
