@@ -10571,6 +10571,54 @@ proof -
                                 "\<tau> \<inter> J\<^sub>1 \<subseteq>
                                   (\<tau> \<inter> J') \<union> (\<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2)"
                                 using hJ\<^sub>1_sub_parent_or_chord by (by100 blast)
+                              have hchord_sub_\<theta>:
+                                "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
+                              proof -
+                                have hchord_hull_sub_\<theta>:
+                                  "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> \<theta>"
+                                  by (rule geotop_is_face_imp_subset_prefix[OF hv\<^sub>0v\<^sub>2_face])
+                                have hchord_hull_segment_eq':
+                                  "geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+                                    = closed_segment v\<^sub>0 v\<^sub>2"
+                                  using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+                                    geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+                                  by (by100 simp)
+                                show ?thesis
+                                  using hchord_hull_sub_\<theta> hchord_hull_segment_eq'
+                                  by (by100 simp)
+                              qed
+                              have h\<sigma>_chord_contact_sub_\<theta>:
+                                "\<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<sigma> \<inter> \<theta>"
+                                using hchord_sub_\<theta> by (by100 blast)
+                              have h\<tau>_chord_contact_sub_\<theta>:
+                                "\<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<tau> \<inter> \<theta>"
+                                using hchord_sub_\<theta> by (by100 blast)
+                              have h\<sigma>\<theta>_inter_faces_if_nonempty:
+                                "\<sigma> \<inter> \<theta> \<noteq> {} \<Longrightarrow>
+                                  geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                  \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                using hK' h\<sigma>K h\<theta>K unfolding geotop_is_complex_def
+                                by (by100 blast)
+                              have h\<tau>\<theta>_inter_faces_if_nonempty:
+                                "\<tau> \<inter> \<theta> \<noteq> {} \<Longrightarrow>
+                                  geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                  \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                using hK' h\<tau>K h\<theta>K unfolding geotop_is_complex_def
+                                by (by100 blast)
+                              have h\<sigma>\<theta>_inter_faces_if_chord_contact:
+                                "\<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {} \<Longrightarrow>
+                                  geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                  \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                using h\<sigma>_chord_contact_sub_\<theta>
+                                  h\<sigma>\<theta>_inter_faces_if_nonempty
+                                by (by100 blast)
+                              have h\<tau>\<theta>_inter_faces_if_chord_contact:
+                                "\<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {} \<Longrightarrow>
+                                  geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                  \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                using h\<tau>_chord_contact_sub_\<theta>
+                                  h\<tau>\<theta>_inter_faces_if_nonempty
+                                by (by100 blast)
                               have hparent_contact_cover_and_distinct_book:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
