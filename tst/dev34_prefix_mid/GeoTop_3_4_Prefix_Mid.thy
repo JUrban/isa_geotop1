@@ -9779,6 +9779,56 @@ proof -
                             show ?thesis
                               using h\<tau>\<^sub>2F h\<tau>\<^sub>2'F h\<tau>\<^sub>2_ne by (by100 blast)
                           qed
+                          have hL\<^sub>1_free_witness_avoids_\<theta>:
+                            "\<exists>\<sigma>\<^sub>1. \<sigma>\<^sub>1 \<in> L\<^sub>1
+                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+                              \<and> \<sigma>\<^sub>1 \<noteq> \<theta>"
+                          proof -
+                            obtain \<sigma>\<^sub>1 \<sigma>\<^sub>1' where h\<sigma>\<^sub>1L: "\<sigma>\<^sub>1 \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>1free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1"
+                              and h\<sigma>\<^sub>1'L: "\<sigma>\<^sub>1' \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>1'free:
+                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1'"
+                              and h\<sigma>\<^sub>1_ne: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
+                              using hL\<^sub>1_two_free_witnesses by (elim exE conjE)
+                            show ?thesis
+                            proof (cases "\<sigma>\<^sub>1 = \<theta>")
+                              case True
+                              have h\<sigma>\<^sub>1'_ne_\<theta>: "\<sigma>\<^sub>1' \<noteq> \<theta>"
+                                using True h\<sigma>\<^sub>1_ne by (by100 blast)
+                              show ?thesis
+                                using h\<sigma>\<^sub>1'L h\<sigma>\<^sub>1'free h\<sigma>\<^sub>1'_ne_\<theta> by (by100 blast)
+                            next
+                              case False
+                              show ?thesis
+                                using h\<sigma>\<^sub>1L h\<sigma>\<^sub>1free False by (by100 blast)
+                            qed
+                          qed
+                          have hL\<^sub>2_free_witness_avoids_\<theta>:
+                            "\<exists>\<tau>\<^sub>2. \<tau>\<^sub>2 \<in> L\<^sub>2
+                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+                              \<and> \<tau>\<^sub>2 \<noteq> \<theta>"
+                          proof -
+                            obtain \<tau>\<^sub>2 \<tau>\<^sub>2' where h\<tau>\<^sub>2L: "\<tau>\<^sub>2 \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>2free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2"
+                              and h\<tau>\<^sub>2'L: "\<tau>\<^sub>2' \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>2'free:
+                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2'"
+                              and h\<tau>\<^sub>2_ne: "\<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
+                              using hL\<^sub>2_two_free_witnesses by (elim exE conjE)
+                            show ?thesis
+                            proof (cases "\<tau>\<^sub>2 = \<theta>")
+                              case True
+                              have h\<tau>\<^sub>2'_ne_\<theta>: "\<tau>\<^sub>2' \<noteq> \<theta>"
+                                using True h\<tau>\<^sub>2_ne by (by100 blast)
+                              show ?thesis
+                                using h\<tau>\<^sub>2'L h\<tau>\<^sub>2'free h\<tau>\<^sub>2'_ne_\<theta> by (by100 blast)
+                            next
+                              case False
+                              show ?thesis
+                                using h\<tau>\<^sub>2L h\<tau>\<^sub>2free False by (by100 blast)
+                            qed
+                          qed
                           have htransferable_side_witness_choice_book:
                             "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
