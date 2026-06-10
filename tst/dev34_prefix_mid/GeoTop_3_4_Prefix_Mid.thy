@@ -9660,7 +9660,78 @@ proof -
                           \<tau> \<inter> J' =
                             \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
                           \<sigma> \<noteq> \<tau>"
-                        sorry
+                      proof -
+                        have hside_complexes_smaller_book:
+                          "geotop_polyhedron L\<^sub>1 =
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)
+                          \<and> geotop_polyhedron L\<^sub>2 =
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)
+                          \<and> card ?T\<^sub>1 < card ?T
+                          \<and> card ?T\<^sub>2 < card ?T
+                          \<and> card ?T\<^sub>1 > 1
+                          \<and> card ?T\<^sub>2 > 1"
+                          (**
+                            Moise Figure 3.2 side-complex package.  The two
+                            closure restrictions are exactly the triangulated
+                            subdisks on either side of the chord, and each has
+                            strictly fewer 2-simplexes than the parent disk. **)
+                          sorry
+                        have hL\<^sub>1_poly_eq:
+                          "geotop_polyhedron L\<^sub>1 =
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1)"
+                          using hside_complexes_smaller_book by (by100 blast)
+                        have hL\<^sub>2_poly_eq:
+                          "geotop_polyhedron L\<^sub>2 =
+                            closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2)"
+                          using hside_complexes_smaller_book by (by100 blast)
+                        have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                          using hside_complexes_smaller_book by (by100 blast)
+                        have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                          using hside_complexes_smaller_book by (by100 blast)
+                        have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                          using hside_complexes_smaller_book by (by100 blast)
+                        have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+                          using hside_complexes_smaller_book by (by100 blast)
+                        have hL\<^sub>1_free_count:
+                          "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+                          by (rule hL\<^sub>1_free_count_from_IH
+                              [OF hL\<^sub>1_poly_eq hT\<^sub>1_lt_T hT\<^sub>1_gt1])
+                        have hL\<^sub>2_free_count:
+                          "card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+                          by (rule hL\<^sub>2_free_count_from_IH
+                              [OF hL\<^sub>2_poly_eq hT\<^sub>2_lt_T hT\<^sub>2_gt1])
+                        have hside_selected_witnesses_book:
+                          "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                            card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                            \<sigma> \<inter> J' =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                            \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                            card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                            \<tau> \<inter> J' =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                            \<sigma> \<noteq> \<tau>"
+                          (**
+                            Moise Figure 3.2 witness-selection package.  From
+                            the two free-triangle counts on the smaller
+                            subdisks, choose witnesses whose selected boundary
+                            data lies on the original boundary \<open>J'\<close>, avoiding
+                            the artificial chord-only exceptional choice. **)
+                          sorry
+                        show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                            card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                            \<sigma> \<inter> J' =
+                              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                            \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                            card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                            \<tau> \<inter> J' =
+                              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                            \<sigma> \<noteq> \<tau>"
+                          by (rule hside_selected_witnesses_book)
+                      qed
                       show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                           card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
                           \<sigma> \<inter> J' =
