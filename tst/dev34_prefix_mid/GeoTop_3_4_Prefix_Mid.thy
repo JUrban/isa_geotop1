@@ -14500,6 +14500,69 @@ proof -
                               apply assumption+
                               done
                           qed
+                          have hside_canonical_boundary_witnesses_distinct:
+                            "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L. \<sigma>\<^sub>L \<in> L\<^sub>1
+                              \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
+                              \<and> \<sigma>\<^sub>L \<noteq> \<theta>
+                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1} \<le> 2
+                              \<and> \<sigma>\<^sub>L \<inter> J\<^sub>1 =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1}
+                              \<and> \<tau>\<^sub>L \<in> L\<^sub>2
+                              \<and> geotop_simplex_dim \<tau>\<^sub>L 2
+                              \<and> \<tau>\<^sub>L \<noteq> \<theta>
+                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2} \<le> 2
+                              \<and> \<tau>\<^sub>L \<inter> J\<^sub>2 =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2}
+                              \<and> \<sigma>\<^sub>L \<noteq> \<tau>\<^sub>L"
+                            (**
+                              The two side witnesses lie in disjoint side
+                              2-simplex carriers, so once the side choices are
+                              canonicalized they are automatically distinct. **)
+                          proof -
+                            obtain \<sigma>\<^sub>L \<tau>\<^sub>L
+                              where h\<sigma>\<^sub>LL\<^sub>1: "\<sigma>\<^sub>L \<in> L\<^sub>1"
+                                and h\<sigma>\<^sub>L2: "geotop_simplex_dim \<sigma>\<^sub>L 2"
+                                and h\<sigma>\<^sub>L_ne_\<theta>: "\<sigma>\<^sub>L \<noteq> \<theta>"
+                                and h\<sigma>\<^sub>L_card:
+                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                                and h\<sigma>\<^sub>L_contact_can:
+                                  "\<sigma>\<^sub>L \<inter> J\<^sub>1 =
+                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1}"
+                                and h\<tau>\<^sub>LL\<^sub>2: "\<tau>\<^sub>L \<in> L\<^sub>2"
+                                and h\<tau>\<^sub>L2: "geotop_simplex_dim \<tau>\<^sub>L 2"
+                                and h\<tau>\<^sub>L_ne_\<theta>: "\<tau>\<^sub>L \<noteq> \<theta>"
+                                and h\<tau>\<^sub>L_card:
+                                  "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                                and h\<tau>\<^sub>L_contact_can:
+                                  "\<tau>\<^sub>L \<inter> J\<^sub>2 =
+                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2}"
+                              using hside_canonical_boundary_witnesses
+                              by (elim exE conjE)
+                            have h\<sigma>\<^sub>LT\<^sub>1: "\<sigma>\<^sub>L \<in> ?T\<^sub>1"
+                              using h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 by (by100 simp)
+                            have h\<tau>\<^sub>LT\<^sub>2: "\<tau>\<^sub>L \<in> ?T\<^sub>2"
+                              using h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 by (by100 simp)
+                            have h\<sigma>\<^sub>L_ne_\<tau>\<^sub>L: "\<sigma>\<^sub>L \<noteq> \<tau>\<^sub>L"
+                              using hT\<^sub>1_T\<^sub>2_disjoint_book h\<sigma>\<^sub>LT\<^sub>1 h\<tau>\<^sub>LT\<^sub>2
+                              by (by100 blast)
+                            show ?thesis
+                              apply (rule exI[where x = "\<sigma>\<^sub>L"])
+                              apply (rule exI[where x = "\<tau>\<^sub>L"])
+                              using h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_ne_\<theta> h\<sigma>\<^sub>L_card
+                                h\<sigma>\<^sub>L_contact_can h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 h\<tau>\<^sub>L_ne_\<theta>
+                                h\<tau>\<^sub>L_card h\<tau>\<^sub>L_contact_can h\<sigma>\<^sub>L_ne_\<tau>\<^sub>L
+                              apply (intro conjI)
+                              apply assumption+
+                              done
+                          qed
                           have htransferable_side_witness_choice_book:
                             "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
