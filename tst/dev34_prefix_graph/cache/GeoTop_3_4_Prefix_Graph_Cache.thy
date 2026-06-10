@@ -4525,6 +4525,45 @@ proof -
       by (rule geotop_punctured_circle_component_closure_three_points_bound_prefix
           [OF hr_pos hx\<^sub>1_sphere hx\<^sub>2_sphere hx\<^sub>3_sphere hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 hK])
   qed
+  have hw_poly: "w \<in> geotop_polyhedron L"
+    using hwL unfolding geotop_polyhedron_def by (by100 blast)
+  have hSCC_punctured_connected:
+      "top1_connected_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w}))"
+    by (rule scc_minus_point_connected
+        [OF geotop_euclidean_topology_UNIV_strict
+            geotop_euclidean_topology_UNIV_hausdorff hSCC hw_poly])
+  have hcanonical_three_sphere_points_connected_witness:
+      "\<exists>N. N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> x\<^sub>1 \<in> N
+        \<and> x\<^sub>2 \<in> N
+        \<and> x\<^sub>3 \<in> N"
+  proof (rule exI[where x="geotop_polyhedron L - {w}"])
+    show "geotop_polyhedron L - {w} \<subseteq> geotop_polyhedron L - {w}
+      \<and> top1_connected_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w}))
+      \<and> x\<^sub>1 \<in> geotop_polyhedron L - {w}
+      \<and> x\<^sub>2 \<in> geotop_polyhedron L - {w}
+      \<and> x\<^sub>3 \<in> geotop_polyhedron L - {w}"
+    proof (intro conjI)
+      show "geotop_polyhedron L - {w} \<subseteq> geotop_polyhedron L - {w}"
+        by (rule subset_refl)
+      show "top1_connected_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w}))"
+        by (rule hSCC_punctured_connected)
+      show "x\<^sub>1 \<in> geotop_polyhedron L - {w}"
+        by (rule hx\<^sub>1_punctured_poly)
+      show "x\<^sub>2 \<in> geotop_polyhedron L - {w}"
+        by (rule hx\<^sub>2_punctured_poly)
+      show "x\<^sub>3 \<in> geotop_polyhedron L - {w}"
+        by (rule hx\<^sub>3_punctured_poly)
+    qed
+  qed
   obtain A\<^sub>1 A\<^sub>2 where hA_decomp: "geotop_polyhedron L = A\<^sub>1 \<union> A\<^sub>2"
       and hA_inter: "A\<^sub>1 \<inter> A\<^sub>2 = {w, q\<^sub>1}"
       and hA\<^sub>1_arc: "top1_is_arc_on A\<^sub>1
@@ -9572,6 +9611,67 @@ proof -
       have hselected_union_eq:
           "S \<union> T \<union> U = e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3"
         using hSTU_eq by (by100 blast)
+      have hselected_three_punctured_connected_witness:
+          "\<exists>M. M \<subseteq> geotop_polyhedron L - {w}
+            \<and> top1_connected_on M
+              (subspace_topology UNIV geotop_euclidean_topology M)
+            \<and> p \<in> M
+            \<and> y \<in> M
+            \<and> z \<in> M"
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hM_conn: "top1_connected_on M
+            (subspace_topology UNIV geotop_euclidean_topology M)"
+          and hx\<^sub>1M: "x\<^sub>1 \<in> M"
+          and hx\<^sub>2M: "x\<^sub>2 \<in> M"
+          and hx\<^sub>3M: "x\<^sub>3 \<in> M"
+          using hcanonical_three_sphere_points_connected_witness
+          by (elim exE conjE)
+        have hcanonical_mem_M:
+            "\<And>a. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3} \<Longrightarrow> a \<in> M"
+        proof -
+          fix a
+          assume ha: "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+          have hcases: "a = x\<^sub>1 \<or> a = x\<^sub>2 \<or> a = x\<^sub>3"
+            using ha by (by100 simp)
+          show "a \<in> M"
+            using hcases
+          proof (elim disjE)
+            assume "a = x\<^sub>1"
+            then show "a \<in> M" using hx\<^sub>1M by (by100 simp)
+          next
+            assume "a = x\<^sub>2"
+            then show "a \<in> M" using hx\<^sub>2M by (by100 simp)
+          next
+            assume "a = x\<^sub>3"
+            then show "a \<in> M" using hx\<^sub>3M by (by100 simp)
+          qed
+        qed
+        have hpM: "p \<in> M"
+          by (rule hcanonical_mem_M[OF hp_can])
+        have hyM: "y \<in> M"
+          by (rule hcanonical_mem_M[OF hy_can])
+        have hzM: "z \<in> M"
+          by (rule hcanonical_mem_M[OF hz_can])
+        show ?thesis
+        proof (rule exI[where x=M])
+          show "M \<subseteq> geotop_polyhedron L - {w}
+            \<and> top1_connected_on M
+              (subspace_topology UNIV geotop_euclidean_topology M)
+            \<and> p \<in> M
+            \<and> y \<in> M
+            \<and> z \<in> M"
+          proof (intro conjI)
+            show "M \<subseteq> geotop_polyhedron L - {w}" by (rule hM_sub)
+            show "top1_connected_on M
+              (subspace_topology UNIV geotop_euclidean_topology M)"
+              by (rule hM_conn)
+            show "p \<in> M" by (rule hpM)
+            show "y \<in> M" by (rule hyM)
+            show "z \<in> M" by (rule hzM)
+          qed
+        qed
+      qed
       have hlocal_open:
           "open (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
       proof -
@@ -9611,13 +9711,15 @@ proof -
         (**
           Book local branch component step.  The connected split-side arc gives
           a connected subset \<open>N\<close> of the punctured carrier meeting the selected
-          \<open>S\<close>- and \<open>T\<close>-germs.  The remaining book argument must also use the
-          simple-closed-curve arc split at the selected sphere point \<open>p\<close>: the
-          third selected germ is forced onto the same local side of the
-          punctured small star.  With the carrier-sector cover above, this gives
-          a component of \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all
-          three selected punctured germs.  This is not a general graph
-          cutpoint claim; the SCC local-one-manifold hypothesis is essential. **)
+          \<open>S\<close>- and \<open>T\<close>-germs.  The selected points \<open>p,y,z\<close> also have the
+          global connected witness
+          \<open>hselected_three_punctured_connected_witness\<close> inherited from the
+          punctured simple closed curve.  The remaining book argument is the
+          first-exit/local-star step that turns this connectedness and the
+          carrier-sector cover into one component of
+          \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three selected
+          punctured germs.  This is not a general graph cutpoint claim; the
+          SCC local-one-manifold hypothesis is essential. **)
         sorry
       show "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
         \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
