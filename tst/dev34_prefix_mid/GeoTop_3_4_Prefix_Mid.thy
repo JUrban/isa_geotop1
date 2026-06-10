@@ -8914,69 +8914,14 @@ proof -
           hchord_edge_selected_if hside_edge_selected_if
           hbase_ne_chord_edge hbase_ne_side_edge hchord_ne_side_edge
           hE\<theta>_card_le2])
-  have hE\<theta>_allowed:
-    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {} \<or>
-     (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
-        \<and> geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J) \<or>
-     (\<exists>e1 e2. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
-        \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
-        \<and> geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta>
-        \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
-    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_allowed_prefix
-        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
-  have hE\<theta>_subset_K:
-    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<subseteq> K"
-    by (by100 simp)
-  have hE\<theta>_union_sub_\<theta>J:
-    "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
-      \<subseteq> \<theta> \<inter> J"
-    by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
-  have h\<theta>_contact_outside_selected:
-    "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-    by (rule geotop_nonfree_selected_edges_contact_outside_prefix
-        [OF h\<theta>K h\<theta>2 hE\<theta>_subset_K hE\<theta>_allowed h\<theta>_not_free
-          hE\<theta>_union_sub_\<theta>J])
-  have h\<theta>J_sub_named_edges:
-    "\<theta> \<inter> J \<subseteq>
-      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-    by (rule geotop_2simplex_polygon_boundary_inter_subset_three_edge_hulls_prefix
-        [OF hJ h\<theta>K h\<theta>2 hK_poly h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
-  have hselected_contact_on_other_named_edges:
-    "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
-      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
-          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-    by (rule geotop_contact_outside_selected_union_on_other_two_sets_prefix
-        [OF h\<theta>_contact_outside_selected h\<theta>J_sub_named_edges hbase_edge_selected])
-  have hselected_contact_on_other_not_base:
-    "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
-      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
-          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-    by (rule geotop_contact_outside_selected_union_avoids_selected_set_prefix
-        [OF hselected_contact_on_other_named_edges hbase_edge_selected])
-  have hselected_contact_on_other_nonbase_edge:
-    "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
-          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
-    by (rule geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix
-        [OF hselected_contact_on_other_not_base])
-  have hselected_contact_on_other_nonbase_segment:
-    "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
-          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
-    by (rule geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix
-        [OF hselected_contact_on_other_nonbase_edge])
   have hderived_contact_other_segment_off_base:
     "\<exists>x. x \<in> \<theta> \<inter> J
       \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
       \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
           \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
-    by (rule geotop_nonbase_segment_contact_avoids_base_segment_prefix
-        [OF h\<theta>_not_col hselected_contact_on_other_nonbase_segment])
+    by (rule geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix
+        [OF hJ hK hK_poly hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
   have hchord_hull_segment_eq:
     "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
     using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
