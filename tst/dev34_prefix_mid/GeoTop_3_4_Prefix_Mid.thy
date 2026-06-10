@@ -6703,6 +6703,25 @@ proof -
        closure_on UNIV geotop_euclidean_topology
          (geotop_polygon_interior J)"
     using hK\<^sub>2_poly_sub_K hK_poly by (by100 simp)
+  let ?T = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+  let ?T\<^sub>1 = "{\<rho>\<in>K\<^sub>1. geotop_simplex_dim \<rho> 2}"
+  let ?T\<^sub>2 = "{\<rho>\<in>K\<^sub>2. geotop_simplex_dim \<rho> 2}"
+  have hT_fin: "finite ?T"
+    using hK_fin by (by100 simp)
+  have hT\<^sub>1_fin: "finite ?T\<^sub>1"
+    using hK\<^sub>1_fin by (by100 simp)
+  have hT\<^sub>2_fin: "finite ?T\<^sub>2"
+    using hK\<^sub>2_fin by (by100 simp)
+  have hT\<^sub>1_sub_T: "?T\<^sub>1 \<subseteq> ?T"
+    using hK\<^sub>1_sub_K by (by100 blast)
+  have hT\<^sub>2_sub_T: "?T\<^sub>2 \<subseteq> ?T"
+    using hK\<^sub>2_sub_K by (by100 blast)
+  have hT_card_gt2: "card ?T > 2"
+    by (rule hT_gt2)
+  have hT\<^sub>1_card_le_T: "card ?T\<^sub>1 \<le> card ?T"
+    by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
+  have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
+    by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
