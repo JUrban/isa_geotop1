@@ -15542,6 +15542,46 @@ proof -
 	                              apply assumption+
 	                              done
 	                          qed
+                          have hno_chord_face_edge_not_chord:
+                            "\<And>\<sigma> e. \<sigma> \<in> K \<Longrightarrow> e \<in> K \<Longrightarrow>
+                              geotop_is_edge e \<Longrightarrow> geotop_is_face e \<sigma> \<Longrightarrow>
+                              \<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
+                              \<not> e \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                          proof
+                            fix \<sigma> e
+                            assume h\<sigma>K: "\<sigma> \<in> K"
+                            assume heK: "e \<in> K"
+                            assume hedge: "geotop_is_edge e"
+                            assume hface: "geotop_is_face e \<sigma>"
+                            assume h\<sigma>_no_chord:
+                              "\<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+                            assume he_sub_chord: "e \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                            have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+                              using hv\<^sub>2_not by (by100 blast)
+                            have hchord_hull_segment_eq:
+                              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+                              using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+                                geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+                              by (by100 simp)
+                            have hchord_segment_K:
+                              "closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
+                              using hv\<^sub>0v\<^sub>2K hchord_hull_segment_eq by (by100 simp)
+                            have hchord_segment_edge:
+                              "geotop_is_edge (closed_segment v\<^sub>0 v\<^sub>2)"
+                              using hv\<^sub>0v\<^sub>2_edge hchord_hull_segment_eq by (by100 simp)
+                            have he_face_chord:
+                              "geotop_is_face e (closed_segment v\<^sub>0 v\<^sub>2)"
+                              by (rule geotop_complex_subset_simplex_face_prefix
+                                  [OF hK' heK hchord_segment_K he_sub_chord])
+                            have he_eq_chord:
+                              "e = closed_segment v\<^sub>0 v\<^sub>2"
+                              by (rule geotop_edge_face_of_edge_eq_prefix
+                                  [OF hedge hchord_segment_edge he_face_chord])
+                            have "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+                              using hface he_eq_chord by (by100 simp)
+                            thus False
+                              using h\<sigma>_no_chord by (by100 blast)
+                          qed
                           have hno_chord_canonical_contact_transfers_to_parent:
                             "(\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
                               \<not> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<longrightarrow>
