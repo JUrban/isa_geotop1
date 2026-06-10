@@ -9662,6 +9662,80 @@ proof -
     show ?thesis
       using hconn hminus_eq by (by100 simp)
   qed
+  have h\<theta>\<^sub>s_minus_chord_sub_R\<^sub>1:
+    "\<theta>\<^sub>s - closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> ?R\<^sub>1"
+  proof -
+    let ?C = "\<theta>\<^sub>s - closed_segment v\<^sub>0 v\<^sub>2"
+    have hC_region_union: "?C \<subseteq> ?R\<^sub>1 \<union> ?R\<^sub>2"
+    proof
+      fix x
+      assume hxC: "x \<in> ?C"
+      have hx\<theta>s: "x \<in> \<theta>\<^sub>s"
+        using hxC by (by100 blast)
+      have hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+        using hxC by (by100 blast)
+      have hxK: "x \<in> geotop_polyhedron K"
+        unfolding geotop_polyhedron_def using h\<theta>\<^sub>sK hx\<theta>s by (by100 blast)
+      have hx_parent_closure:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+        using hxK hK_poly by (by100 blast)
+      have hx_parent_minus:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2"
+        using hx_parent_closure hx_not_chord by (by100 blast)
+      show "x \<in> ?R\<^sub>1 \<union> ?R\<^sub>2"
+        using hclosure_minus hx_parent_minus by (by100 blast)
+    qed
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hC_side: "?C \<subseteq> ?R\<^sub>1 \<or> ?C \<subseteq> ?R\<^sub>2"
+      by (rule Theorem_GT_1_10
+          [OF hTU hside_separated hC_region_union h\<theta>\<^sub>s_minus_chord_connected])
+    have hv\<^sub>1_side: "v\<^sub>1 \<in> closed_segment v\<^sub>1 v\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>1_\<theta>s: "v\<^sub>1 \<in> \<theta>\<^sub>s"
+      using h\<theta>_\<theta>\<^sub>s_inter_side hv\<^sub>1_side by (by100 blast)
+    have hv\<^sub>1C: "v\<^sub>1 \<in> ?C"
+      using hv\<^sub>1_\<theta>s hv\<^sub>1_not_chord_segment by (by100 blast)
+    have hv\<^sub>1R\<^sub>1: "v\<^sub>1 \<in> ?R\<^sub>1"
+      using hv\<^sub>1_C\<^sub>1_int by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hC_side])
+      assume hC_sub_R\<^sub>1: "?C \<subseteq> ?R\<^sub>1"
+      show ?thesis
+        by (rule hC_sub_R\<^sub>1)
+    next
+      assume hC_sub_R\<^sub>2: "?C \<subseteq> ?R\<^sub>2"
+      have hv\<^sub>1R\<^sub>2: "v\<^sub>1 \<in> ?R\<^sub>2"
+        using hC_sub_R\<^sub>2 hv\<^sub>1C by (by100 blast)
+      have False
+        using hv\<^sub>1R\<^sub>1 hv\<^sub>1R\<^sub>2 hside_open_regions_disjoint by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+  have h\<theta>\<^sub>s_sub_B\<^sub>1: "\<theta>\<^sub>s \<subseteq> ?B\<^sub>1"
+  proof
+    fix x
+    assume hx\<theta>s: "x \<in> \<theta>\<^sub>s"
+    show "x \<in> ?B\<^sub>1"
+    proof (cases "x \<in> closed_segment v\<^sub>0 v\<^sub>2")
+      case True
+      show ?thesis
+        using True hchord_segment_sub_B\<^sub>1 by (by100 blast)
+    next
+      case False
+      have hx_minus: "x \<in> \<theta>\<^sub>s - closed_segment v\<^sub>0 v\<^sub>2"
+        using hx\<theta>s False by (by100 blast)
+      have hxR\<^sub>1: "x \<in> ?R\<^sub>1"
+        using h\<theta>\<^sub>s_minus_chord_sub_R\<^sub>1 hx_minus by (by100 blast)
+      show ?thesis
+        using hR\<^sub>1_sub_B\<^sub>1 hxR\<^sub>1 by (by100 blast)
+    qed
+  qed
+  have h\<theta>\<^sub>s_L\<^sub>1: "\<theta>\<^sub>s \<in> L\<^sub>1"
+    using hL\<^sub>1_def h\<theta>\<^sub>sK h\<theta>\<^sub>s_sub_B\<^sub>1 by (by100 blast)
   have hchord_no_third_2simplex:
     "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
       geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
