@@ -11052,6 +11052,52 @@ proof -
   qed
   have h\<theta>\<^sub>c_T\<^sub>2: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
     using h\<theta>\<^sub>c_side_cases h\<theta>\<^sub>c_not_T\<^sub>1 by (by100 blast)
+  have h\<theta>_not_sub_B\<^sub>2: "\<not> \<theta> \<subseteq> ?B\<^sub>2"
+  proof
+    assume h\<theta>_sub_B\<^sub>2: "\<theta> \<subseteq> ?B\<^sub>2"
+    have h\<theta>cL\<^sub>2: "\<theta>\<^sub>c \<in> L\<^sub>2"
+      using h\<theta>\<^sub>c_T\<^sub>2 by (by100 blast)
+    have h\<theta>c_sub_B\<^sub>2: "\<theta>\<^sub>c \<subseteq> ?B\<^sub>2"
+      using hL\<^sub>2_def h\<theta>cL\<^sub>2 by (by100 blast)
+    have h\<theta>_ne_\<theta>c: "\<theta> \<noteq> \<theta>\<^sub>c"
+      using h\<theta>\<^sub>c_ne_\<theta> by (by100 blast)
+    have hri_sub_int_union:
+      "rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<subseteq> interior (\<theta> \<union> \<theta>\<^sub>c)"
+      by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+          [OF hK h\<theta>K h\<theta>\<^sub>cK h\<theta>2 h\<theta>\<^sub>c2 h\<theta>_ne_\<theta>c
+            hchord_segment_face_\<theta> h\<theta>\<^sub>c_chord_face hchord_segment_edge])
+    have h\<theta>_union_\<theta>c_sub_B\<^sub>2: "\<theta> \<union> \<theta>\<^sub>c \<subseteq> ?B\<^sub>2"
+      using h\<theta>_sub_B\<^sub>2 h\<theta>c_sub_B\<^sub>2 by (by100 blast)
+    have hint_union_sub_B\<^sub>2: "interior (\<theta> \<union> \<theta>\<^sub>c) \<subseteq> interior ?B\<^sub>2"
+      by (rule interior_mono[OF h\<theta>_union_\<theta>c_sub_B\<^sub>2])
+    have hri_sub_int_B\<^sub>2:
+      "rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<subseteq> interior ?B\<^sub>2"
+      using hri_sub_int_union hint_union_sub_B\<^sub>2 by (by100 blast)
+    have hchord_segment_dim1: "geotop_simplex_dim (closed_segment v\<^sub>0 v\<^sub>2) 1"
+      using hchord_segment_edge unfolding geotop_is_edge_def by (by100 simp)
+    have hchord_segment_simplex: "geotop_is_simplex (closed_segment v\<^sub>0 v\<^sub>2)"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF hchord_segment_dim1])
+    have hri_ne: "rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<noteq> {}"
+      by (rule geotop_simplex_rel_interior_nonempty[OF hchord_segment_simplex])
+    obtain x where hxri: "x \<in> rel_interior (closed_segment v\<^sub>0 v\<^sub>2)"
+      using hri_ne by (by100 blast)
+    have hxint: "x \<in> interior ?B\<^sub>2"
+      using hri_sub_int_B\<^sub>2 hxri by (by100 blast)
+    have "x \<in> rel_interior (closed_segment v\<^sub>0 v\<^sub>2) \<inter> interior ?B\<^sub>2"
+      using hxri hxint by (by100 blast)
+    thus False
+      using hchord_rel_interior_disjoint_B\<^sub>2_HOL_interior by (by100 blast)
+  qed
+  have h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+  proof
+    assume h\<theta>T\<^sub>2: "\<theta> \<in> ?T\<^sub>2"
+    have h\<theta>L\<^sub>2: "\<theta> \<in> L\<^sub>2"
+      using h\<theta>T\<^sub>2 by (by100 blast)
+    have "\<theta> \<subseteq> ?B\<^sub>2"
+      using hL\<^sub>2_def h\<theta>L\<^sub>2 by (by100 blast)
+    thus False
+      using h\<theta>_not_sub_B\<^sub>2 by (by100 blast)
+  qed
   have hT\<^sub>2_gt1_if_distinct_from_\<theta>\<^sub>c:
     "\<And>\<rho>. \<rho> \<in> ?T\<^sub>2 \<Longrightarrow> \<rho> \<noteq> \<theta>\<^sub>c \<Longrightarrow> \<theta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 > 1"
   proof -
@@ -11090,29 +11136,15 @@ proof -
     sorry
   have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
   proof -
-    have hT\<^sub>2_ne: "?T\<^sub>2 \<noteq> {}"
-      using hside_card_residual by (by100 fastforce)
-    obtain \<rho> where h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
-      using hT\<^sub>2_ne by (by100 blast)
-    have h\<rho>T: "\<rho> \<in> ?T"
-      using hT\<^sub>2_sub_T h\<rho>T\<^sub>2 by (by100 blast)
-    have h\<rho>not_T\<^sub>1: "\<rho> \<notin> ?T\<^sub>1"
-      using hT\<^sub>1_T\<^sub>2_disjoint h\<rho>T\<^sub>2 by (by100 blast)
+    have h\<theta>c_not_T\<^sub>1: "\<theta>\<^sub>c \<notin> ?T\<^sub>1"
+      by (rule h\<theta>\<^sub>c_not_T\<^sub>1)
     show ?thesis
-      using h\<rho>T h\<rho>not_T\<^sub>1 by (by100 blast)
+      using h\<theta>\<^sub>c_T h\<theta>c_not_T\<^sub>1 by (by100 blast)
   qed
   have hside_omits_T\<^sub>2: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2"
   proof -
-    have hT\<^sub>1_ne: "?T\<^sub>1 \<noteq> {}"
-      using hside_card_residual by (by100 fastforce)
-    obtain \<rho> where h\<rho>T\<^sub>1: "\<rho> \<in> ?T\<^sub>1"
-      using hT\<^sub>1_ne by (by100 blast)
-    have h\<rho>T: "\<rho> \<in> ?T"
-      using hT\<^sub>1_sub_T h\<rho>T\<^sub>1 by (by100 blast)
-    have h\<rho>not_T\<^sub>2: "\<rho> \<notin> ?T\<^sub>2"
-      using hT\<^sub>1_T\<^sub>2_disjoint h\<rho>T\<^sub>1 by (by100 blast)
     show ?thesis
-      using h\<rho>T h\<rho>not_T\<^sub>2 by (by100 blast)
+      using h\<theta>_T h\<theta>_not_T\<^sub>2 by (by100 blast)
   qed
   have hside_count_residual:
     "(\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
