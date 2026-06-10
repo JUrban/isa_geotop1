@@ -10961,6 +10961,133 @@ proof -
                                     \<and> y \<notin> J'"
                                 using h\<tau>_side_edge_nonparent_has_off_parent_chord_point
                                 by (by100 blast)
+                              have h\<sigma>_parent_contact_cover_from_no_uncovered:
+                                "(\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  False) \<Longrightarrow>
+                                \<sigma> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                              proof -
+                                assume hno_uncovered:
+                                  "\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                    False"
+                                show ?thesis
+                                proof
+                                  fix x
+                                  assume hx: "x \<in> \<sigma> \<inter> J'"
+                                  show "x \<in> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                  proof (rule ccontr)
+                                    assume hx_not:
+                                      "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                    show False
+                                      by (rule hno_uncovered[OF hx hx_not])
+                                  qed
+                                qed
+                              qed
+                              have h\<tau>_parent_contact_cover_from_no_uncovered:
+                                "(\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  False) \<Longrightarrow>
+                                \<tau> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                              proof -
+                                assume hno_uncovered:
+                                  "\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                    False"
+                                show ?thesis
+                                proof
+                                  fix x
+                                  assume hx: "x \<in> \<tau> \<inter> J'"
+                                  show "x \<in> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                  proof (rule ccontr)
+                                    assume hx_not:
+                                      "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                    show False
+                                      by (rule hno_uncovered[OF hx hx_not])
+                                  qed
+                                qed
+                              qed
+                              have h\<sigma>\<tau>_distinct_if_common_side_only_\<theta>:
+                                "(\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                  geotop_simplex_dim \<rho> 2 \<Longrightarrow> \<rho> = \<theta>) \<Longrightarrow>
+                                  \<sigma> \<noteq> \<tau>"
+                              proof -
+                                assume hcommon:
+                                  "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                    geotop_simplex_dim \<rho> 2 \<Longrightarrow> \<rho> = \<theta>"
+                                show "\<sigma> \<noteq> \<tau>"
+                                proof
+                                  assume h\<sigma>\<tau>: "\<sigma> = \<tau>"
+                                  have h\<sigma>L\<^sub>2: "\<sigma> \<in> L\<^sub>2"
+                                    using h\<tau>L\<^sub>2 h\<sigma>\<tau> by (by100 simp)
+                                  have "\<sigma> = \<theta>"
+                                    by (rule hcommon[OF h\<sigma>L\<^sub>1 h\<sigma>L\<^sub>2 h\<sigma>2])
+                                  thus False
+                                    using h\<sigma>_ne_\<theta> by (by100 blast)
+                                qed
+                              qed
+                              have hparent_contact_cover_and_distinct_from_obligations:
+                                "(\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  False) \<Longrightarrow>
+                                (\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                  x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                  False) \<Longrightarrow>
+                                (\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                  geotop_simplex_dim \<rho> 2 \<Longrightarrow> \<rho> = \<theta>) \<Longrightarrow>
+                                \<sigma> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                                \<and> \<tau> \<inter> J' \<subseteq>
+                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                                \<and> \<sigma> \<noteq> \<tau>"
+                              proof -
+                                assume h\<sigma>_no_uncovered:
+                                  "\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                    False"
+                                assume h\<tau>_no_uncovered:
+                                  "\<And>x. x \<in> \<tau> \<inter> J' \<Longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                    False"
+                                assume hcommon:
+                                  "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                    geotop_simplex_dim \<rho> 2 \<Longrightarrow> \<rho> = \<theta>"
+                                have h\<sigma>_cover:
+                                  "\<sigma> \<inter> J' \<subseteq>
+                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                  by (rule h\<sigma>_parent_contact_cover_from_no_uncovered
+                                      [OF h\<sigma>_no_uncovered])
+                                have h\<tau>_cover:
+                                  "\<tau> \<inter> J' \<subseteq>
+                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                  by (rule h\<tau>_parent_contact_cover_from_no_uncovered
+                                      [OF h\<tau>_no_uncovered])
+                                have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+                                  by (rule h\<sigma>\<tau>_distinct_if_common_side_only_\<theta>
+                                      [OF hcommon])
+                                show ?thesis
+                                  using h\<sigma>_cover h\<tau>_cover h\<sigma>\<tau> by (by100 blast)
+                              qed
                               have hparent_contact_cover_and_distinct_book:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
@@ -10976,7 +11103,58 @@ proof -
                                   by parent-boundary selected edges in the same
                                   side subcomplex, and the two side witnesses
                                   lie on opposite sides of the chord split. **)
-                                sorry
+                              proof -
+                                have hparent_contact_cover_and_distinct_obligations_book:
+                                  "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    False)
+                                  \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    False)
+                                  \<and> (\<forall>\<rho>. \<rho> \<in> L\<^sub>1 \<longrightarrow> \<rho> \<in> L\<^sub>2 \<longrightarrow>
+                                    geotop_simplex_dim \<rho> 2 \<longrightarrow> \<rho> = \<theta>)"
+                                  (**
+                                    Remaining Moise Figure 3.2 geometry:
+                                    uncovered parent-boundary contact cannot
+                                    be pushed onto the artificial chord/other
+                                    side boundary, and the only two-simplex
+                                    common to the side subcomplexes is the
+                                    cutting triangle \<open>\<theta>\<close>. **)
+                                  sorry
+                                show ?thesis
+                                proof (rule hparent_contact_cover_and_distinct_from_obligations)
+                                  fix x
+                                  assume hx: "x \<in> \<sigma> \<inter> J'"
+                                  assume hx_not:
+                                    "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                  show False
+                                    using hparent_contact_cover_and_distinct_obligations_book
+                                      hx hx_not
+                                    by (by100 blast)
+                                next
+                                  fix x
+                                  assume hx: "x \<in> \<tau> \<inter> J'"
+                                  assume hx_not:
+                                    "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                  show False
+                                    using hparent_contact_cover_and_distinct_obligations_book
+                                      hx hx_not
+                                    by (by100 blast)
+                                next
+                                  fix \<rho>
+                                  assume h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+                                  assume h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+                                  assume h\<rho>2: "geotop_simplex_dim \<rho> 2"
+                                  show "\<rho> = \<theta>"
+                                    using hparent_contact_cover_and_distinct_obligations_book
+                                      h\<rho>L\<^sub>1 h\<rho>L\<^sub>2 h\<rho>2
+                                    by (by100 blast)
+                                qed
+                              qed
                               have h\<sigma>_contact_sub_union:
                                 "\<sigma> \<inter> J' \<subseteq>
                                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
