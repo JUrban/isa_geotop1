@@ -7094,19 +7094,17 @@ proof -
       "\<theta> \<notin> ?T\<^sub>1 \<Longrightarrow> card ?T\<^sub>1 < card ?T"
   proof -
     assume h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
-    have hproper: "?T\<^sub>1 \<subset> ?T"
-      using hT\<^sub>1_sub_T h\<theta>_T h\<theta>_not_T\<^sub>1 by (by100 blast)
     show "card ?T\<^sub>1 < card ?T"
-      by (rule psubset_card_mono[OF hT_fin hproper])
+      by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+          [OF hT_fin hT\<^sub>1_sub_T h\<theta>_T h\<theta>_not_T\<^sub>1])
   qed
   have hT\<^sub>2_card_lt_T_if_avoids_\<theta>:
       "\<theta> \<notin> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 < card ?T"
   proof -
     assume h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
-    have hproper: "?T\<^sub>2 \<subset> ?T"
-      using hT\<^sub>2_sub_T h\<theta>_T h\<theta>_not_T\<^sub>2 by (by100 blast)
     show "card ?T\<^sub>2 < card ?T"
-      by (rule psubset_card_mono[OF hT_fin hproper])
+      by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+          [OF hT_fin hT\<^sub>2_sub_T h\<theta>_T h\<theta>_not_T\<^sub>2])
   qed
   have hparent_free_pair_finishes:
       "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
