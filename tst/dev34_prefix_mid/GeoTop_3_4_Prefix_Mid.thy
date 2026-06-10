@@ -14076,15 +14076,9 @@ proof -
                               h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J
                               h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def]
                           by (by100 blast)
-                        have hside2_induction_count_book: "card ?T\<^sub>2 > 1"
-                          (**
-                            Remaining Moise Figure 3.2 side-2 decision.  The
-                            geometric core now proves only that side 2 is
-                            nonempty; this residual must either prove that the
-                            side has enough triangles for the induction
-                            hypothesis, or replace the induction call below by
-                            the singleton-side parent-boundary fallback. **)
-                          sorry
+                        show ?thesis
+                        proof (cases "card ?T\<^sub>2 > 1")
+                          case True
                         have hside_complexes_reverse_and_counts_book:
                           "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                               (geotop_polygon_interior J\<^sub>1).
@@ -14124,7 +14118,7 @@ proof -
                           have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
                             using hside_geometric_core_book by (by100 blast)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
-                            by (rule hside2_induction_count_book)
+                            by (rule True)
                           have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
                             by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
                                 [OF hT_fin hT\<^sub>1_sub_T hrho1_T hrho1_not_T\<^sub>1])
@@ -14174,7 +14168,7 @@ proof -
                             using hside_geometric_core_book
                             by (by100 blast)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
-                            by (rule hside2_induction_count_book)
+                            by (rule True)
                           show ?thesis
                             using geotop_chord_side_complexes_exact_and_strict_from_carriers_prefix
                                 [OF hK' hK_fin' hK_poly' hclosure_split hL\<^sub>1_def
@@ -14513,10 +14507,10 @@ proof -
 	                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
                               \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
                               card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
-                              \<tau> \<inter> J' =
-                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
-                              \<sigma> \<noteq> \<tau>"
-                            by (rule htransferable_side_witness_choice_book)
+	                              \<tau> \<inter> J' =
+	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+	                              \<sigma> \<noteq> \<tau>"
+	                            by (rule htransferable_side_witness_choice_book)
                         qed
                         show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                             card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
@@ -14528,17 +14522,55 @@ proof -
                               \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
                             \<sigma> \<noteq> \<tau>"
                           by (rule hside_selected_witnesses_book)
-                      qed
-                      show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
-                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
-                          \<sigma> \<inter> J' =
-                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
-                          \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
-	                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
-	                          \<tau> \<inter> J' =
-	                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
-	                          \<sigma> \<noteq> \<tau>"
-	                        using hside_witnesses_from_IH by (by100 blast)
+                          next
+                            case False
+                            have hT\<^sub>2_card_le1: "card ?T\<^sub>2 \<le> 1"
+                              using False by (by100 simp)
+                            have hT\<^sub>2_nonempty: "?T\<^sub>2 \<noteq> {}"
+                              using hside_geometric_core_book by (by100 blast)
+                            have hT\<^sub>2_card_pos: "card ?T\<^sub>2 > 0"
+                              using hT\<^sub>2_fin hT\<^sub>2_nonempty card_gt_0_iff[of ?T\<^sub>2]
+                              by (by100 blast)
+                            have hT\<^sub>2_card_eq1: "card ?T\<^sub>2 = 1"
+                              using hT\<^sub>2_card_pos hT\<^sub>2_card_le1 by (by100 arith)
+                            obtain \<tau> where hT\<^sub>2_singleton: "?T\<^sub>2 = {\<tau>}"
+                              using hT\<^sub>2_card_eq1 by (rule card_1_singletonE)
+                            have h\<tau>T\<^sub>2: "\<tau> \<in> ?T\<^sub>2"
+                              using hT\<^sub>2_singleton by (by100 simp)
+                            have h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+                              using h\<tau>T\<^sub>2 by (by100 simp)
+                            have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+                              using h\<tau>T\<^sub>2 by (by100 simp)
+                            show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+                              card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                              \<sigma> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+                              \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+                              card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+                              \<tau> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+                              \<sigma> \<noteq> \<tau>"
+                              (**
+                                Singleton side-2 fallback for Moise Figure 3.2.
+                                Here the geometric core gives a nonempty side-2
+                                complex, while \<open>False\<close> says it is not a
+                                multi-triangle side.  The remaining book step is
+                                to use the unique side-2 triangle as the second
+                                parent-boundary witness, while side 1 still
+                                supplies a witness by induction. **)
+                              sorry
+                          qed
+                        qed
+	                      show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+	                          card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
+	                          \<sigma> \<inter> J' =
+	                            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<and>
+	                          \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+		                          card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2 \<and>
+		                          \<tau> \<inter> J' =
+		                            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<and>
+		                          \<sigma> \<noteq> \<tau>"
+		                        using hside_witnesses_from_IH by (by100 blast)
                     qed
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
