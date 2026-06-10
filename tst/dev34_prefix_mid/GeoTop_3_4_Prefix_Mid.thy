@@ -2709,6 +2709,126 @@ proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_pref
         [OF hab hc_not_ab hd_not_ab he_eq h\<sigma>V h\<tau>V hline hopp])
 qed
 
+lemma geotop_complex_no_three_2simplexes_share_edge_prefix:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma>1 \<sigma>2 \<sigma>3 :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h12: "\<sigma>1 \<noteq> \<sigma>2"
+  assumes h23: "\<sigma>2 \<noteq> \<sigma>3"
+  assumes h13: "\<sigma>1 \<noteq> \<sigma>3"
+  assumes h\<sigma>1K: "\<sigma>1 \<in> K"
+  assumes h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+  assumes h\<sigma>1face: "geotop_is_face e \<sigma>1"
+  assumes h\<sigma>2K: "\<sigma>2 \<in> K"
+  assumes h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+  assumes h\<sigma>2face: "geotop_is_face e \<sigma>2"
+  assumes h\<sigma>3K: "\<sigma>3 \<in> K"
+  assumes h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+  assumes h\<sigma>3face: "geotop_is_face e \<sigma>3"
+  shows False
+  (**
+    Prefix-local planar incidence bound: an embedded planar complex cannot
+    have three distinct 2-simplexes sharing one edge. **)
+proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_prefix
+    [OF hK h\<sigma>1K h\<sigma>2K h\<sigma>1dim h\<sigma>2dim h12 h\<sigma>1face h\<sigma>2face hedge])
+  fix a b c d n r
+  assume hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>1V: "geotop_simplex_vertices \<sigma>1 {a, b, c}"
+    and h\<sigma>2V: "geotop_simplex_vertices \<sigma>2 {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    and h\<sigma>1_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma>1 \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>1_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma>1 \<subseteq> {p. n \<bullet> p < r}"
+    and h\<sigma>2_pos: "n \<bullet> d > r \<Longrightarrow> interior \<sigma>2 \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>2_neg: "n \<bullet> d < r \<Longrightarrow> interior \<sigma>2 \<subseteq> {p. n \<bullet> p < r}"
+    and hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  obtain a3 b3 g where ha3b3: "a3 \<noteq> b3"
+    and hg_not_a3b3: "g \<notin> {a3, b3}"
+    and he_eq3: "e = geotop_convex_hull {a3, b3}"
+    and h\<sigma>3V_raw: "geotop_simplex_vertices \<sigma>3 {a3, b3, g}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix[OF h\<sigma>3dim hedge h\<sigma>3face])
+  have heV_ab: "geotop_simplex_vertices e {a, b}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hab, folded he_eq])
+  have heV_a3b3: "geotop_simplex_vertices e {a3, b3}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF ha3b3, folded he_eq3])
+  have hab_set: "{a3, b3} = {a, b}"
+    by (rule geotop_simplex_vertices_unique[OF heV_a3b3 heV_ab])
+  have h\<sigma>3V: "geotop_simplex_vertices \<sigma>3 {a, b, g}"
+  proof -
+    have "{a3, b3, g} = {a, b, g}"
+      using hab_set by (by100 blast)
+    thus ?thesis
+      using h\<sigma>3V_raw by (by100 simp)
+  qed
+  have hg_not_ab: "g \<notin> {a, b}"
+    using hg_not_a3b3 hab_set by (by100 simp)
+  have hg_ne: "n \<bullet> g \<noteq> r"
+  proof
+    assume hg_line: "n \<bullet> g = r"
+    have "g \<in> affine hull {a, b}"
+      using hg_line hline by (by100 simp)
+    moreover have "g \<notin> affine hull {a, b}"
+      by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix
+          [OF h\<sigma>3V hg_not_ab])
+    ultimately show False
+      by (by100 blast)
+  qed
+  have hdisj13: "interior \<sigma>1 \<inter> interior \<sigma>3 = {}"
+    by (rule geotop_complex_distinct_2simplex_HOL_interiors_disjoint_prefix
+        [OF hK h\<sigma>1K h\<sigma>3K h\<sigma>1dim h\<sigma>3dim h13])
+  have hdisj23: "interior \<sigma>2 \<inter> interior \<sigma>3 = {}"
+    by (rule geotop_complex_distinct_2simplex_HOL_interiors_disjoint_prefix
+        [OF hK h\<sigma>2K h\<sigma>3K h\<sigma>2dim h\<sigma>3dim h23])
+  consider (cpos_dneg) "n \<bullet> c > r" "n \<bullet> d < r"
+    | (cneg_dpos) "n \<bullet> c < r" "n \<bullet> d > r"
+    using hopp by (by100 blast)
+  then show False
+  proof cases
+    case cpos_dneg
+    have hg_cases: "n \<bullet> g > r \<or> n \<bullet> g < r"
+      using hg_ne by (by100 linarith)
+    then show False
+    proof
+      assume hgpos: "n \<bullet> g > r"
+      have hmeet: "interior \<sigma>1 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_positive_same_side_HOL_interiors_meet_prefix
+            [OF hab hc_not_ab hg_not_ab h\<sigma>1V h\<sigma>3V hline cpos_dneg(1) hgpos])
+      show False using hdisj13 hmeet by (by100 blast)
+    next
+      assume hgneg: "n \<bullet> g < r"
+      have hmeet: "interior \<sigma>2 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_negative_same_side_HOL_interiors_meet_prefix
+            [OF hab hd_not_ab hg_not_ab h\<sigma>2V h\<sigma>3V hline cpos_dneg(2) hgneg])
+      show False using hdisj23 hmeet by (by100 blast)
+    qed
+  next
+    case cneg_dpos
+    have hg_cases: "n \<bullet> g > r \<or> n \<bullet> g < r"
+      using hg_ne by (by100 linarith)
+    then show False
+    proof
+      assume hgpos: "n \<bullet> g > r"
+      have hmeet: "interior \<sigma>2 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_positive_same_side_HOL_interiors_meet_prefix
+            [OF hab hd_not_ab hg_not_ab h\<sigma>2V h\<sigma>3V hline cneg_dpos(2) hgpos])
+      show False using hdisj23 hmeet by (by100 blast)
+    next
+      assume hgneg: "n \<bullet> g < r"
+      have hmeet: "interior \<sigma>1 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_negative_same_side_HOL_interiors_meet_prefix
+            [OF hab hc_not_ab hg_not_ab h\<sigma>1V h\<sigma>3V hline cneg_dpos(1) hgneg])
+      show False using hdisj13 hmeet by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix:
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -8563,6 +8683,144 @@ proof -
       \<or> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
           closed_segment v\<^sub>0 v\<^sub>2"
       using geotop_segment_face_cases_prefix[OF hface_chord hv\<^sub>0v\<^sub>2] by (by100 blast)
+  qed
+  have hchord_segment_edge: "geotop_is_edge (closed_segment v\<^sub>0 v\<^sub>2)"
+    using hchord_edge hchord_hull_segment_eq by (by100 simp)
+  have hchord_segment_face_\<theta>:
+    "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>"
+    using hchord_face hchord_hull_segment_eq by (by100 simp)
+  have hchord_no_third_2simplex:
+    "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+      geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
+      \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow>
+      geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau> \<Longrightarrow>
+      \<sigma> \<noteq> \<theta> \<Longrightarrow> \<tau> \<noteq> \<theta> \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow> False"
+  proof -
+    fix \<sigma> \<tau>
+    assume h\<sigma>K: "\<sigma> \<in> K"
+    assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    assume h\<sigma>face: "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma>"
+    assume h\<tau>K: "\<tau> \<in> K"
+    assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    assume h\<tau>face: "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau>"
+    assume h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
+    assume h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+    assume h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    have h\<theta>\<sigma>: "\<theta> \<noteq> \<sigma>"
+      using h\<sigma>_ne_\<theta> by (by100 blast)
+    have h\<sigma>\<tau>': "\<sigma> \<noteq> \<tau>"
+      by (rule h\<sigma>\<tau>)
+    have h\<theta>\<tau>: "\<theta> \<noteq> \<tau>"
+      using h\<tau>_ne_\<theta> by (by100 blast)
+    show False
+      by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
+          [OF hK hchord_segment_edge h\<theta>\<sigma> h\<sigma>\<tau>' h\<theta>\<tau>
+            h\<theta>K h\<theta>2 hchord_segment_face_\<theta>
+            h\<sigma>K h\<sigma>2 h\<sigma>face h\<tau>K h\<tau>2 h\<tau>face])
+  qed
+  have hcarrier_chord_full_dim2:
+    "\<And>x. x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2 \<Longrightarrow>
+      x \<notin> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow>
+      geotop_simplex_dim (geotop_K_carrier K x) 2"
+  proof -
+    fix x
+    assume hxB: "x \<in> ?B\<^sub>1 \<union> ?B\<^sub>2"
+    assume hx_not_chord: "x \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    assume hinter_full:
+      "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2"
+    show "geotop_simplex_dim (geotop_K_carrier K x) 2"
+    proof -
+      have hxK: "x \<in> geotop_polyhedron K"
+        using hB\<^sub>1_sub_K hB\<^sub>2_sub_K hxB by (by100 blast)
+      have hcarrierK: "geotop_K_carrier K x \<in> K"
+        by (rule geotop_K_carrier_in[OF hK hK_fin hxK])
+      have hx_carrier: "x \<in> geotop_K_carrier K x"
+        by (rule geotop_K_carrier_contains_point[OF hK hK_fin hxK])
+      have hcarrier_simplex: "geotop_is_simplex (geotop_K_carrier K x)"
+        using geotop_is_complex_simplex[OF hK] hcarrierK by (by100 blast)
+      obtain n where hcarrier_dim:
+        "geotop_simplex_dim (geotop_K_carrier K x) n"
+        using hcarrier_simplex
+        unfolding geotop_is_simplex_def geotop_simplex_dim_def
+        by (by100 blast)
+      have hn_le2: "n \<le> 2"
+        by (rule geotop_simplex_dim_le_2_R2_prefix[OF hcarrier_dim])
+      have hchord_sub_carrier:
+        "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> geotop_K_carrier K x"
+        using hinter_full by (by100 blast)
+      have hinter_ne:
+        "geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+      proof -
+        have "v\<^sub>0 \<in> geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+          using hinter_full by (by100 simp)
+        thus ?thesis
+          by (by100 blast)
+      qed
+      have hface_chord_carrier:
+        "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2)
+          (geotop_K_carrier K x)"
+      proof -
+        have "geotop_is_face
+          (geotop_K_carrier K x \<inter> closed_segment v\<^sub>0 v\<^sub>2)
+          (geotop_K_carrier K x)"
+          using hcarrier_chord_inter_faces[OF hxB hinter_ne] by (by100 blast)
+        thus ?thesis
+          using hinter_full by (by100 simp)
+      qed
+      show ?thesis
+      proof (cases "n = 2")
+        case True
+        show ?thesis
+          using hcarrier_dim True by (by100 simp)
+      next
+        case False
+        have hn_cases: "n = 0 \<or> n = 1"
+          using hn_le2 False by (by100 arith)
+        show ?thesis
+        proof (rule disjE[OF hn_cases])
+          assume hn0: "n = 0"
+          obtain V m where hV_fin: "finite V"
+            and hV_card: "card V = 0 + 1"
+            and hcarrier_eq: "geotop_K_carrier K x = geotop_convex_hull V"
+            using hcarrier_dim hn0 unfolding geotop_simplex_dim_def
+            by (by100 blast)
+          have hV_card1: "card V = 1"
+            using hV_card by (by100 simp)
+          obtain c where hV_eq: "V = {c}"
+            using hV_card1 by (rule card_1_singletonE)
+          have hcarrier_sing: "geotop_K_carrier K x = {c}"
+            using hcarrier_eq hV_eq geotop_convex_hull_eq_HOL[of "{c}"]
+            by (by100 simp)
+          have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+            by (by100 simp)
+          have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+            by (by100 simp)
+          have hv\<^sub>0_carrier: "v\<^sub>0 \<in> geotop_K_carrier K x"
+            using hchord_sub_carrier hv\<^sub>0_chord by (by100 blast)
+          have hv\<^sub>2_carrier: "v\<^sub>2 \<in> geotop_K_carrier K x"
+            using hchord_sub_carrier hv\<^sub>2_chord by (by100 blast)
+          have "v\<^sub>0 = v\<^sub>2"
+            using hv\<^sub>0_carrier hv\<^sub>2_carrier hcarrier_sing by (by100 simp)
+          thus ?thesis
+            using hv\<^sub>0v\<^sub>2 by (by100 blast)
+        next
+          assume hn1: "n = 1"
+          have hcarrier_edge: "geotop_is_edge (geotop_K_carrier K x)"
+            using hcarrier_dim hn1 unfolding geotop_is_edge_def by (by100 simp)
+          have hchord_eq_carrier:
+            "closed_segment v\<^sub>0 v\<^sub>2 = geotop_K_carrier K x"
+            by (rule geotop_edge_face_of_edge_eq_prefix
+                [OF hchord_segment_edge hcarrier_edge hface_chord_carrier])
+          have "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+            using hx_carrier hchord_eq_carrier by (by100 simp)
+          thus ?thesis
+            using hx_not_chord by (by100 blast)
+        qed
+      qed
+    qed
   qed
   show ?thesis
     sorry
