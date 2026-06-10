@@ -9752,6 +9752,24 @@ proof -
         (\<theta>\<^sub>c - closed_segment v\<^sub>0 v\<^sub>2))"
     by (rule geotop_2simplex_delete_edge_face_connected_prefix
         [OF h\<theta>\<^sub>c2 hchord_segment_edge h\<theta>\<^sub>c_chord_face])
+  have h\<theta>\<^sub>c_ne_\<theta>\<^sub>s: "\<theta>\<^sub>c \<noteq> \<theta>\<^sub>s"
+  proof
+    assume h_eq: "\<theta>\<^sub>c = \<theta>\<^sub>s"
+    have hchord_sub_\<theta>c: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>\<^sub>c"
+      by (rule geotop_is_face_imp_subset_prefix[OF h\<theta>\<^sub>c_chord_face])
+    have hchord_sub_\<theta>s: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>\<^sub>s"
+      using h_eq hchord_sub_\<theta>c by (by100 simp)
+    have hv\<^sub>0_chord: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>0_\<theta>s: "v\<^sub>0 \<in> \<theta>\<^sub>s"
+      using hchord_sub_\<theta>s hv\<^sub>0_chord by (by100 blast)
+    have "v\<^sub>0 \<in> \<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+      using hv\<^sub>0_\<theta>s hv\<^sub>0_chord by (by100 blast)
+    hence "v\<^sub>0 = v\<^sub>2"
+      using h\<theta>\<^sub>s_chord_inter_v\<^sub>2 by (by100 simp)
+    thus False
+      using hv\<^sub>0v\<^sub>2 by (by100 blast)
+  qed
   have hchord_no_third_2simplex:
     "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
       geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<sigma> \<Longrightarrow>
