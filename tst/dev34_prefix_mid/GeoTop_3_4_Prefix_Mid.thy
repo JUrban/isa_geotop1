@@ -10537,6 +10537,63 @@ proof -
                                   using hside_open_regions_disjoint by (by100 blast)
                               qed
                             qed
+                            have h2simplex_not_subset_chord:
+                              "\<And>(\<rho>::(real^2) set). geotop_simplex_dim \<rho> 2 \<Longrightarrow>
+                                \<not> \<rho> \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                            proof
+                              fix \<rho> :: "(real^2) set"
+                              assume h\<rho>2: "geotop_simplex_dim \<rho> 2"
+                              assume h\<rho>_sub_chord:
+                                "\<rho> \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                              have h\<rho>_simplex: "geotop_is_simplex \<rho>"
+                                by (rule geotop_simplex_dim_imp_is_simplex[OF h\<rho>2])
+                              have h\<rho>_rel_int_ne: "rel_interior \<rho> \<noteq> {}"
+                                by (rule geotop_simplex_rel_interior_nonempty
+                                    [OF h\<rho>_simplex])
+                              have h\<rho>_int_eq_rel:
+                                "interior \<rho> = rel_interior \<rho>"
+                                by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix
+                                    [OF h\<rho>2])
+                              have h\<rho>_int_ne: "interior \<rho> \<noteq> {}"
+                                using h\<rho>_rel_int_ne h\<rho>_int_eq_rel by (by100 simp)
+                              have hchord_int_empty:
+                                "interior (closed_segment v\<^sub>0 v\<^sub>2) = {}"
+                              proof -
+                                have hdim: "2 \<le> DIM(real^2)"
+                                  by (by100 simp)
+                                show ?thesis
+                                  by (rule interior_closed_segment_ge2[OF hdim])
+                              qed
+                              have h\<rho>_int_sub_chord_int:
+                                "interior \<rho> \<subseteq> interior (closed_segment v\<^sub>0 v\<^sub>2)"
+                                by (rule interior_mono[OF h\<rho>_sub_chord])
+                              have "interior \<rho> = {}"
+                                using h\<rho>_int_sub_chord_int hchord_int_empty by (by100 blast)
+                              thus False
+                                using h\<rho>_int_ne by (by100 blast)
+                            qed
+                            have hcommon_side_2simplex_eq_\<theta>:
+                              "\<And>\<rho>. \<rho> \<in> L\<^sub>1 \<Longrightarrow> \<rho> \<in> L\<^sub>2 \<Longrightarrow>
+                                geotop_simplex_dim \<rho> 2 \<Longrightarrow> \<rho> = \<theta>"
+                            proof -
+                              fix \<rho>
+                              assume h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+                              assume h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+                              assume h\<rho>2: "geotop_simplex_dim \<rho> 2"
+                              have h\<rho>_minus_empty:
+                                "\<rho> - closed_segment v\<^sub>0 v\<^sub>2 = {}"
+                                by (rule hcommon_side_simplex_minus_chord_empty
+                                    [OF h\<rho>L\<^sub>1 h\<rho>L\<^sub>2])
+                              have h\<rho>_sub_chord:
+                                "\<rho> \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+                                using h\<rho>_minus_empty by (by100 blast)
+                              have False
+                                using h2simplex_not_subset_chord[OF h\<rho>2]
+                                  h\<rho>_sub_chord
+                                by (by100 blast)
+                              thus "\<rho> = \<theta>"
+                                by (by100 blast)
+                            qed
                             have h\<sigma>_sub_closure_J\<^sub>1:
                               "\<sigma> \<subseteq> closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>1)"
@@ -11298,16 +11355,12 @@ proof -
                                   \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                                       \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
-                                    False)
-                                  \<and> (\<forall>\<rho>. \<rho> \<in> L\<^sub>1 \<longrightarrow> \<rho> \<in> L\<^sub>2 \<longrightarrow>
-                                    geotop_simplex_dim \<rho> 2 \<longrightarrow> \<rho> = \<theta>)"
+                                    False)"
                                   (**
                                     Remaining Moise Figure 3.2 geometry:
                                     uncovered parent-boundary contact cannot
                                     be pushed onto the artificial chord/other
-                                    side boundary, and the only two-simplex
-                                    common to the side subcomplexes is the
-                                    cutting triangle \<open>\<theta>\<close>. **)
+                                    side boundary. **)
                                   sorry
                                 show ?thesis
                                 proof (rule hparent_contact_cover_and_distinct_from_obligations)
@@ -11336,9 +11389,8 @@ proof -
                                   assume h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
                                   assume h\<rho>2: "geotop_simplex_dim \<rho> 2"
                                   show "\<rho> = \<theta>"
-                                    using hparent_contact_cover_and_distinct_obligations_book
-                                      h\<rho>L\<^sub>1 h\<rho>L\<^sub>2 h\<rho>2
-                                    by (by100 blast)
+                                    by (rule hcommon_side_2simplex_eq_\<theta>
+                                        [OF h\<rho>L\<^sub>1 h\<rho>L\<^sub>2 h\<rho>2])
                                 qed
                               qed
                               have h\<sigma>_contact_sub_union:
