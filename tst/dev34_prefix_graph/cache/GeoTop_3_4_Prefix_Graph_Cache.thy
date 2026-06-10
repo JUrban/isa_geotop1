@@ -3870,56 +3870,6 @@ proof
     using hep hp_ep hp_ne by (by100 simp)
 qed
 
-lemma geotop_connected_split_side_three_germs_local_component_prefix:
-  fixes L :: "(real^2) set set"
-  fixes e\<^sub>1 e\<^sub>2 e\<^sub>3 S T U N :: "(real^2) set"
-  fixes w p y z :: "real^2"
-  fixes r :: real
-  assumes hSCC: "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
-      (geotop_polyhedron L)"
-  assumes hSTU_eq: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
-  assumes hselected_union: "S \<union> T \<union> U = e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3"
-  assumes hST: "S \<noteq> T"
-  assumes hSU: "S \<noteq> U"
-  assumes hTU: "T \<noteq> U"
-  assumes hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
-  assumes hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
-  assumes hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
-  assumes hp_cl: "p \<in> closure ((S - {w}) \<inter> ball w r)"
-  assumes hy_cl: "y \<in> closure ((T - {w}) \<inter> ball w r)"
-  assumes hz_cl: "z \<in> closure ((U - {w}) \<inter> ball w r)"
-  assumes hpyz_eq: "{p, y, z} = {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
-  assumes hcard: "card {p, y, z} = 3"
-  assumes hpy: "p \<noteq> y"
-  assumes hpz: "p \<noteq> z"
-  assumes hyz: "y \<noteq> z"
-  assumes hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
-  assumes hN_conn: "top1_connected_on N
-      (subspace_topology UNIV geotop_euclidean_topology N)"
-  assumes hpSN: "p \<in> (S - {w}) \<inter> N"
-  assumes hyTN: "y \<in> (T - {w}) \<inter> N"
-  assumes hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
-      (subspace_topology UNIV geotop_euclidean_topology
-        (geotop_polyhedron L - {w})) p y"
-  assumes hlocal_open: "open (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
-  assumes hcover: "N \<inter> ball w r
-      \<subseteq> ((S - {w}) \<inter> ball w r)
-        \<union> ((T - {w}) \<inter> ball w r)
-        \<union> ((U - {w}) \<inter> ball w r)
-        \<union> (ball w r - (S \<union> T \<union> U))"
-  shows "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
-    \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
-    \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
-    \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
-  (**
-    Named book bridge for the branch-vertex local cutpoint proof.  The
-    connected split side of the punctured simple closed curve meets two
-    selected germs directly; the local one-manifold split at the selected
-    sphere point forces the third germ onto the same local component of the
-    punctured small star.  This is the exact missing Moise local-component
-    step, not a general graph cutpoint theorem. **)
-  sorry
-
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -9668,12 +9618,7 @@ proof -
           a component of \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all
           three selected punctured germs.  This is not a general graph
           cutpoint claim; the SCC local-one-manifold hypothesis is essential. **)
-        by (rule geotop_connected_split_side_three_germs_local_component_prefix
-            [OF hSCC hSTU_eq hselected_union_eq hST hSU hTU
-              hST_disj hSU_disj hTU_disj hp_selected_germ_closure
-              hy_selected_germ_closure hz_selected_germ_closure hpyz_eq
-              hcard hpy hpz hyz hN_sub hN_conn hpSN hyTN hsame
-              hlocal_open hN_ball_sector_cover])
+        sorry
       show "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
         \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
         \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
