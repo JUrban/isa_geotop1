@@ -9971,6 +9971,66 @@ proof -
       using geotop_2simplex_not_subset_edge_prefix[OF h\<rho>2 hchord_segment_edge]
         h\<rho>sub_chord by (by100 blast)
   qed
+  have hT_subset_sides: "?T \<subseteq> ?T\<^sub>1 \<union> ?T\<^sub>2"
+  proof
+    fix \<rho>
+    assume h\<rho>T: "\<rho> \<in> ?T"
+    have h\<rho>K: "\<rho> \<in> K"
+      using h\<rho>T by (by100 blast)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using h\<rho>T by (by100 blast)
+    have h\<rho>simplex: "geotop_is_simplex \<rho>"
+      using geotop_is_complex_simplex[OF hK] h\<rho>K by (by100 blast)
+    have hbary\<rho>: "geotop_barycenter \<rho> \<in> \<rho>"
+      by (rule geotop_barycenter_in_simplex[OF h\<rho>simplex])
+    have hbary_poly: "geotop_barycenter \<rho> \<in> geotop_polyhedron K"
+      unfolding geotop_polyhedron_def using h\<rho>K hbary\<rho> by (by100 blast)
+    have hbary_side: "geotop_barycenter \<rho> \<in> ?B\<^sub>1
+      \<or> geotop_barycenter \<rho> \<in> ?B\<^sub>2"
+      using hbary_poly hK_poly hclosure_split by (by100 blast)
+    have hcarrier_eq: "geotop_K_carrier K (geotop_barycenter \<rho>) = \<rho>"
+      by (rule geotop_K_carrier_barycenter[OF hK h\<rho>K])
+    show "\<rho> \<in> ?T\<^sub>1 \<union> ?T\<^sub>2"
+    proof (rule disjE[OF hbary_side])
+      assume hbaryB\<^sub>1: "geotop_barycenter \<rho> \<in> ?B\<^sub>1"
+      have hcarrier_sub_B\<^sub>1:
+        "geotop_K_carrier K (geotop_barycenter \<rho>) \<subseteq> ?B\<^sub>1"
+        using hcarrier_side1 hbaryB\<^sub>1 by (by100 blast)
+      have h\<rho>sub_B\<^sub>1: "\<rho> \<subseteq> ?B\<^sub>1"
+        using hcarrier_eq hcarrier_sub_B\<^sub>1 by (by100 simp)
+      have h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+        using hL\<^sub>1_def h\<rho>K h\<rho>sub_B\<^sub>1 by (by100 blast)
+      have "\<rho> \<in> ?T\<^sub>1"
+        using h\<rho>L\<^sub>1 h\<rho>2 by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    next
+      assume hbaryB\<^sub>2: "geotop_barycenter \<rho> \<in> ?B\<^sub>2"
+      have hcarrier_sub_B\<^sub>2:
+        "geotop_K_carrier K (geotop_barycenter \<rho>) \<subseteq> ?B\<^sub>2"
+        using hcarrier_side2 hbaryB\<^sub>2 by (by100 blast)
+      have h\<rho>sub_B\<^sub>2: "\<rho> \<subseteq> ?B\<^sub>2"
+        using hcarrier_eq hcarrier_sub_B\<^sub>2 by (by100 simp)
+      have h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+        using hL\<^sub>2_def h\<rho>K h\<rho>sub_B\<^sub>2 by (by100 blast)
+      have "\<rho> \<in> ?T\<^sub>2"
+        using h\<rho>L\<^sub>2 h\<rho>2 by (by100 blast)
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+  have hT_eq_sides: "?T = ?T\<^sub>1 \<union> ?T\<^sub>2"
+    using hT_subset_sides hT\<^sub>1_sub_T hT\<^sub>2_sub_T by (by100 blast)
+  have hT_card_sides: "card ?T = card ?T\<^sub>1 + card ?T\<^sub>2"
+  proof -
+    have "card ?T = card (?T\<^sub>1 \<union> ?T\<^sub>2)"
+      using hT_eq_sides by (by100 simp)
+    also have "... = card ?T\<^sub>1 + card ?T\<^sub>2"
+      by (rule card_Un_disjoint[OF hT\<^sub>1_fin hT\<^sub>2_fin hT\<^sub>1_T\<^sub>2_disjoint])
+    finally show ?thesis .
+  qed
+  have hnot_both_sides_card_le1: "\<not> (card ?T\<^sub>1 \<le> 1 \<and> card ?T\<^sub>2 \<le> 1)"
+    using hT_card_sides hT_gt2 by (by100 linarith)
   have hside_card_residual: "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
     sorry
   have hside_omits_T\<^sub>1: "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
