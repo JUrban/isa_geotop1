@@ -7120,6 +7120,38 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   assumes hnonbase_boundary_segment_cases:
     "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
       \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+  assumes hsubdisk_side_witnesses_from_split:
+    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+      geotop_is_polygon J\<^sub>1
+        \<and> geotop_is_polygon J\<^sub>2
+        \<and> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J) =
+             closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1)
+             \<union> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>2)
+        \<and> geotop_separated UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1 \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+               (geotop_polygon_interior J\<^sub>2 \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
+      L\<^sub>1 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)} \<Longrightarrow>
+      L\<^sub>2 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)} \<Longrightarrow>
+      \<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+        \<sigma> \<noteq> \<tau>"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
   (**
     Moise Figure 3.2 split lemma.  The preceding bookkeeping has isolated the
@@ -7989,7 +8021,7 @@ proof -
       restricted side complexes satisfy the induction hypotheses and choose
       one transferable witness from each side, avoiding the artificial chord as
       the only selected boundary witness. **)
-    sorry
+    by (rule hsubdisk_side_witnesses_from_split[OF hsubdisk_book_facts])
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
@@ -8534,6 +8566,39 @@ proof -
     "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
       \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
     using hnot_both_nonbase_boundary_segments by (by100 blast)
+  have hsubdisk_side_witnesses_from_split:
+    "\<And>J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 L\<^sub>1 L\<^sub>2.
+      geotop_is_polygon J\<^sub>1
+        \<and> geotop_is_polygon J\<^sub>2
+        \<and> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J) =
+             closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1)
+             \<union> closure_on UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>2)
+        \<and> geotop_separated UNIV geotop_euclidean_topology
+               (geotop_polygon_interior J\<^sub>1 \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+               (geotop_polygon_interior J\<^sub>2 \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) \<Longrightarrow>
+      L\<^sub>1 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)} \<Longrightarrow>
+      L\<^sub>2 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)} \<Longrightarrow>
+      \<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+        \<sigma> \<noteq> \<tau>"
+    sorry
   show ?thesis
     by (rule geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
         [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
@@ -8541,7 +8606,8 @@ proof -
           h\<theta>_not_col hbase_segment_sub_J hJ_meets_other_arc_interior
           hJ_meets_\<theta>_frontier_other_arc_interior hJ_meets_nonbase_side_or_v\<^sub>2
           h\<theta>_frontier_polygon h\<theta>_frontier_chord_polygon
-          hnot_both_nonbase_boundary_segments hnonbase_boundary_segment_cases])
+          hnot_both_nonbase_boundary_segments hnonbase_boundary_segment_cases
+          hsubdisk_side_witnesses_from_split])
 qed
 
 (** from \<S>3 Theorem 3 (geotop.tex:762)

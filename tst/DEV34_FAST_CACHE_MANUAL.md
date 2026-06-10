@@ -1,22 +1,14 @@
 # Manual: `.dev34_fast_cache` and `check_dev34_fast.sh`
 
-Date: 2026-06-10
+This note documents the fast checking workflow used for the GeoTop Sections 3-4 development. It is intentionally about the local implementation in `check_dev34_fast.sh`, not a general Isabelle caching guide. The short version is that the script turns the large `GeoTop` development into a sequence of reusable dirty sessions, records content hashes in `.dev34_fast_cache`, and generates temporary split theories so that a proof can be checked against a cached prefix instead of reparsing and replaying the whole active stack on every iteration.
 
-This note documents the local fast-check approach used for the Section 3-4 Isabelle work. It explains what is cached, how the cache is keyed, which commands are intended for ordinary proof iteration, and where the approach can save time or give a false sense of safety.
+The mechanism is useful, and it is faster for the kind of work we are doing now. It also has real limits. It is a development accelerator, not a replacement for final full builds, and the split modes can only certify the slice that they actually process. The right workflow is to use the fast modes many times while editing, then run broader checks whenever a named proof package closes or a statement changes.
 
-The short version is:
+## 1. The Problem It Solves
 
-- `check_dev34_fast.sh` is a workflow wrapper around `isabelle build`, `isabelle process_theories`, `rg`, and generated temporary theory sessions.
-- `.dev34_fast_cache` is not the heap store itself. It is a small local metadata and generated-theory directory. The actual reusable heaps are produced by Isabelle with `-b` and `system_heaps=true`.
-- The script has three cache classes: layer heap stamps, per-file process stamps, and theorem-prefix split sessions.
-- It is fastest when we repeatedly edit a late proof inside a large theory and can reuse a compiled parent heap plus a compiled prefix ending immediately before the theorem under work.
-- It does not replace final validation. It is a proof-loop accelerator.
+The Sections 3-4 files are large and layered. The current target stack is not one clean, small theory; it is split across:
 
-## 1. Why This Exists
-
-The Section 3-4 development has very large theory files and a deep layer structure:
-
-```
+```text
 dev34_pre
 dev34_prefix_base
 dev34_prefix_graph/cache
@@ -33,507 +25,269 @@ dev34_core
 dev34
 ```
 
-Running a full build after every small proof edit is too expensive. Even processing one large file from the beginning can be slow when the active theorem is near the bottom of the file. The wrapper tries to make the common loop cheaper:
+Each later layer imports earlier work. A naive verification loop tends to do too much: after changing a few lines in `dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy`, a broad build can replay unrelated graph cache work, prefix-base work, later facts, and sometimes the active `dev34` layer. That is expensive. Worse, the cost is paid repeatedly while the local edit is still just a proof skeleton or a small statement-shape experiment.
 
-1. Search the full theorem/statement indexes and relevant source files before inventing lemmas.
-2. Reuse compiled parent layers.
-3. For a large current file, compile the completed prefix before the target theorem once.
-4. Reprocess only the theorem or tail that changed.
-5. Record enough hashes to skip work when the same check has already been run.
+The script attacks this in three ways.
 
-The script is deliberately conservative about correctness of cache freshness: it hashes source files, ROOT files, proof options, selected parent digests, and generated split files. If those inputs change, the stamp becomes stale and the check reruns.
+First, it maps each file to the smallest session that can check it. For example, `dev34_prefix_mid/...` is processed with parent logic `GeoTop34PrefixGraphDirty`, while `dev34_prefix/...` is processed with parent logic `GeoTop34PrefixMidDirty`. The parent context is chosen by `parent_context`, and the reusable parent target is chosen by `parent_target_for_file`.
 
-## 2. What `.dev34_fast_cache` Contains
+Second, it records SHA-256 stamps for successfully built layer heaps. If the inputs for `prefix-graph` have not changed, the script can skip rebuilding that heap and reuse it as the parent for `prefix-mid` checks. These stamps live in `.dev34_fast_cache/*.sha256`.
 
-At the time of writing, this checkout has:
+Third, for long files it can split a theory at a named theorem or lemma. The prefix before the target is copied into a generated temporary theory and built once. Then only the target slice, or the tail from the target to the end of the file, is processed against that generated prefix session. This is the job of `split-hot`, `slice-hot`, `focus`, and related modes.
 
-```
-14 layer stamp files
-5 process stamp files
-145 split session directories
-about 67 MB in .dev34_fast_cache
-```
+## 2. What Lives in `.dev34_fast_cache`
 
-The exact numbers will drift. The important categories are stable:
+The cache directory contains three main classes of artifacts.
 
-### Layer stamps
+Layer stamps are files such as:
 
-Examples:
-
-```
+```text
 .dev34_fast_cache/pre.sha256
 .dev34_fast_cache/prefix-base.sha256
 .dev34_fast_cache/prefix-graph-cache.sha256
 .dev34_fast_cache/prefix-graph.sha256
 .dev34_fast_cache/prefix-mid.sha256
 .dev34_fast_cache/prefix.sha256
+.dev34_fast_cache/core.sha256
 .dev34_fast_cache/dev34.sha256
 ```
 
-Each file stores a digest for one logical dev34 layer. The digest is computed from:
+Each layer stamp records a digest computed from the target name, the Isabelle session name, the `FORCE_PROOFS` setting, and the source files that belong to that layer and its predecessors. The digest is not the heap itself. Isabelle stores the actual heap in its normal heap location because the build uses `-o system_heaps=true`. The stamp says, in effect, "the corresponding heap was successfully built for exactly these tracked inputs."
 
-- target name,
-- Isabelle session name,
-- `FORCE_PROOFS`,
-- the ROOT and theory files up through that layer.
+Process stamps have names like:
 
-When a layer stamp is fresh, the script assumes the corresponding Isabelle heap was already built with `isabelle build -b`. The stamp is the script's local freshness proof; the heap itself is stored by Isabelle, not inside `.dev34_fast_cache`.
-
-### Process stamps
-
-Examples:
-
-```
-.dev34_fast_cache/proc-489d94b33fceb8b328f314dadf4c2e2efec63112238e4a352c655e6d8373876a.sha256
+```text
+.dev34_fast_cache/proc-<sha256>.sha256
 ```
 
-These record that `isabelle process_theories` has already succeeded for a specific file against a specific parent logic under specific proof options. The digest includes:
+These represent a successful `process_theories` run for one file against a particular parent logic. The digest includes the file, its layer `ROOT` if present, parent target, parent digest, `FORCE_PROOFS`, and `SKIP_PROOFS`. If none of that changes, `hot` can skip the file-level process check.
 
-- mode: `process_theories`,
-- file path,
-- parent logic,
-- `FORCE_PROOFS`,
-- `SKIP_PROOFS`,
-- file hash,
-- local ROOT hash if present,
-- parent target,
-- parent target digest.
+Split cache entries are directories and stamps such as:
 
-This is a skip cache. It does not create a reusable Isabelle heap for the target file; it only says "this exact process check already passed."
-
-### Split session directories
-
-Examples:
-
-```
+```text
+.dev34_fast_cache/split-06c9f3d3c66c/
 .dev34_fast_cache/split-06c9f3d3c66c/ROOT
 .dev34_fast_cache/split-06c9f3d3c66c/GeoTop_3_4_Prefix_Mid_Split_06c9f3d3c66c_Prefix.thy
 .dev34_fast_cache/split-06c9f3d3c66c/GeoTop_3_4_Prefix_Mid_Split_06c9f3d3c66c_Slice.thy
+.dev34_fast_cache/split-<long sha>.sha256
 ```
 
-A split directory is a generated mini-session for one source file and one pattern. The prefix theory imports the normal parent session and copies the current source file up to the first matching line. The slice or tail theory imports that compiled prefix and copies only the target theorem slice or the rest of the file.
+The short split directory key is derived from the file, the target pattern, the parent logic, and any chained split pattern. The generated `ROOT` defines a temporary session. The generated prefix theory imports the real parent or another generated prefix session. The generated slice or tail theory imports the prefix session and contains only the target region being checked.
 
-The generated ROOT resembles:
+This is why the directory can contain many split folders. They are cheap compared to Isabelle heaps, and they make repeated checks of a specific large theorem much faster once the prefix is warm.
 
-```
-session GeoTop_3_4_Prefix_Mid_Split_<key>_Prefix_Session = GeoTop34PrefixGraphDirty +
-  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
-  theories
-    GeoTop_3_4_Prefix_Mid_Split_<key>_Prefix
-```
+## 3. The Main Modes
 
-This is the main speed trick. If the target theorem is late in `GeoTop_3_4_Prefix_Mid.thy`, the script can cache everything before it as a generated heap and then process only the theorem being edited.
+`holes` is the cheapest status command:
 
-### Split stamps
-
-Examples:
-
-```
-.dev34_fast_cache/split-01244268a7d542bd883d9b53d6613d2644f85cd04aed62e0202176f3445dbbf1.sha256
-```
-
-There are two separate ideas:
-
-- prefix stamp: the generated prefix session has been built for the current file/pattern/parent digest,
-- tail or slice stamp: the generated tail or slice has been processed successfully for the current prefix digest and proof options.
-
-The split key uses the source file, pattern, parent logic, and optional chain pattern. The content digest also includes hashes of generated files and parent-layer digests. Editing lines above the target theorem invalidates the prefix cache; editing only inside the target theorem usually invalidates the slice process cache but can keep the prefix heap fresh.
-
-## 3. Command Families
-
-The wrapper has many modes, but most usage falls into a small set.
-
-### Cheap status and search
-
-```
-./check_dev34_fast.sh quick
+```bash
 ./check_dev34_fast.sh holes
-./check_dev34_fast.sh scan PAT
-./check_dev34_fast.sh index PAT
-./check_dev34_fast.sh names PAT
-./check_dev34_fast.sh stmts PAT
-./check_dev34_fast.sh loop PAT
 ```
 
-Use these constantly. They do not build large sessions. The `scan` and `loop` modes search both generated indexes and the target dev34 theory files. This matters because the index only sees named theorem/definition statements, while some useful facts are local `have`s in source.
+It runs `rg` for `sorry` and `sledgehammer` markers in the target dev34 theories. It does not build anything and therefore cannot prove that the files compile. It is a map of remaining executable holes.
 
-`quick` prints:
+`index`, `names`, `stmts`, `grep`, and `scan` are search helpers:
 
-- target holes,
-- dirty dev34 layer files,
-- the layer that `auto` would build,
-- cache freshness for that layer.
-
-`holes` is just a focused `rg` for `sorry` and `sledgehammer` markers in active dev34 layers.
-
-### Layer heap caching
-
+```bash
+./check_dev34_fast.sh index "free 2 simplex"
+./check_dev34_fast.sh scan "subdisk selected edge"
 ```
-./check_dev34_fast.sh cache-plan [FILES]
-./check_dev34_fast.sh cache-through [FILES]
-./check_dev34_fast.sh cache-parents [FILES]
-./check_dev34_fast.sh cache-status [FILES]
+
+They grep the full generated indexes, and `scan` also searches the active target theories. This matters because a large fraction of wasted proof time comes from reproving or restating facts that are already in another layer. The right habit is to scan before adding a helper, and to scan again when a proof gets stuck.
+
+`plan` shows what parent heap would be used for a file:
+
+```bash
+./check_dev34_fast.sh plan dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+```
+
+It prints the parent logic and whether the parent layer cache is fresh or stale. This is the fastest way to decide whether a slow run is likely to be a cold-cache problem.
+
+`warm` builds the parent heap for one or more files:
+
+```bash
+./check_dev34_fast.sh warm dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+```
+
+For a mid-prefix file, this warms `prefix-graph`. It does not process the file itself.
+
+`hot` is the normal file-level proof check:
+
+```bash
+./check_dev34_fast.sh hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+```
+
+It auto-warms the parent layer unless disabled, then runs `process_theories` against the parent logic. With the process cache enabled, an identical successful run can be skipped later. This is faster than rebuilding the layer session, but it still processes the whole file.
+
+`outline` is a scaffold check:
+
+```bash
+./check_dev34_fast.sh outline dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+```
+
+It runs the same path with `SKIP_PROOFS=1`, which is useful for statement plumbing and `sorry`-first skeletons. It is not a proof check.
+
+`split-hot` and `slice-hot` are the important long-file accelerators:
+
+```bash
+./check_dev34_fast.sh split-hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
+./check_dev34_fast.sh slice-hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
+```
+
+`split-hot` builds a generated prefix before the first matching line, then processes the generated tail from the target through the end of the original theory. `slice-hot` does the same prefix build, but processes only from the target through the line before the next top-level lemma, theorem, corollary, or proposition. For our current work, `slice-hot` is usually the best iteration command because the Section 3 packages are large but still top-level-bounded.
+
+`focus` wraps `slice-hot` with named targets and a full-index scan:
+
+```bash
+./check_dev34_fast.sh focus mid-split-free
+./check_dev34_fast.sh focus-status mid-split-free
+./check_dev34_fast.sh focus-warm mid-split-free
+```
+
+The known focus targets are listed by:
+
+```bash
+./check_dev34_fast.sh focus-list
+```
+
+The focus list encodes the currently important Moise packages: graph branch/cycle work, mid-prefix split/free/fold/support/D42 work, prefix D44 work, and active `dev34` cycle/fan/semicircle work.
+
+`cache-through`, `cache-parents`, `cache-status`, and `cache-all` control layer heap stamps:
+
+```bash
+./check_dev34_fast.sh cache-status dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+./check_dev34_fast.sh cache-parents dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+./check_dev34_fast.sh cache-through dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
 ./check_dev34_fast.sh cache-all
 ```
 
-Layer caching builds Isabelle heaps with `isabelle build -b` and then writes a stamp file under `.dev34_fast_cache`.
+Use these when switching targets or after a broad statement change. `cache-all` is intentionally heavier; it is for preparing the whole stack, not for every edit.
 
-For example, when editing `dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy`, the reusable parent target is `prefix-graph`, whose session is `GeoTop34PrefixGraphDirty`. If that parent is fresh, a hot check can process the mid file against `GeoTop34PrefixGraphDirty` instead of rebuilding everything before it.
+## 4. Why It Is Faster
 
-`cache-through` builds every layer up to the target, skipping already fresh layers. This is useful after larger structural changes or after adding/updating ROOT/session files.
+The speedup comes from avoiding repeated replay of stable text. If the parent of a target file is already built, Isabelle can load the parent heap and process only the current layer. If a long target file is split before the active theorem, Isabelle can load a generated heap for the completed prefix and process only the target theorem. If an identical process run has already succeeded, the script can skip it entirely.
 
-`cache-parents` builds only the reusable parent layers for the supplied dirty files. This is usually enough before a focused proof loop.
+The biggest gain is in `slice-hot` and `focus` modes. A top-level theorem near the end of a 10,000-line theory no longer requires replaying the first 9,000 lines on every tiny edit. The first run still has to build the generated prefix. Later runs only rebuild the prefix if the copied prefix text, parent digest, split pattern, or proof settings change. When the edit is inside the target slice, the prefix remains fresh.
 
-### Whole-file hot checks
+There are also smaller gains from using `rg` for hole and index scans, from choosing the smallest dirty layer automatically, and from skipping fresh process checks. These are not mathematically deep optimizations; they are engineering friction reductions. They matter because our actual work requires many small edits and immediate compile feedback.
 
-```
-./check_dev34_fast.sh plan [FILES]
-./check_dev34_fast.sh warm [FILES]
-./check_dev34_fast.sh hot [FILES]
-./check_dev34_fast.sh proc [FILES]
-./check_dev34_fast.sh outline [FILES]
-```
+The observed practical pattern is:
 
-`hot` is an alias for `proc`. It chooses the parent logic for each changed or explicit dev34 file, auto-warms the parent heap, and runs:
-
-```
-isabelle process_theories ... -l PARENT_LOGIC -o quick_and_dirty -f FILE
+```text
+Cold broad build: slowest; useful for milestone validation.
+Hot file process: faster; good after ordinary file edits.
+Slice-hot with warm prefix: fastest meaningful proof check for one theorem.
+Holes/index/plan/status: near-instant; use constantly.
 ```
 
-The process cache can skip this if the exact same file has already been processed against the same fresh parent.
+The script does not promise a fixed runtime. A target slice can still be slow if the theorem itself contains expensive automation, if the generated prefix is stale, if the parent heap is stale, or if the machine has lost Isabelle heap locality. But it changes the default iteration from "recheck too much" to "recheck the named package I am actually editing."
 
-`outline` sets `SKIP_PROOFS=1` and is intended for sorry-first scaffolding and syntax/type-shape validation. It is not a proof check.
+## 5. Correctness Boundaries
 
-### Split and slice checks
+The fast cache is conservative about content hashes for the files it knows are relevant. It includes source checksums, `ROOT` files, parent digests, and proof-mode flags. That makes stale-cache false positives unlikely for the normal dev34 stack.
 
-```
-./check_dev34_fast.sh split-warm FILE PAT
-./check_dev34_fast.sh split-hot FILE PAT
-./check_dev34_fast.sh slice-hot FILE PAT
-```
+Still, several boundaries matter.
 
-These are the most important commands for large late proofs.
+First, `holes`, `quick`, `plan`, `cache-status`, and `focus-status` are status commands. They do not prove anything. A fresh stamp means "this exact cached check previously succeeded", not "the whole project is currently fully certified."
 
-`split-warm` builds only the generated prefix before the first occurrence of `PAT`.
+Second, `outline` uses `skip_proofs=true`. It is good for finding syntax, statement, import, and dependency mistakes quickly. It is not good enough to close a proof package.
 
-`split-hot` builds or reuses that prefix and then processes the rest of the source file after `PAT`.
+Third, `quick_and_dirty` and `skip_proofs` are development settings. The normal fast process path uses `quick_and_dirty` for speed. The final gate for a closed package should still include broader verification, and final project completion requires a real build policy consistent with the project rules.
 
-`slice-hot` builds or reuses that prefix and then processes only the next top-level theorem/lemma/corollary/proposition slice. This is usually the fastest meaningful check while editing one theorem.
+Fourth, split theories are generated approximations of a region of a file. They work well for top-level theorem slices whose dependencies are above the split point. They are not a substitute for checking the original full theory after moving declarations, changing notation, adding global attributes, or changing something that affects later material outside the slice.
 
-For example:
+Fifth, pattern selection matters. `slice-hot FILE PAT` splits at the first `rg` match. If the pattern is too broad and matches a comment, an earlier helper, or an old generated name, the split point can be wrong. Use exact theorem names where possible. `focus` helps by encoding known good patterns.
 
-```
-./check_dev34_fast.sh slice-hot \
-  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
-  geotop_polygon_arc_opposite_boundary_theta_component_split_prefix
-```
-
-That command finds the first matching line, copies the theory prefix before that line into a generated prefix theory, builds it if stale, then copies only that theorem slice into a generated slice theory and processes the slice.
-
-### Named focus targets
-
-```
-./check_dev34_fast.sh focus-list
-./check_dev34_fast.sh focus mid-d42
-./check_dev34_fast.sh focus-full mid-d42
-./check_dev34_fast.sh focus-warm mid-d42
-./check_dev34_fast.sh focus-status mid-d42
-./check_dev34_fast.sh focus-prime mid-d42
-```
-
-Named focus targets are aliases for the current known hard holes. They also run a full index/source scan before checking, which matches the instruction to grep the full index frequently.
-
-Current focus names include:
-
-```
-graph-branch
-graph-branch-local
-graph-cycle-cut
-mid-split-free
-mid-fold
-mid-support
-mid-d42
-prefix-d44
-dev34-cycle
-dev34-cycle-realization
-dev34-fan
-dev34-semicircle
-```
-
-For `mid-d42`, the focus target is:
-
-```
-file:    dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
-pattern: theorem Theorem_GT_4_2
-chain:   theorem Theorem_GT_3_7
-```
-
-The chain matters because the theorem is late in the file. The script can build a chain of prefix sessions, rather than trying to process the entire file prefix in one large temporary session every time.
-
-## 4. How Freshness Works
-
-The script uses hashes rather than timestamps. This is good because git checkout, file touching, and editor save behavior do not accidentally invalidate caches unless content changes.
-
-The central digest functions are:
-
-- `cache_digest TARGET`
-- `proc_digest FILE PARENT_TARGET LOGIC`
-- `split_cache_key FILE PATTERN LOGIC CHAIN_PATTERN`
-- split prefix and tail digests assembled inside `split_hot_one`
-
-### Layer freshness
-
-A layer is fresh when:
-
-```
-.dev34_fast_cache/<target>.sha256 == cache_digest(<target>)
-```
-
-The digest includes all source files up through the layer. This means a change in an earlier layer invalidates later layer stamps because later layer digests include earlier source files.
-
-### Process freshness
-
-A process check is fresh only if the parent layer is also fresh. This prevents reusing a "passed" process stamp after its imported facts might have changed.
-
-### Split prefix freshness
-
-A split prefix is fresh only if:
-
-- the generated prefix file has the same hash,
-- the generated ROOT has the same hash,
-- the parent target digest is the same,
-- chained prefix digest, if any, is the same,
-- `FORCE_PROOFS` is the same.
-
-### Split slice or tail freshness
-
-A slice or tail process stamp additionally includes:
-
-- prefix digest,
-- generated slice/tail file hash,
-- `SKIP_PROOFS`,
-- `FORCE_PROOFS`.
-
-This means ordinary edits inside the active theorem should invalidate only the slice/tail process stamp. Edits above the theorem invalidate the prefix. Edits in an imported parent layer invalidate both.
-
-## 5. Is It Faster?
-
-Yes, for the proof-loop cases it was designed for. It is not a universal speedup.
-
-The main savings come from avoiding repeated work:
-
-- `holes`, `scan`, `loop` are near-instant compared with Isabelle.
-- A fresh parent heap avoids rebuilding earlier dev34 layers.
-- A fresh split prefix avoids replaying thousands of lines before a target theorem.
-- A fresh process stamp can turn an accidental repeated check into a no-op.
-
-The current `mid-d42` status illustrates the shape:
-
-```
-cache: fresh prefix-graph (GeoTop34PrefixGraphDirty)
-split-hot: stale/missing prefix cache before Theorem_GT_3_7
-split-hot: stale/missing prefix cache before Theorem_GT_4_2
-split-hot: stale/missing slice process cache for Theorem_GT_4_2
-```
-
-That is not the fastest possible state, but it is still better than starting from scratch because the parent `prefix-graph` heap is fresh. After warming the chain, repeated edits inside Theorem 4.2 should generally need only the slice process step.
-
-The worst case is the first check after an edit above a target theorem. In that case the prefix cache must be rebuilt. A theorem near the end of a huge file can still take a while, because the generated prefix contains most of that file. The benefit appears on the second and later checks if the prefix remains unchanged.
+Sixth, the cache is local. `.dev34_fast_cache` records local successful checks and generated helper theories. It should not be treated as a portable proof artifact. Another clone or machine needs to rebuild.
 
 ## 6. Downsides and Failure Modes
 
-### It is easy to confuse proof-loop validation with final validation
+The main downside is cognitive overhead. There are many modes because there are several different loops: search, hole inventory, parent warming, file processing, split processing, focus processing, and milestone builds. The practical answer is to use a small default subset:
 
-Most hot modes use `quick_and_dirty`. Some outline modes use `skip_proofs=true`. These are appropriate while structuring proof code and diagnosing local failures, but they are not the final certificate for a theorem package.
-
-Final validation still needs the relevant normal build/proof mode. At minimum, before treating a package as closed, run the appropriate non-outline check and then the target layer or full session check required by the project policy.
-
-### Split files can hide context assumptions
-
-The split method copies a source-file prefix and then a theorem slice into generated theories. It is faithful for ordinary top-level theorem iteration, but it is still a generated environment. If the original file has unusual commands, local notation setup, attributes, bundles, or side effects spanning the split boundary, a split can fail even when the original file would pass, or occasionally pass in a way that does not test the exact remaining file tail.
-
-This project mostly uses it for ordinary theory text and top-level theorem slices, where it works well.
-
-### Pattern selection matters
-
-`split-hot` and `slice-hot` split at the first line matching the supplied pattern. If the pattern is too broad, the split may start at the wrong theorem. Use named focus targets when available, or use a specific theorem name.
-
-Bad:
-
-```
-./check_dev34_fast.sh slice-hot FILE component
-```
-
-Better:
-
-```
-./check_dev34_fast.sh slice-hot FILE geotop_polygon_arc_opposite_boundary_theta_component_split_prefix
-```
-
-### Prefix caches churn when editing above the target
-
-When a helper is inserted above a theorem, every split prefix below it changes. This is unavoidable because the source prefix changed. For late-file theorem work, keep new helper development localized where possible, and commit stable helper packages so later checks have stable prefix material.
-
-### `.dev34_fast_cache` is disposable but not self-pruning
-
-The directory accumulates split sessions. It can be removed with:
-
-```
-./check_dev34_fast.sh cache-clean
-```
-
-That removes local stamps and generated split theories. It does not delete Isabelle heaps. Cleaning is useful if the directory becomes confusing or if generated sessions are suspected stale in a way the hashes did not catch. The cost is that the next hot check has to warm caches again.
-
-### Stamps assume matching Isabelle heap availability
-
-A fresh layer stamp says the source digest matches the last successful build. It does not itself contain the heap. If Isabelle's heap storage was cleaned externally, the stamp can say "fresh" while the heap is missing. In that case, force a rebuild:
-
-```
-FORCE_CACHE=1 ./check_dev34_fast.sh cache-through FILE
-```
-
-or clean and rebuild:
-
-```
-./check_dev34_fast.sh cache-clean
-./check_dev34_fast.sh cache-through FILE
-```
-
-### Environment options are part of the meaning
-
-The script keys on `FORCE_PROOFS` and `SKIP_PROOFS`, but it assumes the same Isabelle binary and compatible environment. If `/project/bin/isabelle`, ROOT semantics, or imported sessions change substantially, rebuild the relevant caches.
-
-## 7. Practical Workflow for Theorem 3-4 Work
-
-For ordinary proof work on a known focus theorem:
-
-1. Search first:
-
-   ```
-   ./check_dev34_fast.sh focus mid-d42
-   ```
-
-   or, if the search term should be custom:
-
-   ```
-   ./check_dev34_fast.sh focus mid-d42 "separated side closure arc"
-   ```
-
-2. If the output says the prefix cache is stale, warm it once:
-
-   ```
-   ./check_dev34_fast.sh focus-warm mid-d42
-   ```
-
-3. Edit the theorem body.
-
-4. Re-run the focused slice:
-
-   ```
-   ./check_dev34_fast.sh focus mid-d42
-   ```
-
-5. If only the current theorem changed, subsequent runs should usually reuse the prefix and process just the slice.
-
-6. When a local package is stable, run a broader hot check:
-
-   ```
-   ./check_dev34_fast.sh hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
-   ```
-
-7. Before committing, check holes and relevant layer status:
-
-   ```
-   ./check_dev34_fast.sh holes
-   ./check_dev34_fast.sh cache-status dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
-   ```
-
-For new top-level lemmas or theorem declarations, regenerate indexes after the successful check:
-
-```
-bash gen_index.sh
-./gen_stmt_index.sh
-```
-
-Then grep both indexes before adding another nearby lemma:
-
-```
-rg -i "keyword" THEOREMS_AND_DEFS.txt STMT_INDEX.txt
-```
-
-## 8. Recommended Command Choices
-
-Use this most of the time:
-
-```
-./check_dev34_fast.sh scan PAT
+```bash
+./check_dev34_fast.sh scan PATTERN
 ./check_dev34_fast.sh holes
-./check_dev34_fast.sh focus NAME
-./check_dev34_fast.sh slice-hot FILE SPECIFIC_THEOREM_NAME
-```
-
-Use this when caches are stale:
-
-```
-./check_dev34_fast.sh focus-warm NAME
+./check_dev34_fast.sh focus TARGET
+./check_dev34_fast.sh slice-hot FILE EXACT_THEOREM_NAME
 ./check_dev34_fast.sh cache-parents FILE
-./check_dev34_fast.sh cache-through FILE
 ```
 
-Use this for scaffolding only:
+The second downside is cache churn. A statement near the top of a large file invalidates split prefixes below it. This is correct, but it means a first check after such a change can again be expensive. The cache is best when the current edit is inside or after the target slice, not when the imports or early prefix text are changing every few minutes.
 
-```
-./check_dev34_fast.sh outline FILE
-./check_dev34_fast.sh focus-outline NAME
-```
+The third downside is disk clutter. `.dev34_fast_cache` accumulates split folders for old patterns and old prefixes. `./check_dev34_fast.sh cache-clean` removes the cache, but it also throws away useful warm state. A manual cleanup policy could be added later, but for now the clutter is acceptable because generated theories are small compared with the time saved.
 
-Use this when cache behavior is suspicious:
+The fourth downside is that a skipped process check can hide the fact that the user wanted a fresh timing measurement. Disable process-cache skipping with:
 
-```
-./check_dev34_fast.sh focus-status NAME
-FORCE_CACHE=1 ./check_dev34_fast.sh cache-through FILE
-./check_dev34_fast.sh cache-clean
+```bash
+DEV34_FAST_PROC_CACHE=0 ./check_dev34_fast.sh focus mid-split-free
 ```
 
-Use final builds when a package is genuinely ready to rely on. The fast script is an accelerator, not the final project invariant.
+Force a layer cache rebuild with:
 
-## 9. What I Would Improve Next
-
-The current approach has helped, but there are clear improvements available.
-
-First, add a cache status summary that prints all three levels together for a focus target:
-
-```
-parent heap: fresh/stale
-chained prefix heap: fresh/stale
-target prefix heap: fresh/stale
-slice process stamp: fresh/stale
+```bash
+FORCE_CACHE=1 ./check_dev34_fast.sh cache dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
 ```
 
-The current output contains this information, but it is verbose and not normalized.
+Force proof checking options through the wrapper with:
 
-Second, add cache garbage collection for old split sessions. A simple policy would keep:
+```bash
+FORCE_PROOFS=1 ./check_dev34_fast.sh prove dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+```
 
-- all fresh split directories for named focus targets,
-- the newest N stale split directories,
-- all layer and process stamps that still match current source digests.
+The fifth downside is that generated split sessions may fail for reasons the original file would not, especially if the target theorem depends on local context that is not preserved by a top-level split. The current splitter is designed for the style of these theories: top-level declarations between `begin` and `end`. It is not a general Isabelle document slicer.
 
-Third, add timing logs per command. The script currently optimizes by skipping work, but it does not maintain a clear historical view of how much time each cache layer saves. A small `.dev34_fast_cache/timing.tsv` would make it easier to decide when a split target is worth warming.
+## 7. Recommended Workflow for the Current Goal
 
-Fourth, expose the exact generated split directory in normal output. The directory can already be derived from the key, but printing it would make debugging generated theory failures faster.
+For a Section 3 or Section 4 proof package, start with a scan:
 
-Fifth, consider making named focus targets data-driven. They are currently hard-coded in `check_dev34_fast.sh`. That is workable while the active holes are few, but a small table file would be easier to update as Section 3-4 moves.
+```bash
+./check_dev34_fast.sh scan "selected edge side witness free simplex"
+```
 
-## 10. Bottom Line
+Read the existing facts. Then edit with the `sorry`-first discipline from `CLAUDE.md`: add the statement or proof skeleton with `sorry`, compile immediately, and only then replace small batches of holes with bounded tactics.
 
-The approach is worth keeping. It addresses the real bottleneck: repeatedly replaying large theory prefixes while working on a single late proof. The speedup is largest after the first warm run and smallest after edits above the target theorem. Its main risk is procedural: a fast green slice is not the same as a final certified build.
+For the current Section 3 split/free package, use:
 
-For the current Section 3-4 work, the best discipline is:
+```bash
+./check_dev34_fast.sh focus mid-split-free
+```
 
-- grep indexes and source often,
-- use named focus targets for proof loops,
-- warm parent and prefix caches when entering a hard theorem,
-- avoid moving large helper blocks above active targets unless needed,
-- commit stable packages with detailed messages,
-- finish each package with broader validation before relying on it.
+or, when bypassing the named target:
 
+```bash
+./check_dev34_fast.sh slice-hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
+```
+
+After a statement change, regenerate indexes:
+
+```bash
+bash gen_index.sh && ./gen_stmt_index.sh
+```
+
+Then use the indexes again before adding more helpers:
+
+```bash
+./check_dev34_fast.sh index "polygon disk chord subdisk induction"
+```
+
+When a package is plausibly closed, broaden the check:
+
+```bash
+./check_dev34_fast.sh hot dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+./check_dev34_fast.sh cache-through dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
+./check_dev34_fast.sh holes
+```
+
+For final completion, do not rely on the cache directory. Run the project-level build required by the main instructions, regenerate indexes, and commit the exact source changes. The cache is a way to get there faster; it is not the end condition.
+
+## 8. Practical Answers
+
+Is it faster? Yes, for focused iteration. The largest speedup comes from `slice-hot` after the generated prefix is warm. The first run may still be expensive, but subsequent runs avoid replaying the completed prefix. File-level `hot` is also faster than broad builds when the parent heap is fresh.
+
+Does it make proofs weaker? The source proofs are unchanged. The risk is not proof weakness in the source; the risk is overinterpreting a narrow check. A slice check says the generated slice processed successfully against its generated prefix. It does not say every later theory in the project still works.
+
+When should I clean it? Clean it when cache behavior seems confusing, when generated split directories are stale enough to waste attention, or when testing the script itself. Do not clean it during normal theorem iteration unless the cache is suspected to be wrong.
+
+Which modes should I use most often? `scan`, `holes`, `focus`, `slice-hot`, and `hot`. Use `cache-through` at package boundaries. Use broad builds at milestones.
+
+What is the main operational rule? Search first, edit narrowly, check with the narrowest meaningful proof command, then broaden verification before claiming a theorem package is closed.
