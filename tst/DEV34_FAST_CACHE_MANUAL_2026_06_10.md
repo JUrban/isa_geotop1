@@ -22,6 +22,13 @@ parent heaps and split prefixes are fresh.
 This is a speed tool, not a replacement for final verification. The final
 goal is still zero target `sorry`s plus a successful real build.
 
+As of this review, the local cache directory is about 71 MB, with 153
+generated split directories and 338 top-level SHA-256 stamp files. Those
+numbers are not a target; they just show the expected scale. Most of the
+large proof state is still in Isabelle heap images outside this directory.
+`.dev34_fast_cache` mostly records freshness and stores generated theory
+fragments.
+
 ## 1. Why This Exists
 
 The GeoTop Section 3-4 files are large, and the difficult proof obligations
@@ -414,6 +421,15 @@ DEV34_FAST_VERBOSE=1 ./check_dev34_fast.sh slice-hot FILE PAT
 `DEV34_FAST_VERBOSE=1` prints generated session details for split checks.
 
 ```bash
+DEV34_FAST_SKIP_FRESH_TARGET=0 ./check_dev34_fast.sh hot FILE
+```
+
+`DEV34_FAST_SKIP_FRESH_TARGET=0` forces `proc`/`hot` to process the explicit
+file even when the whole target layer cache is already fresh. This is useful
+when measuring local runtime or when you want a direct `process_theories`
+check rather than relying on the coarser layer stamp.
+
+```bash
 FORCE_CACHE=1 ./check_dev34_fast.sh cache prefix-mid
 ```
 
@@ -453,9 +469,11 @@ but it can become large and cluttered. The script has:
 ./check_dev34_fast.sh cache-clean
 ```
 
-This removes local freshness stamps. It does not need to be run often. If a
-cache behaves suspiciously, first rerun with `DEV34_FAST_PROC_CACHE=0`; if
-that is not enough, clean or force the relevant cache.
+This removes `.dev34_fast_cache`, including local freshness stamps and
+generated split theories. It does not remove Isabelle's system heap images.
+It does not need to be run often. If a cache behaves suspiciously, first rerun
+with `DEV34_FAST_PROC_CACHE=0`; if that is not enough, clean or force the
+relevant cache.
 
 ### 7.4 `quick_and_dirty` is not final verification
 
