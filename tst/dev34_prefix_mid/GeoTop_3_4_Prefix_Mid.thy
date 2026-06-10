@@ -14916,11 +14916,85 @@ proof -
                             the two free-triangle counts on the smaller
                             subdisks, choose witnesses whose selected boundary
                             data lies on the original boundary \<open>J'\<close>, avoiding
-                            the artificial chord-only exceptional choice. **)
-                        proof -
-                          have hside_free_witnesses_avoid_\<theta>:
-                            "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L. \<sigma>\<^sub>L \<in> L\<^sub>1
-                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L
+	                            the artificial chord-only exceptional choice. **)
+	                        proof -
+	                          have hside_free_witnesses_avoid_chord_exception:
+	                            "\<exists>\<theta>\<^sub>c \<sigma>\<^sub>L \<tau>\<^sub>L. \<theta>\<^sub>c \<in> ?T\<^sub>2
+	                              \<and> \<theta>\<^sub>c \<notin> ?T\<^sub>1
+	                              \<and> \<theta>\<^sub>c \<noteq> \<theta>
+	                              \<and> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c
+	                              \<and> \<theta> \<notin> ?T\<^sub>2
+	                              \<and> (\<forall>\<rho>\<in>?T\<^sub>1.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>)
+	                              \<and> (\<forall>\<rho>\<in>?T\<^sub>2.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>\<^sub>c)
+	                              \<and> \<sigma>\<^sub>L \<in> L\<^sub>1
+	                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L
+	                              \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
+	                              \<and> \<sigma>\<^sub>L \<noteq> \<theta>
+	                              \<and> \<tau>\<^sub>L \<in> L\<^sub>2
+	                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>L
+	                              \<and> geotop_simplex_dim \<tau>\<^sub>L 2
+	                              \<and> \<tau>\<^sub>L \<noteq> \<theta>
+	                              \<and> \<tau>\<^sub>L \<noteq> \<theta>\<^sub>c"
+	                          proof -
+	                            obtain \<theta>\<^sub>c where h\<theta>cT\<^sub>2: "\<theta>\<^sub>c \<in> ?T\<^sub>2"
+	                              and h\<theta>c_not_T\<^sub>1: "\<theta>\<^sub>c \<notin> ?T\<^sub>1"
+	                              and h\<theta>c_ne_\<theta>: "\<theta>\<^sub>c \<noteq> \<theta>"
+	                              and h\<theta>c_chord_face:
+	                                "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c"
+	                              and h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+	                              and hT\<^sub>1_chord_only_\<theta>:
+	                                "\<forall>\<rho>\<in>?T\<^sub>1.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>"
+	                              and hT\<^sub>2_chord_only_\<theta>c:
+	                                "\<forall>\<rho>\<in>?T\<^sub>2.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>\<^sub>c"
+	                              using hside_core_chord_classification_book by (elim bexE conjE)
+	                            obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>LL\<^sub>1: "\<sigma>\<^sub>L \<in> L\<^sub>1"
+	                              and h\<sigma>\<^sub>Lfree:
+	                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L"
+	                              and h\<sigma>\<^sub>L_ne_\<theta>: "\<sigma>\<^sub>L \<noteq> \<theta>"
+	                              using geotop_free_2_simplex_witness_avoids_given_prefix
+	                                [OF hL\<^sub>1_fin hL\<^sub>1_free_count, where \<theta> = \<theta>]
+	                              by (elim exE conjE)
+	                            obtain \<tau>\<^sub>L where h\<tau>\<^sub>LL\<^sub>2: "\<tau>\<^sub>L \<in> L\<^sub>2"
+	                              and h\<tau>\<^sub>Lfree:
+	                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>L"
+	                              and h\<tau>\<^sub>L_ne_\<theta>c: "\<tau>\<^sub>L \<noteq> \<theta>\<^sub>c"
+	                              using geotop_free_2_simplex_witness_avoids_given_prefix
+	                                [OF hL\<^sub>2_fin hL\<^sub>2_free_count, where \<theta> = \<theta>\<^sub>c]
+	                              by (elim exE conjE)
+	                            have h\<sigma>\<^sub>L2: "geotop_simplex_dim \<sigma>\<^sub>L 2"
+	                              using h\<sigma>\<^sub>Lfree unfolding geotop_free_2_simplex_def
+	                              by (by100 blast)
+	                            have h\<tau>\<^sub>L2: "geotop_simplex_dim \<tau>\<^sub>L 2"
+	                              using h\<tau>\<^sub>Lfree unfolding geotop_free_2_simplex_def
+	                              by (by100 blast)
+	                            have h\<tau>\<^sub>LT\<^sub>2: "\<tau>\<^sub>L \<in> ?T\<^sub>2"
+	                              using h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 by (by100 simp)
+	                            have h\<tau>\<^sub>L_ne_\<theta>: "\<tau>\<^sub>L \<noteq> \<theta>"
+	                              using h\<theta>_not_T\<^sub>2 h\<tau>\<^sub>LT\<^sub>2 by (by100 blast)
+	                            show ?thesis
+	                              apply (rule exI[where x = "\<theta>\<^sub>c"])
+	                              apply (rule exI[where x = "\<sigma>\<^sub>L"])
+	                              apply (rule exI[where x = "\<tau>\<^sub>L"])
+	                              using h\<theta>cT\<^sub>2 h\<theta>c_not_T\<^sub>1 h\<theta>c_ne_\<theta> h\<theta>c_chord_face
+	                                h\<theta>_not_T\<^sub>2 hT\<^sub>1_chord_only_\<theta> hT\<^sub>2_chord_only_\<theta>c
+	                                h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>Lfree h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_ne_\<theta>
+	                                h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>Lfree h\<tau>\<^sub>L2 h\<tau>\<^sub>L_ne_\<theta>
+	                                h\<tau>\<^sub>L_ne_\<theta>c
+	                              apply (intro conjI)
+	                              apply assumption+
+	                              done
+	                          qed
+	                          have hside_free_witnesses_avoid_\<theta>:
+	                            "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L. \<sigma>\<^sub>L \<in> L\<^sub>1
+	                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L
                               \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
                               \<and> \<sigma>\<^sub>L \<noteq> \<theta>
                               \<and> \<tau>\<^sub>L \<in> L\<^sub>2
