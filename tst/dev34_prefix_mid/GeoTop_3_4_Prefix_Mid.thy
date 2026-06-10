@@ -9840,6 +9840,115 @@ proof -
     using hUnion hDisj hV_open hW_open hP_V hQ_W by blast
 qed
 
+lemma geotop_open_component_complement_split_prefix:
+  fixes U :: "'a::real_normed_vector set"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hP: "P \<in> U" and hQ: "Q \<in> U"
+  assumes hneq: "geotop_component_at UNIV geotop_euclidean_topology U P \<noteq>
+                 geotop_component_at UNIV geotop_euclidean_topology U Q"
+  shows "U =
+          geotop_component_at UNIV geotop_euclidean_topology U P \<union>
+          (U - geotop_component_at UNIV geotop_euclidean_topology U P)
+        \<and> geotop_component_at UNIV geotop_euclidean_topology U P \<inter>
+          (U - geotop_component_at UNIV geotop_euclidean_topology U P) = {}
+        \<and> geotop_component_at UNIV geotop_euclidean_topology U P
+          \<in> geotop_euclidean_topology
+        \<and> U - geotop_component_at UNIV geotop_euclidean_topology U P
+          \<in> geotop_euclidean_topology
+        \<and> P \<in> geotop_component_at UNIV geotop_euclidean_topology U P
+        \<and> Q \<in> U - geotop_component_at UNIV geotop_euclidean_topology U P"
+  (**
+    Component-form of Moise Theorem 4.1.  The theorem above exposes only
+    existential open sets; D42 needs the actual component side and its open
+    complement so that frontier facts attached to the component are not lost.
+  **)
+proof -
+  let ?V = "geotop_component_at UNIV geotop_euclidean_topology U P"
+  let ?W = "U - ?V"
+  have hTU: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hV_open: "?V \<in> geotop_euclidean_topology"
+    by (rule geotop_component_at_open_in_euclidean[OF hUopen hP])
+  have hV_sub_U: "?V \<subseteq> U"
+    unfolding geotop_component_at_def by (by100 blast)
+  have hUnion: "U = ?V \<union> ?W"
+    using hV_sub_U by (by100 blast)
+  have hDisj: "?V \<inter> ?W = {}"
+    by (by100 blast)
+  have hPsing_conn: "top1_connected_on {P}
+      (subspace_topology UNIV geotop_euclidean_topology {P})"
+    by (rule top1_connected_on_singleton[OF hTU], simp)
+  have hP_V: "P \<in> ?V"
+    by (rule geotop_self_in_component_at[OF hP hPsing_conn])
+  have hQsing_conn: "top1_connected_on {Q}
+      (subspace_topology UNIV geotop_euclidean_topology {Q})"
+    by (rule top1_connected_on_singleton[OF hTU], simp)
+  have hQ_compQ: "Q \<in> geotop_component_at UNIV geotop_euclidean_topology U Q"
+    by (rule geotop_self_in_component_at[OF hQ hQsing_conn])
+  have hdisj_PQ:
+    "?V = geotop_component_at UNIV geotop_euclidean_topology U Q
+     \<or> ?V \<inter> geotop_component_at UNIV geotop_euclidean_topology U Q = {}"
+    by (rule Theorem_GT_1_16[OF hTU subset_UNIV hP hQ])
+  have hV_disj_compQ:
+    "?V \<inter> geotop_component_at UNIV geotop_euclidean_topology U Q = {}"
+    using hdisj_PQ hneq by (by100 blast)
+  have hQ_notV: "Q \<notin> ?V"
+    using hV_disj_compQ hQ_compQ by (by100 blast)
+  have hQ_W: "Q \<in> ?W"
+    using hQ hQ_notV by (by100 blast)
+  have hUopen_HOL: "open U"
+    by (metis hUopen geotop_euclidean_topology_eq_open_sets mem_Collect_eq top1_open_sets_def)
+  have hW_forall: "\<forall>x\<in>?W. \<exists>\<epsilon>>0. ball x \<epsilon> \<subseteq> ?W"
+  proof
+    fix x
+    assume hxW: "x \<in> ?W"
+    have hxU: "x \<in> U"
+      using hxW by (by100 blast)
+    have hx_notV: "x \<notin> ?V"
+      using hxW by (by100 blast)
+    obtain \<epsilon> where h\<epsilon>0: "0 < \<epsilon>" and h\<epsilon>U: "ball x \<epsilon> \<subseteq> U"
+      using hUopen_HOL hxU open_contains_ball by blast
+    have hball_conn: "top1_connected_on (ball x \<epsilon>)
+        (subspace_topology UNIV geotop_euclidean_topology (ball x \<epsilon>))"
+      by (metis connected_ball top1_connected_on_geotop_iff_connected)
+    have hx_ball: "x \<in> ball x \<epsilon>"
+      using h\<epsilon>0 by (by100 simp)
+    have hball_sub_compx:
+      "ball x \<epsilon> \<subseteq> geotop_component_at UNIV geotop_euclidean_topology U x"
+      unfolding geotop_component_at_def using hball_conn h\<epsilon>U hx_ball by (by100 blast)
+    have hxsingleton_conn: "top1_connected_on {x}
+        (subspace_topology UNIV geotop_euclidean_topology {x})"
+      by (rule top1_connected_on_singleton[OF hTU], simp)
+    have hx_compx: "x \<in> geotop_component_at UNIV geotop_euclidean_topology U x"
+      by (rule geotop_self_in_component_at[OF hxU hxsingleton_conn])
+    have hdisj_Px:
+      "?V = geotop_component_at UNIV geotop_euclidean_topology U x
+       \<or> ?V \<inter> geotop_component_at UNIV geotop_euclidean_topology U x = {}"
+      by (rule Theorem_GT_1_16[OF hTU subset_UNIV hP hxU])
+    have hV_ne_compx: "?V \<noteq> geotop_component_at UNIV geotop_euclidean_topology U x"
+      using hx_notV hx_compx by (by100 blast)
+    have hV_disj_compx:
+      "?V \<inter> geotop_component_at UNIV geotop_euclidean_topology U x = {}"
+      using hdisj_Px hV_ne_compx by (by100 blast)
+    have hcompx_sub_U: "geotop_component_at UNIV geotop_euclidean_topology U x \<subseteq> U"
+      unfolding geotop_component_at_def by (by100 blast)
+    have hcompx_sub_W:
+      "geotop_component_at UNIV geotop_euclidean_topology U x \<subseteq> ?W"
+      using hV_disj_compx hcompx_sub_U by (by100 blast)
+    have hball_sub_W: "ball x \<epsilon> \<subseteq> ?W"
+      using hball_sub_compx hcompx_sub_W by (by100 blast)
+    show "\<exists>\<epsilon>>0. ball x \<epsilon> \<subseteq> ?W"
+      using h\<epsilon>0 hball_sub_W by (by100 blast)
+  qed
+  have hW_open_HOL: "open ?W"
+    using hW_forall open_contains_ball by (by100 blast)
+  have hW_open: "?W \<in> geotop_euclidean_topology"
+    by (metis hW_open_HOL geotop_euclidean_topology_eq_open_sets
+        mem_Collect_eq top1_open_sets_def)
+  show ?thesis
+    using hUnion hDisj hV_open hW_open hP_V hQ_W by (by100 blast)
+qed
+
 lemma geotop_polygon_interior_minus_arc_open_prefix:
   fixes J A :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
