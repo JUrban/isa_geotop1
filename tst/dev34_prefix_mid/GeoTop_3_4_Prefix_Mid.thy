@@ -9829,6 +9829,37 @@ proof -
                                 using h\<tau>\<^sub>2L h\<tau>\<^sub>2free False by (by100 blast)
                             qed
                           qed
+                          have hside_free_witnesses_avoid_\<theta>:
+                            "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L. \<sigma>\<^sub>L \<in> L\<^sub>1
+                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L
+                              \<and> geotop_simplex_dim \<sigma>\<^sub>L 2
+                              \<and> \<sigma>\<^sub>L \<noteq> \<theta>
+                              \<and> \<tau>\<^sub>L \<in> L\<^sub>2
+                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>L
+                              \<and> geotop_simplex_dim \<tau>\<^sub>L 2
+                              \<and> \<tau>\<^sub>L \<noteq> \<theta>"
+                          proof -
+                            obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>LL\<^sub>1: "\<sigma>\<^sub>L \<in> L\<^sub>1"
+                              and h\<sigma>\<^sub>Lfree:
+                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L"
+                              and h\<sigma>\<^sub>L_ne_\<theta>: "\<sigma>\<^sub>L \<noteq> \<theta>"
+                              using hL\<^sub>1_free_witness_avoids_\<theta> by (elim exE conjE)
+                            obtain \<tau>\<^sub>L where h\<tau>\<^sub>LL\<^sub>2: "\<tau>\<^sub>L \<in> L\<^sub>2"
+                              and h\<tau>\<^sub>Lfree:
+                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>L"
+                              and h\<tau>\<^sub>L_ne_\<theta>: "\<tau>\<^sub>L \<noteq> \<theta>"
+                              using hL\<^sub>2_free_witness_avoids_\<theta> by (elim exE conjE)
+                            have h\<sigma>\<^sub>L2: "geotop_simplex_dim \<sigma>\<^sub>L 2"
+                              using h\<sigma>\<^sub>Lfree unfolding geotop_free_2_simplex_def
+                              by (by100 blast)
+                            have h\<tau>\<^sub>L2: "geotop_simplex_dim \<tau>\<^sub>L 2"
+                              using h\<tau>\<^sub>Lfree unfolding geotop_free_2_simplex_def
+                              by (by100 blast)
+                            show ?thesis
+                              using h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>Lfree h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_ne_\<theta>
+                                h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>Lfree h\<tau>\<^sub>L2 h\<tau>\<^sub>L_ne_\<theta>
+                              by (by100 blast)
+                          qed
                           have htransferable_side_witness_choice_book:
                             "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
