@@ -9759,6 +9759,51 @@ proof -
             closure_mono[OF hU_germ_ball_sub_carrier_ball]
           by (by100 blast)
       qed
+      have hselected_sphere_germ_boundary_data:
+          "p \<in> (S - {w})
+            \<and> y \<in> (T - {w})
+            \<and> z \<in> (U - {w})
+            \<and> p \<in> closure ((S - {w}) \<inter> ball w r)
+            \<and> y \<in> closure ((T - {w}) \<inter> ball w r)
+            \<and> z \<in> closure ((U - {w}) \<inter> ball w r)
+            \<and> p \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))
+            \<and> y \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))
+            \<and> z \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))
+            \<and> p \<notin> ball w r
+            \<and> y \<notin> ball w r
+            \<and> z \<notin> ball w r"
+      proof (intro conjI)
+        show "p \<in> S - {w}" using hpS by (by100 blast)
+        show "y \<in> T - {w}" using hyT by (by100 blast)
+        show "z \<in> U - {w}" using hzU by (by100 blast)
+        show "p \<in> closure ((S - {w}) \<inter> ball w r)"
+          by (rule hp_selected_germ_closure)
+        show "y \<in> closure ((T - {w}) \<inter> ball w r)"
+          by (rule hy_selected_germ_closure)
+        show "z \<in> closure ((U - {w}) \<inter> ball w r)"
+          by (rule hz_selected_germ_closure)
+        show "p \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+          using hselected_points_carrier_ball_closure by (by100 blast)
+        show "y \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+          using hselected_points_carrier_ball_closure by (by100 blast)
+        show "z \<in> closure (ball w r \<inter> (geotop_polyhedron L - {w}))"
+          using hselected_points_carrier_ball_closure by (by100 blast)
+        show "p \<notin> ball w r" by (rule hp_not_ball)
+        show "y \<notin> ball w r" by (rule hy_not_ball)
+        show "z \<notin> ball w r" by (rule hz_not_ball)
+      qed
+      have hselected_germs_nonempty:
+          "(S - {w}) \<inter> ball w r \<noteq> {}
+            \<and> (T - {w}) \<inter> ball w r \<noteq> {}
+            \<and> (U - {w}) \<inter> ball w r \<noteq> {}"
+      proof (intro conjI)
+        show "(S - {w}) \<inter> ball w r \<noteq> {}"
+          using hp_selected_germ_closure by (by100 auto)
+        show "(T - {w}) \<inter> ball w r \<noteq> {}"
+          using hy_selected_germ_closure by (by100 auto)
+        show "(U - {w}) \<inter> ball w r \<noteq> {}"
+          using hz_selected_germ_closure by (by100 auto)
+      qed
       have hpz_same_component_from_three:
           "top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
