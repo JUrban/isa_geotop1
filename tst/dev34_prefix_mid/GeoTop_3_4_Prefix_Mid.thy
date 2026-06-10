@@ -9421,6 +9421,18 @@ proof -
                       have hJ\<^sub>2_boundary_def:
                         "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
                         using hsubdisk_book by (by100 blast)
+                      have hC\<^sub>1_sub_J': "C\<^sub>1 \<subseteq> J'"
+                        using hJ'_boundary_split by (by100 blast)
+                      have hC\<^sub>2_sub_J': "C\<^sub>2 \<subseteq> J'"
+                        using hJ'_boundary_split by (by100 blast)
+                      have hC\<^sub>1_sub_J\<^sub>1: "C\<^sub>1 \<subseteq> J\<^sub>1"
+                        using hJ\<^sub>1_boundary_def by (by100 blast)
+                      have hC\<^sub>2_sub_J\<^sub>2: "C\<^sub>2 \<subseteq> J\<^sub>2"
+                        using hJ\<^sub>2_boundary_def by (by100 blast)
+                      have hchord_sub_J\<^sub>1: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J\<^sub>1"
+                        using hJ\<^sub>1_boundary_def by (by100 blast)
+                      have hchord_sub_J\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J\<^sub>2"
+                        using hJ\<^sub>2_boundary_def by (by100 blast)
                       have hclosure_split:
                         "closure_on UNIV geotop_euclidean_topology
                            (geotop_polygon_interior J') =
