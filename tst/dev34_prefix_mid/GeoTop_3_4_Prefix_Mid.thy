@@ -5323,6 +5323,37 @@ proof
     using hnot_free hfree by (by100 blast)
 qed
 
+lemma geotop_free_2_simplex_selected_edges_transfer_prefix:
+  fixes K K' :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set"
+    and E :: "(real^2) set set"
+  assumes hK'_sub: "K' \<subseteq> K"
+  assumes h\<sigma>K': "\<sigma>\<^sub>2 \<in> K'"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hEsub: "E \<subseteq> K'"
+  assumes hEallowed:
+    "E = {} \<or>
+     (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+  assumes hcontact: "\<sigma>\<^sub>2 \<inter> J = \<Union>E"
+  shows "geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  (**
+    Conditional side-to-parent transfer endpoint: once the side argument has
+    produced selected edge witnesses that are already valid for the parent
+    polygon boundary and parent contact equality, freeness lifts from the
+    side subcomplex carrier inclusion. **)
+proof -
+  have h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+    using hK'_sub h\<sigma>K' by (by100 blast)
+  have hEsubK: "E \<subseteq> K"
+    using hK'_sub hEsub by (by100 blast)
+  show ?thesis
+    by (rule geotop_free_2_simplex_selected_edges_intro_prefix
+        [OF h\<sigma>K h\<sigma>2 hEsubK hEallowed hcontact])
+qed
+
 lemma geotop_nonfree_selected_edges_contact_outside_prefix:
   fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
   assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
