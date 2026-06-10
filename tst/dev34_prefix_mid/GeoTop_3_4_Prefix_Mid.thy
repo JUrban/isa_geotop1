@@ -6718,10 +6718,29 @@ lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
            \<union> closure_on UNIV geotop_euclidean_topology
              (geotop_polygon_interior J\<^sub>2)
       \<and> geotop_separated UNIV geotop_euclidean_topology
-             (geotop_polygon_interior J\<^sub>1 \<union>
-              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
-             (geotop_polygon_interior J\<^sub>2 \<union>
-              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+         (geotop_polygon_interior J\<^sub>1 \<union>
+          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+         (geotop_polygon_interior J\<^sub>2 \<union>
+          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+  assumes hsubdisk_side_witnesses_exist:
+    "\<And>L\<^sub>1 L\<^sub>2.
+      L\<^sub>1 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)} \<Longrightarrow>
+      L\<^sub>2 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)} \<Longrightarrow>
+      \<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+        \<sigma> \<noteq> \<tau>"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
   (**
     Moise Figure 3.2 induction-transfer package.  Form the two subdisk
@@ -7048,7 +7067,7 @@ proof -
       chord-side complexes are smaller polygonal-disk triangulations, apply the
       induction hypothesis on both sides, and choose transferred witnesses not
       spoiled by the artificial chord. **)
-    sorry
+    by (rule hsubdisk_side_witnesses_exist[OF K\<^sub>1_def K\<^sub>2_def])
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
@@ -7946,6 +7965,31 @@ proof -
       subdisks on either side of the chord, and the closure/separation data is
       exactly the already-proved chord decomposition rewritten with names. **)
     using hchord_decomposition unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
+  have hsubdisk_side_witnesses_exist_book:
+    "\<And>L\<^sub>1 L\<^sub>2.
+      L\<^sub>1 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)} \<Longrightarrow>
+      L\<^sub>2 =
+        {\<rho>\<in>K. \<rho> \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)} \<Longrightarrow>
+      \<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
+        card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<and>
+        \<tau> \<in> L\<^sub>2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        card {e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2 \<and>
+        \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<and>
+        \<sigma> \<noteq> \<tau>"
+    (**
+      Remaining true induction step for the chord split: show the named
+      restricted side complexes satisfy the induction hypotheses and choose
+      one transferable witness from each side, avoiding the artificial chord as
+      the only selected boundary witness. **)
+    sorry
   have hsubdisk_induction_transfer_book:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
@@ -7955,7 +7999,7 @@ proof -
     by (rule geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix
         [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
           hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
-          hsubdisk_book_facts])
+          hsubdisk_book_facts hsubdisk_side_witnesses_exist_book])
   have hsubdisk_induction_transfer:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
