@@ -10114,45 +10114,39 @@ proof -
                             omitted by that side, without assuming that the same
                             cutting triangle is omitted on both sides. **)
                         proof -
-                          have hside_carriers_book:
+                          have hside1_induction_geometry_book:
                             "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>1).
                                 geotop_K_carrier K x \<subseteq>
                                   closure_on UNIV geotop_euclidean_topology
                                     (geotop_polygon_interior J\<^sub>1))
-                            \<and> (\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                            \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
+                            \<and> card ?T\<^sub>1 > 1"
+                            (**
+                              Figure 3.2 side 1 package: the first chord-side
+                              closed disk is a K-subcomplex carrier, omits a
+                              parent 2-simplex on the other side of the chord,
+                              and still contains enough 2-simplexes for the
+                              strong induction hypothesis. **)
+                            sorry
+                          have hside2_induction_geometry_book:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>2).
                                 geotop_K_carrier K x \<subseteq>
                                   closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>2))"
+                                    (geotop_polygon_interior J\<^sub>2))
+                            \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
+                            \<and> card ?T\<^sub>2 > 1"
                             (**
-                              Moise's statement that the two displayed
-                              subdisks are subcomplex carriers: a point of one
-                              closed side has its original K-carrier wholly on
-                              that side, otherwise the carrier would cross the
-                              separated Figure 3.2 regions across the chord. **)
-                            sorry
-                          have hside_omission_witnesses_book:
-                            "(\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
-                            \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)"
-                            (**
-                              Each side complex omits a parent 2-simplex:
-                              one side omits a 2-simplex lying across the
-                              other side of the chord, and conversely.  This is
-                              the formal strict-smaller part of Figure 3.2. **)
-                            sorry
-                          have hside_two_simplex_counts_book:
-                            "card ?T\<^sub>1 > 1 \<and> card ?T\<^sub>2 > 1"
-                            (**
-                              Each side has more than one 2-simplex, because
-                              the induction side includes the cut triangle/its
-                              adjacent side carrier and still has a second
-                              2-simplex on that side of the nonfree boundary
-                              triangle. **)
+                              Figure 3.2 side 2 package: the second chord-side
+                              closed disk is a K-subcomplex carrier, omits a
+                              parent 2-simplex on the first side of the chord,
+                              and still contains enough 2-simplexes for the
+                              strong induction hypothesis. **)
                             sorry
                           show ?thesis
-                            using hside_carriers_book hside_omission_witnesses_book
-                              hside_two_simplex_counts_book
+                            using hside1_induction_geometry_book
+                              hside2_induction_geometry_book
                             by (by100 blast)
                         qed
                         have hside_complexes_reverse_and_counts_book:
