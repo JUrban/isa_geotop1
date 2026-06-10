@@ -10118,6 +10118,44 @@ proof -
                               apply assumption+
                               done
                           qed
+                          have hside_parent_boundary_transfer_book:
+                            "\<And>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<Longrightarrow>
+                              geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+                              \<sigma> \<noteq> \<theta> \<Longrightarrow>
+                              card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<Longrightarrow>
+                              \<sigma> \<inter> J\<^sub>1 =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<Longrightarrow>
+                              \<tau> \<in> L\<^sub>2 \<Longrightarrow>
+                              geotop_simplex_dim \<tau> 2 \<Longrightarrow>
+                              \<tau> \<noteq> \<theta> \<Longrightarrow>
+                              card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<Longrightarrow>
+                              \<tau> \<inter> J\<^sub>2 =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<Longrightarrow>
+                              card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2
+                              \<and> \<sigma> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2
+                              \<and> \<tau> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                              \<and> \<sigma> \<noteq> \<tau>"
+                            (**
+                              Remaining parent-boundary transfer for Moise
+                              Figure 3.2: side witnesses avoiding the cutting
+                              triangle have their selected boundary contacts
+                              on the original polygon boundary \<open>J'\<close>, not just
+                              on the artificial side boundaries \<open>J\<^sub>1\<close> and
+                              \<open>J\<^sub>2\<close>; the two transferred witnesses are
+                              distinct because they lie on opposite sides of
+                              the chord decomposition. **)
+                            sorry
                           have htransferable_side_witness_choice_book:
                             "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
@@ -10134,7 +10172,76 @@ proof -
                               side witnesses whose boundary witness is on
                               the original polygon boundary rather than only
                               on the artificial chord. **)
-                            sorry
+                          proof -
+                            obtain \<sigma>\<^sub>L \<tau>\<^sub>L
+                              where h\<sigma>\<^sub>LL\<^sub>1: "\<sigma>\<^sub>L \<in> L\<^sub>1"
+                                and h\<sigma>\<^sub>L2: "geotop_simplex_dim \<sigma>\<^sub>L 2"
+                                and h\<sigma>\<^sub>L_ne_\<theta>: "\<sigma>\<^sub>L \<noteq> \<theta>"
+                                and h\<sigma>\<^sub>L_E\<^sub>J\<^sub>1_card:
+                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                    \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                                and h\<sigma>\<^sub>L_contact_J\<^sub>1:
+                                  "\<sigma>\<^sub>L \<inter> J\<^sub>1 =
+                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J\<^sub>1}"
+                                and h\<tau>\<^sub>LL\<^sub>2: "\<tau>\<^sub>L \<in> L\<^sub>2"
+                                and h\<tau>\<^sub>L2: "geotop_simplex_dim \<tau>\<^sub>L 2"
+                                and h\<tau>\<^sub>L_ne_\<theta>: "\<tau>\<^sub>L \<noteq> \<theta>"
+                                and h\<tau>\<^sub>L_E\<^sub>J\<^sub>2_card:
+                                  "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                    \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                                and h\<tau>\<^sub>L_contact_J\<^sub>2:
+                                  "\<tau>\<^sub>L \<inter> J\<^sub>2 =
+                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J\<^sub>2}"
+                              using hside_canonical_boundary_witnesses by (elim exE conjE)
+                            have hparent_transfer:
+                              "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J'} \<le> 2
+                              \<and> \<sigma>\<^sub>L \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J'}
+                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J'} \<le> 2
+                              \<and> \<tau>\<^sub>L \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J'}
+                              \<and> \<sigma>\<^sub>L \<noteq> \<tau>\<^sub>L"
+                              by (rule hside_parent_boundary_transfer_book
+                                  [OF h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_ne_\<theta>
+                                    h\<sigma>\<^sub>L_E\<^sub>J\<^sub>1_card h\<sigma>\<^sub>L_contact_J\<^sub>1
+                                    h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 h\<tau>\<^sub>L_ne_\<theta>
+                                    h\<tau>\<^sub>L_E\<^sub>J\<^sub>2_card h\<tau>\<^sub>L_contact_J\<^sub>2])
+                            have h\<sigma>\<^sub>L_E\<^sub>J'_card:
+                              "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J'} \<le> 2"
+                              using hparent_transfer by (by100 blast)
+                            have h\<sigma>\<^sub>L_contact_J':
+                              "\<sigma>\<^sub>L \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma>\<^sub>L \<and> e \<subseteq> J'}"
+                              using hparent_transfer by (by100 blast)
+                            have h\<tau>\<^sub>L_E\<^sub>J'_card:
+                              "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J'} \<le> 2"
+                              using hparent_transfer by (by100 blast)
+                            have h\<tau>\<^sub>L_contact_J':
+                              "\<tau>\<^sub>L \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau>\<^sub>L \<and> e \<subseteq> J'}"
+                              using hparent_transfer by (by100 blast)
+                            have h\<sigma>\<^sub>L_ne_\<tau>\<^sub>L: "\<sigma>\<^sub>L \<noteq> \<tau>\<^sub>L"
+                              using hparent_transfer by (by100 blast)
+                            show ?thesis
+                              apply (rule exI[where x = "\<sigma>\<^sub>L"])
+                              apply (rule exI[where x = "\<tau>\<^sub>L"])
+                              using h\<sigma>\<^sub>LL\<^sub>1 h\<sigma>\<^sub>L2 h\<sigma>\<^sub>L_E\<^sub>J'_card h\<sigma>\<^sub>L_contact_J'
+                                h\<tau>\<^sub>LL\<^sub>2 h\<tau>\<^sub>L2 h\<tau>\<^sub>L_E\<^sub>J'_card h\<tau>\<^sub>L_contact_J'
+                                h\<sigma>\<^sub>L_ne_\<tau>\<^sub>L
+                              apply (intro conjI)
+                              apply assumption+
+                              done
+                          qed
                           show "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
                               \<sigma> \<inter> J' =
