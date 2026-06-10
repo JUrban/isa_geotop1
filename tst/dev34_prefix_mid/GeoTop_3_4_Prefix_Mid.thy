@@ -10667,6 +10667,24 @@ proof -
   have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2"
     unfolding K\<^sub>2_def
     by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  define K1theta where
+    "K1theta = K\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>}"
+  have hK1theta_complex_sub_K:
+    "geotop_is_complex K1theta \<and> K1theta \<subseteq> K"
+    unfolding K1theta_def
+    by (rule geotop_theta_face_adjoin_side_complex_prefix
+        [OF hK hK\<^sub>1_complex hK\<^sub>1_sub_K h\<theta>K h\<theta>2])
+  have hK1theta_complex: "geotop_is_complex K1theta"
+    using hK1theta_complex_sub_K by (by100 blast)
+  have hK1theta_sub_K: "K1theta \<subseteq> K"
+    using hK1theta_complex_sub_K by (by100 blast)
+  have hK1theta_fin: "finite K1theta"
+    unfolding K1theta_def
+    by (rule geotop_theta_face_adjoin_side_finite_prefix[OF hK\<^sub>1_fin h\<theta>2])
+  have hK1theta_poly_eq:
+    "geotop_polyhedron K1theta = geotop_polyhedron K\<^sub>1 \<union> \<theta>"
+    unfolding K1theta_def
+    by (rule geotop_theta_face_adjoin_side_polyhedron_prefix[OF h\<theta>2])
   have hK\<^sub>1_poly_sub_side:
       "geotop_polyhedron K\<^sub>1 \<subseteq>
        closure_on UNIV geotop_euclidean_topology
@@ -10708,10 +10726,19 @@ proof -
   have hK\<^sub>2_selected_edges_fin:
       "\<And>\<sigma>. finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
     using hK\<^sub>2_fin by (by100 simp)
+  have hK1theta_selected_edges_fin:
+      "\<And>\<sigma>. finite {e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+    using hK1theta_fin by (by100 simp)
   have hT\<^sub>1_sub_T: "?T\<^sub>1 \<subseteq> ?T"
     using hK\<^sub>1_sub_K by (by100 blast)
   have hT\<^sub>2_sub_T: "?T\<^sub>2 \<subseteq> ?T"
     using hK\<^sub>2_sub_K by (by100 blast)
+  have hT1theta_sub_T:
+      "{\<rho>\<in>K1theta. geotop_simplex_dim \<rho> 2} \<subseteq> ?T"
+    using hK1theta_sub_K by (by100 blast)
+  have hT1theta_fin:
+      "finite {\<rho>\<in>K1theta. geotop_simplex_dim \<rho> 2}"
+    using hK1theta_fin by (by100 simp)
   have hT_card_gt2: "card ?T > 2"
     by (rule hT_gt2)
   have h\<theta>_T: "\<theta> \<in> ?T"
@@ -10720,6 +10747,9 @@ proof -
     by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
   have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
     by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
+  have hT1theta_card_le_T:
+      "card {\<rho>\<in>K1theta. geotop_simplex_dim \<rho> 2} \<le> card ?T"
+    by (rule card_mono[OF hT_fin hT1theta_sub_T])
   have hT\<^sub>1_card_lt_T_if_avoids_\<theta>:
       "\<theta> \<notin> ?T\<^sub>1 \<Longrightarrow> card ?T\<^sub>1 < card ?T"
   proof -
@@ -10772,6 +10802,17 @@ proof -
         \<sigma> \<inter> J = \<Union>E \<Longrightarrow>
         geotop_free_2_simplex K J \<sigma>"
     by (rule geotop_free_2_simplex_selected_edges_transfer_prefix[OF hK\<^sub>1_sub_K])
+  have hK1theta_selected_edges_transfer_to_parent:
+      "\<And>\<sigma> E. \<sigma> \<in> K1theta \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow> E \<subseteq> K1theta \<Longrightarrow>
+        (E = {} \<or>
+         (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J) \<or>
+         (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+            geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+            e1 \<subseteq> J \<and> e2 \<subseteq> J)) \<Longrightarrow>
+        \<sigma> \<inter> J = \<Union>E \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+    by (rule geotop_free_2_simplex_selected_edges_transfer_prefix[OF hK1theta_sub_K])
   have hK\<^sub>2_selected_edges_transfer_to_parent:
       "\<And>\<sigma> E. \<sigma> \<in> K\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow> E \<subseteq> K\<^sub>2 \<Longrightarrow>
         (E = {} \<or>
@@ -10792,6 +10833,15 @@ proof -
         geotop_free_2_simplex K J \<sigma>"
     by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
         [OF hK\<^sub>1_sub_K])
+  have hK1theta_canonical_selected_edges_transfer_to_parent:
+      "\<And>\<sigma>. \<sigma> \<in> K1theta \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+        finite {e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        card {e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<Longrightarrow>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+    by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+        [OF hK1theta_sub_K])
   have hK\<^sub>2_canonical_selected_edges_transfer_to_parent:
       "\<And>\<sigma>. \<sigma> \<in> K\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
         finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
@@ -10822,6 +10872,28 @@ proof -
     show "geotop_free_2_simplex K J \<sigma>"
       by (rule hK\<^sub>1_canonical_selected_edges_transfer_to_parent
           [OF h\<sigma>K\<^sub>1 h\<sigma>2 hE_fin hE_card_le2 hcontact])
+  qed
+  have hK1theta_canonical_selected_edges_card_le2_transfer_to_parent:
+      "\<And>\<sigma>. \<sigma> \<in> K1theta \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+        card {e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2 \<Longrightarrow>
+        \<sigma> \<inter> J =
+          \<Union>{e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<Longrightarrow>
+        geotop_free_2_simplex K J \<sigma>"
+  proof -
+    fix \<sigma>
+    assume h\<sigma>K1theta: "\<sigma> \<in> K1theta"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and hE_card_le2:
+        "card {e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+      and hcontact:
+        "\<sigma> \<inter> J =
+          \<Union>{e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+    have hE_fin:
+        "finite {e\<in>K1theta. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      by (rule hK1theta_selected_edges_fin)
+    show "geotop_free_2_simplex K J \<sigma>"
+      by (rule hK1theta_canonical_selected_edges_transfer_to_parent
+          [OF h\<sigma>K1theta h\<sigma>2 hE_fin hE_card_le2 hcontact])
   qed
   have hK\<^sub>2_canonical_selected_edges_card_le2_transfer_to_parent:
       "\<And>\<sigma>. \<sigma> \<in> K\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
