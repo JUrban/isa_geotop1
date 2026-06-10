@@ -12064,6 +12064,26 @@ proof -
                                     qed
                                   qed
                                 qed
+                                have hparent_uncovered_proper_named_face_contradiction_book:
+                                  "\<And>\<rho> L x. x \<in> \<rho> \<inter> J' \<Longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L. geotop_is_edge e
+                                      \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J'} \<Longrightarrow>
+                                    ((\<exists>y. y \<in> \<rho> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<rho> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<Longrightarrow>
+                                    \<rho> \<inter> \<theta> \<subset> \<theta> \<Longrightarrow>
+                                    \<rho> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<Longrightarrow>
+                                    False"
+                                  (**
+                                    Common residual for the two side witnesses:
+                                    an uncovered parent-boundary point whose
+                                    chord residue gives a proper named face of
+                                    the cut triangle is impossible by the
+                                    selected-boundary facts for \<open>\<theta>\<close>. **)
+                                  sorry
                                 have hparent_contact_cover_and_distinct_named_obligations_book:
                                   "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
@@ -12098,7 +12118,73 @@ proof -
                                     The next step is to use the selected-
                                     boundary facts for \<open>\<theta>\<close> to rule out the
                                     uncovered parent-boundary point. **)
-                                  sorry
+                                proof
+                                  show "\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    ((\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
+                                    \<sigma> \<inter> \<theta> \<subset> \<theta> \<longrightarrow>
+                                    \<sigma> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<longrightarrow>
+                                    False"
+                                  proof (intro allI impI)
+                                    fix x
+                                    assume hx: "x \<in> \<sigma> \<inter> J'"
+                                    assume hx_not:
+                                      "x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                                    assume hres:
+                                      "((\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                        \<and> y \<notin> J')
+                                      \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2)"
+                                    assume hproper: "\<sigma> \<inter> \<theta> \<subset> \<theta>"
+                                    assume hnamed:
+                                      "\<sigma> \<inter> \<theta> \<subseteq>
+                                        geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                        geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                        geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                    show False
+                                      by (rule hparent_uncovered_proper_named_face_contradiction_book
+                                          [OF hx hx_not hres hproper hnamed])
+                                  qed
+                                next
+                                  show "\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
+                                    x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
+                                    ((\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
+                                    \<tau> \<inter> \<theta> \<subset> \<theta> \<longrightarrow>
+                                    \<tau> \<inter> \<theta> \<subseteq>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<longrightarrow>
+                                    False"
+                                  proof (intro allI impI)
+                                    fix x
+                                    assume hx: "x \<in> \<tau> \<inter> J'"
+                                    assume hx_not:
+                                      "x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                                    assume hres:
+                                      "((\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                        \<and> y \<notin> J')
+                                      \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2)"
+                                    assume hproper: "\<tau> \<inter> \<theta> \<subset> \<theta>"
+                                    assume hnamed:
+                                      "\<tau> \<inter> \<theta> \<subseteq>
+                                        geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                                        geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                                        geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                                    show False
+                                      by (rule hparent_uncovered_proper_named_face_contradiction_book
+                                          [OF hx hx_not hres hproper hnamed])
+                                  qed
+                                qed
                                 show ?thesis
                                 proof (rule hparent_contact_cover_and_distinct_from_obligations)
                                   fix x
