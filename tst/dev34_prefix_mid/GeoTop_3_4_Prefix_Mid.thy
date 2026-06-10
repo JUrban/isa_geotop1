@@ -10431,6 +10431,26 @@ proof -
       qed
     qed
   qed
+  have hcarrier_side1_point:
+    "\<And>x. x \<in> ?B\<^sub>1 \<Longrightarrow> geotop_K_carrier K x \<subseteq> ?B\<^sub>1"
+    using hcarrier_side1 by (by100 blast)
+  have hcarrier_side2_point:
+    "\<And>x. x \<in> ?B\<^sub>2 \<Longrightarrow> geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+    using hcarrier_side2 by (by100 blast)
+  have hL\<^sub>1_poly_rev:
+    "?B\<^sub>1 \<subseteq> geotop_polyhedron L\<^sub>1"
+    unfolding hL\<^sub>1_def
+    by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+        [OF hK hK_fin hB\<^sub>1_sub_K hcarrier_side1_point])
+  have hL\<^sub>2_poly_rev:
+    "?B\<^sub>2 \<subseteq> geotop_polyhedron L\<^sub>2"
+    unfolding hL\<^sub>2_def
+    by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+        [OF hK hK_fin hB\<^sub>2_sub_K hcarrier_side2_point])
+  have hL\<^sub>1_poly_eq_B\<^sub>1: "geotop_polyhedron L\<^sub>1 = ?B\<^sub>1"
+    using hL\<^sub>1_poly_sub hL\<^sub>1_poly_rev by (by100 blast)
+  have hL\<^sub>2_poly_eq_B\<^sub>2: "geotop_polyhedron L\<^sub>2 = ?B\<^sub>2"
+    using hL\<^sub>2_poly_sub hL\<^sub>2_poly_rev by (by100 blast)
   have hB_inter_sub_chord:
     "?B\<^sub>1 \<inter> ?B\<^sub>2 \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
   proof
