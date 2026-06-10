@@ -9456,6 +9456,50 @@ proof -
                            (geotop_polygon_interior J\<^sub>2 \<union>
                             geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
                         using hsubdisk_book by (by100 blast)
+                      have hside_open_regions_disjoint:
+                        "(geotop_polygon_interior J\<^sub>1 \<union>
+                          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<inter>
+                         (geotop_polygon_interior J\<^sub>2 \<union>
+                          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}) = {}"
+                      proof (rule equals0I)
+                        fix x
+                        assume hx:
+                          "x \<in> (geotop_polygon_interior J\<^sub>1 \<union>
+                            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<inter>
+                           (geotop_polygon_interior J\<^sub>2 \<union>
+                            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                        have hx_left:
+                          "x \<in> geotop_polygon_interior J\<^sub>1 \<union>
+                            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+                          using hx by (by100 blast)
+                        have hx_right:
+                          "x \<in> geotop_polygon_interior J\<^sub>2 \<union>
+                            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+                          using hx by (by100 blast)
+                        have hright_closure:
+                          "geotop_polygon_interior J\<^sub>2 \<union>
+                            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}
+                           \<subseteq>
+                           closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>2 \<union>
+                             geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                          by (rule subset_closure_on)
+                        have hx_right_closure:
+                          "x \<in> closure_on UNIV geotop_euclidean_topology
+                            (geotop_polygon_interior J\<^sub>2 \<union>
+                             geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                          using hright_closure hx_right by (by100 blast)
+                        have "x \<in>
+                          (geotop_polygon_interior J\<^sub>1 \<union>
+                           geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<inter>
+                          closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J\<^sub>2 \<union>
+                            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                          using hx_left hx_right_closure by (by100 blast)
+                        thus False
+                          using hside_separated unfolding geotop_separated_def
+                          by (by100 blast)
+                      qed
                       have hL\<^sub>1_sub_K: "L\<^sub>1 \<subseteq> K"
                         unfolding hL\<^sub>1_def by (by100 blast)
                       have hL\<^sub>2_sub_K: "L\<^sub>2 \<subseteq> K"
