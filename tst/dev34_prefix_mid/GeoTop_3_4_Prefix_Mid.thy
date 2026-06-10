@@ -10365,6 +10365,42 @@ proof -
                             have h\<tau>_sub_interior_or_boundary_J\<^sub>2:
                               "\<tau> \<subseteq> geotop_polygon_interior J\<^sub>2 \<union> J\<^sub>2"
                               using h\<tau>_sub_closure_J\<^sub>2 hJ\<^sub>2_closure_eq by (by100 simp)
+                            have hJ\<^sub>1_closure_sub_parent:
+                              "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                               \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J')"
+                              using hclosure_split by (by100 blast)
+                            have hJ\<^sub>2_closure_sub_parent:
+                              "closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                               \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J')"
+                              using hclosure_split by (by100 blast)
+                            have h\<sigma>_sub_parent_closure:
+                              "\<sigma> \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J')"
+                              using h\<sigma>_sub_closure_J\<^sub>1 hJ\<^sub>1_closure_sub_parent
+                              by (by100 blast)
+                            have h\<tau>_sub_parent_closure:
+                              "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J')"
+                              using h\<tau>_sub_closure_J\<^sub>2 hJ\<^sub>2_closure_sub_parent
+                              by (by100 blast)
+                            have h\<sigma>_minus_chord_side_cover:
+                              "\<sigma> - closed_segment v\<^sub>0 v\<^sub>2 \<subseteq>
+                               (geotop_polygon_interior J\<^sub>1 \<union>
+                                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+                               (geotop_polygon_interior J\<^sub>2 \<union>
+                                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                              using h\<sigma>_sub_parent_closure hclosure_minus_chord by (by100 blast)
+                            have h\<tau>_minus_chord_side_cover:
+                              "\<tau> - closed_segment v\<^sub>0 v\<^sub>2 \<subseteq>
+                               (geotop_polygon_interior J\<^sub>1 \<union>
+                                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+                               (geotop_polygon_interior J\<^sub>2 \<union>
+                                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                              using h\<tau>_sub_parent_closure hclosure_minus_chord by (by100 blast)
                             have h\<sigma>_simplex: "geotop_is_simplex \<sigma>"
                               by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>2])
                             have h\<tau>_simplex: "geotop_is_simplex \<tau>"
