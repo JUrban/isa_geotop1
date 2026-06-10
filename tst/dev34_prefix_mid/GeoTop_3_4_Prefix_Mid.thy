@@ -8876,6 +8876,35 @@ proof -
     unfolding hL\<^sub>1_def using hK_fin by (by100 simp)
   have hL\<^sub>2_fin: "finite L\<^sub>2"
     unfolding hL\<^sub>2_def using hK_fin by (by100 simp)
+  have hv\<^sub>1_C\<^sub>1_int: "v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+    using hsubdisk_book_facts by (by100 blast)
+  have hL\<^sub>1_theta_complex_sub_K:
+    "geotop_is_complex (L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})
+      \<and> L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>} \<subseteq> K"
+    by (rule geotop_theta_face_adjoin_side_complex_prefix
+        [OF hK hL\<^sub>1_complex hL\<^sub>1_sub_K h\<theta>K h\<theta>2])
+  have hL\<^sub>1_theta_complex:
+    "geotop_is_complex (L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})"
+    using hL\<^sub>1_theta_complex_sub_K by (by100 blast)
+  have hL\<^sub>1_theta_sub_K:
+    "L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>} \<subseteq> K"
+    using hL\<^sub>1_theta_complex_sub_K by (by100 blast)
+  have hL\<^sub>1_theta_fin:
+    "finite (L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})"
+    by (rule geotop_theta_face_adjoin_side_finite_prefix[OF hL\<^sub>1_fin h\<theta>2])
+  have hL\<^sub>1_theta_poly_eq:
+    "geotop_polyhedron
+      (L\<^sub>1 \<union> {\<rho>. geotop_is_face \<rho> \<theta> \<or> \<rho> = \<theta>})
+      = geotop_polyhedron L\<^sub>1 \<union> \<theta>"
+    by (rule geotop_theta_face_adjoin_side_polyhedron_prefix[OF h\<theta>2])
+  have hT\<^sub>1_theta_fin:
+    "finite {\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+      geotop_simplex_dim \<eta> 2}"
+    using hL\<^sub>1_theta_fin by (by100 simp)
+  have hT\<^sub>1_theta_sub_T:
+    "{\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+      geotop_simplex_dim \<eta> 2} \<subseteq> ?T"
+    using hL\<^sub>1_theta_sub_K by (by100 blast)
   have hL\<^sub>1_poly_sub:
     "geotop_polyhedron L\<^sub>1 \<subseteq> ?B\<^sub>1"
     unfolding hL\<^sub>1_def geotop_polyhedron_def by (by100 blast)
@@ -8998,6 +9027,10 @@ proof -
     by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
   have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
     by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
+  have hT\<^sub>1_theta_card_le_T:
+    "card {\<eta>\<in>L\<^sub>1 \<union> {\<eta>. geotop_is_face \<eta> \<theta> \<or> \<eta> = \<theta>}.
+      geotop_simplex_dim \<eta> 2} \<le> card ?T"
+    by (rule card_mono[OF hT_fin hT\<^sub>1_theta_sub_T])
   have hchord_segment_K: "closed_segment v\<^sub>0 v\<^sub>2 \<in> K"
     using hchord_edge_K hchord_hull_segment_eq by (by100 simp)
   have hJ\<^sub>1_sub_B\<^sub>1: "J\<^sub>1 \<subseteq> ?B\<^sub>1"
