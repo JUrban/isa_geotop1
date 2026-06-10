@@ -8696,23 +8696,37 @@ proof -
       Base case n = 2 ⟹ both 2-simplexes are free. Step n ≥ 3: \<exists>
       adjacent pair (\<sigma>, \<tau>) with shared edge in Fr|K|; case-split on
       whether both free (done) vs decomposition.\<close>
-    have hSC_induction_general:
-      "\<And>J' K. geotop_is_polygon J' \<Longrightarrow>
+    have hSC_induction_by_count:
+      "\<And>(n::nat) J' K. geotop_is_polygon J' \<Longrightarrow>
             geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
             geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
                                     (geotop_polygon_interior J') \<Longrightarrow>
-            card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1 \<Longrightarrow>
+            card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = n \<Longrightarrow>
+            n > 1 \<Longrightarrow>
             card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2} \<ge> 2"
     proof -
-      fix J' :: "(real^2) set" and K :: "(real^2) set set"
-      assume hJ': "geotop_is_polygon J'"
-      assume hK': "geotop_is_complex K"
-      assume hK_fin': "finite K"
-      assume hK_poly': "geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+      fix n :: nat
+      show "\<And>J' K. geotop_is_polygon J' \<Longrightarrow>
+            geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+            geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J') \<Longrightarrow>
+            card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = n \<Longrightarrow>
+            n > 1 \<Longrightarrow>
+            card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2} \<ge> 2"
+      proof (induct n rule: less_induct)
+        case (less n)
+        fix J' :: "(real^2) set" and K :: "(real^2) set set"
+        assume hJ': "geotop_is_polygon J'"
+        assume hK': "geotop_is_complex K"
+        assume hK_fin': "finite K"
+        assume hK_poly': "geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
                                     (geotop_polygon_interior J')"
-      assume hcard': "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
-      let ?T = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
-      let ?F = "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2}"
+        assume hcard_eq_n: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = n"
+        assume hn_gt1: "n > 1"
+        let ?T = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+        let ?F = "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2}"
+        have hcard': "card ?T > 1"
+          using hcard_eq_n hn_gt1 by (by100 simp)
       have hT_fin: "finite ?T"
         using hK_fin' by (by100 simp)
       have hbase_two:
@@ -8853,7 +8867,7 @@ proof -
           by (rule card_mono[OF hF_fin hpair_sub])
         thus "card ?F \<ge> 2"
           using hpair_card by (by100 simp)
-      qed
+    qed
       have hstep_more_than_two:
         "(\<And>J'' L.
             geotop_is_polygon J'' \<Longrightarrow>
@@ -9336,16 +9350,56 @@ proof -
             card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} < card ?T \<Longrightarrow>
             card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} > 1 \<Longrightarrow>
             card {\<rho>\<in>L. geotop_free_2_simplex L J'' \<rho>} \<ge> 2"
-          (**
-            Strong induction hypothesis from Moise Theorem 3.3: the stronger
-            two-free-simplex conclusion holds for every polygonal-disk
-            triangulation with strictly fewer 2-simplexes than the current
-            triangulation.  This is the missing formal induction wrapper
-            around the current book-step proof. **)
-          sorry
+        proof -
+          fix J'' :: "(real^2) set" and L :: "(real^2) set set"
+          assume hJ'': "geotop_is_polygon J''"
+          assume hL: "geotop_is_complex L"
+          assume hL_fin: "finite L"
+          assume hL_poly:
+            "geotop_polyhedron L =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J'')"
+          assume hL_lt:
+            "card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} < card ?T"
+          assume hL_gt1:
+            "card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} > 1"
+          have hL_lt_n:
+            "card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} < n"
+            using hL_lt hcard_eq_n by (by100 simp)
+          have hL_count:
+            "card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2} =
+              card {\<rho>\<in>L. geotop_simplex_dim \<rho> 2}"
+            by (by100 simp)
+          show "card {\<rho>\<in>L. geotop_free_2_simplex L J'' \<rho>} \<ge> 2"
+            by (rule less.hyps[OF hL_lt_n hJ'' hL hL_fin hL_poly hL_count hL_gt1])
+        qed
         show ?thesis
           by (rule hstep_more_than_two[OF hIH_less \<open>card ?T > 2\<close>])
       qed
+      qed
+    qed
+    have hSC_induction_general:
+      "\<And>J' K. geotop_is_polygon J' \<Longrightarrow>
+            geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+            geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J') \<Longrightarrow>
+            card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1 \<Longrightarrow>
+            card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2} \<ge> 2"
+    proof -
+      fix J' :: "(real^2) set" and K :: "(real^2) set set"
+      assume hJ': "geotop_is_polygon J'"
+      assume hK': "geotop_is_complex K"
+      assume hK_fin': "finite K"
+      assume hK_poly': "geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J')"
+      assume hcard': "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+      have hcount_eq:
+        "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} =
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+        by (by100 simp)
+      show "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2} \<ge> 2"
+        by (rule hSC_induction_by_count
+            [OF hJ' hK' hK_fin' hK_poly' hcount_eq hcard'])
     qed
     have hSC_induction:
       "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
