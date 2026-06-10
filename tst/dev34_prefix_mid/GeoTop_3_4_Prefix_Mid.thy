@@ -7180,7 +7180,53 @@ lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
     side inherits K-carriers inside its closed disk, misses an explicit parent
     two-simplex from the opposite side, and still contains more than one
     two-simplex, so the strong induction hypotheses apply independently. **)
-  sorry
+proof -
+  have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
+    using hsubdisk_book_facts by (by100 blast)
+  have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+    using hsubdisk_book_facts by (by100 blast)
+  have hJ_eq: "J = C\<^sub>1 \<union> C\<^sub>2"
+    using hsubdisk_book_facts by (by100 blast)
+  have hJ\<^sub>1_eq: "J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
+    using hsubdisk_book_facts by (by100 blast)
+  have hJ\<^sub>2_eq: "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
+    using hsubdisk_book_facts by (by100 blast)
+  have hclosure_split:
+    "closure_on UNIV geotop_euclidean_topology
+       (geotop_polygon_interior J) =
+     closure_on UNIV geotop_euclidean_topology
+       (geotop_polygon_interior J\<^sub>1)
+     \<union> closure_on UNIV geotop_euclidean_topology
+       (geotop_polygon_interior J\<^sub>2)"
+    using hsubdisk_book_facts by (by100 blast)
+  have hclosure_minus:
+    "closure_on UNIV geotop_euclidean_topology
+       (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+     (geotop_polygon_interior J\<^sub>1 \<union>
+      geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+     (geotop_polygon_interior J\<^sub>2 \<union>
+      geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    using hsubdisk_book_facts by (by100 blast)
+  have hside_separated:
+    "geotop_separated UNIV geotop_euclidean_topology
+       (geotop_polygon_interior J\<^sub>1 \<union>
+        geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+       (geotop_polygon_interior J\<^sub>2 \<union>
+        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    using hsubdisk_book_facts by (by100 blast)
+  have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+    using hT_gt2 by (by100 simp)
+  have hnonfree_contact:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    by (rule geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix
+        [OF hJ hK hK_poly hT_gt1 h\<theta>K h\<theta>2 h\<theta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free])
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
   fixes J J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 \<theta> :: "(real^2) set"
