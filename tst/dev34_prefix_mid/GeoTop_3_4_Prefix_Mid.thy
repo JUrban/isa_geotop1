@@ -5565,6 +5565,24 @@ proof -
     using hx hy hxy by (by100 blast)
 qed
 
+lemma geotop_finite_subset_card_lt_if_omits_member_prefix:
+  fixes A B :: "'a set"
+  assumes hB_fin: "finite B"
+  assumes hAB: "A \<subseteq> B"
+  assumes hbB: "b \<in> B"
+  assumes hbA: "b \<notin> A"
+  shows "card A < card B"
+  (**
+    Finite-set strict-count bridge for Moise Figure 3.2: once a side
+    two-simplex set is a subset of the parent two-simplex set and misses one
+    known parent triangle, its cardinality is strictly smaller. **)
+proof -
+  have hproper: "A \<subset> B"
+    using hAB hbB hbA by (by100 blast)
+  show ?thesis
+    by (rule psubset_card_mono[OF hB_fin hproper])
+qed
+
 lemma geotop_free_2_simplex_witness_avoids_given_prefix:
   fixes K :: "(real^2) set set" and J \<theta> :: "(real^2) set"
   assumes hK_fin: "finite K"
@@ -9689,19 +9707,17 @@ proof -
                         "\<theta> \<notin> ?T\<^sub>1 \<Longrightarrow> card ?T\<^sub>1 < card ?T"
                       proof -
                         assume h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
-                        have hproper: "?T\<^sub>1 \<subset> ?T"
-                          using hT\<^sub>1_sub_T h\<theta>_T h\<theta>_not_T\<^sub>1 by (by100 blast)
                         show "card ?T\<^sub>1 < card ?T"
-                          by (rule psubset_card_mono[OF hT_fin hproper])
+                          by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+                              [OF hT_fin hT\<^sub>1_sub_T h\<theta>_T h\<theta>_not_T\<^sub>1])
                       qed
                       have hT\<^sub>2_card_lt_T_if_avoids_\<theta>:
                         "\<theta> \<notin> ?T\<^sub>2 \<Longrightarrow> card ?T\<^sub>2 < card ?T"
                       proof -
                         assume h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
-                        have hproper: "?T\<^sub>2 \<subset> ?T"
-                          using hT\<^sub>2_sub_T h\<theta>_T h\<theta>_not_T\<^sub>2 by (by100 blast)
                         show "card ?T\<^sub>2 < card ?T"
-                          by (rule psubset_card_mono[OF hT_fin hproper])
+                          by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+                              [OF hT_fin hT\<^sub>2_sub_T h\<theta>_T h\<theta>_not_T\<^sub>2])
                       qed
                       have hL\<^sub>1_free_count_from_IH:
                         "geotop_polyhedron L\<^sub>1 =
