@@ -11579,6 +11579,8 @@ proof -
     "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
     by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
         [OF hL_linear hL_fin hL_polygon])
+  have hv\<^sub>1_poly_L: "v\<^sub>1 \<in> geotop_polyhedron L"
+    using hv\<^sub>1J hL_poly by (by100 simp)
   obtain C\<^sub>1 C\<^sub>2 where hJ_boundary_split: "J = C\<^sub>1 \<union> C\<^sub>2"
       and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
       and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
@@ -11587,6 +11589,8 @@ proof -
       and hC\<^sub>1C\<^sub>2:
         "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
           geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      and hv\<^sub>1_C\<^sub>1_int:
+        "v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
   proof -
     obtain C\<^sub>1 C\<^sub>2 where hsplit:
         "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
@@ -11595,9 +11599,11 @@ proof -
         \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
         \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
         \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
-            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
-      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
-        [OF hL_linear hL_fin hL_conn hL_polygon hv\<^sub>0L hv\<^sub>2L hv\<^sub>0v\<^sub>2]
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
+        \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hv\<^sub>0L hv\<^sub>2L hv\<^sub>0v\<^sub>2
+          hv\<^sub>1_poly_L hv\<^sub>1_not_chord]
       by (by100 blast)
     show ?thesis
       using hsplit hL_poly that by (by100 blast)
