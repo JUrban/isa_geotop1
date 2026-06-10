@@ -8402,10 +8402,19 @@ lemma geotop_polygon_disk_chord_side_complex_geometric_core_prefix:
         \<rho> \<notin> {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2})
     \<and> (\<exists>\<rho>\<in>{\<rho>\<in>K. geotop_simplex_dim \<rho> 2}.
         \<rho> \<notin> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2})
-    \<and> card {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} > 1
-    \<and> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} \<noteq> {}
-    \<and> {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} \<inter>
-        {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} = {}"
+	    \<and> card {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} > 1
+	    \<and> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} \<noteq> {}
+	    \<and> {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2} \<inter>
+	        {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2} = {}
+	    \<and> (\<exists>\<theta>\<^sub>c\<in>{\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2}.
+	        \<theta>\<^sub>c \<notin> {\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2}
+	        \<and> \<theta>\<^sub>c \<noteq> \<theta>
+	        \<and> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c
+	        \<and> \<theta> \<notin> {\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2}
+	        \<and> (\<forall>\<rho>\<in>{\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2}.
+	            geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho> \<longrightarrow> \<rho> = \<theta>)
+	        \<and> (\<forall>\<rho>\<in>{\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2}.
+	            geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho> \<longrightarrow> \<rho> = \<theta>\<^sub>c))"
   (**
     Moise Figure 3.2 side-complex geometric core.  The chord through the
     nonfree boundary triangle cuts the disk into two polygonal subdisks; each
@@ -11157,8 +11166,66 @@ proof -
     \<and> ?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
     using hside_omits_T\<^sub>1 hside_omits_T\<^sub>2 hside_card_residual hT\<^sub>1_T\<^sub>2_disjoint
     by (by100 blast)
+  have hchord_side_face_classification_book:
+    "\<exists>\<theta>\<^sub>c\<in>?T\<^sub>2.
+      \<theta>\<^sub>c \<notin> ?T\<^sub>1
+      \<and> \<theta>\<^sub>c \<noteq> \<theta>
+      \<and> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c
+      \<and> \<theta> \<notin> ?T\<^sub>2
+      \<and> (\<forall>\<rho>\<in>?T\<^sub>1.
+          geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho> \<longrightarrow> \<rho> = \<theta>)
+      \<and> (\<forall>\<rho>\<in>?T\<^sub>2.
+          geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho> \<longrightarrow> \<rho> = \<theta>\<^sub>c)"
+  proof -
+    have hchord_face_only_\<theta>_on_T\<^sub>1:
+      "\<And>\<rho>. \<rho> \<in> ?T\<^sub>1 \<Longrightarrow>
+        geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho> \<Longrightarrow> \<rho> = \<theta>"
+    proof (rule ccontr)
+      fix \<rho>
+      assume h\<rho>T\<^sub>1: "\<rho> \<in> ?T\<^sub>1"
+      assume h\<rho>face: "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>"
+      assume h\<rho>ne\<theta>: "\<rho> \<noteq> \<theta>"
+      have h\<rho>K: "\<rho> \<in> K"
+        using hL\<^sub>1_def h\<rho>T\<^sub>1 by (by100 blast)
+      have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+        using h\<rho>T\<^sub>1 by (by100 simp)
+      have h\<rho>ne\<theta>c: "\<rho> \<noteq> \<theta>\<^sub>c"
+        using h\<theta>\<^sub>c_not_T\<^sub>1 h\<rho>T\<^sub>1 by (by100 blast)
+      show False
+        by (rule hchord_no_third_2simplex
+            [OF h\<rho>K h\<rho>2 h\<rho>face h\<theta>\<^sub>cK h\<theta>\<^sub>c2 h\<theta>\<^sub>c_chord_face
+              h\<rho>ne\<theta> h\<theta>\<^sub>c_ne_\<theta> h\<rho>ne\<theta>c])
+    qed
+    have hchord_face_only_\<theta>c_on_T\<^sub>2:
+      "\<And>\<rho>. \<rho> \<in> ?T\<^sub>2 \<Longrightarrow>
+        geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho> \<Longrightarrow> \<rho> = \<theta>\<^sub>c"
+    proof (rule ccontr)
+      fix \<rho>
+      assume h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
+      assume h\<rho>face: "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>"
+      assume h\<rho>ne\<theta>c: "\<rho> \<noteq> \<theta>\<^sub>c"
+      have h\<rho>K: "\<rho> \<in> K"
+        using hL\<^sub>2_def h\<rho>T\<^sub>2 by (by100 blast)
+      have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+        using h\<rho>T\<^sub>2 by (by100 simp)
+      have h\<rho>ne\<theta>: "\<rho> \<noteq> \<theta>"
+        using h\<theta>_not_T\<^sub>2 h\<rho>T\<^sub>2 by (by100 blast)
+      have h\<theta>c_ne_\<rho>: "\<theta>\<^sub>c \<noteq> \<rho>"
+        using h\<rho>ne\<theta>c by (by100 blast)
+      show False
+        by (rule hchord_no_third_2simplex
+            [OF h\<theta>\<^sub>cK h\<theta>\<^sub>c2 h\<theta>\<^sub>c_chord_face h\<rho>K h\<rho>2 h\<rho>face
+              h\<theta>\<^sub>c_ne_\<theta> h\<rho>ne\<theta> h\<theta>c_ne_\<rho>])
+    qed
+    show ?thesis
+      using h\<theta>\<^sub>c_T\<^sub>2 h\<theta>\<^sub>c_not_T\<^sub>1 h\<theta>\<^sub>c_ne_\<theta>
+        h\<theta>\<^sub>c_chord_face h\<theta>_not_T\<^sub>2
+        hchord_face_only_\<theta>_on_T\<^sub>1 hchord_face_only_\<theta>c_on_T\<^sub>2
+      by (by100 blast)
+  qed
   show ?thesis
-    using hcarrier_side1 hcarrier_side2 hside_count_residual by (by100 blast)
+    using hcarrier_side1 hcarrier_side2 hside_count_residual
+      hchord_side_face_classification_book by (by100 blast)
 qed
 
 lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
@@ -14097,23 +14164,57 @@ proof -
                                   (geotop_polygon_interior J\<^sub>2))
                           \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
                           \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
-                          \<and> card ?T\<^sub>1 > 1
-                          \<and> ?T\<^sub>2 \<noteq> {}
-                          \<and> ?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
+	                          \<and> card ?T\<^sub>1 > 1
+	                          \<and> ?T\<^sub>2 \<noteq> {}
+	                          \<and> ?T\<^sub>1 \<inter> ?T\<^sub>2 = {}
+	                          \<and> (\<exists>\<theta>\<^sub>c\<in>?T\<^sub>2.
+	                              \<theta>\<^sub>c \<notin> ?T\<^sub>1
+	                              \<and> \<theta>\<^sub>c \<noteq> \<theta>
+	                              \<and> geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<theta>\<^sub>c
+	                              \<and> \<theta> \<notin> ?T\<^sub>2
+	                              \<and> (\<forall>\<rho>\<in>?T\<^sub>1.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>)
+	                              \<and> (\<forall>\<rho>\<in>?T\<^sub>2.
+	                                  geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<rho>
+	                                  \<longrightarrow> \<rho> = \<theta>\<^sub>c))"
                           (**
                             Moise Figure 3.2 geometric core for the two
                             chord-side subdisk complexes. Each side is proved
                             strictly smaller by an explicit parent two-simplex
                             omitted by that side, without assuming that the same
                             cutting triangle is omitted on both sides. **)
-                          using geotop_polygon_disk_chord_side_complex_geometric_core_prefix
-                            [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2
-                              h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J
-                              h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def]
-                          by (by100 blast)
-                        have hT\<^sub>1_T\<^sub>2_disjoint_book: "?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
-                          using hside_geometric_core_book by (by100 blast)
-                        show ?thesis
+	                          by (rule geotop_polygon_disk_chord_side_complex_geometric_core_prefix
+		                              [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2
+		                                h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J
+		                                h\<theta>_not_free hsubdisk_book hL\<^sub>1_def hL\<^sub>2_def])
+	                        have hT\<^sub>1_T\<^sub>2_disjoint_book: "?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_carrier1_book:
+	                          "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                              (geotop_polygon_interior J\<^sub>1).
+	                              geotop_K_carrier K x \<subseteq>
+	                                closure_on UNIV geotop_euclidean_topology
+	                                  (geotop_polygon_interior J\<^sub>1))"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_carrier2_book:
+	                          "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                              (geotop_polygon_interior J\<^sub>2).
+	                              geotop_K_carrier K x \<subseteq>
+	                                closure_on UNIV geotop_euclidean_topology
+	                                  (geotop_polygon_interior J\<^sub>2))"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_omits_T\<^sub>1_book:
+	                          "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_omits_T\<^sub>2_book:
+	                          "\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_T\<^sub>1_gt1_book: "card ?T\<^sub>1 > 1"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        have hside_core_T\<^sub>2_nonempty_book: "?T\<^sub>2 \<noteq> {}"
+	                          using hside_geometric_core_book by (by100 simp)
+	                        show ?thesis
                         proof (cases "card ?T\<^sub>2 > 1")
                           case True
                         have hside_complexes_reverse_and_counts_book:
@@ -14133,27 +14234,27 @@ proof -
                           \<and> card ?T\<^sub>2 > 1"
                         proof -
                           have hcarrier_side1:
-                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>1).
-                                geotop_K_carrier K x \<subseteq>
-                                  closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>1))"
-                            using hside_geometric_core_book by (by100 blast)
-                          have hcarrier_side2:
-                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>2).
-                                geotop_K_carrier K x \<subseteq>
-                                  closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>2))"
-                            using hside_geometric_core_book by (by100 blast)
-                          obtain rho1 where hrho1_T: "rho1 \<in> ?T"
-                            and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
-                            using hside_geometric_core_book by (by100 blast)
-                          obtain rho2 where hrho2_T: "rho2 \<in> ?T"
-                            and hrho2_not_T\<^sub>2: "rho2 \<notin> ?T\<^sub>2"
-                            using hside_geometric_core_book by (by100 blast)
-                          have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
-                            using hside_geometric_core_book by (by100 blast)
+	                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                                (geotop_polygon_interior J\<^sub>1).
+	                                geotop_K_carrier K x \<subseteq>
+	                                  closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>1))"
+	                            by (rule hside_core_carrier1_book)
+	                          have hcarrier_side2:
+	                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                                (geotop_polygon_interior J\<^sub>2).
+	                                geotop_K_carrier K x \<subseteq>
+	                                  closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>2))"
+	                            by (rule hside_core_carrier2_book)
+	                          obtain rho1 where hrho1_T: "rho1 \<in> ?T"
+	                            and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
+	                            using hside_core_omits_T\<^sub>1_book by (by100 blast)
+	                          obtain rho2 where hrho2_T: "rho2 \<in> ?T"
+	                            and hrho2_not_T\<^sub>2: "rho2 \<notin> ?T\<^sub>2"
+	                            using hside_core_omits_T\<^sub>2_book by (by100 blast)
+	                          have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+	                            by (rule hside_core_T\<^sub>1_gt1_book)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
                             by (rule True)
                           have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
@@ -14180,30 +14281,27 @@ proof -
                           \<and> card ?T\<^sub>2 > 1"
                         proof -
                           have hcarrier_side1:
-                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>1).
-                                geotop_K_carrier K x \<subseteq>
-                                  closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>1))"
-                            using hside_geometric_core_book
-                            by (by100 blast)
-                          have hcarrier_side2:
-                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                (geotop_polygon_interior J\<^sub>2).
-                                geotop_K_carrier K x \<subseteq>
-                                  closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>2))"
-                            using hside_geometric_core_book
-                            by (by100 blast)
-                          obtain rho1 where hrho1_T: "rho1 \<in> ?T"
-                            and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
-                            using hside_geometric_core_book by (by100 blast)
-                          obtain rho2 where hrho2_T: "rho2 \<in> ?T"
-                            and hrho2_not_T\<^sub>2: "rho2 \<notin> ?T\<^sub>2"
-                            using hside_geometric_core_book by (by100 blast)
-                          have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
-                            using hside_geometric_core_book
-                            by (by100 blast)
+	                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                                (geotop_polygon_interior J\<^sub>1).
+	                                geotop_K_carrier K x \<subseteq>
+	                                  closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>1))"
+	                            by (rule hside_core_carrier1_book)
+	                          have hcarrier_side2:
+	                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                                (geotop_polygon_interior J\<^sub>2).
+	                                geotop_K_carrier K x \<subseteq>
+	                                  closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>2))"
+	                            by (rule hside_core_carrier2_book)
+	                          obtain rho1 where hrho1_T: "rho1 \<in> ?T"
+	                            and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
+	                            using hside_core_omits_T\<^sub>1_book by (by100 blast)
+	                          obtain rho2 where hrho2_T: "rho2 \<in> ?T"
+	                            and hrho2_not_T\<^sub>2: "rho2 \<notin> ?T\<^sub>2"
+	                            using hside_core_omits_T\<^sub>2_book by (by100 blast)
+	                          have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+	                            by (rule hside_core_T\<^sub>1_gt1_book)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
                             by (rule True)
                           show ?thesis
@@ -15174,10 +15272,10 @@ proof -
                           by (rule hside_selected_witnesses_book)
                           next
                             case False
-                            have hT\<^sub>2_card_le1: "card ?T\<^sub>2 \<le> 1"
-                              using False by (by100 simp)
-                            have hT\<^sub>2_nonempty: "?T\<^sub>2 \<noteq> {}"
-                              using hside_geometric_core_book by (by100 blast)
+	                            have hT\<^sub>2_card_le1: "card ?T\<^sub>2 \<le> 1"
+	                              using False by (by100 simp)
+	                            have hT\<^sub>2_nonempty: "?T\<^sub>2 \<noteq> {}"
+	                              by (rule hside_core_T\<^sub>2_nonempty_book)
                             have hT\<^sub>2_card_pos: "card ?T\<^sub>2 > 0"
                               using hT\<^sub>2_fin hT\<^sub>2_nonempty card_gt_0_iff[of ?T\<^sub>2]
                               by (by100 blast)
@@ -15212,20 +15310,20 @@ proof -
                                 \<open>J\<^sub>1\<close> to the parent boundary \<open>J'\<close>. **)
                             proof -
                               have hcarrier_side1:
-                                "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
-                                    (geotop_polygon_interior J\<^sub>1).
-                                    geotop_K_carrier K x \<subseteq>
-                                      closure_on UNIV geotop_euclidean_topology
-                                        (geotop_polygon_interior J\<^sub>1))"
-                                using hside_geometric_core_book by (by100 blast)
-                              obtain rho1 where hrho1_T: "rho1 \<in> ?T"
-                                and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
-                                using hside_geometric_core_book by (by100 blast)
+	                                "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+	                                    (geotop_polygon_interior J\<^sub>1).
+	                                    geotop_K_carrier K x \<subseteq>
+	                                      closure_on UNIV geotop_euclidean_topology
+	                                        (geotop_polygon_interior J\<^sub>1))"
+	                                by (rule hside_core_carrier1_book)
+	                              obtain rho1 where hrho1_T: "rho1 \<in> ?T"
+	                                and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
+	                                using hside_core_omits_T\<^sub>1_book by (by100 blast)
                               have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
                                 by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
                                     [OF hT_fin hT\<^sub>1_sub_T hrho1_T hrho1_not_T\<^sub>1])
-                              have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
-                                using hside_geometric_core_book by (by100 blast)
+	                              have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+	                                by (rule hside_core_T\<^sub>1_gt1_book)
                               have hJ\<^sub>1_closure_sub_K:
                                 "closure_on UNIV geotop_euclidean_topology
                                   (geotop_polygon_interior J\<^sub>1)
