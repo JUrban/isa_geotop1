@@ -792,7 +792,7 @@ focus_target() {
     mid-split-free)
       printf '%s\t%s\t%s\n' \
         dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
-        geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix \
+        'theorem Theorem_GT_3_3' \
         'subdisk induction transfer nonfree boundary triangle split free count'
       ;;
     mid-fold)
