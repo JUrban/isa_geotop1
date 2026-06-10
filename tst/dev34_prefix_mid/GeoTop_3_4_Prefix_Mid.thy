@@ -9349,6 +9349,25 @@ proof -
                         using hsubdisk_book by (by100 blast)
                       have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
                         using hsubdisk_book by (by100 blast)
+                      have hclosure_split:
+                        "closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J') =
+                         closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J\<^sub>1)
+                         \<union> closure_on UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J\<^sub>2)"
+                        using hsubdisk_book by (by100 blast)
+                      have hside_separated:
+                        "geotop_separated UNIV geotop_euclidean_topology
+                           (geotop_polygon_interior J\<^sub>1 \<union>
+                            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+                           (geotop_polygon_interior J\<^sub>2 \<union>
+                            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+                        using hsubdisk_book by (by100 blast)
+                      have hL\<^sub>1_sub_K: "L\<^sub>1 \<subseteq> K"
+                        unfolding hL\<^sub>1_def by (by100 blast)
+                      have hL\<^sub>2_sub_K: "L\<^sub>2 \<subseteq> K"
+                        unfolding hL\<^sub>2_def by (by100 blast)
                       have hL\<^sub>1_complex: "geotop_is_complex L\<^sub>1"
                         unfolding hL\<^sub>1_def
                         by (rule geotop_complex_restrict_subset_is_complex[OF hK'])
@@ -9369,6 +9388,20 @@ proof -
                           closure_on UNIV geotop_euclidean_topology
                             (geotop_polygon_interior J\<^sub>2)"
                         unfolding hL\<^sub>2_def geotop_polyhedron_def by (by100 blast)
+                      let ?T\<^sub>1 = "{\<rho>\<in>L\<^sub>1. geotop_simplex_dim \<rho> 2}"
+                      let ?T\<^sub>2 = "{\<rho>\<in>L\<^sub>2. geotop_simplex_dim \<rho> 2}"
+                      have hT\<^sub>1_fin: "finite ?T\<^sub>1"
+                        using hL\<^sub>1_fin by (by100 simp)
+                      have hT\<^sub>2_fin: "finite ?T\<^sub>2"
+                        using hL\<^sub>2_fin by (by100 simp)
+                      have hT\<^sub>1_sub_T: "?T\<^sub>1 \<subseteq> ?T"
+                        using hL\<^sub>1_sub_K by (by100 blast)
+                      have hT\<^sub>2_sub_T: "?T\<^sub>2 \<subseteq> ?T"
+                        using hL\<^sub>2_sub_K by (by100 blast)
+                      have hT\<^sub>1_card_le_T: "card ?T\<^sub>1 \<le> card ?T"
+                        by (rule card_mono[OF hT_fin hT\<^sub>1_sub_T])
+                      have hT\<^sub>2_card_le_T: "card ?T\<^sub>2 \<le> card ?T"
+                        by (rule card_mono[OF hT_fin hT\<^sub>2_sub_T])
                       have hside_witnesses_from_IH:
                         "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                           card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
