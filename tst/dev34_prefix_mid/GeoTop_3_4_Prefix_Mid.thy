@@ -10155,7 +10155,110 @@ proof -
                               \<open>J\<^sub>2\<close>; the two transferred witnesses are
                               distinct because they lie on opposite sides of
                               the chord decomposition. **)
-                            sorry
+                          proof -
+                            fix \<sigma> \<tau>
+                            assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+                            assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+                            assume h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
+                            assume h\<sigma>_side_card:
+                              "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+                            assume h\<sigma>_side_contact:
+                              "\<sigma> \<inter> J\<^sub>1 =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+                            assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+                            assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+                            assume h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+                            assume h\<tau>_side_card:
+                              "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+                            assume h\<tau>_side_contact:
+                              "\<tau> \<inter> J\<^sub>2 =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+                            have h\<sigma>K: "\<sigma> \<in> K"
+                              using hL\<^sub>1_sub_K h\<sigma>L\<^sub>1 by (by100 blast)
+                            have h\<tau>K: "\<tau> \<in> K"
+                              using hL\<^sub>2_sub_K h\<tau>L\<^sub>2 by (by100 blast)
+                            have hT_gt1: "card ?T > 1"
+                              using hT_gt2 by (by100 simp)
+                            have h\<sigma>_parent_card_data:
+                              "finite {e\<in>K. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                               \<and> card {e\<in>K. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2"
+                              by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+                                  [OF hJ' hK' hK_poly' h\<sigma>K h\<sigma>2 hT_gt1])
+                            have h\<tau>_parent_card_data:
+                              "finite {e\<in>K. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                               \<and> card {e\<in>K. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2"
+                              by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+                                  [OF hJ' hK' hK_poly' h\<tau>K h\<tau>2 hT_gt1])
+                            have h\<sigma>_parent_card_L\<^sub>1:
+                              "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2"
+                            proof -
+                              let ?E\<^sub>L = "{e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                              let ?E\<^sub>K = "{e\<in>K. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+                              have hsub: "?E\<^sub>L \<subseteq> ?E\<^sub>K"
+                                using hL\<^sub>1_sub_K by (by100 blast)
+                              have hfin: "finite ?E\<^sub>K"
+                                using h\<sigma>_parent_card_data by (by100 blast)
+                              have hcardK: "card ?E\<^sub>K \<le> 2"
+                                using h\<sigma>_parent_card_data by (by100 blast)
+                              have hcard_le: "card ?E\<^sub>L \<le> card ?E\<^sub>K"
+                                by (rule card_mono[OF hfin hsub])
+                              show ?thesis
+                                by (rule le_trans[OF hcard_le hcardK])
+                            qed
+                            have h\<tau>_parent_card_L\<^sub>2:
+                              "card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2"
+                            proof -
+                              let ?E\<^sub>L = "{e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                              let ?E\<^sub>K = "{e\<in>K. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+                              have hsub: "?E\<^sub>L \<subseteq> ?E\<^sub>K"
+                                using hL\<^sub>2_sub_K by (by100 blast)
+                              have hfin: "finite ?E\<^sub>K"
+                                using h\<tau>_parent_card_data by (by100 blast)
+                              have hcardK: "card ?E\<^sub>K \<le> 2"
+                                using h\<tau>_parent_card_data by (by100 blast)
+                              have hcard_le: "card ?E\<^sub>L \<le> card ?E\<^sub>K"
+                                by (rule card_mono[OF hfin hsub])
+                              show ?thesis
+                                by (rule le_trans[OF hcard_le hcardK])
+                            qed
+                            have hparent_contact_and_distinct_book:
+                              "\<sigma> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                              \<and> \<tau> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                              \<and> \<sigma> \<noteq> \<tau>"
+                              sorry
+                            show "card {e\<in>L\<^sub>1. geotop_is_edge e
+                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2
+                              \<and> \<sigma> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}
+                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2
+                              \<and> \<tau> \<inter> J' =
+                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}
+                              \<and> \<sigma> \<noteq> \<tau>"
+                              using h\<sigma>_parent_card_L\<^sub>1 h\<tau>_parent_card_L\<^sub>2
+                                hparent_contact_and_distinct_book
+                              by (by100 blast)
+                          qed
                           have htransferable_side_witness_choice_book:
                             "\<exists>\<sigma> \<tau>. \<sigma> \<in> L\<^sub>1 \<and> geotop_simplex_dim \<sigma> 2 \<and>
                               card {e\<in>L\<^sub>1. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<le> 2 \<and>
