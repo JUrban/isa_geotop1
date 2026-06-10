@@ -9968,6 +9968,64 @@ proof -
           qed
         qed
       qed
+      have hselected_three_ball_sector_cover_HOL:
+          "\<exists>M. M \<subseteq> geotop_polyhedron L - {w}
+            \<and> connected M
+            \<and> p \<in> M
+            \<and> y \<in> M
+            \<and> z \<in> M
+            \<and> M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+      proof -
+        obtain M where hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+          and hM_conn_top: "top1_connected_on M
+            (subspace_topology UNIV geotop_euclidean_topology M)"
+          and hpM: "p \<in> M"
+          and hyM: "y \<in> M"
+          and hzM: "z \<in> M"
+          and hM_ball_cover:
+            "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          using hselected_three_ball_sector_cover
+          by (elim exE conjE)
+        have hM_conn_HOL: "connected M"
+          using hM_conn_top top1_connected_on_geotop_iff_connected
+          by (by100 blast)
+        show ?thesis
+        proof (rule exI[where x=M])
+          show "M \<subseteq> geotop_polyhedron L - {w}
+            \<and> connected M
+            \<and> p \<in> M
+            \<and> y \<in> M
+            \<and> z \<in> M
+            \<and> M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          proof (intro conjI)
+            show "M \<subseteq> geotop_polyhedron L - {w}" by (rule hM_sub)
+            show "connected M" by (rule hM_conn_HOL)
+            show "p \<in> M" by (rule hpM)
+            show "y \<in> M" by (rule hyM)
+            show "z \<in> M" by (rule hzM)
+            show "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+              by (rule hM_ball_cover)
+          qed
+        qed
+      qed
+      have hN_conn_HOL: "connected N"
+        using hN_conn top1_connected_on_geotop_iff_connected by (by100 blast)
       have hN_ball_sector_cover:
           "N \<inter> ball w r
             \<subseteq> ((S - {w}) \<inter> ball w r)
