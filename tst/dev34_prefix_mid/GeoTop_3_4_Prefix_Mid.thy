@@ -5565,6 +5565,38 @@ proof -
     using hx hy hxy by (by100 blast)
 qed
 
+lemma geotop_free_2_simplex_witness_avoids_given_prefix:
+  fixes K :: "(real^2) set set" and J \<theta> :: "(real^2) set"
+  assumes hK_fin: "finite K"
+  assumes hcard: "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+  shows "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Book extraction step for Figure 3.2: from the induction hypothesis giving
+    two free 2-simplexes on a side disk, choose one different from the cutting
+    triangle.  This is the formal version of Moise's sentence that each
+    side has a free 2-simplex different from \<open>v\<^sub>0v\<^sub>1v\<^sub>2\<close>. **)
+proof -
+  obtain \<sigma> \<tau> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>free: "geotop_free_2_simplex K J \<sigma>"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>free: "geotop_free_2_simplex K J \<tau>"
+    and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    by (rule geotop_two_distinct_members_from_card_ge2_prefix
+        [OF hK_fin hcard])
+  show ?thesis
+  proof (cases "\<sigma> = \<theta>")
+    case True
+    have h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+      using True h\<sigma>\<tau> by (by100 blast)
+    show ?thesis
+      using h\<tau>K h\<tau>free h\<tau>_ne_\<theta> by (by100 blast)
+  next
+    case False
+    show ?thesis
+      using h\<sigma>K h\<sigma>free False by (by100 blast)
+  qed
+qed
+
 lemma geotop_theta_middle_arc_inline_decomposition_prefix:
   fixes M B\<^sub>1 B\<^sub>2 B\<^sub>3 E :: "(real^2) set"
   assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B\<^sub>1 B\<^sub>2 B\<^sub>3 E"
@@ -10180,78 +10212,18 @@ proof -
                             data lies on the original boundary \<open>J'\<close>, avoiding
                             the artificial chord-only exceptional choice. **)
                         proof -
-                          have hL\<^sub>1_two_free_witnesses:
-                            "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>1'. \<sigma>\<^sub>1 \<in> L\<^sub>1
-                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
-                              \<and> \<sigma>\<^sub>1' \<in> L\<^sub>1
-                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1'
-                              \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
-                          proof -
-                            show ?thesis
-                              by (rule geotop_two_distinct_members_from_card_ge2_prefix
-                                  [OF hL\<^sub>1_fin hL\<^sub>1_free_count])
-                          qed
-                          have hL\<^sub>2_two_free_witnesses:
-                            "\<exists>\<tau>\<^sub>2 \<tau>\<^sub>2'. \<tau>\<^sub>2 \<in> L\<^sub>2
-                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
-                              \<and> \<tau>\<^sub>2' \<in> L\<^sub>2
-                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2'
-                              \<and> \<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
-                          proof -
-                            show ?thesis
-                              by (rule geotop_two_distinct_members_from_card_ge2_prefix
-                                  [OF hL\<^sub>2_fin hL\<^sub>2_free_count])
-                          qed
                           have hL\<^sub>1_free_witness_avoids_\<theta>:
                             "\<exists>\<sigma>\<^sub>1. \<sigma>\<^sub>1 \<in> L\<^sub>1
                               \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
                               \<and> \<sigma>\<^sub>1 \<noteq> \<theta>"
-                          proof -
-                            obtain \<sigma>\<^sub>1 \<sigma>\<^sub>1' where h\<sigma>\<^sub>1L: "\<sigma>\<^sub>1 \<in> L\<^sub>1"
-                              and h\<sigma>\<^sub>1free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1"
-                              and h\<sigma>\<^sub>1'L: "\<sigma>\<^sub>1' \<in> L\<^sub>1"
-                              and h\<sigma>\<^sub>1'free:
-                                "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1'"
-                              and h\<sigma>\<^sub>1_ne: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>1'"
-                              using hL\<^sub>1_two_free_witnesses by (elim exE conjE)
-                            show ?thesis
-                            proof (cases "\<sigma>\<^sub>1 = \<theta>")
-                              case True
-                              have h\<sigma>\<^sub>1'_ne_\<theta>: "\<sigma>\<^sub>1' \<noteq> \<theta>"
-                                using True h\<sigma>\<^sub>1_ne by (by100 blast)
-                              show ?thesis
-                                using h\<sigma>\<^sub>1'L h\<sigma>\<^sub>1'free h\<sigma>\<^sub>1'_ne_\<theta> by (by100 blast)
-                            next
-                              case False
-                              show ?thesis
-                                using h\<sigma>\<^sub>1L h\<sigma>\<^sub>1free False by (by100 blast)
-                            qed
-                          qed
+                            by (rule geotop_free_2_simplex_witness_avoids_given_prefix
+                                [OF hL\<^sub>1_fin hL\<^sub>1_free_count])
                           have hL\<^sub>2_free_witness_avoids_\<theta>:
                             "\<exists>\<tau>\<^sub>2. \<tau>\<^sub>2 \<in> L\<^sub>2
                               \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
                               \<and> \<tau>\<^sub>2 \<noteq> \<theta>"
-                          proof -
-                            obtain \<tau>\<^sub>2 \<tau>\<^sub>2' where h\<tau>\<^sub>2L: "\<tau>\<^sub>2 \<in> L\<^sub>2"
-                              and h\<tau>\<^sub>2free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2"
-                              and h\<tau>\<^sub>2'L: "\<tau>\<^sub>2' \<in> L\<^sub>2"
-                              and h\<tau>\<^sub>2'free:
-                                "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2'"
-                              and h\<tau>\<^sub>2_ne: "\<tau>\<^sub>2 \<noteq> \<tau>\<^sub>2'"
-                              using hL\<^sub>2_two_free_witnesses by (elim exE conjE)
-                            show ?thesis
-                            proof (cases "\<tau>\<^sub>2 = \<theta>")
-                              case True
-                              have h\<tau>\<^sub>2'_ne_\<theta>: "\<tau>\<^sub>2' \<noteq> \<theta>"
-                                using True h\<tau>\<^sub>2_ne by (by100 blast)
-                              show ?thesis
-                                using h\<tau>\<^sub>2'L h\<tau>\<^sub>2'free h\<tau>\<^sub>2'_ne_\<theta> by (by100 blast)
-                            next
-                              case False
-                              show ?thesis
-                                using h\<tau>\<^sub>2L h\<tau>\<^sub>2free False by (by100 blast)
-                            qed
-                          qed
+                            by (rule geotop_free_2_simplex_witness_avoids_given_prefix
+                                [OF hL\<^sub>2_fin hL\<^sub>2_free_count])
                           have hside_free_witnesses_avoid_\<theta>:
                             "\<exists>\<sigma>\<^sub>L \<tau>\<^sub>L. \<sigma>\<^sub>L \<in> L\<^sub>1
                               \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>L
