@@ -9959,6 +9959,57 @@ proof -
                               hT\<^sub>1_gt1 hT\<^sub>2_gt1
                             by (by100 blast)
                         qed
+                        have hside_reverse_and_counts_from_atoms:
+                          "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>1).
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>1))
+                           \<Longrightarrow> (\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                              (geotop_polygon_interior J\<^sub>2).
+                              geotop_K_carrier K x \<subseteq>
+                                closure_on UNIV geotop_euclidean_topology
+                                  (geotop_polygon_interior J\<^sub>2))
+                           \<Longrightarrow> \<theta> \<notin> ?T\<^sub>1
+                           \<Longrightarrow> \<theta> \<notin> ?T\<^sub>2
+                           \<Longrightarrow> card ?T\<^sub>1 > 1
+                           \<Longrightarrow> card ?T\<^sub>2 > 1
+                           \<Longrightarrow> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1)
+                              \<subseteq> geotop_polyhedron L\<^sub>1
+                            \<and> closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2)
+                              \<subseteq> geotop_polyhedron L\<^sub>2
+                            \<and> card ?T\<^sub>1 < card ?T
+                            \<and> card ?T\<^sub>2 < card ?T
+                            \<and> card ?T\<^sub>1 > 1
+                            \<and> card ?T\<^sub>2 > 1"
+                        proof -
+                          assume hcarrier_side1:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>1).
+                                geotop_K_carrier K x \<subseteq>
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>1))"
+                          assume hcarrier_side2:
+                            "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
+                                (geotop_polygon_interior J\<^sub>2).
+                                geotop_K_carrier K x \<subseteq>
+                                  closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J\<^sub>2))"
+                          assume h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
+                          assume h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+                          assume hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+                          assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+                          have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                            by (rule hT\<^sub>1_card_lt_T_if_avoids_\<theta>[OF h\<theta>_not_T\<^sub>1])
+                          have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                            by (rule hT\<^sub>2_card_lt_T_if_avoids_\<theta>[OF h\<theta>_not_T\<^sub>2])
+                          show ?thesis
+                            by (rule hside_reverse_and_counts_from_carriers
+                                [OF hcarrier_side1 hcarrier_side2 hT\<^sub>1_lt_T
+                                  hT\<^sub>2_lt_T hT\<^sub>1_gt1 hT\<^sub>2_gt1])
+                        qed
                         have hside_complexes_reverse_and_counts_book:
                           "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
                               (geotop_polygon_interior J\<^sub>1).
@@ -9970,18 +10021,19 @@ proof -
                               geotop_K_carrier K x \<subseteq>
                                 closure_on UNIV geotop_euclidean_topology
                                   (geotop_polygon_interior J\<^sub>2))
-                          \<and> card ?T\<^sub>1 < card ?T
-                          \<and> card ?T\<^sub>2 < card ?T
+                          \<and> \<theta> \<notin> ?T\<^sub>1
+                          \<and> \<theta> \<notin> ?T\<^sub>2
                           \<and> card ?T\<^sub>1 > 1
                           \<and> card ?T\<^sub>2 > 1"
                           (**
                             Remaining Moise Figure 3.2 side-complex package.
                             The generic restriction-carrier bridge is now
-                            proved above.  The residual content is that every
-                            point of a chord-side closed disk has its original
-                            K-carrier still inside that side, plus strict
-                            decrease and nontriviality of the two side
-                            triangulations. **)
+                            proved above, and strict decrease now follows from
+                            the explicit absence of \<open>\<theta>\<close> from the two side
+                            2-simplex sets.  The residual content is pointwise
+                            carrier containment on the two side closures,
+                            exclusion of \<open>\<theta>\<close> from both side complexes, and
+                            nontriviality of the two side triangulations. **)
                           sorry
                         have hside_complexes_smaller_book:
                           "geotop_polyhedron L\<^sub>1 =
@@ -10011,10 +10063,10 @@ proof -
                                     (geotop_polygon_interior J\<^sub>2))"
                             using hside_complexes_reverse_and_counts_book
                             by (by100 blast)
-                          have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                          have h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
                             using hside_complexes_reverse_and_counts_book
                             by (by100 blast)
-                          have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
+                          have h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
                             using hside_complexes_reverse_and_counts_book
                             by (by100 blast)
                           have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
@@ -10034,9 +10086,9 @@ proof -
                             \<and> card ?T\<^sub>2 < card ?T
                             \<and> card ?T\<^sub>1 > 1
                             \<and> card ?T\<^sub>2 > 1"
-                            by (rule hside_reverse_and_counts_from_carriers
-                                [OF hcarrier_side1 hcarrier_side2 hT\<^sub>1_lt_T
-                                  hT\<^sub>2_lt_T hT\<^sub>1_gt1 hT\<^sub>2_gt1])
+                            by (rule hside_reverse_and_counts_from_atoms
+                                [OF hcarrier_side1 hcarrier_side2 h\<theta>_not_T\<^sub>1
+                                  h\<theta>_not_T\<^sub>2 hT\<^sub>1_gt1 hT\<^sub>2_gt1])
                           have hL\<^sub>1_poly_rev:
                             "closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>1)
@@ -10046,6 +10098,10 @@ proof -
                             "closure_on UNIV geotop_euclidean_topology
                                 (geotop_polygon_interior J\<^sub>2)
                               \<subseteq> geotop_polyhedron L\<^sub>2"
+                            using hreverse_counts by (by100 blast)
+                          have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
+                            using hreverse_counts by (by100 blast)
+                          have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
                             using hreverse_counts by (by100 blast)
                           show ?thesis
                             by (rule hside_complexes_smaller_from_reverse_and_counts
