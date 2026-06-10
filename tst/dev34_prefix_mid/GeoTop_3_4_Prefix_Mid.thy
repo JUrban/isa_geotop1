@@ -11474,6 +11474,46 @@ proof -
                                     by (by100 blast)
                                 qed
                               qed
+                              have h\<sigma>_chord_residue_forces_\<sigma>\<theta>_faces:
+                                "\<And>x. ((\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J')
+                                  \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<Longrightarrow>
+                                  geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                  \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                              proof -
+                                fix x
+                                assume hres:
+                                  "(\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                have hcontact:
+                                  "\<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  using hres by (by100 blast)
+                                show "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                  \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                  by (rule h\<sigma>\<theta>_inter_faces_if_chord_contact
+                                      [OF hcontact])
+                              qed
+                              have h\<tau>_chord_residue_forces_\<tau>\<theta>_faces:
+                                "\<And>x. ((\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                    \<and> y \<notin> J')
+                                  \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<Longrightarrow>
+                                  geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                  \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                              proof -
+                                fix x
+                                assume hres:
+                                  "(\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
+                                      \<and> y \<notin> J')
+                                    \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+                                have hcontact:
+                                  "\<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2 \<noteq> {}"
+                                  using hres by (by100 blast)
+                                show "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                  \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                  by (rule h\<tau>\<theta>_inter_faces_if_chord_contact
+                                      [OF hcontact])
+                              qed
                               have h\<sigma>_parent_contact_cover_from_no_uncovered:
                                 "(\<And>x. x \<in> \<sigma> \<inter> J' \<Longrightarrow>
                                   x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
@@ -11621,23 +11661,21 @@ proof -
                                   "(\<forall>x. x \<in> \<sigma> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                                       \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'} \<longrightarrow>
-                                    ((\<exists>y. y \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2
-                                      \<and> y \<notin> J')
-                                      \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
+                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma> \<and>
+                                    geotop_is_face (\<sigma> \<inter> \<theta>) \<theta> \<longrightarrow>
                                     False)
                                   \<and> (\<forall>x. x \<in> \<tau> \<inter> J' \<longrightarrow>
                                     x \<notin> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                                       \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<longrightarrow>
-                                    ((\<exists>y. y \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2
-                                      \<and> y \<notin> J')
-                                      \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2) \<longrightarrow>
+                                    geotop_is_face (\<tau> \<inter> \<theta>) \<tau> \<and>
+                                    geotop_is_face (\<tau> \<inter> \<theta>) \<theta> \<longrightarrow>
                                     False)"
                                   (**
                                     Remaining Moise Figure 3.2 geometry:
-                                    the chord-residue alternatives produced
-                                    from an uncovered parent-boundary contact
-                                    are impossible for side witnesses avoiding
-                                    the cut triangle. **)
+                                    the theta-face contact forced by an
+                                    uncovered parent-boundary chord residue is
+                                    impossible for side witnesses avoiding the
+                                    cut triangle. **)
                                   sorry
                                 show ?thesis
                                 proof (rule hparent_contact_cover_and_distinct_from_obligations)
@@ -11652,9 +11690,14 @@ proof -
                                     \<or> x \<in> \<sigma> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
                                     by (rule h\<sigma>_parent_uncovered_forces_chord_residue
                                         [OF hx hx_not])
+                                  have hfaces:
+                                    "geotop_is_face (\<sigma> \<inter> \<theta>) \<sigma>
+                                    \<and> geotop_is_face (\<sigma> \<inter> \<theta>) \<theta>"
+                                    by (rule h\<sigma>_chord_residue_forces_\<sigma>\<theta>_faces
+                                        [OF hres])
                                   show False
                                     using hparent_contact_cover_and_distinct_obligations_book
-                                      hx hx_not hres
+                                      hx hx_not hfaces
                                     by (by100 blast)
                                 next
                                   fix x
@@ -11668,9 +11711,14 @@ proof -
                                     \<or> x \<in> \<tau> \<inter> closed_segment v\<^sub>0 v\<^sub>2"
                                     by (rule h\<tau>_parent_uncovered_forces_chord_residue
                                         [OF hx hx_not])
+                                  have hfaces:
+                                    "geotop_is_face (\<tau> \<inter> \<theta>) \<tau>
+                                    \<and> geotop_is_face (\<tau> \<inter> \<theta>) \<theta>"
+                                    by (rule h\<tau>_chord_residue_forces_\<tau>\<theta>_faces
+                                        [OF hres])
                                   show False
                                     using hparent_contact_cover_and_distinct_obligations_book
-                                      hx hx_not hres
+                                      hx hx_not hfaces
                                     by (by100 blast)
                                 next
                                   fix \<rho>
