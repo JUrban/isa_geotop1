@@ -10103,16 +10103,16 @@ proof -
                               geotop_K_carrier K x \<subseteq>
                                 closure_on UNIV geotop_euclidean_topology
                                   (geotop_polygon_interior J\<^sub>2))
-                          \<and> \<theta> \<notin> ?T\<^sub>1
-                          \<and> \<theta> \<notin> ?T\<^sub>2
+                          \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>1)
+                          \<and> (\<exists>\<rho>\<in>?T. \<rho> \<notin> ?T\<^sub>2)
                           \<and> card ?T\<^sub>1 > 1
                           \<and> card ?T\<^sub>2 > 1"
                           (**
                             Moise Figure 3.2 geometric core for the two
-                            chord-side subdisk complexes. The strict cardinal
-                            decreases below are now derived from the displayed
-                            omission of the cutting triangle \<open>\<theta>\<close>, rather
-                            than assumed directly. **)
+                            chord-side subdisk complexes. Each side is proved
+                            strictly smaller by an explicit parent two-simplex
+                            omitted by that side, without assuming that the same
+                            cutting triangle is omitted on both sides. **)
                           sorry
                         have hside_complexes_reverse_and_counts_book:
                           "(\<forall>x\<in>closure_on UNIV geotop_euclidean_topology
@@ -10144,18 +10144,22 @@ proof -
                                   closure_on UNIV geotop_euclidean_topology
                                     (geotop_polygon_interior J\<^sub>2))"
                             using hside_geometric_core_book by (by100 blast)
-                          have h\<theta>_not_T\<^sub>1: "\<theta> \<notin> ?T\<^sub>1"
+                          obtain rho1 where hrho1_T: "rho1 \<in> ?T"
+                            and hrho1_not_T\<^sub>1: "rho1 \<notin> ?T\<^sub>1"
                             using hside_geometric_core_book by (by100 blast)
-                          have h\<theta>_not_T\<^sub>2: "\<theta> \<notin> ?T\<^sub>2"
+                          obtain rho2 where hrho2_T: "rho2 \<in> ?T"
+                            and hrho2_not_T\<^sub>2: "rho2 \<notin> ?T\<^sub>2"
                             using hside_geometric_core_book by (by100 blast)
                           have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
                             using hside_geometric_core_book by (by100 blast)
                           have hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
                             using hside_geometric_core_book by (by100 blast)
                           have hT\<^sub>1_lt_T: "card ?T\<^sub>1 < card ?T"
-                            by (rule hT\<^sub>1_card_lt_T_if_avoids_\<theta>[OF h\<theta>_not_T\<^sub>1])
+                            by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+                                [OF hT_fin hT\<^sub>1_sub_T hrho1_T hrho1_not_T\<^sub>1])
                           have hT\<^sub>2_lt_T: "card ?T\<^sub>2 < card ?T"
-                            by (rule hT\<^sub>2_card_lt_T_if_avoids_\<theta>[OF h\<theta>_not_T\<^sub>2])
+                            by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+                                [OF hT_fin hT\<^sub>2_sub_T hrho2_T hrho2_not_T\<^sub>2])
                           show ?thesis
                             using hcarrier_side1 hcarrier_side2 hT\<^sub>1_lt_T hT\<^sub>2_lt_T
                               hT\<^sub>1_gt1 hT\<^sub>2_gt1
