@@ -16923,6 +16923,19 @@ proof -
 	                            have h\<tau>_chord_face:
 	                              "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) \<tau>"
 	                              using h\<theta>c_chord_face_singleton h\<theta>c_eq_\<tau> by (by100 simp)
+	                            have hchord_segment_edge_singleton:
+	                              "geotop_is_edge (closed_segment v\<^sub>0 v\<^sub>2)"
+	                            proof -
+	                              have hchord_hull_segment_eq_singleton:
+	                                "geotop_convex_hull {v\<^sub>0, v\<^sub>2} =
+	                                  closed_segment v\<^sub>0 v\<^sub>2"
+	                                using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+	                                  geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+	                                by (by100 simp)
+	                              show ?thesis
+	                                using hv\<^sub>0v\<^sub>2_edge hchord_hull_segment_eq_singleton
+	                                by (by100 simp)
+	                            qed
 	                            have h\<theta>_ne_\<tau>: "\<theta> \<noteq> \<tau>"
 	                              using h\<theta>_not_T\<^sub>2_singleton h\<tau>T\<^sub>2 by (by100 blast)
 	                            have hcarrier_side2_singleton:
@@ -16957,6 +16970,62 @@ proof -
 	                                closure_on UNIV geotop_euclidean_topology
 	                                  (geotop_polygon_interior J\<^sub>2)"
 	                              using hL\<^sub>2_poly_sub hL\<^sub>2_poly_rev_singleton by (by100 blast)
+	                            have h\<tau>_parent_selected_edges_card_le2:
+	                              "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'} \<le> 2"
+	                            proof -
+	                              let ?E = "{e\<in>L\<^sub>2. geotop_is_edge e
+	                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+	                              let ?A = "{e\<in>L\<^sub>2. geotop_is_edge e
+	                                \<and> geotop_is_face e \<tau>}"
+	                              have hA_data: "finite ?A \<and> card ?A \<le> 3"
+	                                by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix
+	                                    [OF h\<tau>2])
+	                              have hA_fin: "finite ?A"
+	                                using hA_data by (by100 blast)
+	                              have hA_card: "card ?A \<le> 3"
+	                                using hA_data by (by100 blast)
+	                              have hchord_L\<^sub>2: "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>2"
+	                                using hL\<^sub>2_complex h\<tau>L\<^sub>2 h\<tau>_chord_face
+	                                unfolding geotop_is_complex_def by (by100 blast)
+	                              have hchord_A: "closed_segment v\<^sub>0 v\<^sub>2 \<in> ?A"
+	                                using hchord_L\<^sub>2 hchord_segment_edge_singleton h\<tau>_chord_face
+	                                by (by100 blast)
+	                              have hE_sub_A_minus:
+	                                "?E \<subseteq> ?A - {closed_segment v\<^sub>0 v\<^sub>2}"
+	                              proof
+	                                fix e
+	                                assume heE: "e \<in> ?E"
+	                                have heA: "e \<in> ?A"
+	                                  using heE by (by100 blast)
+	                                have he_not_chord: "e \<noteq> closed_segment v\<^sub>0 v\<^sub>2"
+	                                proof
+	                                  assume heq: "e = closed_segment v\<^sub>0 v\<^sub>2"
+	                                  have "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J'"
+	                                    using heE heq by (by100 blast)
+	                                  thus False
+	                                    using hchord_not_parent_boundary_book by (by100 blast)
+	                                qed
+	                                show "e \<in> ?A - {closed_segment v\<^sub>0 v\<^sub>2}"
+	                                  using heA he_not_chord by (by100 blast)
+	                              qed
+	                              have hA_minus_fin:
+	                                "finite (?A - {closed_segment v\<^sub>0 v\<^sub>2})"
+	                                using hA_fin by (by100 simp)
+	                              have hE_card_le_A_minus:
+	                                "card ?E \<le> card (?A - {closed_segment v\<^sub>0 v\<^sub>2})"
+	                                by (rule card_mono[OF hA_minus_fin hE_sub_A_minus])
+	                              have hA_minus_lt_A:
+	                                "card (?A - {closed_segment v\<^sub>0 v\<^sub>2}) < card ?A"
+	                                by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+	                                    [OF hA_fin Diff_subset hchord_A])
+	                                  (by100 simp)
+	                              have hA_minus_card:
+	                                "card (?A - {closed_segment v\<^sub>0 v\<^sub>2}) \<le> 2"
+	                                using hA_minus_lt_A hA_card by (by100 linarith)
+	                              show ?thesis
+	                                using hE_card_le_A_minus hA_minus_card by (by100 linarith)
+	                            qed
 	                            have hT\<^sub>1_distinct_from_\<tau>:
 	                              "\<And>\<sigma>. \<sigma> \<in> ?T\<^sub>1 \<Longrightarrow> \<sigma> \<noteq> \<tau>"
 	                              using hT\<^sub>1_T\<^sub>2_disjoint_book h\<tau>T\<^sub>2 by (by100 blast)
