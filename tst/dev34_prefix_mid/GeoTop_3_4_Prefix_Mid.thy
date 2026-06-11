@@ -22326,6 +22326,394 @@ proof -
         [OF hA_sub_X hP_A hR_A hA_connected])
 qed
 
+lemma geotop_QS_chord_from_boundary_access_arcs_prefix:
+  fixes J A F\<^sub>1 F\<^sub>2 C\<^sub>Q B\<^sub>0 C\<^sub>S :: "(real^2) set"
+    and P Q R S Q0 S0 :: "real^2"
+  assumes hAsub:
+    "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hP_A: "P \<in> A"
+  assumes hR_A: "R \<in> A"
+  assumes hA_connected:
+    "top1_connected_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hQ_ne_S: "Q \<noteq> S"
+  assumes hC\<^sub>Q_bl: "geotop_is_broken_line C\<^sub>Q"
+  assumes hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+  assumes hC\<^sub>S_bl: "geotop_is_broken_line C\<^sub>S"
+  assumes hQ_C\<^sub>Q: "Q \<in> C\<^sub>Q"
+  assumes hQ0_C\<^sub>Q: "Q0 \<in> C\<^sub>Q"
+  assumes hQ0_B\<^sub>0: "Q0 \<in> B\<^sub>0"
+  assumes hS0_B\<^sub>0: "S0 \<in> B\<^sub>0"
+  assumes hS0_C\<^sub>S: "S0 \<in> C\<^sub>S"
+  assumes hS_C\<^sub>S: "S \<in> C\<^sub>S"
+  assumes hC\<^sub>Q_closed:
+    "C\<^sub>Q \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hB\<^sub>0_closed:
+    "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hC\<^sub>S_closed:
+    "C\<^sub>S \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hC\<^sub>Q_A: "C\<^sub>Q \<inter> A = {}"
+  assumes hB\<^sub>0_A: "B\<^sub>0 \<inter> A = {}"
+  assumes hC\<^sub>S_A: "C\<^sub>S \<inter> A = {}"
+  assumes hQ0_I: "Q0 \<in> geotop_polygon_interior J"
+  assumes hS0_I: "S0 \<in> geotop_polygon_interior J"
+  assumes hC\<^sub>Q_int_I:
+    "geotop_arc_interior C\<^sub>Q {Q, Q0} \<subseteq> geotop_polygon_interior J"
+  assumes hB\<^sub>0_int_I:
+    "geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J"
+  assumes hC\<^sub>S_int_I:
+    "geotop_arc_interior C\<^sub>S {S0, S} \<subseteq> geotop_polygon_interior J"
+  assumes hQ0_not_F\<^sub>1:
+    "Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+  assumes hQ0_not_F\<^sub>2:
+    "Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+  assumes hS0_not_F\<^sub>1:
+    "S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+  assumes hS0_not_F\<^sub>2:
+    "S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+  assumes hF\<^sub>1C\<^sub>Q:
+    "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+      geotop_arc_interior C\<^sub>Q {Q, Q0} = {}"
+  assumes hF\<^sub>1B\<^sub>0:
+    "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+      geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
+  assumes hF\<^sub>1C\<^sub>S:
+    "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+      geotop_arc_interior C\<^sub>S {S0, S} = {}"
+  assumes hC\<^sub>QF\<^sub>2:
+    "geotop_arc_interior C\<^sub>Q {Q, Q0} \<inter>
+      geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  assumes hB\<^sub>0F\<^sub>2:
+    "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+      geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  assumes hC\<^sub>SF\<^sub>2:
+    "geotop_arc_interior C\<^sub>S {S0, S} \<inter>
+      geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  shows "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
+      \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
+      \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+          geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}
+      \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+          geotop_arc_interior F\<^sub>2 {Q, S} = {}
+      \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq> geotop_polygon_interior J
+      \<and> top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+          P R"
+  (**
+    D42 final concatenation package.  This is the book step after the local
+    boundary-access arcs have been obtained: concatenate the Q-access arc, the
+    near Q0-S0 chord, and the S-access arc, then trim to the Q-S subarc.
+    The separate remaining geometric task is to construct the two access arcs
+    from the polygon local half-disk/wedge data. **)
+proof -
+  obtain D\<^sub>m where hD\<^sub>m_bl: "geotop_is_broken_line D\<^sub>m"
+    and hD\<^sub>m_sub: "D\<^sub>m \<subseteq> C\<^sub>Q \<union> B\<^sub>0"
+    and hQ_D\<^sub>m: "Q \<in> D\<^sub>m"
+    and hS0_D\<^sub>m: "S0 \<in> D\<^sub>m"
+    using geotop_broken_line_arc_reduction
+        [OF hC\<^sub>Q_bl hB\<^sub>0_bl hQ_C\<^sub>Q hQ0_C\<^sub>Q hQ0_B\<^sub>0 hS0_B\<^sub>0]
+    by (elim exE conjE)
+  obtain D where hD_bl: "geotop_is_broken_line D"
+    and hD_sub: "D \<subseteq> D\<^sub>m \<union> C\<^sub>S"
+    and hQ_D: "Q \<in> D"
+    and hS_D: "S \<in> D"
+    using geotop_broken_line_arc_reduction
+        [OF hD\<^sub>m_bl hC\<^sub>S_bl hQ_D\<^sub>m hS0_D\<^sub>m hS0_C\<^sub>S hS_C\<^sub>S]
+    by (elim exE conjE)
+  obtain B\<^sub>Q\<^sub>S where hB_bl: "geotop_is_broken_line B\<^sub>Q\<^sub>S"
+    and hB_sub_D: "B\<^sub>Q\<^sub>S \<subseteq> D"
+    and hQ_B: "Q \<in> B\<^sub>Q\<^sub>S"
+    and hS_B: "S \<in> B\<^sub>Q\<^sub>S"
+    and hB_E: "geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}"
+    using geotop_broken_line_subarc_with_endpoints_prefix
+        [OF hD_bl hQ_D hS_D hQ_ne_S]
+    by (elim exE conjE)
+  have hB_sub_union: "B\<^sub>Q\<^sub>S \<subseteq> C\<^sub>Q \<union> B\<^sub>0 \<union> C\<^sub>S"
+    using hB_sub_D hD_sub hD\<^sub>m_sub by (by100 blast)
+  have hB_A_empty: "B\<^sub>Q\<^sub>S \<inter> A = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> B\<^sub>Q\<^sub>S \<inter> A"
+    have hxB: "x \<in> B\<^sub>Q\<^sub>S"
+      using hx by (rule IntD1)
+    have hxA: "x \<in> A"
+      using hx by (rule IntD2)
+    have hx_union: "x \<in> C\<^sub>Q \<union> B\<^sub>0 \<union> C\<^sub>S"
+      by (rule subsetD[OF hB_sub_union hxB])
+    show False
+      using hx_union hxA hC\<^sub>Q_A hB\<^sub>0_A hC\<^sub>S_A by (by100 blast)
+  qed
+  have hB_int_I:
+      "geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq> geotop_polygon_interior J"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S}"
+    have hxB: "x \<in> B\<^sub>Q\<^sub>S"
+      using hx unfolding geotop_arc_interior_def by (rule DiffD1)
+    have hx_not_QS: "x \<notin> {Q, S}"
+      using hx unfolding geotop_arc_interior_def by (rule DiffD2)
+    have hx_union: "x \<in> C\<^sub>Q \<union> B\<^sub>0 \<union> C\<^sub>S"
+      by (rule subsetD[OF hB_sub_union hxB])
+    from hx_union show "x \<in> geotop_polygon_interior J"
+    proof
+      assume hx_CQ_or_B0: "x \<in> C\<^sub>Q \<union> B\<^sub>0"
+      from hx_CQ_or_B0 show ?thesis
+      proof
+        assume hx_CQ: "x \<in> C\<^sub>Q"
+        show ?thesis
+        proof (cases "x = Q0")
+          case True
+          then show ?thesis using hQ0_I by (by100 simp)
+        next
+          case False
+          have hx_CQ_int: "x \<in> geotop_arc_interior C\<^sub>Q {Q, Q0}"
+            using hx_CQ hx_not_QS False
+            unfolding geotop_arc_interior_def by (by100 blast)
+          show ?thesis
+            by (rule subsetD[OF hC\<^sub>Q_int_I hx_CQ_int])
+        qed
+      next
+        assume hx_B0: "x \<in> B\<^sub>0"
+        show ?thesis
+        proof (cases "x = Q0")
+          case True
+          then show ?thesis using hQ0_I by (by100 simp)
+        next
+          case False
+          show ?thesis
+          proof (cases "x = S0")
+            case True
+            then show ?thesis using hS0_I by (by100 simp)
+          next
+            case False
+            have hx_B0_int: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
+              using hx_B0 `x \<noteq> Q0` `x \<noteq> S0`
+              unfolding geotop_arc_interior_def by (by100 blast)
+            show ?thesis
+              by (rule subsetD[OF hB\<^sub>0_int_I hx_B0_int])
+          qed
+        qed
+      qed
+    next
+      assume hx_CS: "x \<in> C\<^sub>S"
+      show ?thesis
+      proof (cases "x = S0")
+        case True
+        then show ?thesis using hS0_I by (by100 simp)
+      next
+        case False
+        have hx_CS_int: "x \<in> geotop_arc_interior C\<^sub>S {S0, S}"
+          using hx_CS hx_not_QS False
+          unfolding geotop_arc_interior_def by (by100 blast)
+        show ?thesis
+          by (rule subsetD[OF hC\<^sub>S_int_I hx_CS_int])
+      qed
+    qed
+  qed
+  have hF1_B_int_empty:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+          geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx:
+      "x \<in> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S}"
+    have hxF: "x \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      using hx by (rule IntD1)
+    have hxBint: "x \<in> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S}"
+      using hx by (rule IntD2)
+    have hxB: "x \<in> B\<^sub>Q\<^sub>S"
+      using hxBint unfolding geotop_arc_interior_def by (rule DiffD1)
+    have hx_union: "x \<in> C\<^sub>Q \<union> B\<^sub>0 \<union> C\<^sub>S"
+      by (rule subsetD[OF hB_sub_union hxB])
+    have hx_not_QS: "x \<notin> {Q, S}"
+      using hxBint unfolding geotop_arc_interior_def by (rule DiffD2)
+    from hx_union show False
+    proof
+      assume hx_CQ_or_B0: "x \<in> C\<^sub>Q \<union> B\<^sub>0"
+      from hx_CQ_or_B0 show False
+      proof
+        assume hx_CQ: "x \<in> C\<^sub>Q"
+        show False
+        proof (cases "x = Q0")
+          case True
+          then show False using hxF hQ0_not_F\<^sub>1 by (by100 simp)
+        next
+          case False
+          have hx_CQ_int: "x \<in> geotop_arc_interior C\<^sub>Q {Q, Q0}"
+            using hx_CQ hx_not_QS False
+            unfolding geotop_arc_interior_def by (by100 blast)
+          have "x \<in> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+              geotop_arc_interior C\<^sub>Q {Q, Q0}"
+            by (rule IntI[OF hxF hx_CQ_int])
+          thus False using hF\<^sub>1C\<^sub>Q by (by100 blast)
+        qed
+      next
+        assume hx_B0: "x \<in> B\<^sub>0"
+        show False
+        proof (cases "x = Q0")
+          case True
+          then show False using hxF hQ0_not_F\<^sub>1 by (by100 simp)
+        next
+          case False
+          show False
+          proof (cases "x = S0")
+            case True
+            then show False using hxF hS0_not_F\<^sub>1 by (by100 simp)
+          next
+            case False
+            have hx_B0_int: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
+              using hx_B0 `x \<noteq> Q0` `x \<noteq> S0`
+              unfolding geotop_arc_interior_def by (by100 blast)
+            have "x \<in> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+                geotop_arc_interior B\<^sub>0 {Q0, S0}"
+              by (rule IntI[OF hxF hx_B0_int])
+            thus False using hF\<^sub>1B\<^sub>0 by (by100 blast)
+          qed
+        qed
+      qed
+    next
+      assume hx_CS: "x \<in> C\<^sub>S"
+      show False
+      proof (cases "x = S0")
+        case True
+        then show False using hxF hS0_not_F\<^sub>1 by (by100 simp)
+      next
+        case False
+        have hx_CS_int: "x \<in> geotop_arc_interior C\<^sub>S {S0, S}"
+          using hx_CS hx_not_QS False
+          unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior C\<^sub>S {S0, S}"
+          by (rule IntI[OF hxF hx_CS_int])
+        thus False using hF\<^sub>1C\<^sub>S by (by100 blast)
+      qed
+    qed
+  qed
+  have hB_F2_int_empty:
+      "geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+          geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx:
+      "x \<in> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S}"
+    have hxBint: "x \<in> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S}"
+      using hx by (rule IntD1)
+    have hxF: "x \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+      using hx by (rule IntD2)
+    have hxB: "x \<in> B\<^sub>Q\<^sub>S"
+      using hxBint unfolding geotop_arc_interior_def by (rule DiffD1)
+    have hx_union: "x \<in> C\<^sub>Q \<union> B\<^sub>0 \<union> C\<^sub>S"
+      by (rule subsetD[OF hB_sub_union hxB])
+    have hx_not_QS: "x \<notin> {Q, S}"
+      using hxBint unfolding geotop_arc_interior_def by (rule DiffD2)
+    from hx_union show False
+    proof
+      assume hx_CQ_or_B0: "x \<in> C\<^sub>Q \<union> B\<^sub>0"
+      from hx_CQ_or_B0 show False
+      proof
+        assume hx_CQ: "x \<in> C\<^sub>Q"
+        show False
+        proof (cases "x = Q0")
+          case True
+          then show False using hxF hQ0_not_F\<^sub>2 by (by100 simp)
+        next
+          case False
+          have hx_CQ_int: "x \<in> geotop_arc_interior C\<^sub>Q {Q, Q0}"
+            using hx_CQ hx_not_QS False
+            unfolding geotop_arc_interior_def by (by100 blast)
+          have "x \<in> geotop_arc_interior C\<^sub>Q {Q, Q0} \<inter>
+              geotop_arc_interior F\<^sub>2 {Q, S}"
+            by (rule IntI[OF hx_CQ_int hxF])
+          thus False using hC\<^sub>QF\<^sub>2 by (by100 blast)
+        qed
+      next
+        assume hx_B0: "x \<in> B\<^sub>0"
+        show False
+        proof (cases "x = Q0")
+          case True
+          then show False using hxF hQ0_not_F\<^sub>2 by (by100 simp)
+        next
+          case False
+          show False
+          proof (cases "x = S0")
+            case True
+            then show False using hxF hS0_not_F\<^sub>2 by (by100 simp)
+          next
+            case False
+            have hx_B0_int: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
+              using hx_B0 `x \<noteq> Q0` `x \<noteq> S0`
+              unfolding geotop_arc_interior_def by (by100 blast)
+            have "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+                geotop_arc_interior F\<^sub>2 {Q, S}"
+              by (rule IntI[OF hx_B0_int hxF])
+            thus False using hB\<^sub>0F\<^sub>2 by (by100 blast)
+          qed
+        qed
+      qed
+    next
+      assume hx_CS: "x \<in> C\<^sub>S"
+      show False
+      proof (cases "x = S0")
+        case True
+        then show False using hxF hS0_not_F\<^sub>2 by (by100 simp)
+      next
+        case False
+        have hx_CS_int: "x \<in> geotop_arc_interior C\<^sub>S {S0, S}"
+          using hx_CS hx_not_QS False
+          unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in> geotop_arc_interior C\<^sub>S {S0, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S}"
+          by (rule IntI[OF hx_CS_int hxF])
+        thus False using hC\<^sub>SF\<^sub>2 by (by100 blast)
+      qed
+    qed
+  qed
+  have hA_sub_closed_minus:
+      "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S"
+  proof
+    fix x
+    assume hxA: "x \<in> A"
+    have hx_cl:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+      by (rule subsetD[OF hAsub hxA])
+    have hx_not_B: "x \<notin> B\<^sub>Q\<^sub>S"
+    proof
+      assume hxB: "x \<in> B\<^sub>Q\<^sub>S"
+      have "x \<in> B\<^sub>Q\<^sub>S \<inter> A"
+        by (rule IntI[OF hxB hxA])
+      thus False using hB_A_empty by (by100 blast)
+    qed
+    show "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S"
+      by (rule DiffI[OF hx_cl hx_not_B])
+  qed
+  have hPR_same:
+      "top1_in_same_component_on
+        (closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+        P R"
+    by (rule geotop_connected_witness_same_component_in_subspace_prefix
+        [OF hA_sub_closed_minus hP_A hR_A hA_connected])
+  show ?thesis
+    using hB_bl hB_E hF1_B_int_empty hB_F2_int_empty hB_int_I hPR_same
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
     and P Q R S Q0 S0 :: "real^2"
