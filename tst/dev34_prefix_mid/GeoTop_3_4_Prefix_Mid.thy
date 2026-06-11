@@ -23105,6 +23105,38 @@ proof -
 		          P R"
 		        by (rule hD42_A_witness_PR_same_in_closed_disk_minus
 		            [OF hB\<^sub>I_sub_cut])
+		      have hQ\<^sub>0_ne_S\<^sub>0: "Q\<^sub>0 \<noteq> S\<^sub>0"
+		        using hQ\<^sub>0_UQ0 hS\<^sub>0_US0 hUQ0_US0_disj by (by100 blast)
+		      obtain B\<^sub>I0 where hB\<^sub>I0_bl: "geotop_is_broken_line B\<^sub>I0"
+		        and hB\<^sub>I0_sub_B\<^sub>I: "B\<^sub>I0 \<subseteq> B\<^sub>I"
+		        and hQ\<^sub>0_B\<^sub>I0: "Q\<^sub>0 \<in> B\<^sub>I0"
+		        and hS\<^sub>0_B\<^sub>I0: "S\<^sub>0 \<in> B\<^sub>I0"
+		        and hB\<^sub>I0E: "geotop_arc_endpoints B\<^sub>I0 {Q\<^sub>0, S\<^sub>0}"
+		        by (rule geotop_broken_line_subarc_with_endpoints_prefix
+		            [OF hB\<^sub>I_bl hQ\<^sub>0_B\<^sub>I hS\<^sub>0_B\<^sub>I hQ\<^sub>0_ne_S\<^sub>0])
+		      have hB\<^sub>I0_sub_cut:
+		          "B\<^sub>I0 \<subseteq> geotop_polygon_interior J - A"
+		        using hB\<^sub>I0_sub_B\<^sub>I hB\<^sub>I_sub_cut by (by100 blast)
+		      have hB\<^sub>I0_sub_I:
+		          "B\<^sub>I0 \<subseteq> geotop_polygon_interior J"
+		        using hB\<^sub>I0_sub_cut by (by100 blast)
+		      have hA_B\<^sub>I0: "A \<inter> B\<^sub>I0 = {}"
+		        using hB\<^sub>I0_sub_cut by (by100 blast)
+		      have hPR_same_B\<^sub>I0:
+		        "top1_in_same_component_on
+		          (closure_on UNIV geotop_euclidean_topology
+		            (geotop_polygon_interior J) - B\<^sub>I0)
+		          (subspace_topology UNIV geotop_euclidean_topology
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B\<^sub>I0))
+		          P R"
+		        by (rule hD42_A_witness_PR_same_in_closed_disk_minus
+		            [OF hB\<^sub>I0_sub_cut])
+		      have hB\<^sub>I0_int_I:
+		          "geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<subseteq>
+		            geotop_polygon_interior J"
+		        using hB\<^sub>I0_sub_I unfolding geotop_arc_interior_def
+		        by (by100 blast)
 		      have hB\<^sub>I_J_disj: "B\<^sub>I \<inter> J = {}"
 		        using hB\<^sub>I_sub_I polygon_interior_disjoint_polygon[OF hJ]
 		        by (by100 blast)
