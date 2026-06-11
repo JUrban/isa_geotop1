@@ -22805,15 +22805,210 @@ proof -
               \<and> Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}
               \<and> S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
               \<and> S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
-          using hQ0_not_F\<^sub>1 hQ0_not_F\<^sub>2 hS0_not_F\<^sub>1 hS0_not_F\<^sub>2
-          unfolding geotop_arc_interior_def by (by100 blast)
+        proof (intro conjI)
+          show "Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+          proof
+            assume hQ0: "Q0 \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+            have hQ0F\<^sub>1: "Q0 \<in> F\<^sub>1"
+              using hQ0 unfolding geotop_arc_interior_def by (rule DiffD1)
+            show False
+              by (rule notE[OF hQ0_not_F\<^sub>1 hQ0F\<^sub>1])
+          qed
+          show "Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+          proof
+            assume hQ0: "Q0 \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+            have hQ0F\<^sub>2: "Q0 \<in> F\<^sub>2"
+              using hQ0 unfolding geotop_arc_interior_def by (rule DiffD1)
+            show False
+              by (rule notE[OF hQ0_not_F\<^sub>2 hQ0F\<^sub>2])
+          qed
+          show "S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+          proof
+            assume hS0: "S0 \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+            have hS0F\<^sub>1: "S0 \<in> F\<^sub>1"
+              using hS0 unfolding geotop_arc_interior_def by (rule DiffD1)
+            show False
+              by (rule notE[OF hS0_not_F\<^sub>1 hS0F\<^sub>1])
+          qed
+          show "S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+          proof
+            assume hS0: "S0 \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+            have hS0F\<^sub>2: "S0 \<in> F\<^sub>2"
+              using hS0 unfolding geotop_arc_interior_def by (rule DiffD1)
+            show False
+              by (rule notE[OF hS0_not_F\<^sub>2 hS0F\<^sub>2])
+          qed
+        qed
         have hD42_near_chord_interior_boundary_disj:
             "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
                 geotop_arc_interior B\<^sub>0 {Q0, S0} = {}
               \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
                 geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          using hB\<^sub>0_F\<^sub>1 hB\<^sub>0_F\<^sub>2
-          unfolding geotop_arc_interior_def by (by100 blast)
+        proof
+          show "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+              geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
+          proof (rule equals0I)
+            fix x
+            assume hx:
+              "x \<in> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+                geotop_arc_interior B\<^sub>0 {Q0, S0}"
+            have hxF\<^sub>1_int:
+                "x \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+              using hx by (rule IntD1)
+            have hxB\<^sub>0_int:
+                "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
+              using hx by (rule IntD2)
+            have hxF\<^sub>1: "x \<in> F\<^sub>1"
+              using hxF\<^sub>1_int unfolding geotop_arc_interior_def by (rule DiffD1)
+            have hxB\<^sub>0: "x \<in> B\<^sub>0"
+              using hxB\<^sub>0_int unfolding geotop_arc_interior_def by (rule DiffD1)
+            have hxBF\<^sub>1: "x \<in> B\<^sub>0 \<inter> F\<^sub>1"
+              by (rule IntI[OF hxB\<^sub>0 hxF\<^sub>1])
+            have hx_not_BF\<^sub>1: "x \<notin> B\<^sub>0 \<inter> F\<^sub>1"
+              by (rule equals0D[OF hB\<^sub>0_F\<^sub>1])
+            show False
+              by (rule notE[OF hx_not_BF\<^sub>1 hxBF\<^sub>1])
+          qed
+          show "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+              geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+          proof (rule equals0I)
+            fix x
+            assume hx:
+              "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+                geotop_arc_interior F\<^sub>2 {Q, S}"
+            have hxB\<^sub>0_int:
+                "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
+              using hx by (rule IntD1)
+            have hxF\<^sub>2_int:
+                "x \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+              using hx by (rule IntD2)
+            have hxB\<^sub>0: "x \<in> B\<^sub>0"
+              using hxB\<^sub>0_int unfolding geotop_arc_interior_def by (rule DiffD1)
+            have hxF\<^sub>2: "x \<in> F\<^sub>2"
+              using hxF\<^sub>2_int unfolding geotop_arc_interior_def by (rule DiffD1)
+            have hxBF\<^sub>2: "x \<in> B\<^sub>0 \<inter> F\<^sub>2"
+              by (rule IntI[OF hxB\<^sub>0 hxF\<^sub>2])
+            have hx_not_BF\<^sub>2: "x \<notin> B\<^sub>0 \<inter> F\<^sub>2"
+              by (rule equals0D[OF hB\<^sub>0_F\<^sub>2])
+            show False
+              by (rule notE[OF hx_not_BF\<^sub>2 hxBF\<^sub>2])
+          qed
+        qed
+        have hD42_near_chord_sub_closed_minus_A:
+            "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - A"
+        proof
+          fix x
+          assume hx: "x \<in> B\<^sub>0"
+          have hx_cut: "x \<in> geotop_polygon_interior J - A"
+            by (rule subsetD[OF hB\<^sub>0_sub_cut hx])
+          have hxI: "x \<in> geotop_polygon_interior J"
+            by (rule DiffD1[OF hx_cut])
+          have hxA: "x \<notin> A"
+          proof
+            assume hx_in_A: "x \<in> A"
+            show False
+              by (rule DiffD2[OF hx_cut hx_in_A])
+          qed
+          have hxcl: "x \<in> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J)"
+            by (rule subsetD[OF subset_closure_on hxI])
+          show "x \<in> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - A"
+            by (rule DiffI[OF hxcl hxA])
+        qed
+        have hD42_near_chord_misses_A: "B\<^sub>0 \<inter> A = {}"
+        proof (rule equals0I)
+          fix x
+          assume hx: "x \<in> B\<^sub>0 \<inter> A"
+          have hxB\<^sub>0: "x \<in> B\<^sub>0"
+            using hx by (rule IntD1)
+          have hxA: "x \<in> A"
+            using hx by (rule IntD2)
+          have hx_cut: "x \<in> geotop_polygon_interior J - A"
+            by (rule subsetD[OF hB\<^sub>0_sub_cut hxB\<^sub>0])
+          have hx_not_A: "x \<notin> A"
+          proof
+            assume hx_in_A: "x \<in> A"
+            show False
+              by (rule DiffD2[OF hx_cut hx_in_A])
+          qed
+          show False
+            by (rule notE[OF hx_not_A hxA])
+        qed
+        have hD42_near_chord_interior_misses_A:
+            "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A = {}"
+        proof (rule equals0I)
+          fix x
+          assume hx: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A"
+          have hxB\<^sub>0_int: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
+            using hx by (rule IntD1)
+          have hxA: "x \<in> A"
+            using hx by (rule IntD2)
+          have hxB\<^sub>0: "x \<in> B\<^sub>0"
+            using hxB\<^sub>0_int unfolding geotop_arc_interior_def by (rule DiffD1)
+          have hxBA: "x \<in> B\<^sub>0 \<inter> A"
+            by (rule IntI[OF hxB\<^sub>0 hxA])
+          have hx_not_BA: "x \<notin> B\<^sub>0 \<inter> A"
+            by (rule equals0D[OF hD42_near_chord_misses_A])
+          show False
+            by (rule notE[OF hx_not_BA hxBA])
+        qed
+        have hD42_F\<^sub>1_near_chord_int_disj:
+            "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+              geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
+          by (rule conjunct1[OF hD42_near_chord_interior_boundary_disj])
+        have hD42_near_chord_F\<^sub>2_int_disj:
+            "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+              geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+          by (rule conjunct2[OF hD42_near_chord_interior_boundary_disj])
+        have hD42_near_chord_splice_ready:
+            "geotop_is_broken_line B\<^sub>0
+              \<and> geotop_arc_endpoints B\<^sub>0 {Q0, S0}
+              \<and> B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J) - A
+              \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq>
+                  geotop_polygon_interior J
+              \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A = {}
+              \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+                  geotop_arc_interior B\<^sub>0 {Q0, S0} = {}
+              \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+                  geotop_arc_interior F\<^sub>2 {Q, S} = {}
+              \<and> top1_in_same_component_on
+                  (closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior J) - B\<^sub>0)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                    (closure_on UNIV geotop_euclidean_topology
+                      (geotop_polygon_interior J) - B\<^sub>0))
+                  P R"
+        proof (intro conjI)
+          show "geotop_is_broken_line B\<^sub>0"
+            by (rule hB\<^sub>0_bl)
+          show "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+            by (rule hB\<^sub>0_endpoints)
+          show "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - A"
+            by (rule hD42_near_chord_sub_closed_minus_A)
+          show "geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq>
+              geotop_polygon_interior J"
+            by (rule hB\<^sub>0_int_sub_I)
+          show "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A = {}"
+            by (rule hD42_near_chord_interior_misses_A)
+          show "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+              geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
+            by (rule hD42_F\<^sub>1_near_chord_int_disj)
+          show "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+              geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+            by (rule hD42_near_chord_F\<^sub>2_int_disj)
+          show "top1_in_same_component_on
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>0)
+              (subspace_topology UNIV geotop_euclidean_topology
+                (closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J) - B\<^sub>0))
+              P R"
+            by (rule hB\<^sub>0_same)
+        qed
         have hD42_endpoint_splice_to_QS:
             "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
               \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
