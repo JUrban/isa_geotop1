@@ -22675,7 +22675,11 @@ proof -
         \<and> B\<^sub>0 \<inter> F\<^sub>1 = {}
         \<and> B\<^sub>0 \<inter> F\<^sub>2 = {}
         \<and> Q0 \<notin> J
-        \<and> S0 \<notin> J"
+        \<and> S0 \<notin> J
+        \<and> Q0 \<notin> F\<^sub>1
+        \<and> Q0 \<notin> F\<^sub>2
+        \<and> S0 \<notin> F\<^sub>1
+        \<and> S0 \<notin> F\<^sub>2"
   proof -
     obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
       and hB\<^sub>0_sub_cut: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
@@ -22715,9 +22719,18 @@ proof -
       using hQ0_B\<^sub>0 hB\<^sub>0_J by (by100 blast)
     have hS0_not_J: "S0 \<notin> J"
       using hS0_B\<^sub>0 hB\<^sub>0_J by (by100 blast)
+    have hQ0_not_F\<^sub>1: "Q0 \<notin> F\<^sub>1"
+      using hQ0_B\<^sub>0 hB\<^sub>0_F\<^sub>1 by (by100 blast)
+    have hQ0_not_F\<^sub>2: "Q0 \<notin> F\<^sub>2"
+      using hQ0_B\<^sub>0 hB\<^sub>0_F\<^sub>2 by (by100 blast)
+    have hS0_not_F\<^sub>1: "S0 \<notin> F\<^sub>1"
+      using hS0_B\<^sub>0 hB\<^sub>0_F\<^sub>1 by (by100 blast)
+    have hS0_not_F\<^sub>2: "S0 \<notin> F\<^sub>2"
+      using hS0_B\<^sub>0 hB\<^sub>0_F\<^sub>2 by (by100 blast)
     show ?thesis
       using hB\<^sub>0_bl hB\<^sub>0_sub_cut hB\<^sub>0_endpoints hB\<^sub>0_int_sub_I
         hB\<^sub>0_same hB\<^sub>0_J hB\<^sub>0_F\<^sub>1 hB\<^sub>0_F\<^sub>2 hQ0_not_J hS0_not_J
+        hQ0_not_F\<^sub>1 hQ0_not_F\<^sub>2 hS0_not_F\<^sub>1 hS0_not_F\<^sub>2
       by (intro exI conjI)
   qed
   have hD42_QS_splice_theta_contradiction:
@@ -22781,6 +22794,10 @@ proof -
           and hB\<^sub>0_F\<^sub>2: "B\<^sub>0 \<inter> F\<^sub>2 = {}"
           and hQ0_not_J: "Q0 \<notin> J"
           and hS0_not_J: "S0 \<notin> J"
+          and hQ0_not_F\<^sub>1: "Q0 \<notin> F\<^sub>1"
+          and hQ0_not_F\<^sub>2: "Q0 \<notin> F\<^sub>2"
+          and hS0_not_F\<^sub>1: "S0 \<notin> F\<^sub>1"
+          and hS0_not_F\<^sub>2: "S0 \<notin> F\<^sub>2"
           using hD42_Q0S0_cut_chord_boundary_clean
           by (elim exE conjE)
         have hD42_endpoint_splice_to_QS:
