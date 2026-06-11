@@ -20361,6 +20361,26 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34:
+  fixes J A :: "(real^2) set" and X P R :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior J - A"
+  (**
+    Moise D42 local-side witness.  At a polygon boundary point away from the
+    cutting arc endpoints, choose a small connected cut-interior neighborhood
+    whose frontier contains the boundary point.  This is the local half-disk
+    or local wedge fact used before passing to components of \<open>I - A\<close>. **)
+  sorry
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -20941,7 +20961,30 @@ proof -
 	      neighborhoods, not as the whole open set \<open>I - A\<close>.  This is the
 	      local half-disk side fact needed to transfer the frontier points to
 	      the ambient components of \<open>I - A\<close>. **)
-	    sorry
+	  proof -
+	    obtain U\<^sub>Q0 Q' where hUQ0_conn: "connected U\<^sub>Q0"
+	      and hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+	      and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+	      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+	      and hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+	      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+	      using geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34
+	          [OF hJ hQ hQ_ne_PR hA hAJ]
+	      by (elim exE conjE)
+	    obtain U\<^sub>S0 S' where hUS0_conn: "connected U\<^sub>S0"
+	      and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+	      and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+	      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+	      and hS'_US0: "S' \<in> U\<^sub>S0"
+	      and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+	      using geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34
+	          [OF hJ hS hS_ne_PR hA hAJ]
+	      by (elim exE conjE)
+	    show ?thesis
+	      using hUQ0_conn hUS0_conn hUQ0_open hUS0_open hUQ0_sub hUS0_sub
+	        hQ_front hS_front hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut
+	      by (intro exI conjI)
+	  qed
 	  have hD42_same_component_broken_line:
 	      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
 	        U\<^sub>Q0 \<in> geotop_euclidean_topology
