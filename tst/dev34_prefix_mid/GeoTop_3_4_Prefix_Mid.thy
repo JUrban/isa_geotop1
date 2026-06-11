@@ -22807,6 +22807,13 @@ proof -
               \<and> S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
           using hQ0_not_F\<^sub>1 hQ0_not_F\<^sub>2 hS0_not_F\<^sub>1 hS0_not_F\<^sub>2
           unfolding geotop_arc_interior_def by (by100 blast)
+        have hD42_near_chord_interior_boundary_disj:
+            "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+                geotop_arc_interior B\<^sub>0 {Q0, S0} = {}
+              \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+                geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+          using hB\<^sub>0_F\<^sub>1 hB\<^sub>0_F\<^sub>2
+          unfolding geotop_arc_interior_def by (by100 blast)
         have hD42_endpoint_splice_to_QS:
             "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
               \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
