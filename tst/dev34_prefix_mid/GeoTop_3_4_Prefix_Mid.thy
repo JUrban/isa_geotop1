@@ -18847,6 +18847,58 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_two_2simplex_free_nonempty_selected_witness_avoids_empty_contact_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_card2: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} = 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  shows "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_free_2_simplex K J \<rho>
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Exactly-two-triangle base case for the Figure 3.3 boundary-ear selection.
+    Moise's base disk has two triangles; if one formal free witness has empty
+    contact with the polygon boundary, the other triangle must carry genuine
+    selected polygon-boundary contact and is free by the two-triangle base
+    proof. **)
+  sorry
+
+lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_avoids_empty_contact_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  shows "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_free_2_simplex K J \<rho>
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Multi-triangle induction step for the Figure 3.3 boundary-ear selection.
+    This is the remaining Moise ear-transfer content: use the selected boundary
+    ear infrastructure and the strong free-triangle induction so that the
+    chosen free witness has real parent-boundary contact rather than only the
+    empty bookkeeping contact. **)
+  sorry
+
 lemma geotop_polygon_disk_free_nonempty_selected_witness_avoids_empty_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -18870,7 +18922,23 @@ lemma geotop_polygon_disk_free_nonempty_selected_witness_avoids_empty_contact_pr
     The strong Theorem 3.3 induction must supply a free triangle whose selected
     edge lies on the original polygon boundary, not merely an empty-contact
     formal witness. **)
-  sorry
+proof -
+  let ?T = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+  show ?thesis
+  proof (cases "card ?T = 2")
+    case True
+    show ?thesis
+      by (rule geotop_polygon_disk_two_2simplex_free_nonempty_selected_witness_avoids_empty_contact_prefix
+          [OF hJ hK hK_fin hK_poly True h\<theta>K h\<theta>free h\<theta>2 h\<theta>contact])
+  next
+    case False
+    have hT_gt2: "card ?T > 2"
+      using hT_gt1 False by (by100 linarith)
+    show ?thesis
+      by (rule geotop_polygon_disk_gt2_free_nonempty_selected_witness_avoids_empty_contact_prefix
+          [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>free h\<theta>2 h\<theta>contact])
+  qed
+qed
 
 lemma geotop_boundary_free_witness_from_free_nonempty_selected_edges_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
