@@ -20718,6 +20718,169 @@ proof -
     using hball_A by (by100 blast)
 qed
 
+lemma geotop_open_convex_local_frontier_witness_dev34:
+  fixes S :: "(real^2) set" and X :: "real^2" and r :: real
+  assumes hS_open: "open S"
+  assumes hS_conv: "convex S"
+  assumes hX_front: "X \<in> frontier S"
+  assumes hr: "0 < r"
+  shows "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> S
+        \<and> U \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> S"
+  (**
+    Normalized local-side model: for an open convex side, intersect with a
+    small ball around a frontier point.  The result is open, connected, stays
+    in the prescribed ball, and has the same frontier point. **)
+proof -
+  let ?U = "S \<inter> ball X r"
+  have hU_open_HOL: "open ?U"
+    by (rule open_Int[OF hS_open open_ball])
+  have hU_open: "?U \<in> geotop_euclidean_topology"
+    using hU_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hU_conv: "convex ?U"
+    by (rule convex_Int[OF hS_conv convex_ball])
+  have hU_conn: "connected ?U"
+    using hU_conv convex_connected by (by100 blast)
+  have hU_sub_S: "?U \<subseteq> S"
+    by (by100 blast)
+  have hU_sub_ball: "?U \<subseteq> ball X r"
+    by (by100 blast)
+  have hX_closure_S: "X \<in> closure S"
+    using hX_front unfolding Elementary_Topology.frontier_def by (by100 simp)
+  have hX_closure_U: "X \<in> closure ?U"
+  proof -
+    have hclosure_test:
+      "\<forall>A. \<forall>T\<subseteq>A. open T \<longrightarrow> X \<in> T \<longrightarrow> ?U \<inter> A \<noteq> {}"
+    proof (intro allI impI)
+      fix A T
+      assume hT_sub_A: "T \<subseteq> A"
+      assume hT_open: "open T"
+      assume hX_T: "X \<in> T"
+      have hT_ball_open: "open (T \<inter> ball X r)"
+        by (rule open_Int[OF hT_open open_ball])
+      have hX_T_ball: "X \<in> T \<inter> ball X r"
+        using hX_T hr by (by100 simp)
+      have hS_meets: "S \<inter> (T \<inter> ball X r) \<noteq> {}"
+        using hX_closure_S closure_iff_nhds_not_empty[of X S]
+          hT_ball_open hX_T_ball
+        by (by100 blast)
+      show "?U \<inter> A \<noteq> {}"
+        using hS_meets hT_sub_A by (by100 blast)
+    qed
+    show ?thesis
+      using hclosure_test closure_iff_nhds_not_empty[of X ?U] by (by100 blast)
+  qed
+  have hX_not_S: "X \<notin> S"
+  proof
+    assume hXS: "X \<in> S"
+    have "X \<in> interior S"
+      using hS_open hXS by (by100 simp)
+    moreover have "X \<notin> interior S"
+      using hX_front unfolding Elementary_Topology.frontier_def by (by100 simp)
+    ultimately show False
+      by (by100 blast)
+  qed
+  have hX_not_int_U: "X \<notin> interior ?U"
+  proof
+    assume hX_int_U: "X \<in> interior ?U"
+    have "X \<in> ?U"
+      using hX_int_U interior_subset by (by100 blast)
+    hence "X \<in> S"
+      by (by100 blast)
+    thus False
+      using hX_not_S by (by100 blast)
+  qed
+  have hX_front_U_HOL: "X \<in> frontier ?U"
+    using hX_closure_U hX_not_int_U
+    unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hX_front_U:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology ?U"
+    using hX_front_U_HOL geotop_frontier_UNIV_eq_frontier[of ?U]
+    by (by100 simp)
+  have hU_ne: "?U \<noteq> {}"
+    by (rule geotop_frontier_member_imp_set_nonempty_prefix[OF hX_front_U])
+  obtain X' where hX'_U: "X' \<in> ?U"
+    using hU_ne by (by100 blast)
+  have hX'_S: "X' \<in> S"
+    using hX'_U by (by100 blast)
+  show ?thesis
+    using hU_conn hU_open hU_sub_S hU_sub_ball hX_front_U hX'_U hX'_S
+    by (intro exI conjI)
+qed
+
+lemma geotop_2simplex_frontier_local_side_witness_dev34:
+  fixes \<sigma> :: "(real^2) set" and X :: "real^2" and r :: real
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hX_front: "X \<in> frontier \<sigma>"
+  assumes hr: "0 < r"
+  shows "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior (frontier \<sigma>)
+        \<and> U \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior (frontier \<sigma>)"
+  (**
+    Triangle-normalized D42 side witness.  This is the local model after
+    Moise's Theorem 3.5 normalization: the polygon interior of the frontier of
+    a 2-simplex is the ordinary open triangle, so the open-convex witness
+    applies. **)
+proof -
+  have hI_eq: "geotop_polygon_interior (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix
+        [OF h\<sigma>2])
+  have h\<sigma>_conv: "convex \<sigma>"
+    by (rule geotop_simplex_dim_convex_HOL_prefix[OF h\<sigma>2])
+  have hI_open: "open (interior \<sigma>)"
+    by (rule open_interior)
+  have hI_conv: "convex (interior \<sigma>)"
+    by (rule convex_interior[OF h\<sigma>_conv])
+  have h\<sigma>_closed: "closed \<sigma>"
+    by (rule geotop_simplex_dim_closed[OF h\<sigma>2])
+  have hX_closure_\<sigma>: "X \<in> closure \<sigma>"
+    using hX_front unfolding Elementary_Topology.frontier_def by (by100 simp)
+  have hX_\<sigma>: "X \<in> \<sigma>"
+    using h\<sigma>_closed hX_closure_\<sigma> by (by100 simp)
+  have hclosure_I: "closure (interior \<sigma>) = \<sigma>"
+    by (rule geotop_2simplex_closure_HOL_interior_prefix[OF h\<sigma>2])
+  have hX_closure_I: "X \<in> closure (interior \<sigma>)"
+    using hclosure_I hX_\<sigma> by (by100 simp)
+  have hX_not_I: "X \<notin> interior \<sigma>"
+    using hX_front unfolding Elementary_Topology.frontier_def by (by100 simp)
+  have hX_front_I: "X \<in> frontier (interior \<sigma>)"
+  proof -
+    have "interior (interior \<sigma>) = interior \<sigma>"
+      using hI_open by (by100 simp)
+    thus ?thesis
+      using hX_closure_I hX_not_I
+      unfolding Elementary_Topology.frontier_def by (by100 simp)
+  qed
+  obtain U X' where hU_conn: "connected U"
+    and hU_open: "U \<in> geotop_euclidean_topology"
+    and hU_I: "U \<subseteq> interior \<sigma>"
+    and hU_ball: "U \<subseteq> ball X r"
+    and hX_front_U:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    and hX'_U: "X' \<in> U"
+    and hX'_I: "X' \<in> interior \<sigma>"
+    using geotop_open_convex_local_frontier_witness_dev34
+        [OF hI_open hI_conv hX_front_I hr]
+    by (elim exE conjE)
+  have hU_poly_I: "U \<subseteq> geotop_polygon_interior (frontier \<sigma>)"
+    using hU_I hI_eq by (by100 simp)
+  have hX'_poly_I: "X' \<in> geotop_polygon_interior (frontier \<sigma>)"
+    using hX'_I hI_eq by (by100 simp)
+  show ?thesis
+    using hU_conn hU_open hU_poly_I hU_ball hX_front_U hX'_U hX'_poly_I
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
