@@ -3914,6 +3914,64 @@ proof -
     using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
 qed
 
+lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
+  fixes L :: "(real^2) set set"
+    and S T U M :: "(real^2) set"
+    and w p y z :: "real^2"
+    and r :: real
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hwL: "{w} \<in> L"
+  assumes hSCC: "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+      (geotop_polyhedron L)"
+  assumes hr: "0 < r"
+  assumes hS_L: "S \<in> L"
+  assumes hT_L: "T \<in> L"
+  assumes hU_L: "U \<in> L"
+  assumes hS_edge: "geotop_is_edge S"
+  assumes hT_edge: "geotop_is_edge T"
+  assumes hU_edge: "geotop_is_edge U"
+  assumes hwS: "w \<in> S"
+  assumes hwT: "w \<in> T"
+  assumes hwU: "w \<in> U"
+  assumes hST: "S \<noteq> T"
+  assumes hSU: "S \<noteq> U"
+  assumes hTU: "T \<noteq> U"
+  assumes hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+  assumes hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+  assumes hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+  assumes hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+  assumes hM_conn: "connected M"
+  assumes hpM: "p \<in> M"
+  assumes hyM: "y \<in> M"
+  assumes hzM: "z \<in> M"
+  assumes hp_cl: "p \<in> closure ((S - {w}) \<inter> ball w r)"
+  assumes hy_cl: "y \<in> closure ((T - {w}) \<inter> ball w r)"
+  assumes hz_cl: "z \<in> closure ((U - {w}) \<inter> ball w r)"
+  assumes hp_not_ball: "p \<notin> ball w r"
+  assumes hy_not_ball: "y \<notin> ball w r"
+  assumes hz_not_ball: "z \<notin> ball w r"
+  assumes hM_ball_cover:
+    "M \<inter> ball w r
+      \<subseteq> ((S - {w}) \<inter> ball w r)
+        \<union> ((T - {w}) \<inter> ball w r)
+        \<union> ((U - {w}) \<inter> ball w r)
+        \<union> (ball w r - (S \<union> T \<union> U))"
+  shows "\<exists>C. C \<in> components (ball w r - (S \<union> T \<union> U))
+    \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+    \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+    \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+  (**
+    Moise branch-vertex first-entry book step.  In the finite linear graph
+    carried by a simple closed curve, three distinct incident edge germs at
+    \<open>w\<close> cannot be connected on the same punctured side without a single
+    component of the local complement
+    \<open>ball w r - (S \<union> T \<union> U)\<close> having all three punctured germs in its
+    closure.  This is deliberately not stated for arbitrary connected sets in
+    arbitrary finite graphs; the simple-closed-curve carrier and local star
+    data are part of the statement, as required by the expert audit. **)
+  sorry
+
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -10525,57 +10583,32 @@ proof -
                 \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
                 \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
           proof -
-            have hfirst_entry_connected_local_complement_piece:
-              "\<exists>A x. connected A
-                \<and> A \<subseteq> ?Lcomp
-                \<and> x \<in> A
-                \<and> (S - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
-                \<and> (T - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
-                \<and> (U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
-              (**
-                Exact remaining first-entry/local-star inference in the
-                branch-vertex proof.  The surrounding context includes the
-                simple-closed-curve carrier, the selected split-side data, and
-                the three canonical sphere-germ closure facts.  From those
-                data one must take the connected punctured carrier witness,
-                intersect it with the small-star complement, and select the
-                local complement piece whose closure touches the three
-                selected incident germs.  This is intentionally kept here
-                rather than as an under-assumed standalone graph lemma. **)
-              sorry
-            obtain A x where hA_conn: "connected A"
-              and hA_sub: "A \<subseteq> ?Lcomp"
-              and hxA: "x \<in> A"
-              and hS_A:
-                "(S - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
-              and hT_A:
-                "(T - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
-              and hU_A:
-                "(U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
-              using hfirst_entry_connected_local_complement_piece
-              by (elim exE conjE)
-            have hbridge:
-                "\<exists>C. C \<in> components ?Lcomp
-                  \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
-                  \<and> ((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
-                  \<and> ((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
-            proof (rule geotop_connected_local_component_closure_touch_three_sets_prefix
-                [where A=A and U="?Lcomp" and x=x])
-              show "connected A"
-                by (rule hA_conn)
-              show "A \<subseteq> ?Lcomp"
-                by (rule hA_sub)
-              show "x \<in> A"
-                by (rule hxA)
-              show "((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
-                using hS_A by (by100 blast)
-              show "((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
-                using hT_A by (by100 blast)
-              show "((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
-                using hU_A by (by100 blast)
-            qed
+            have hS_L: "S \<in> L"
+              using hS_E unfolding E_def by (by100 blast)
+            have hT_L: "T \<in> L"
+              using hT_E unfolding E_def by (by100 blast)
+            have hU_L: "U \<in> L"
+              using hU_E unfolding E_def by (by100 blast)
+            have hS_edge: "geotop_is_edge S"
+              using hS_E unfolding E_def by (by100 blast)
+            have hT_edge: "geotop_is_edge T"
+              using hT_E unfolding E_def by (by100 blast)
+            have hU_edge: "geotop_is_edge U"
+              using hU_E unfolding E_def by (by100 blast)
+            have hwS: "w \<in> S"
+              using hS_E unfolding E_def by (by100 blast)
+            have hwT: "w \<in> T"
+              using hT_E unfolding E_def by (by100 blast)
+            have hwU: "w \<in> U"
+              using hU_E unfolding E_def by (by100 blast)
             show ?thesis
-              using hbridge by (by100 blast)
+              by (rule geotop_branch_vertex_three_germs_same_side_component_prefix
+                  [OF hL_linear hL_fin hwL hSCC hr_pos
+                    hS_L hT_L hU_L hS_edge hT_edge hU_edge hwS hwT hwU
+                    hST hSU hTU hST_disj hSU_disj hTU_disj
+                    hM_sub_arg hM_conn_arg hpM_arg hyM_arg hzM_arg
+                    hp_selected_germ_cl hy_selected_germ_cl hz_selected_germ_cl
+                    hp_not_ball hy_not_ball hz_not_ball hM_ball_cover_arg])
           qed
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
