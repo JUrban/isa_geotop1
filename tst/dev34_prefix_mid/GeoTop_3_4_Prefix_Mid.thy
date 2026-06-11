@@ -21901,6 +21901,79 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
+  fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
+    and P Q R S Q0 S0 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hQ: "Q \<in> J"
+  assumes hS: "S \<in> J"
+  assumes hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  assumes hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  assumes hQ_ne_S: "Q \<noteq> S"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAsub:
+    "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  assumes hU\<^sub>Q_conn: "connected U\<^sub>Q"
+  assumes hU\<^sub>S_conn: "connected U\<^sub>S"
+  assumes hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+  assumes hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+  assumes hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+  assumes hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+  assumes hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+  assumes hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+  assumes hQ0_U\<^sub>Q: "Q0 \<in> U\<^sub>Q"
+  assumes hS0_U\<^sub>S: "S0 \<in> U\<^sub>S"
+  assumes hF\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
+  assumes hF\<^sub>2_bl: "geotop_is_broken_line F\<^sub>2"
+  assumes hF\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
+  assumes hF\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+  assumes hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+  assumes hB\<^sub>0E: "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+  assumes hB\<^sub>0_closed_minus_A:
+    "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - A"
+  assumes hB\<^sub>0_int_I:
+    "geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J"
+  assumes hB\<^sub>0_int_A:
+    "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A = {}"
+  assumes hF\<^sub>1B\<^sub>0:
+    "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+      geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
+  assumes hB\<^sub>0F\<^sub>2:
+    "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
+      geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  assumes hB\<^sub>0_same:
+    "top1_in_same_component_on
+      (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B\<^sub>0)
+      (subspace_topology UNIV geotop_euclidean_topology
+        (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B\<^sub>0))
+      P R"
+  shows "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
+      \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
+      \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+          geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}
+      \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+          geotop_arc_interior F\<^sub>2 {Q, S} = {}
+      \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq> geotop_polygon_interior J
+      \<and> top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+          P R"
+  (**
+    Moise D42 endpoint-splice theorem.  Starting from the normalized
+    near-boundary chord \<open>B\<^sub>0\<close> between interior side points \<open>Q0,S0\<close>,
+    use the local side witnesses with frontier points \<open>Q,S\<close> to attach
+    boundary-access arcs.  The completed broken chord has endpoints \<open>Q,S\<close>,
+    interior in the polygon interior, remains disjoint from the two Q-S
+    boundary arcs, and preserves the P-R connectedness witness through the
+    original P-R arc \<open>A\<close>.  This is the formal endpoint-hygiene step singled
+    out in the expert D42 audits. **)
+  sorry
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -23365,7 +23438,15 @@ proof -
             \<open>S\<close>.  The cyclic-order exclusion of \<open>R\<close> from the selected
             \<open>P\<close>-side boundary arc is now proved separately as
             \<open>hD42_R_not_F\<^sub>1_from_cyclic\<close>. **)
-        sorry
+          by (rule geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix
+              [OF hJ hQ hS hQ_ne_PR hS_ne_PR hQ_ne_S hA hAsub hAJ
+                hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
+                hQ_front hS_front hQ0_U\<^sub>Q hS0_U\<^sub>S
+                hD42_F\<^sub>1_bl hD42_F\<^sub>2_bl hD42_F\<^sub>1E hD42_F\<^sub>2E
+                hB\<^sub>0_bl hB\<^sub>0_endpoints hD42_near_chord_sub_closed_minus_A
+                hB\<^sub>0_int_sub_I hD42_near_chord_interior_misses_A
+                hD42_F\<^sub>1_near_chord_int_disj hD42_near_chord_F\<^sub>2_int_disj
+                hB\<^sub>0_same])
         obtain B\<^sub>Q\<^sub>S where hB\<^sub>Q\<^sub>S_bl:
             "geotop_is_broken_line B\<^sub>Q\<^sub>S"
           and hB\<^sub>Q\<^sub>SE:
