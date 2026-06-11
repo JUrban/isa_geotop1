@@ -22304,6 +22304,139 @@ proof -
               hB_inner hP_F\<^sub>2 hR_F\<^sub>1 hsame])
     qed
   qed
+  have hD42_Q0S0_cut_broken_chord:
+      "\<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
+        \<and> B\<^sub>0 \<subseteq> geotop_polygon_interior J - A
+        \<and> Q0 \<in> B\<^sub>0
+        \<and> S0 \<in> B\<^sub>0
+        \<and> geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+    (**
+      Moise splice substep: before extending all the way to the boundary
+      endpoints \<open>Q,S\<close>, concatenate the endpoint-normalized access pieces in
+      \<open>U\<^sub>Q\<close> and \<open>U\<^sub>S\<close> with the existing interior line \<open>B\<close>.  This gives a
+      genuine broken chord between the near-boundary points \<open>Q0,S0\<close> inside
+      the cut-open disk. **)
+  proof -
+    have hcut_open_HOL: "open (geotop_polygon_interior J - A)"
+      using hcut_open
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hraw:
+        "\<exists>D. geotop_is_broken_line D
+          \<and> D \<subseteq> geotop_polygon_interior J - A
+          \<and> Q0 \<in> D
+          \<and> S0 \<in> D"
+    proof -
+      from hB\<^sub>Q_endpoint_access show ?thesis
+      proof
+        assume hQ0_eq: "Q0 = Q'"
+        from hB\<^sub>S_endpoint_access show ?thesis
+        proof
+          assume hS0_eq: "S0 = S'"
+          have hQ0_B: "Q0 \<in> B"
+            using hQ0_eq hQ'_B by (by100 simp)
+          have hS0_B: "S0 \<in> B"
+            using hS0_eq hS'_B by (by100 simp)
+          show ?thesis
+            using hB_bl hB_sub hQ0_B hS0_B by (intro exI conjI)
+        next
+          assume hS_access:
+            "\<exists>C\<^sub>S. geotop_is_broken_line C\<^sub>S
+              \<and> C\<^sub>S \<subseteq> B\<^sub>S
+              \<and> S0 \<in> C\<^sub>S
+              \<and> S' \<in> C\<^sub>S
+              \<and> geotop_arc_endpoints C\<^sub>S {S0, S'}"
+          obtain C\<^sub>S where hC\<^sub>S_bl: "geotop_is_broken_line C\<^sub>S"
+            and hC\<^sub>S_sub: "C\<^sub>S \<subseteq> B\<^sub>S"
+            and hS0_C\<^sub>S: "S0 \<in> C\<^sub>S"
+            and hS'_C\<^sub>S: "S' \<in> C\<^sub>S"
+            and hC\<^sub>S_endpoints: "geotop_arc_endpoints C\<^sub>S {S0, S'}"
+            using hS_access by (elim exE conjE)
+          have hC\<^sub>S_sub_cut: "C\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+            using hC\<^sub>S_sub hB\<^sub>S_sub_cut by (by100 blast)
+          have hQ0_B: "Q0 \<in> B"
+            using hQ0_eq hQ'_B by (by100 simp)
+          show ?thesis
+            using geotop_broken_line_concat
+              [OF hB_bl hB_sub hC\<^sub>S_bl hC\<^sub>S_sub_cut
+                hQ0_B hS'_B hS'_C\<^sub>S hS0_C\<^sub>S hcut_open_HOL]
+            by (by100 blast)
+        qed
+      next
+        assume hQ_access:
+          "\<exists>C\<^sub>Q. geotop_is_broken_line C\<^sub>Q
+            \<and> C\<^sub>Q \<subseteq> B\<^sub>Q
+            \<and> Q0 \<in> C\<^sub>Q
+            \<and> Q' \<in> C\<^sub>Q
+            \<and> geotop_arc_endpoints C\<^sub>Q {Q0, Q'}"
+        obtain C\<^sub>Q where hC\<^sub>Q_bl: "geotop_is_broken_line C\<^sub>Q"
+          and hC\<^sub>Q_sub: "C\<^sub>Q \<subseteq> B\<^sub>Q"
+          and hQ0_C\<^sub>Q: "Q0 \<in> C\<^sub>Q"
+          and hQ'_C\<^sub>Q: "Q' \<in> C\<^sub>Q"
+          and hC\<^sub>Q_endpoints: "geotop_arc_endpoints C\<^sub>Q {Q0, Q'}"
+          using hQ_access by (elim exE conjE)
+        have hC\<^sub>Q_sub_cut: "C\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+          using hC\<^sub>Q_sub hB\<^sub>Q_sub_cut by (by100 blast)
+        from hB\<^sub>S_endpoint_access show ?thesis
+        proof
+          assume hS0_eq: "S0 = S'"
+          have hS0_B: "S0 \<in> B"
+            using hS0_eq hS'_B by (by100 simp)
+          show ?thesis
+            using geotop_broken_line_concat
+              [OF hC\<^sub>Q_bl hC\<^sub>Q_sub_cut hB_bl hB_sub
+                hQ0_C\<^sub>Q hQ'_C\<^sub>Q hQ'_B hS0_B hcut_open_HOL]
+            by (by100 blast)
+        next
+          assume hS_access:
+            "\<exists>C\<^sub>S. geotop_is_broken_line C\<^sub>S
+              \<and> C\<^sub>S \<subseteq> B\<^sub>S
+              \<and> S0 \<in> C\<^sub>S
+              \<and> S' \<in> C\<^sub>S
+              \<and> geotop_arc_endpoints C\<^sub>S {S0, S'}"
+          obtain C\<^sub>S where hC\<^sub>S_bl: "geotop_is_broken_line C\<^sub>S"
+            and hC\<^sub>S_sub: "C\<^sub>S \<subseteq> B\<^sub>S"
+            and hS0_C\<^sub>S: "S0 \<in> C\<^sub>S"
+            and hS'_C\<^sub>S: "S' \<in> C\<^sub>S"
+            and hC\<^sub>S_endpoints: "geotop_arc_endpoints C\<^sub>S {S0, S'}"
+            using hS_access by (elim exE conjE)
+          have hC\<^sub>S_sub_cut: "C\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+            using hC\<^sub>S_sub hB\<^sub>S_sub_cut by (by100 blast)
+          obtain D\<^sub>m where hD\<^sub>m_bl: "geotop_is_broken_line D\<^sub>m"
+            and hD\<^sub>m_sub: "D\<^sub>m \<subseteq> geotop_polygon_interior J - A"
+            and hQ0_D\<^sub>m: "Q0 \<in> D\<^sub>m"
+            and hS'_D\<^sub>m: "S' \<in> D\<^sub>m"
+            using geotop_broken_line_concat
+              [OF hC\<^sub>Q_bl hC\<^sub>Q_sub_cut hB_bl hB_sub
+                hQ0_C\<^sub>Q hQ'_C\<^sub>Q hQ'_B hS'_B hcut_open_HOL]
+            by (elim exE conjE)
+          show ?thesis
+            using geotop_broken_line_concat
+              [OF hD\<^sub>m_bl hD\<^sub>m_sub hC\<^sub>S_bl hC\<^sub>S_sub_cut
+                hQ0_D\<^sub>m hS'_D\<^sub>m hS'_C\<^sub>S hS0_C\<^sub>S hcut_open_HOL]
+            by (by100 blast)
+        qed
+      qed
+    qed
+    obtain D where hD_bl: "geotop_is_broken_line D"
+      and hD_sub: "D \<subseteq> geotop_polygon_interior J - A"
+      and hQ0_D: "Q0 \<in> D"
+      and hS0_D: "S0 \<in> D"
+      using hraw by (elim exE conjE)
+    obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+      and hB\<^sub>0_sub_D: "B\<^sub>0 \<subseteq> D"
+      and hQ0_B\<^sub>0: "Q0 \<in> B\<^sub>0"
+      and hS0_B\<^sub>0: "S0 \<in> B\<^sub>0"
+      and hB\<^sub>0_endpoints: "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+      using geotop_broken_line_subarc_with_endpoints_prefix
+        [OF hD_bl hQ0_D hS0_D hQ0_ne_S0]
+      by (elim exE conjE)
+    have hB\<^sub>0_sub_cut: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
+      using hB\<^sub>0_sub_D hD_sub by (by100 blast)
+    show ?thesis
+      using hB\<^sub>0_bl hB\<^sub>0_sub_cut hQ0_B\<^sub>0 hS0_B\<^sub>0 hB\<^sub>0_endpoints
+      by (intro exI conjI)
+  qed
   have hD42_QS_splice_theta_contradiction:
       False
     (**
