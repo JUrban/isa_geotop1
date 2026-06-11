@@ -22800,6 +22800,13 @@ proof -
           and hS0_not_F\<^sub>2: "S0 \<notin> F\<^sub>2"
           using hD42_Q0S0_cut_chord_boundary_clean
           by (elim exE conjE)
+        have hD42_near_chord_endpoints_not_boundary_interiors:
+            "Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
+              \<and> Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}
+              \<and> S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
+              \<and> S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+          using hQ0_not_F\<^sub>1 hQ0_not_F\<^sub>2 hS0_not_F\<^sub>1 hS0_not_F\<^sub>2
+          unfolding geotop_arc_interior_def by (by100 blast)
         have hD42_endpoint_splice_to_QS:
             "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
               \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
