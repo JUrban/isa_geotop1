@@ -20743,6 +20743,30 @@ proof -
   qed
 qed
 
+lemma geotop_frontier_ball_meets_set_prefix:
+  fixes U :: "'a::real_normed_vector set" and X :: 'a and r :: real
+  assumes hX: "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+  assumes hr: "0 < r"
+  shows "ball X r \<inter> U \<noteq> {}"
+  (**
+    D42 endpoint-access fact: a frontier point of a local side witness is
+    approached by points of the witness in every Euclidean ball. **)
+proof -
+  have hX_front: "X \<in> frontier U"
+    using hX geotop_frontier_UNIV_eq_frontier[of U] by (by100 simp)
+  have hX_closure: "X \<in> closure U"
+    using hX_front unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hball_open: "open (ball X r)"
+    by (rule open_ball)
+  have hX_ball: "X \<in> ball X r"
+    using hr by (by100 simp)
+  have "U \<inter> ball X r \<noteq> {}"
+    using hX_closure closure_iff_nhds_not_empty[of X U] hball_open hX_ball
+    by (by100 blast)
+  thus ?thesis
+    by (by100 blast)
+qed
+
 lemma geotop_polygon_interior_minus_arc_frontier_witness_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -22660,6 +22684,8 @@ proof -
 	      "\<And>Q' S' U\<^sub>Q0 U\<^sub>S0.
 	        connected U\<^sub>Q0 \<Longrightarrow>
 	        connected U\<^sub>S0 \<Longrightarrow>
+	        U\<^sub>Q0 \<in> geotop_euclidean_topology \<Longrightarrow>
+	        U\<^sub>S0 \<in> geotop_euclidean_topology \<Longrightarrow>
 	        U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
 	        U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
 	        U\<^sub>Q0 \<inter> U\<^sub>S0 = {} \<Longrightarrow>
@@ -22683,6 +22709,8 @@ proof -
 		    fix Q' S' U\<^sub>Q0 U\<^sub>S0
 		    assume hUQ0_conn: "connected U\<^sub>Q0"
 		    assume hUS0_conn: "connected U\<^sub>S0"
+		    assume hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+		    assume hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
 		    assume hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
 		    assume hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
 		    assume hUQ0_US0_disj: "U\<^sub>Q0 \<inter> U\<^sub>S0 = {}"
@@ -22770,6 +22798,50 @@ proof -
 		        using hB\<^sub>1_int_cut by (by100 blast)
 		      have hA_B\<^sub>1: "A \<inter> B\<^sub>1 = {}"
 		        using hA_B\<^sub>0 hB\<^sub>1_sub_B\<^sub>0 by (by100 blast)
+		      obtain Q\<^sub>0 where hQ\<^sub>0_UQ0: "Q\<^sub>0 \<in> U\<^sub>Q0"
+		        and hQ\<^sub>0_ball: "Q\<^sub>0 \<in> ball Q 1"
+		        using geotop_frontier_ball_meets_set_prefix[OF hQ_front zero_less_one]
+		        by (by100 blast)
+		      obtain S\<^sub>0 where hS\<^sub>0_US0: "S\<^sub>0 \<in> U\<^sub>S0"
+		        and hS\<^sub>0_ball: "S\<^sub>0 \<in> ball S 1"
+		        using geotop_frontier_ball_meets_set_prefix[OF hS_front zero_less_one]
+		        by (by100 blast)
+		      have hQ\<^sub>0_cut: "Q\<^sub>0 \<in> geotop_polygon_interior J - A"
+		        using hQ\<^sub>0_UQ0 hUQ0_sub by (by100 blast)
+		      have hS\<^sub>0_cut: "S\<^sub>0 \<in> geotop_polygon_interior J - A"
+		        using hS\<^sub>0_US0 hUS0_sub by (by100 blast)
+		      have hUQ0_conn_top:
+		          "top1_connected_on U\<^sub>Q0
+		            (subspace_topology UNIV geotop_euclidean_topology U\<^sub>Q0)"
+		        using hUQ0_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+		      have hUS0_conn_top:
+		          "top1_connected_on U\<^sub>S0
+		            (subspace_topology UNIV geotop_euclidean_topology U\<^sub>S0)"
+		        using hUS0_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+		      have hUQ0_bl_conn: "geotop_broken_line_connected U\<^sub>Q0"
+		        by (rule Theorem_GT_1_13[OF hUQ0_open hUQ0_conn_top])
+		      have hUS0_bl_conn: "geotop_broken_line_connected U\<^sub>S0"
+		        by (rule Theorem_GT_1_13[OF hUS0_open hUS0_conn_top])
+		      obtain B\<^sub>Q where hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
+		        and hB\<^sub>Q_sub: "B\<^sub>Q \<subseteq> U\<^sub>Q0"
+		        and hQ'_B\<^sub>Q: "Q' \<in> B\<^sub>Q"
+		        and hQ\<^sub>0_B\<^sub>Q: "Q\<^sub>0 \<in> B\<^sub>Q"
+		        using hUQ0_bl_conn hQ'_UQ0 hQ\<^sub>0_UQ0
+		        unfolding geotop_broken_line_connected_def
+		        by (by100 blast)
+		      obtain B\<^sub>S where hB\<^sub>S_bl: "geotop_is_broken_line B\<^sub>S"
+		        and hB\<^sub>S_sub: "B\<^sub>S \<subseteq> U\<^sub>S0"
+		        and hS'_B\<^sub>S: "S' \<in> B\<^sub>S"
+		        and hS\<^sub>0_B\<^sub>S: "S\<^sub>0 \<in> B\<^sub>S"
+		        using hUS0_bl_conn hS'_US0 hS\<^sub>0_US0
+		        unfolding geotop_broken_line_connected_def
+		        by (by100 blast)
+		      have hB\<^sub>Q_sub_cut: "B\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+		        using hB\<^sub>Q_sub hUQ0_sub by (by100 blast)
+		      have hB\<^sub>S_sub_cut: "B\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+		        using hB\<^sub>S_sub hUS0_sub by (by100 blast)
+		      have hB\<^sub>Q_B\<^sub>S_disj: "B\<^sub>Q \<inter> B\<^sub>S = {}"
+		        using hB\<^sub>Q_sub hB\<^sub>S_sub hUQ0_US0_disj by (by100 blast)
 		      have hD42_QS_chord_splice_from_interior_line:
 		        "\<exists>B. geotop_is_broken_line B
 		          \<and> geotop_arc_endpoints B {Q, S}
@@ -23274,7 +23346,8 @@ proof -
 	            (geotop_polygon_interior J - A) Q'"
 	        show False
 	          by (rule hD42_same_component_theta_contradiction
-	              [OF hUQ0_conn hUS0_conn hUQ0_sub hUS0_sub hUQ0_US0_disj hQ_front hS_front
+	              [OF hUQ0_conn hUS0_conn hUQ0_open hUS0_open hUQ0_sub hUS0_sub
+	                hUQ0_US0_disj hQ_front hS_front
 	                hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut hS'_comp])
 	      qed
 	      show "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
