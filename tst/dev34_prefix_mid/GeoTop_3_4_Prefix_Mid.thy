@@ -19609,6 +19609,61 @@ proof -
           hchord_edge h\<beta>K h\<beta>2 hchord_face hchord_not_boundary])
 qed
 
+lemma geotop_selected_nonfree_triangle_chord_arc_interior_subset_parent_interior_prefix:
+  fixes J \<beta> :: "(real^2) set" and K :: "(real^2) set set"
+    and a b c :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<beta>K: "\<beta> \<in> K"
+  assumes h\<beta>2: "geotop_simplex_dim \<beta> 2"
+  assumes h\<beta>_vertices: "geotop_simplex_vertices \<beta> {a, b, c}"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not: "c \<notin> {a, b}"
+  assumes hchord_not_boundary: "\<not> closed_segment a c \<subseteq> J"
+  shows "geotop_arc_interior (closed_segment a c) {a, c}
+      \<subseteq> geotop_polygon_interior J"
+  (**
+    Moise Figure 3.2 chord-interior placement.  The artificial chord edge
+    \<open>a-c\<close> is an edge of the selected triangle but not a parent-boundary edge,
+    so its open arc lies in the parent polygonal disk interior. **)
+proof -
+  have ha_ne_c: "a \<noteq> c"
+    using hc_not by (by100 blast)
+  have hchord_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {a, c})
+      \<and> geotop_is_face (geotop_convex_hull {a, c}) \<beta>"
+  proof -
+    have hdata:
+      "geotop_is_edge (geotop_convex_hull {a, c})
+        \<and> geotop_is_face (geotop_convex_hull {a, c}) \<beta>
+        \<and> geotop_is_edge (geotop_convex_hull {b, c})
+        \<and> geotop_is_face (geotop_convex_hull {b, c}) \<beta>"
+      by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+          [OF h\<beta>_vertices hab hc_not])
+    show ?thesis using hdata by (by100 blast)
+  qed
+  have hface_closed_K:
+    "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hchord_edge_K: "geotop_convex_hull {a, c} \<in> K"
+    using hface_closed_K h\<beta>K hchord_edge_face_data by (by100 blast)
+  have hchord_hull_segment_eq:
+    "geotop_convex_hull {a, c} = closed_segment a c"
+    using segment_convex_hull[of a c] geotop_convex_hull_eq_HOL[of "{a, c}"]
+    by (by100 simp)
+  have hchord_edge: "geotop_is_edge (geotop_convex_hull {a, c})"
+    using hchord_edge_face_data by (by100 blast)
+  have hchord_face: "geotop_is_face (geotop_convex_hull {a, c}) \<beta>"
+    using hchord_edge_face_data by (by100 blast)
+  show ?thesis
+    by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_subset_polygon_interior_prefix
+        [OF hJ hK hK_poly ha_ne_c hchord_hull_segment_eq hchord_edge_K
+          hchord_edge h\<beta>K h\<beta>2 hchord_face hchord_not_boundary])
+qed
+
 lemma geotop_selected_nonfree_triangle_chord_contact_endpoint_prefix:
   fixes J \<beta> :: "(real^2) set" and a b c :: "real^2"
   assumes hab: "a \<noteq> b"
@@ -19824,6 +19879,12 @@ proof -
   have hchord_parent_boundary_inter: "closed_segment a c \<inter> J = {a, c}"
     by (rule geotop_selected_nonfree_triangle_chord_parent_boundary_inter_prefix
         [OF hab hc_not hbase_ab_sub_J hcJ hchord_arc_interior_disjoint_parent])
+  have hchord_arc_interior_subset_parent_interior:
+    "geotop_arc_interior (closed_segment a c) {a, c}
+      \<subseteq> geotop_polygon_interior J"
+    by (rule geotop_selected_nonfree_triangle_chord_arc_interior_subset_parent_interior_prefix
+        [OF hJ hK hK_poly h\<beta>K h\<beta>2 h\<beta>_vertices_chord
+          hab hc_not hchord_not_parent_boundary])
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
