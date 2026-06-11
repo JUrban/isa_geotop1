@@ -10258,6 +10258,16 @@ proof -
           have hlocal_selected_components_fin:
               "finite (components ?Lcomp)"
             using hlocal_components_fin hcomponents_selected_eq by (by100 simp)
+          have hselected_component_path_connected:
+              "\<And>C. C \<in> components ?Lcomp \<Longrightarrow> path_connected C"
+          proof -
+            fix C
+            assume hC: "C \<in> components ?Lcomp"
+            have hC_E: "C \<in> components ?Ecomp"
+              using hC hcomponents_selected_eq by (by100 simp)
+            show "path_connected C"
+              by (rule hcomponent_path_connected[OF hC_E])
+          qed
           have hselected_component_at:
               "\<And>x. x \<in> ?Lcomp
                 \<Longrightarrow> connected_component_set ?Lcomp x \<in> components ?Ecomp"
