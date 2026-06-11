@@ -18973,66 +18973,8 @@ proof -
     proof -
       assume hE\<theta>ne: "?E\<theta> \<noteq> {}"
       show ?thesis
-        using h\<theta>selected_edge_cases
-      proof (elim disjE)
-        assume hE\<theta>empty: "?E\<theta> = {}"
-        show ?thesis
-          using hE\<theta>ne hE\<theta>empty by (by100 blast)
-      next
-        assume hsingle:
-          "\<exists>e. ?E\<theta> = {e} \<and> geotop_is_edge e
-            \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J"
-        obtain e where hE\<theta>e: "?E\<theta> = {e}"
-          and hedge: "geotop_is_edge e"
-          and hface: "geotop_is_face e \<theta>"
-          and heJ: "e \<subseteq> J"
-          using hsingle by (elim exE conjE)
-        have hcontact: "\<theta> \<inter> J = e"
-          using h\<theta>boundary_contact_eq hE\<theta>e by (by100 simp)
-        have hleft:
-          "\<exists>e. ?E\<theta> = {e} \<and> geotop_is_edge e \<and>
-            geotop_is_face e \<theta> \<and> e \<subseteq> J \<and> \<theta> \<inter> J = e"
-        proof (rule exI[where x = e])
-          show "?E\<theta> = {e} \<and> geotop_is_edge e \<and>
-            geotop_is_face e \<theta> \<and> e \<subseteq> J \<and> \<theta> \<inter> J = e"
-            by (intro conjI hE\<theta>e hedge hface heJ hcontact)
-        qed
-        show ?thesis
-          by (rule disjI1[OF hleft])
-      next
-        assume hdouble:
-          "\<exists>e1 e2. ?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2
-            \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
-            \<and> geotop_is_face e1 \<theta>
-            \<and> geotop_is_face e2 \<theta>
-            \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J"
-        obtain e1 e2 where hE\<theta>12: "?E\<theta> = {e1, e2}"
-          and he12: "e1 \<noteq> e2"
-          and he1edge: "geotop_is_edge e1"
-          and he2edge: "geotop_is_edge e2"
-          and he1face: "geotop_is_face e1 \<theta>"
-          and he2face: "geotop_is_face e2 \<theta>"
-          and he1J: "e1 \<subseteq> J"
-          and he2J: "e2 \<subseteq> J"
-          using hdouble by (elim exE conjE)
-        have hcontact: "\<theta> \<inter> J = e1 \<union> e2"
-          using h\<theta>boundary_contact_eq hE\<theta>12 by (by100 simp)
-        have hright:
-          "\<exists>e1 e2. ?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
-            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
-            geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and>
-            e1 \<subseteq> J \<and> e2 \<subseteq> J \<and> \<theta> \<inter> J = e1 \<union> e2"
-        proof (rule exI[where x = e1], rule exI[where x = e2])
-          show "?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
-            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
-            geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and>
-            e1 \<subseteq> J \<and> e2 \<subseteq> J \<and> \<theta> \<inter> J = e1 \<union> e2"
-            by (intro conjI hE\<theta>12 he12 he1edge he2edge he1face he2face
-                he1J he2J hcontact)
-        qed
-        show ?thesis
-          by (rule disjI2[OF hright])
-      qed
+        by (rule geotop_free_2_simplex_nonempty_selected_edge_contact_cases_prefix
+            [OF hJ hK hK_poly h\<theta>K h\<theta>2 hcard_gt1 h\<theta>free hE\<theta>ne])
     qed
     have h\<theta>contact_cases:
         "\<theta> \<inter> J = {}
