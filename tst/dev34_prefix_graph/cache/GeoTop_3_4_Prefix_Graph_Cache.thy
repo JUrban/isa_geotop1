@@ -10328,6 +10328,10 @@ proof -
               \<and> path_connected C"
               using hC_nonempty hC_sub hC_conn hC_path by (intro conjI)
           qed
+          have hselected_component_at_local:
+              "\<And>x. x \<in> ?Lcomp
+                \<Longrightarrow> connected_component_set ?Lcomp x \<in> components ?Lcomp"
+            by (rule componentsI)
           have hselected_component_at:
               "\<And>x. x \<in> ?Lcomp
                 \<Longrightarrow> connected_component_set ?Lcomp x \<in> components ?Ecomp"
@@ -10335,7 +10339,7 @@ proof -
             fix x
             assume hx: "x \<in> ?Lcomp"
             have hcomp: "connected_component_set ?Lcomp x \<in> components ?Lcomp"
-              by (rule componentsI[OF hx])
+              by (rule hselected_component_at_local[OF hx])
             show "connected_component_set ?Lcomp x \<in> components ?Ecomp"
               using hcomp hcomponents_selected_eq by (by100 simp)
           qed
@@ -10343,6 +10347,39 @@ proof -
               "\<And>x. x \<in> ?Lcomp
                 \<Longrightarrow> x \<in> connected_component_set ?Lcomp x"
             by (by100 simp)
+          have hselected_component_at_entry_summary:
+              "\<And>x. x \<in> ?Lcomp
+                \<Longrightarrow> connected_component_set ?Lcomp x \<noteq> {}
+                  \<and> connected_component_set ?Lcomp x \<subseteq> ?Lcomp
+                  \<and> connected (connected_component_set ?Lcomp x)
+                  \<and> path_connected (connected_component_set ?Lcomp x)
+                  \<and> x \<in> connected_component_set ?Lcomp x
+                  \<and> connected_component_set ?Lcomp x \<in> components ?Ecomp"
+          proof -
+            fix x
+            assume hx: "x \<in> ?Lcomp"
+            have hcomp_L:
+                "connected_component_set ?Lcomp x \<in> components ?Lcomp"
+              by (rule hselected_component_at_local[OF hx])
+            have hsummary:
+                "connected_component_set ?Lcomp x \<noteq> {}
+                  \<and> connected_component_set ?Lcomp x \<subseteq> ?Lcomp
+                  \<and> connected (connected_component_set ?Lcomp x)
+                  \<and> path_connected (connected_component_set ?Lcomp x)"
+              by (rule hselected_component_summary[OF hcomp_L])
+            have hx_comp: "x \<in> connected_component_set ?Lcomp x"
+              by (rule hselected_component_contains[OF hx])
+            have hcomp_E:
+                "connected_component_set ?Lcomp x \<in> components ?Ecomp"
+              by (rule hselected_component_at[OF hx])
+            show "connected_component_set ?Lcomp x \<noteq> {}
+              \<and> connected_component_set ?Lcomp x \<subseteq> ?Lcomp
+              \<and> connected (connected_component_set ?Lcomp x)
+              \<and> path_connected (connected_component_set ?Lcomp x)
+              \<and> x \<in> connected_component_set ?Lcomp x
+              \<and> connected_component_set ?Lcomp x \<in> components ?Ecomp"
+              using hsummary hx_comp hcomp_E by (intro conjI)
+          qed
           have hconnected_subset_selected_component:
               "\<And>A x. x \<in> A
                 \<Longrightarrow> connected A
