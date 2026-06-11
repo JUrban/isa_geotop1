@@ -19348,7 +19348,34 @@ proof -
       \<open>hselected_candidate\<close> with the Figure 3.2 side-witness transfer.  The
       broad free-count theorem alone is insufficient here, because it permits
       empty-contact bookkeeping witnesses. **)
-    sorry
+  proof (cases "\<alpha> = \<beta>")
+    case True
+    show ?thesis
+      by (rule hfree_selected_transfer_if_same[OF True])
+  next
+    case False
+    have hseparated_witnesses:
+        "\<alpha> \<noteq> \<beta>
+          \<and> \<alpha> \<in> K
+          \<and> geotop_free_2_simplex K J \<alpha>
+          \<and> \<alpha> \<noteq> \<theta>
+          \<and> \<beta> \<in> K
+          \<and> geotop_simplex_dim \<beta> 2
+          \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J} \<noteq> {}
+          \<and> \<beta> \<noteq> \<theta>
+          \<and> \<beta> \<inter> J \<noteq> {}"
+      using False h\<alpha>K h\<alpha>free h\<alpha>_ne_\<theta> h\<beta>K h\<beta>2 h\<beta>selected
+        h\<beta>_ne_\<theta> h\<beta>contact_nonempty
+      by (by100 blast)
+    show ?thesis
+      (**
+        Remaining separated-witness Moise side-transfer case.  The free witness
+        \<open>\<alpha>\<close> and the selected parent-boundary candidate \<open>\<beta>\<close> are distinct;
+        the book proof must now use the Figure 3.2 side disks and the artificial
+        chord exclusion to choose a witness that is both free and selected on the
+        original polygon boundary. **)
+      sorry
+  qed
 qed
 
 lemma geotop_polygon_disk_gt2_boundary_free_witness_avoids_empty_contact_prefix:
