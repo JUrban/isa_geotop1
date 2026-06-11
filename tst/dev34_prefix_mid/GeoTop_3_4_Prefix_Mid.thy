@@ -19145,6 +19145,23 @@ proof -
         using hnonempty_cases by (by100 blast)
     qed
   qed
+  have h\<theta>boundary_free_iff_selected_edges_nonempty:
+      "geotop_boundary_free_2_simplex K J \<theta> \<longleftrightarrow> ?E\<theta> \<noteq> {}"
+  proof
+    assume hbf: "geotop_boundary_free_2_simplex K J \<theta>"
+    show "?E\<theta> \<noteq> {}"
+      by (rule geotop_boundary_free_2_simplex_selected_edge_nonempty_prefix[OF hbf])
+  next
+    assume hnonempty: "?E\<theta> \<noteq> {}"
+    show "geotop_boundary_free_2_simplex K J \<theta>"
+      using h\<theta>empty_or_boundary_free hnonempty by (by100 blast)
+  qed
+  have h\<theta>selected_edges_card_cases:
+      "card ?E\<theta> = 0 \<or> card ?E\<theta> = 1 \<or> card ?E\<theta> = 2"
+    using h\<theta>selected_edges_fin h\<theta>selected_edges_card_le2 by (by100 linarith)
+  have h\<theta>selected_edges_nonempty_card_cases:
+      "?E\<theta> \<noteq> {} \<Longrightarrow> card ?E\<theta> = 1 \<or> card ?E\<theta> = 2"
+    using h\<theta>selected_edges_fin h\<theta>selected_edges_card_cases by (by100 simp)
   have hFigure33_cases_book:
     "\<exists>J' K' f.
         geotop_is_polygon J'
