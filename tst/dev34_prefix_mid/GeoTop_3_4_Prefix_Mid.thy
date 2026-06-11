@@ -20954,6 +20954,192 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_homeomorphism_polygon_interior_image_dev34:
+  fixes h k :: "real^2 \<Rightarrow> real^2"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hJ_image: "h ` J = frontier \<sigma>"
+  shows "h ` geotop_polygon_interior J =
+    geotop_polygon_interior (frontier \<sigma>)"
+  (**
+    Moise 3.4/4.2 normalization transport: a plane homeomorphism carrying the
+    polygon boundary to the frontier of a triangle carries the bounded
+    complementary component of the polygon to the bounded complementary
+    component of that triangle frontier. **)
+proof -
+  let ?I = "geotop_polygon_interior J"
+  let ?J' = "frontier \<sigma>"
+  have hJ_sph:
+      "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  have hI_comp: "?I \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  obtain x where hx_compl: "x \<in> UNIV - J"
+    and hI_eq: "?I = connected_component_set (UNIV - J) x"
+    using hI_comp unfolding components_def by (by100 blast)
+  have h_bij: "bij h"
+    by (rule homeomorphism_UNIV_imp_bij[OF hhk])
+  have h_inj: "inj h"
+    using h_bij by (by100 simp)
+  have h_image_UNIV: "h ` UNIV = UNIV"
+    using h_bij unfolding bij_def by (by100 simp)
+  have h_image_compl: "h ` (UNIV - J) = UNIV - ?J'"
+  proof -
+    have "h ` (UNIV - J) = h ` UNIV - h ` J"
+      by (rule image_set_diff[OF h_inj])
+    also have "\<dots> = UNIV - ?J'"
+      using h_image_UNIV hJ_image by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hhomeo_compl:
+      "homeomorphism (UNIV - J) (UNIV - ?J') h k"
+    by (rule homeomorphism_of_subsets
+        [OF hhk subset_UNIV subset_UNIV h_image_compl])
+  have hcomp_image:
+      "connected_component_set (UNIV - ?J') (h x) = h ` ?I"
+    using connected_component_set_homeomorphism[OF hhomeo_compl hx_compl]
+      hI_eq by (by100 simp)
+  have hx_image: "h x \<in> UNIV - ?J'"
+    using hx_compl h_image_compl by (by100 blast)
+  have himage_comp: "h ` ?I \<in> components (UNIV - ?J')"
+    using componentsI[OF hx_image] hcomp_image by (by100 simp)
+  have hI_bounded: "bounded ?I"
+    by (rule polygon_interior_bounded[OF hJ_sph])
+  have hcl_bounded: "bounded (closure ?I)"
+    using hI_bounded bounded_closure by (by100 blast)
+  have hcl_closed: "closed (closure ?I)"
+    by (by100 simp)
+  have hcl_compact: "compact (closure ?I)"
+    using hcl_bounded hcl_closed compact_eq_bounded_closed by (by100 blast)
+  have hh_cont_UNIV: "continuous_on UNIV h"
+    using hhk unfolding homeomorphism_def by (by100 simp)
+  have hh_cont_cl: "continuous_on (closure ?I) h"
+    by (rule continuous_on_subset[OF hh_cont_UNIV subset_UNIV])
+  have himage_cl_compact: "compact (h ` closure ?I)"
+    by (rule compact_continuous_image[OF hh_cont_cl hcl_compact])
+  have himage_cl_bounded: "bounded (h ` closure ?I)"
+    by (rule compact_imp_bounded[OF himage_cl_compact])
+  have himage_sub_closure: "h ` ?I \<subseteq> h ` closure ?I"
+    using closure_subset by (by100 blast)
+  have himage_bounded: "bounded (h ` ?I)"
+    by (rule bounded_subset[OF himage_cl_bounded himage_sub_closure])
+  have hJ'_poly: "geotop_is_polygon ?J'"
+    by (rule geotop_2simplex_frontier_is_polygon_prefix[OF h\<sigma>2])
+  show ?thesis
+    by (rule polygon_interior_unique[OF hJ'_poly])
+      (use himage_comp himage_bounded in \<open>by (by100 blast)\<close>)
+qed
+
+lemma geotop_homeomorphism_small_inverse_ball_dev34:
+  fixes h k :: "real^2 \<Rightarrow> real^2"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  assumes hX: "X = k Y"
+  assumes hr: "0 < r"
+  shows "\<exists>s>0. k ` ball Y s \<subseteq> ball X r"
+  (**
+    Continuity of the inverse homeomorphism at \<open>Y\<close>: choose a small normalized
+    ball whose pullback lies inside the prescribed ball at \<open>X\<close>. **)
+proof -
+  have hk_cont: "continuous_on UNIV k"
+    using hhk unfolding homeomorphism_def by (by100 simp)
+  have hk_isCont: "isCont k Y"
+    using hk_cont continuous_on_eq_continuous_at[OF open_UNIV, of k]
+    by (by100 simp)
+  obtain s where hs_pos: "0 < s"
+    and hs_sub: "k ` ball Y s \<subseteq> ball (k Y) r"
+    using hk_isCont hr
+    unfolding continuous_at_ball
+    by (by100 blast)
+  have hs_sub_X: "k ` ball Y s \<subseteq> ball X r"
+    using hs_sub hX by (by100 simp)
+  show ?thesis
+    using hs_pos hs_sub_X by (by100 blast)
+qed
+
+lemma geotop_polygon_local_side_witness_dev34:
+  fixes J :: "(real^2) set" and X :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  assumes hr: "0 < r"
+  shows "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J
+        \<and> U \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior J"
+  (**
+    Pure polygon local-side fact.  Following Moise's normalization step, send
+    \<open>J\<close> to the frontier of a 2-simplex by Theorem 3.4, use the triangle
+    half-side witness there, and pull the witness back through the inverse
+    plane homeomorphism. **)
+proof -
+  obtain h :: "real^2 \<Rightarrow> real^2" and \<sigma> :: "(real^2) set"
+    where hh_top:
+        "top1_homeomorphism_on UNIV geotop_euclidean_topology
+          UNIV geotop_euclidean_topology h"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and hJ_image_geotop:
+        "h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    using Theorem_GT_3_4[OF hJ] by (by100 blast)
+  obtain k where hhk: "homeomorphism UNIV UNIV h k"
+    by (rule top1_homeomorphism_on_UNIV_R2_obtain_HOL_homeomorphism
+        [OF hh_top])
+  have hJ_image: "h ` J = frontier \<sigma>"
+    using hJ_image_geotop geotop_frontier_UNIV_eq_frontier[of \<sigma>]
+    by (by100 simp)
+  have hY_front: "h X \<in> frontier \<sigma>"
+    using hX hJ_image by (by100 blast)
+  have hX_eq: "X = k (h X)"
+    using hhk unfolding homeomorphism_def by (by100 simp)
+  obtain s where hs_pos: "0 < s"
+    and hk_ball: "k ` ball (h X) s \<subseteq> ball X r"
+    using geotop_homeomorphism_small_inverse_ball_dev34
+        [OF hhk hX_eq hr]
+    by (elim exE conjE)
+  obtain V Y' where hV_conn: "connected V"
+    and hV_open: "V \<in> geotop_euclidean_topology"
+    and hV_I\<sigma>:
+      "V \<subseteq> geotop_polygon_interior (frontier \<sigma>)"
+    and hV_ball: "V \<subseteq> ball (h X) s"
+    and hY_front_V:
+      "h X \<in> geotop_frontier UNIV geotop_euclidean_topology V"
+    and hY'_V: "Y' \<in> V"
+    and hY'_I\<sigma>: "Y' \<in> geotop_polygon_interior (frontier \<sigma>)"
+    using geotop_2simplex_frontier_local_side_witness_dev34
+        [OF h\<sigma>2 hY_front hs_pos]
+    by (elim exE conjE)
+  have hI_image:
+      "h ` geotop_polygon_interior J =
+       geotop_polygon_interior (frontier \<sigma>)"
+    by (rule geotop_homeomorphism_polygon_interior_image_dev34
+        [OF hhk hJ h\<sigma>2 hJ_image])
+  have hkV_sub_I: "k ` V \<subseteq> geotop_polygon_interior J"
+  proof
+    fix z
+    assume hz: "z \<in> k ` V"
+    then obtain y where hyV: "y \<in> V" and hz_eq: "z = k y"
+      by (by100 blast)
+    have hyI\<sigma>: "y \<in> geotop_polygon_interior (frontier \<sigma>)"
+      using hV_I\<sigma> hyV by (by100 blast)
+    obtain x where hxI: "x \<in> geotop_polygon_interior J"
+      and hy_eq: "y = h x"
+      using hI_image hyI\<sigma> by (by100 blast)
+    have "k y = x"
+      using hhk hy_eq unfolding homeomorphism_def by (by100 simp)
+    thus "z \<in> geotop_polygon_interior J"
+      using hz_eq hxI by (by100 simp)
+  qed
+  have hkV_sub_ball: "k ` V \<subseteq> ball X r"
+    using hV_ball hk_ball by (by100 blast)
+  show ?thesis
+    by (rule geotop_homeomorphism_pullback_local_frontier_witness_dev34
+        [OF hhk hV_conn hV_open hY_front_V hY'_V hX_eq
+          hkV_sub_I hkV_sub_ball])
+qed
+
 lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -20993,13 +21179,7 @@ proof -
         \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
         \<and> X' \<in> U
         \<and> X' \<in> geotop_polygon_interior J"
-    (**
-      Remaining pure polygon local-side fact: at a boundary point of a polygon
-      and inside any sufficiently small ball, the polygon interior has a
-      connected open side-neighborhood whose frontier contains the boundary
-      point.  This is the half-disk/wedge step from Moise's rectangular
-      normalization, now separated from the cutting arc by \<open>hr_A\<close>. **)
-    sorry
+    by (rule geotop_polygon_local_side_witness_dev34[OF hJ hX hr_pos])
   obtain U X' where hU_conn: "connected U"
     and hU_open: "U \<in> geotop_euclidean_topology"
     and hU_I: "U \<subseteq> geotop_polygon_interior J"
