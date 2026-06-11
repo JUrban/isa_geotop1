@@ -10305,6 +10305,29 @@ proof -
             show "path_connected C"
               by (rule hcomponent_path_connected[OF hC_E])
           qed
+          have hselected_component_summary:
+              "\<And>C. C \<in> components ?Lcomp
+                \<Longrightarrow> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C"
+          proof -
+            fix C
+            assume hC: "C \<in> components ?Lcomp"
+            have hC_nonempty: "C \<noteq> {}"
+              by (rule in_components_nonempty[OF hC])
+            have hC_sub: "C \<subseteq> ?Lcomp"
+              by (rule in_components_subset[OF hC])
+            have hC_conn: "connected C"
+              by (rule in_components_connected[OF hC])
+            have hC_path: "path_connected C"
+              by (rule hselected_component_path_connected[OF hC])
+            show "C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C"
+              using hC_nonempty hC_sub hC_conn hC_path by (intro conjI)
+          qed
           have hselected_component_at:
               "\<And>x. x \<in> ?Lcomp
                 \<Longrightarrow> connected_component_set ?Lcomp x \<in> components ?Ecomp"
