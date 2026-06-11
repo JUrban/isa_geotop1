@@ -18868,6 +18868,83 @@ proof (rule ccontr)
     using h_int_empty h_int_ne by (by100 simp)
 qed
 
+lemma geotop_free_2_simplex_contact_cases_prefix:
+  fixes J \<sigma>\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes hfree: "geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  shows "\<sigma>\<^sub>2 \<inter> J = {}
+    \<or> (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma>\<^sub>2 \<and> d \<subseteq> J} = {e}
+      \<and> geotop_is_edge e
+      \<and> geotop_is_face e \<sigma>\<^sub>2
+      \<and> e \<subseteq> J
+      \<and> \<sigma>\<^sub>2 \<inter> J = e)
+    \<or> (\<exists>e1 e2.
+      {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma>\<^sub>2 \<and> d \<subseteq> J} = {e1, e2}
+      \<and> e1 \<noteq> e2
+      \<and> geotop_is_edge e1
+      \<and> geotop_is_edge e2
+      \<and> geotop_is_face e1 \<sigma>\<^sub>2
+      \<and> geotop_is_face e2 \<sigma>\<^sub>2
+      \<and> e1 \<subseteq> J
+      \<and> e2 \<subseteq> J
+      \<and> \<sigma>\<^sub>2 \<inter> J = e1 \<union> e2)"
+  (**
+    Moise Figure 3.3 contact trichotomy for a free 2-simplex: either the
+    selected free triangle has no boundary edge, exactly one boundary edge,
+    or exactly two boundary edges.  The actual fold construction handles the
+    latter two cases and the empty-contact branch by choosing the appropriate
+    free-triangle witness before folding. **)
+proof -
+  let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma>\<^sub>2 \<and> d \<subseteq> J}"
+  have hcanonical:
+      "finite ?E \<and> card ?E \<le> 2 \<and> \<sigma>\<^sub>2 \<inter> J = \<Union>?E"
+    by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+        [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1 hfree])
+  have hcontact_eq: "\<sigma>\<^sub>2 \<inter> J = \<Union>?E"
+    using hcanonical by (by100 blast)
+  have hcases:
+      "?E = {} \<or> geotop_boundary_free_2_simplex K J \<sigma>\<^sub>2"
+    by (rule geotop_free_2_simplex_empty_or_boundary_free_prefix
+        [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1 hfree])
+  show ?thesis
+    using hcases
+  proof (elim disjE)
+    assume hE_empty: "?E = {}"
+    have hcontact_empty: "\<sigma>\<^sub>2 \<inter> J = {}"
+      using hcontact_eq hE_empty by (by100 simp)
+    show ?thesis
+      by (rule disjI1[OF hcontact_empty])
+  next
+    assume hbf: "geotop_boundary_free_2_simplex K J \<sigma>\<^sub>2"
+    have hnonempty_cases:
+      "(\<exists>e. ?E = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<sigma>\<^sub>2
+        \<and> e \<subseteq> J
+        \<and> \<sigma>\<^sub>2 \<inter> J = e)
+      \<or> (\<exists>e1 e2. ?E = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma>\<^sub>2
+        \<and> geotop_is_face e2 \<sigma>\<^sub>2
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<sigma>\<^sub>2 \<inter> J = e1 \<union> e2)"
+      by (rule geotop_boundary_free_2_simplex_contact_cases_prefix
+          [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1 hbf])
+    show ?thesis
+      using hnonempty_cases by (by100 blast)
+  qed
+qed
+
 lemma geotop_polygon_disk_one_triangle_normalization_supported_prefix:
   fixes J U :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19113,38 +19190,8 @@ proof -
         \<and> e1 \<subseteq> J
         \<and> e2 \<subseteq> J
         \<and> \<theta> \<inter> J = e1 \<union> e2)"
-  proof -
-    show ?thesis
-      using h\<theta>empty_or_boundary_free
-    proof (elim disjE)
-      assume True: "?E\<theta> = {}"
-    have hcontact_empty: "\<theta> \<inter> J = {}"
-      using h\<theta>boundary_contact_eq True by (by100 simp)
-    show ?thesis
-      by (rule disjI1[OF hcontact_empty])
-  next
-      assume hbf: "geotop_boundary_free_2_simplex K J \<theta>"
-      have hnonempty_cases:
-        "(\<exists>e. ?E\<theta> = {e}
-          \<and> geotop_is_edge e
-          \<and> geotop_is_face e \<theta>
-          \<and> e \<subseteq> J
-          \<and> \<theta> \<inter> J = e)
-        \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
-          \<and> e1 \<noteq> e2
-          \<and> geotop_is_edge e1
-          \<and> geotop_is_edge e2
-          \<and> geotop_is_face e1 \<theta>
-          \<and> geotop_is_face e2 \<theta>
-          \<and> e1 \<subseteq> J
-          \<and> e2 \<subseteq> J
-          \<and> \<theta> \<inter> J = e1 \<union> e2)"
-        by (rule geotop_boundary_free_2_simplex_contact_cases_prefix
-            [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1 hbf])
-      show ?thesis
-        using hnonempty_cases by (by100 blast)
-    qed
-  qed
+    by (rule geotop_free_2_simplex_contact_cases_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1 h\<theta>free])
   have h\<theta>boundary_free_iff_selected_edges_nonempty:
       "geotop_boundary_free_2_simplex K J \<theta> \<longleftrightarrow> ?E\<theta> \<noteq> {}"
   proof
@@ -19300,6 +19347,22 @@ proof -
         by (by100 blast)
       have h\<theta>K: "\<theta> \<in> K0"
         using h\<theta>free unfolding geotop_free_2_simplex_def by (by100 blast)
+      have hfold_step_ex:
+        "\<exists>J1 K1 f. geotop_is_polygon J1
+          \<and> geotop_is_complex K1
+          \<and> finite K1
+          \<and> geotop_polyhedron K1 =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J1)
+          \<and> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J1) \<subseteq> U
+          \<and> card {\<tau>\<in>K1. geotop_simplex_dim \<tau> 2} < card ?T0
+          \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+          \<and> (\<forall>P\<in>UNIV - U. f P = P)
+          \<and> f ` J0 = J1"
+        by (rule geotop_free_triangle_supported_fold_reduction_prefix
+            [OF less.prems(1) less.prems(2) less.prems(3) less.prems(4)
+              hU_open less.prems(5) hT0_gt1 h\<theta>K h\<theta>free])
       obtain J1 K1 f where hJ1: "geotop_is_polygon J1"
         and hK1: "geotop_is_complex K1"
         and hK1_fin: "finite K1"
@@ -19315,12 +19378,14 @@ proof -
               UNIV geotop_euclidean_topology f"
         and hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
         and hfJ: "f ` J0 = J1"
-        by (rule geotop_free_triangle_supported_fold_reduction_prefix
-            [OF less.prems(1) less.prems(2) less.prems(3) less.prems(4)
-              hU_open less.prems(5) hT0_gt1 h\<theta>K h\<theta>free])
+        using hfold_step_ex by (elim exE conjE)
       have hK1_less_n:
         "card {\<tau>\<in>K1. geotop_simplex_dim \<tau> 2} < n"
         using hK1_less less.prems(6) by (by100 simp)
+      have hK1_count_eq:
+        "card {\<tau>\<in>K1. geotop_simplex_dim \<tau> 2} =
+          card {\<tau>\<in>K1. geotop_simplex_dim \<tau> 2}"
+        by (by100 simp)
       obtain g \<sigma> where hg:
           "top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology g"
@@ -19328,15 +19393,28 @@ proof -
         and hgJ1:
           "g ` J1 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
         and hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
-        using less.hyps[OF hK1_less_n hJ1 hK1 hK1_fin hK1_poly hI1_sub_U refl]
+        using less.hyps[OF hK1_less_n hJ1 hK1 hK1_fin hK1_poly hI1_sub_U
+            hK1_count_eq]
         by (by100 blast)
-      show ?thesis
+      have hcomposed_step:
+        "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J0 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)"
         by (rule geotop_supported_fold_normalization_compose_prefix
             [OF hf hf_fix hfJ hg hg_fix h\<sigma>2 hgJ1])
+      show ?thesis
+        using hcomposed_step by (by100 blast)
     qed
   qed
+  qed
+  have hK_count_eq:
+    "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} =
+      card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+    by (by100 simp)
   show ?thesis
-    by (rule hnormalize_by_count[OF hJ hK hK_fin hK_poly hI_sub_U refl])
+    by (rule hnormalize_by_count[OF hJ hK hK_fin hK_poly hI_sub_U hK_count_eq])
 qed
 
 (** from \<S>3 Theorem 4 (geotop.tex:782)
