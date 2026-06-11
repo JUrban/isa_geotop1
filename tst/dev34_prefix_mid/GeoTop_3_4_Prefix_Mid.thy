@@ -22437,6 +22437,74 @@ proof -
       using hB\<^sub>0_bl hB\<^sub>0_sub_cut hQ0_B\<^sub>0 hS0_B\<^sub>0 hB\<^sub>0_endpoints
       by (intro exI conjI)
   qed
+  have hD42_Q0S0_cut_chord_PR_same:
+      "\<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
+        \<and> B\<^sub>0 \<subseteq> geotop_polygon_interior J - A
+        \<and> geotop_arc_endpoints B\<^sub>0 {Q0, S0}
+        \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J
+        \<and> top1_in_same_component_on
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B\<^sub>0)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>0))
+            P R"
+    (**
+      The same normalized near-boundary chord still misses the original
+      P-R arc \<open>A\<close>.  Thus \<open>A\<close> witnesses that \<open>P\<close> and \<open>R\<close> remain in the
+      same component of the closed disk minus this Q0-S0 chord. **)
+  proof -
+    obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+      and hB\<^sub>0_sub_cut: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
+      and hQ0_B\<^sub>0: "Q0 \<in> B\<^sub>0"
+      and hS0_B\<^sub>0: "S0 \<in> B\<^sub>0"
+      and hB\<^sub>0_endpoints: "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+      using hD42_Q0S0_cut_broken_chord by (elim exE conjE)
+    have hB\<^sub>0_int_sub_I:
+        "geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J"
+      using hB\<^sub>0_sub_cut unfolding geotop_arc_interior_def by (by100 blast)
+    let ?X\<^sub>0 =
+      "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - B\<^sub>0"
+    have hA_sub_X\<^sub>0: "A \<subseteq> ?X\<^sub>0"
+    proof
+      fix x
+      assume hxA: "x \<in> A"
+      have hx_cl:
+          "x \<in> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)"
+        using hAsub hxA by (by100 blast)
+      have hx_not_B\<^sub>0: "x \<notin> B\<^sub>0"
+      proof
+        assume hxB\<^sub>0: "x \<in> B\<^sub>0"
+        have "x \<in> geotop_polygon_interior J - A"
+          using hB\<^sub>0_sub_cut hxB\<^sub>0 by (by100 blast)
+        thus False
+          using hxA by (by100 blast)
+      qed
+      show "x \<in> ?X\<^sub>0"
+        using hx_cl hx_not_B\<^sub>0 by (by100 blast)
+    qed
+    have hsubspace_X\<^sub>0:
+        "subspace_topology ?X\<^sub>0
+          (subspace_topology UNIV geotop_euclidean_topology ?X\<^sub>0) A =
+         subspace_topology UNIV geotop_euclidean_topology A"
+      by (rule subspace_topology_trans[OF hA_sub_X\<^sub>0])
+    have hA_conn_X\<^sub>0:
+        "top1_connected_on A
+          (subspace_topology ?X\<^sub>0
+            (subspace_topology UNIV geotop_euclidean_topology ?X\<^sub>0) A)"
+      using hA_connected hsubspace_X\<^sub>0 by (by100 simp)
+    have hPR_same_X\<^sub>0:
+        "top1_in_same_component_on ?X\<^sub>0
+          (subspace_topology UNIV geotop_euclidean_topology ?X\<^sub>0) P R"
+      unfolding top1_in_same_component_on_def
+      using hA_sub_X\<^sub>0 hP_A hR_A hA_conn_X\<^sub>0
+      by (intro exI conjI)
+    show ?thesis
+      using hB\<^sub>0_bl hB\<^sub>0_sub_cut hB\<^sub>0_endpoints hB\<^sub>0_int_sub_I hPR_same_X\<^sub>0
+      by (intro exI conjI)
+  qed
   have hD42_QS_splice_theta_contradiction:
       False
     (**
