@@ -24376,7 +24376,65 @@ lemma geotop_polygon_boundary_vertex_selected_edge_fan_wedge_radial_segment_pref
     link is a finite broken-line endpoint, so a small ball meets the closed
     disk in one wedge, and every radial segment from \<open>X\<close> to a nearby
     polygon-interior point has its punctured image in the polygon interior. **)
-  sorry
+proof -
+  have hface_closed:
+    "\<forall>\<rho>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<rho> \<longrightarrow> \<tau> \<in> K"
+    by (rule geotop_is_complex_face_closed[OF hK])
+  have hstar_sub_K: "geotop_star K X \<subseteq> K"
+  proof
+    fix \<tau>
+    assume h\<tau>star: "\<tau> \<in> geotop_star K X"
+    obtain \<rho> where h\<rho>K: "\<rho> \<in> K" and hX\<rho>: "X \<in> \<rho>"
+      and h\<tau>: "geotop_is_face \<tau> \<rho> \<or> \<tau> = \<rho>"
+      using h\<tau>star unfolding geotop_star_def by (by100 blast)
+    show "\<tau> \<in> K"
+    proof (cases "geotop_is_face \<tau> \<rho>")
+      case True
+      show ?thesis
+        using hface_closed h\<rho>K True by (by100 blast)
+    next
+      case False
+      show ?thesis
+        using h\<tau> h\<rho>K False by (by100 blast)
+    qed
+  qed
+  have hstar_fin: "finite (geotop_star K X)"
+    by (rule finite_subset[OF hstar_sub_K hK_fin])
+  have hlink_sub_star: "geotop_link K X \<subseteq> geotop_star K X"
+    unfolding geotop_link_def by (by100 blast)
+  have hlink_fin: "finite (geotop_link K X)"
+    by (rule finite_subset[OF hlink_sub_star hstar_fin])
+  have hX\<sigma>: "X \<in> \<sigma>"
+  proof -
+    have he_sub: "e \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF h\<sigma>face])
+    show ?thesis
+      using hXe he_sub by (by100 blast)
+  qed
+  have he_star: "e \<in> geotop_star K X"
+    unfolding geotop_star_def using heK hXe by (by100 blast)
+  have h\<sigma>star: "\<sigma> \<in> geotop_star K X"
+    unfolding geotop_star_def using h\<sigma>K hX\<sigma> by (by100 blast)
+  have hfinite_selected_star_data:
+    "finite (geotop_star K X)
+      \<and> finite (geotop_link K X)
+      \<and> e \<in> geotop_star K X
+      \<and> \<sigma> \<in> geotop_star K X"
+    using hstar_fin hlink_fin he_star h\<sigma>star by (by100 blast)
+  have hlocal_finite_fan_wedge:
+    "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+    (**
+      Remaining Moise D42 finite fan/wedge geometry.  The preceding facts
+      isolate the current-layer finite star/link data for the boundary vertex
+      and selected incident boundary edge; the book step still has to turn that
+      finite fan into a small Euclidean wedge whose punctured radial segments
+      lie in the polygon interior. **)
+    sorry
+  show ?thesis
+    by (rule hlocal_finite_fan_wedge)
+qed
 
 lemma geotop_polygon_boundary_vertex_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set" and X :: "real^2"
