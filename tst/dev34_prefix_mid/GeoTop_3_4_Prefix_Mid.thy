@@ -22972,6 +22972,29 @@ proof -
 		        using hB\<^sub>I_sub_cut by (by100 blast)
 		      have hA_B\<^sub>I: "A \<inter> B\<^sub>I = {}"
 		        using hB\<^sub>I_sub_cut by (by100 blast)
+		      have hB\<^sub>I_J_disj: "B\<^sub>I \<inter> J = {}"
+		        using hB\<^sub>I_sub_I polygon_interior_disjoint_polygon[OF hJ]
+		        by (by100 blast)
+		      have hF\<^sub>1_B\<^sub>I_disj:
+		        "geotop_arc_interior F\<^sub>1 {Q, S} \<inter> B\<^sub>I = {}"
+		      proof -
+		        have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+		          using hD42_F_J_split by (by100 blast)
+		        have hF\<^sub>1_int_sub_J: "geotop_arc_interior F\<^sub>1 {Q, S} \<subseteq> J"
+		          using hF\<^sub>1_sub_J unfolding geotop_arc_interior_def by (by100 blast)
+		        show ?thesis
+		          using hF\<^sub>1_int_sub_J hB\<^sub>I_J_disj by (by100 blast)
+		      qed
+		      have hB\<^sub>I_F\<^sub>2_disj:
+		        "B\<^sub>I \<inter> geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+		      proof -
+		        have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+		          using hD42_F_J_split by (by100 blast)
+		        have hF\<^sub>2_int_sub_J: "geotop_arc_interior F\<^sub>2 {Q, S} \<subseteq> J"
+		          using hF\<^sub>2_sub_J unfolding geotop_arc_interior_def by (by100 blast)
+		        show ?thesis
+		          using hF\<^sub>2_int_sub_J hB\<^sub>I_J_disj by (by100 blast)
+		      qed
 		      have hD42_QS_chord_splice_from_interior_line:
 		        "\<exists>B. geotop_is_broken_line B
 		          \<and> geotop_arc_endpoints B {Q, S}
