@@ -5039,6 +5039,121 @@ proof -
           hown\<^sub>1 hown\<^sub>2 hown\<^sub>3 howner_data])
 qed
 
+lemma geotop_polygon_disk_boundary_edge_exists_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "\<exists>e\<in>K. geotop_is_edge e \<and> e \<subseteq> J"
+  (**
+    Boundary-input shared by Moise's two-triangle base case and the later ear
+    step: the triangulated polygonal disk has at least one complex edge lying
+    on the polygon boundary.  This is the initial boundary-cover part of the
+    three-owned-boundary-edges argument, before the cardinality strengthening. **)
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+  have hK_fin: "finite K"
+    by (rule geotop_polygon_disk_complex_finite_prefix[OF hJ hK hK_poly])
+  have hE_fin: "finite ?E"
+    by (rule finite_subset[OF _ hK_fin]) (by100 blast)
+  have hverts_fin: "finite (geotop_complex_vertices K)"
+    by (rule geotop_finite_complex_vertices_finite_prefix[OF hK hK_fin])
+  have hE_closed_each: "\<And>e. e \<in> ?E \<Longrightarrow> closed e"
+  proof -
+    fix e
+    assume heE: "e \<in> ?E"
+    have heK: "e \<in> K"
+      using heE by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      using geotop_is_complex_simplex[OF hK] heK by (by100 blast)
+    show "closed e"
+      by (rule geotop_is_simplex_closed[OF he_simplex])
+  qed
+  have hE_closed_all: "\<forall>e\<in>?E. closed e"
+    using hE_closed_each by (by100 blast)
+  have hE_closed: "closed (\<Union>?E)"
+    by (rule closed_Union[OF hE_fin hE_closed_all])
+  have hnonvertex_cover:
+      "J - geotop_complex_vertices K \<subseteq> \<Union>?E"
+    by (rule geotop_polygon_disk_boundary_nonvertex_subset_selected_edges_prefix
+        [OF hJ hK hK_poly])
+  have hJ_cover: "J \<subseteq> \<Union>?E"
+  proof
+    fix x
+    assume hxJ: "x \<in> J"
+    show "x \<in> \<Union>?E"
+    proof (rule ccontr)
+      assume hx_not: "x \<notin> \<Union>?E"
+      have hopen: "open (- \<Union>?E)"
+        by (rule open_Compl[OF hE_closed])
+      have hx_open: "x \<in> - \<Union>?E"
+        using hx_not by (by100 simp)
+      obtain r where hr: "0 < r" and hball: "ball x r \<subseteq> - \<Union>?E"
+        using openE[OF hopen hx_open] by (by100 blast)
+      have hinf: "infinite (J \<inter> ball x r)"
+        using polygon_islimpt[OF hJ hxJ] hr
+        unfolding islimpt_eq_infinite_ball by (by100 blast)
+      have hsubset_vertices: "J \<inter> ball x r \<subseteq> geotop_complex_vertices K"
+      proof
+        fix y
+        assume hy: "y \<in> J \<inter> ball x r"
+        have hyJ: "y \<in> J"
+          using hy by (by100 blast)
+        have hyball: "y \<in> ball x r"
+          using hy by (by100 blast)
+        show "y \<in> geotop_complex_vertices K"
+        proof (rule ccontr)
+          assume hynot: "y \<notin> geotop_complex_vertices K"
+          have "y \<in> J - geotop_complex_vertices K"
+            using hyJ hynot by (by100 blast)
+          hence hyE: "y \<in> \<Union>?E"
+            using hnonvertex_cover by (by100 blast)
+          have "y \<in> - \<Union>?E"
+            using hball hyball by (by100 blast)
+          thus False
+            using hyE by (by100 blast)
+        qed
+      qed
+      have "finite (J \<inter> ball x r)"
+        by (rule finite_subset[OF hsubset_vertices hverts_fin])
+      thus False
+        using hinf by (by100 blast)
+    qed
+  qed
+  have hE_sub_J: "\<Union>?E \<subseteq> J"
+    by (by100 blast)
+  have hJ_eq: "J = \<Union>?E"
+    using hJ_cover hE_sub_J by (by100 blast)
+  have hJ_nonempty: "J \<noteq> {}"
+  proof -
+    have hhomeo: "J homeomorphic sphere (0::real^2) 1"
+      by (rule polygon_homeomorphic_S1_helper[OF hJ])
+    obtain f g where hfg: "homeomorphism J (sphere (0::real^2) 1) f g"
+      using hhomeo unfolding homeomorphic_def by (by100 blast)
+    have hf_img: "f ` J = sphere (0::real^2) 1"
+      using hfg unfolding homeomorphism_def by (by100 blast)
+    have hsphere_ne: "sphere (0::real^2) 1 \<noteq> {}"
+      by (by100 simp)
+    show ?thesis
+      using hf_img hsphere_ne by (by100 blast)
+  qed
+  have hE_nonempty: "?E \<noteq> {}"
+  proof
+    assume hE_empty: "?E = {}"
+    have "\<Union>?E = {}"
+      using hE_empty by (by100 simp)
+    hence "J = {}"
+      using hJ_eq by (by100 simp)
+    thus False
+      using hJ_nonempty by (by100 blast)
+  qed
+  obtain e where heE: "e \<in> ?E"
+    using hE_nonempty by (by100 blast)
+  show ?thesis
+    using heE by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_three_owned_boundary_edges_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -18871,7 +18986,133 @@ lemma geotop_polygon_disk_two_2simplex_free_nonempty_selected_witness_avoids_emp
     contact with the polygon boundary, the other triangle must carry genuine
     selected polygon-boundary contact and is free by the two-triangle base
     proof. **)
-  sorry
+proof -
+  let ?T = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+  let ?F = "{\<tau>\<in>K. geotop_free_2_simplex K J \<tau>}"
+  have h\<theta>T: "\<theta> \<in> ?T"
+    using h\<theta>K h\<theta>2 by (by100 simp)
+  have hT_pair_with_\<theta>: "\<exists>\<rho>. ?T = {\<theta>, \<rho>} \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    have "\<exists>\<sigma> \<tau>. ?T = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>"
+      using hT_card2 card_2_iff[of ?T] by (by100 simp)
+    then obtain \<sigma> \<tau> where hT_eq: "?T = {\<sigma>, \<tau>}"
+      and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+      by (elim exE conjE)
+    have h\<theta>cases: "\<theta> = \<sigma> \<or> \<theta> = \<tau>"
+      using h\<theta>T hT_eq by (by100 simp)
+    show ?thesis
+    proof (rule disjE[OF h\<theta>cases])
+      assume h\<theta>\<sigma>: "\<theta> = \<sigma>"
+      have "?T = {\<theta>, \<tau>}"
+        using hT_eq h\<theta>\<sigma> by (by100 simp)
+      moreover have "\<tau> \<noteq> \<theta>"
+        using h\<sigma>\<tau> h\<theta>\<sigma> by (by100 simp)
+      ultimately show ?thesis
+        by (by100 blast)
+    next
+      assume h\<theta>\<tau>: "\<theta> = \<tau>"
+      have "?T = {\<theta>, \<sigma>}"
+        using hT_eq h\<theta>\<tau> insert_commute[of \<sigma> \<tau>] by (by100 simp)
+      moreover have "\<sigma> \<noteq> \<theta>"
+        using h\<sigma>\<tau> h\<theta>\<tau> by (by100 simp)
+      ultimately show ?thesis
+        by (by100 blast)
+    qed
+  qed
+  obtain \<rho> where hT_eq_\<theta>\<rho>: "?T = {\<theta>, \<rho>}"
+    and h\<rho>\<theta>: "\<rho> \<noteq> \<theta>"
+    using hT_pair_with_\<theta> by (elim exE conjE)
+  have h\<rho>T: "\<rho> \<in> ?T"
+    using hT_eq_\<theta>\<rho> h\<rho>\<theta> by (by100 simp)
+  have h\<rho>K: "\<rho> \<in> K"
+    using h\<rho>T by (by100 simp)
+  have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    using h\<rho>T by (by100 simp)
+  have hcount: "card ?F \<ge> 2"
+    by (rule geotop_polygon_disk_two_2simplex_free_count_prefix
+        [OF hJ hK hK_fin hK_poly hT_card2])
+  have hF_fin: "finite ?F"
+    using hK_fin by (by100 simp)
+  have hF_sub_T: "?F \<subseteq> ?T"
+  proof
+    fix \<eta>
+    assume h\<eta>F: "\<eta> \<in> ?F"
+    have h\<eta>free: "geotop_free_2_simplex K J \<eta>"
+      using h\<eta>F by (by100 simp)
+    show "\<eta> \<in> ?T"
+      using h\<eta>free unfolding geotop_free_2_simplex_def by (by100 blast)
+  qed
+  have h\<rho>free: "geotop_free_2_simplex K J \<rho>"
+  proof (rule ccontr)
+    assume h\<rho>notfree: "\<not> geotop_free_2_simplex K J \<rho>"
+    have hF_sub_single: "?F \<subseteq> {\<theta>}"
+    proof
+      fix \<eta>
+      assume h\<eta>F: "\<eta> \<in> ?F"
+      have h\<eta>T: "\<eta> \<in> ?T"
+        using hF_sub_T h\<eta>F by (by100 blast)
+      have hcases: "\<eta> = \<theta> \<or> \<eta> = \<rho>"
+        using h\<eta>T hT_eq_\<theta>\<rho> by (by100 simp)
+      show "\<eta> \<in> {\<theta>}"
+      proof (rule disjE[OF hcases])
+        assume "\<eta> = \<theta>"
+        thus ?thesis by (by100 simp)
+      next
+        assume h\<eta>\<rho>: "\<eta> = \<rho>"
+        have "geotop_free_2_simplex K J \<rho>"
+          using h\<eta>F h\<eta>\<rho> by (by100 simp)
+        thus ?thesis
+          using h\<rho>notfree by (by100 blast)
+      qed
+    qed
+    have hcard_le: "card ?F \<le> card {\<theta>}"
+      by (rule card_mono[OF hF_fin hF_sub_single])
+    hence "card ?F \<le> 1"
+      by (by100 simp)
+    thus False
+      using hcount by (by100 linarith)
+  qed
+  obtain e where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and heJ: "e \<subseteq> J"
+    using geotop_polygon_disk_boundary_edge_exists_prefix[OF hJ hK hK_poly]
+    by (elim bexE conjE)
+  obtain \<mu> where h\<mu>K: "\<mu> \<in> K"
+    and h\<mu>2: "geotop_simplex_dim \<mu> 2"
+    and he\<mu>: "geotop_is_face e \<mu>"
+    using geotop_polygon_disk_boundary_edge_owned_by_2simplex_prefix
+        [OF hJ hK hK_poly heK hedge heJ]
+    by (elim bexE conjE)
+  have h\<mu>T: "\<mu> \<in> ?T"
+    using h\<mu>K h\<mu>2 by (by100 simp)
+  have h\<mu>cases: "\<mu> = \<theta> \<or> \<mu> = \<rho>"
+    using h\<mu>T hT_eq_\<theta>\<rho> by (by100 simp)
+  have h\<mu>not\<theta>: "\<mu> \<noteq> \<theta>"
+  proof
+    assume h\<mu>\<theta>: "\<mu> = \<theta>"
+    have he_selected_\<theta>:
+      "e \<in> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J}"
+      using heK hedge heJ he\<mu> h\<mu>\<theta> by (by100 simp)
+    have hselected_\<theta>:
+      "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J} \<noteq> {}"
+      using he_selected_\<theta> by (by100 blast)
+    have "\<theta> \<inter> J \<noteq> {}"
+      by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
+          [OF hselected_\<theta>])
+    thus False
+      using h\<theta>contact by (by100 simp)
+  qed
+  have h\<mu>\<rho>: "\<mu> = \<rho>"
+    using h\<mu>cases h\<mu>not\<theta> by (by100 blast)
+  have he_selected_\<rho>:
+    "e \<in> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+    using heK hedge heJ he\<mu> h\<mu>\<rho> by (by100 simp)
+  have hselected_\<rho>:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    using he_selected_\<rho> by (by100 blast)
+  show ?thesis
+    using h\<rho>K h\<rho>free h\<rho>2 hselected_\<rho> h\<rho>\<theta> by (by100 blast)
+qed
 
 lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_avoids_empty_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
