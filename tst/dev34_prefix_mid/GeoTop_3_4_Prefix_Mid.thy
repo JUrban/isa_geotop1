@@ -18402,7 +18402,49 @@ lemma geotop_free_triangle_supported_fold_induction_step_prefix:
     inside \<open>U\<close>, gives a smaller polygonal disk triangulation, and the strong
     induction hypothesis normalizes that smaller disk with the same support
     control. **)
-  sorry
+proof -
+  let ?E\<theta> = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  have h\<theta>2: "geotop_simplex_dim \<theta> 2"
+    using h\<theta>free unfolding geotop_free_2_simplex_def by (by100 blast)
+  have h\<theta>canonical_contact:
+      "finite ?E\<theta> \<and> card ?E\<theta> \<le> 2 \<and> \<theta> \<inter> J = \<Union>?E\<theta>"
+    by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1 h\<theta>free])
+  have h\<theta>selected_edges_fin: "finite ?E\<theta>"
+    using h\<theta>canonical_contact by (by100 blast)
+  have h\<theta>selected_edges_card_le2: "card ?E\<theta> \<le> 2"
+    using h\<theta>canonical_contact by (by100 blast)
+  have h\<theta>boundary_contact_eq: "\<theta> \<inter> J = \<Union>?E\<theta>"
+    using h\<theta>canonical_contact by (by100 blast)
+  have hFigure33_cases_book:
+    "\<exists>J' K' f g \<sigma>.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology g
+        \<and> (\<forall>P\<in>UNIV - U. g P = P)
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    (**
+      Remaining Figure 3.3 case construction after canonical contact data.
+      Use \<open>h\<theta>contact_cases\<close> with \<open>h\<theta>boundary_contact_eq\<close>.  The
+      one-edge branch constructs the quadrilateral fold; the two-edge branch
+      constructs the inverse corner fold; the empty-contact branch is resolved
+      by choosing the appropriate two-free-triangle witness before folding. **)
+    sorry
+  show ?thesis
+    by (rule hFigure33_cases_book)
+qed
 
 lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
   fixes J U :: "(real^2) set" and K :: "(real^2) set set"
