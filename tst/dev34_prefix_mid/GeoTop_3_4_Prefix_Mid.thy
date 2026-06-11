@@ -6627,6 +6627,158 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_disk_two_2simplex_free_count_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_card2: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = 2"
+  shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+  (**
+    Named form of the exactly-two-triangle base case in Moise Theorem 3.3.
+    When the disk triangulation has precisely two 2-simplexes, the boundary
+    contact of each one is covered by one or two selected polygon-boundary edge
+    faces, so both 2-simplexes are free. **)
+proof -
+  let ?T = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+  let ?F = "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2}"
+  have hT_obtain:
+    "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau> \<and> ?T = {\<sigma>, \<tau>}"
+  proof -
+    have "\<exists>\<sigma> \<tau>. ?T = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>"
+      using hT_card2 card_2_iff[of ?T] by (by100 simp)
+    then obtain \<sigma> \<tau> where hT: "?T = {\<sigma>, \<tau>}" and hneq: "\<sigma> \<noteq> \<tau>"
+      by (elim exE conjE)
+    show ?thesis
+      using hT hneq by (by100 blast)
+  qed
+  obtain \<sigma> \<tau> where hpair: "\<sigma> \<noteq> \<tau> \<and> ?T = {\<sigma>, \<tau>}"
+    using hT_obtain by (elim exE)
+  have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    using hpair by (by100 simp)
+  have hT_eq: "?T = {\<sigma>, \<tau>}"
+    using hpair by (by100 simp)
+  have hpair_swap_eq: "{\<sigma>, \<tau>} = {\<tau>, \<sigma>}"
+    by (rule insert_commute)
+  have hT_eq_swap: "?T = {\<tau>, \<sigma>}"
+    using hT_eq hpair_swap_eq by (by100 simp)
+  have h\<sigma>T: "\<sigma> \<in> ?T"
+    using hT_eq by (by100 simp)
+  have h\<tau>T: "\<tau> \<in> ?T"
+    using hT_eq by (by100 simp)
+  have h\<tau>\<sigma>: "\<tau> \<noteq> \<sigma>"
+    using h\<sigma>\<tau> by (by100 simp)
+  have h\<sigma>free: "geotop_free_2_simplex K J \<sigma>"
+  proof -
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using h\<sigma>T by (by100 simp)
+    have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      using h\<sigma>T by (by100 simp)
+    let ?E\<sigma> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+    have hE\<sigma>_subset: "?E\<sigma> \<subseteq> K"
+      by (by100 simp)
+    have hE\<sigma>_fin: "finite ?E\<sigma>"
+      using hK_fin by (by100 simp)
+    have hE\<sigma>_card_le2: "card ?E\<sigma> \<le> 2"
+      by (rule geotop_two_triangle_boundary_edge_faces_card_le2_prefix
+          [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
+    have hE\<sigma>_allowed:
+      "?E\<sigma> = {} \<or>
+       (\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J) \<or>
+       (\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+          geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+          geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+          e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+      by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+          [OF hE\<sigma>_fin hE\<sigma>_card_le2])
+    have h\<sigma>J_eq: "\<sigma> \<inter> J = \<Union>?E\<sigma>"
+    proof
+      show "\<sigma> \<inter> J \<subseteq> \<Union>?E\<sigma>"
+        by (rule geotop_two_triangle_boundary_contact_edges_cover_prefix
+            [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
+      show "\<Union>?E\<sigma> \<subseteq> \<sigma> \<inter> J"
+      proof
+        fix x
+        assume hx: "x \<in> \<Union>?E\<sigma>"
+        then obtain e where heE: "e \<in> ?E\<sigma>" and hxe: "x \<in> e"
+          by (by100 blast)
+        have hface: "geotop_is_face e \<sigma>"
+          using heE by (by100 simp)
+        have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+          by (rule geotop_is_face_imp_subset_prefix[OF hface])
+        have he_sub_J: "e \<subseteq> J"
+          using heE by (by100 simp)
+        show "x \<in> \<sigma> \<inter> J"
+          using hxe he_sub_\<sigma> he_sub_J by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      by (rule geotop_free_2_simplex_selected_edges_intro_prefix
+          [OF h\<sigma>K h\<sigma>2 hE\<sigma>_subset hE\<sigma>_allowed h\<sigma>J_eq])
+  qed
+  have h\<tau>free: "geotop_free_2_simplex K J \<tau>"
+  proof -
+    have h\<tau>K: "\<tau> \<in> K"
+      using h\<tau>T by (by100 simp)
+    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      using h\<tau>T by (by100 simp)
+    let ?E\<tau> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+    have hE\<tau>_subset: "?E\<tau> \<subseteq> K"
+      by (by100 simp)
+    have hE\<tau>_fin: "finite ?E\<tau>"
+      using hK_fin by (by100 simp)
+    have hE\<tau>_card_le2: "card ?E\<tau> \<le> 2"
+      by (rule geotop_two_triangle_boundary_edge_faces_card_le2_prefix
+          [OF hJ hK hK_poly hT_eq_swap h\<tau>K h\<tau>2 h\<tau>\<sigma>])
+    have hE\<tau>_allowed:
+      "?E\<tau> = {} \<or>
+       (\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J) \<or>
+       (\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+          geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+          geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+          e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+      by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+          [OF hE\<tau>_fin hE\<tau>_card_le2])
+    have h\<tau>J_eq: "\<tau> \<inter> J = \<Union>?E\<tau>"
+    proof
+      show "\<tau> \<inter> J \<subseteq> \<Union>?E\<tau>"
+        by (rule geotop_two_triangle_boundary_contact_edges_cover_prefix
+            [OF hJ hK hK_poly hT_eq_swap h\<tau>K h\<tau>2 h\<tau>\<sigma>])
+      show "\<Union>?E\<tau> \<subseteq> \<tau> \<inter> J"
+      proof
+        fix x
+        assume hx: "x \<in> \<Union>?E\<tau>"
+        then obtain e where heE: "e \<in> ?E\<tau>" and hxe: "x \<in> e"
+          by (by100 blast)
+        have hface: "geotop_is_face e \<tau>"
+          using heE by (by100 simp)
+        have he_sub_\<tau>: "e \<subseteq> \<tau>"
+          by (rule geotop_is_face_imp_subset_prefix[OF hface])
+        have he_sub_J: "e \<subseteq> J"
+          using heE by (by100 simp)
+        show "x \<in> \<tau> \<inter> J"
+          using hxe he_sub_\<tau> he_sub_J by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      by (rule geotop_free_2_simplex_selected_edges_intro_prefix
+          [OF h\<tau>K h\<tau>2 hE\<tau>_subset hE\<tau>_allowed h\<tau>J_eq])
+  qed
+  have hF_fin: "finite ?F"
+    using hK_fin by (by100 simp)
+  have hpair_sub: "{\<sigma>, \<tau>} \<subseteq> ?F"
+    using h\<sigma>T h\<tau>T h\<sigma>free h\<tau>free by (by100 blast)
+  have hpair_card: "card {\<sigma>, \<tau>} = 2"
+    using h\<sigma>\<tau> by (by100 simp)
+  have "card {\<sigma>, \<tau>} \<le> card ?F"
+    by (rule card_mono[OF hF_fin hpair_sub])
+  thus ?thesis
+    using hpair_card by (by100 simp)
+qed
+
 lemma geotop_theta_middle_arc_inline_decomposition_prefix:
   fixes M B\<^sub>1 B\<^sub>2 B\<^sub>3 E :: "(real^2) set"
   assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B\<^sub>1 B\<^sub>2 B\<^sub>3 E"
@@ -18434,6 +18586,36 @@ proof -
       fixed on UNIV - U. **)
   proof -
     assume hcard_gt1: "card ?T > 1"
+    have hfold_card_cases: "card ?T = 2 \<or> card ?T > 2"
+      using hcard_gt1 by (by100 linarith)
+    have htwo_free_count_if_card2:
+        "card ?T = 2 \<Longrightarrow>
+          card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+      by (rule geotop_polygon_disk_two_2simplex_free_count_prefix
+          [OF hJ hK hK_fin hK_poly])
+    have htwo_free_witnesses_if_card2:
+        "card ?T = 2 \<Longrightarrow>
+          \<exists>\<rho> \<eta>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho>
+            \<and> \<eta> \<in> K \<and> geotop_free_2_simplex K J \<eta>
+            \<and> \<rho> \<noteq> \<eta>"
+    proof -
+      assume hcard2: "card ?T = 2"
+      have hfree_count:
+          "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+        by (rule htwo_free_count_if_card2[OF hcard2])
+      show ?thesis
+        by (rule geotop_two_distinct_members_from_card_ge2_prefix
+            [OF hK_fin hfree_count])
+    qed
+    have hboundary_pair_if_gt2:
+        "card ?T > 2 \<Longrightarrow>
+          \<exists>\<rho> \<eta>. \<rho> \<in> K \<and> \<eta> \<in> K \<and> \<rho> \<noteq> \<eta>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> geotop_simplex_dim \<eta> 2
+            \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} \<noteq> {}
+            \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<eta> \<and> d \<subseteq> J} \<noteq> {}"
+      by (rule geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix
+          [OF hJ hK hK_poly])
     have hfree_triangle_book:
       "\<exists>\<theta>\<in>K. geotop_free_2_simplex K J \<theta>"
     proof -
@@ -18480,7 +18662,10 @@ proof -
         \<open>\<theta> \<inter> J\<close>.  The next proof step is the Moise Figure 3.3 case split
         on \<open>h\<theta>selected_edge_cases\<close>, constructing the one-edge fold or the
         two-edge corner inverse fold inside \<open>U\<close>, then composing with the
-        induction map using the fixed-outside composition lemmas above. **)
+        induction map using the fixed-outside composition lemmas above.  The
+        surrounding induction split now also has the exact two-triangle free
+        witness package \<open>htwo_free_witnesses_if_card2\<close> and the large-case
+        boundary-ear package \<open>hboundary_pair_if_gt2\<close>. **)
       sorry
   qed
   have hfold_induction_book:
