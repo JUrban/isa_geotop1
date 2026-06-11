@@ -24415,12 +24415,35 @@ proof -
     unfolding geotop_star_def using heK hXe by (by100 blast)
   have h\<sigma>star: "\<sigma> \<in> geotop_star K X"
     unfolding geotop_star_def using h\<sigma>K hX\<sigma> by (by100 blast)
+  let ?E\<^sub>X = "{d\<in>K. geotop_is_edge d \<and> X \<in> d}"
+  let ?T\<^sub>X = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>}"
+  have hX_singleton: "{X} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hXv by (by100 blast)
+  have hincident_edges_fin: "finite ?E\<^sub>X"
+    using hK_fin by (by100 simp)
+  have hincident_twos_fin: "finite ?T\<^sub>X"
+    using hK_fin by (by100 simp)
+  have hselected_edge_incident: "e \<in> ?E\<^sub>X"
+    using heK hedge hXe by (by100 simp)
+  have hselected_two_incident: "\<sigma> \<in> ?T\<^sub>X"
+    using h\<sigma>K h\<sigma>2 hX\<sigma> by (by100 simp)
+  have hboundary_selected_edge_incident:
+    "e \<in> {d\<in>K. geotop_is_edge d \<and> d \<subseteq> J \<and> X \<in> d}"
+    using heK hedge heJ hXe by (by100 simp)
   have hfinite_selected_star_data:
     "finite (geotop_star K X)
       \<and> finite (geotop_link K X)
       \<and> e \<in> geotop_star K X
-      \<and> \<sigma> \<in> geotop_star K X"
-    using hstar_fin hlink_fin he_star h\<sigma>star by (by100 blast)
+      \<and> \<sigma> \<in> geotop_star K X
+      \<and> finite ?E\<^sub>X
+      \<and> finite ?T\<^sub>X
+      \<and> e \<in> ?E\<^sub>X
+      \<and> \<sigma> \<in> ?T\<^sub>X
+      \<and> e \<in> {d\<in>K. geotop_is_edge d \<and> d \<subseteq> J \<and> X \<in> d}"
+    using hstar_fin hlink_fin he_star h\<sigma>star hincident_edges_fin
+      hincident_twos_fin hselected_edge_incident hselected_two_incident
+      hboundary_selected_edge_incident
+    by (by100 blast)
   have hlocal_finite_fan_wedge:
     "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
       X1 \<in> ball X r \<longrightarrow>
