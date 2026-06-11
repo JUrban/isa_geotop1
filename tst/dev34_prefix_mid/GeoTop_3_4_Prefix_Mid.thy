@@ -19013,6 +19013,37 @@ proof -
         [OF hK_fin hcount])
 qed
 
+lemma geotop_empty_contact_2simplex_imp_free_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hcontact: "\<sigma> \<inter> J = {}"
+  shows "geotop_free_2_simplex K J \<sigma>"
+  (**
+    Bookkeeping for the broad historical free-simplex predicate: a 2-simplex
+    with empty polygon-boundary contact is formally free using the empty
+    selected-edge family.  The Figure 3.3 fold still needs a different witness
+    with nonempty boundary contact. **)
+proof -
+  have hEsub: "({} :: (real^2) set set) \<subseteq> K"
+    by (by100 simp)
+  have hEallowed:
+    "({} :: (real^2) set set) = {} \<or>
+     (\<exists>e. ({} :: (real^2) set set) = {e} \<and>
+        geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. ({} :: (real^2) set set) = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+    by (by100 simp)
+  have hcontact_empty: "\<sigma> \<inter> J = \<Union>({} :: (real^2) set set)"
+    using hcontact by (by100 simp)
+  show ?thesis
+    by (rule geotop_free_2_simplex_selected_edges_intro_prefix
+        [where E = "({} :: (real^2) set set)",
+         OF h\<sigma>K h\<sigma>2 hEsub hEallowed hcontact_empty])
+qed
+
 lemma geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix:
   fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
   assumes hselected:
