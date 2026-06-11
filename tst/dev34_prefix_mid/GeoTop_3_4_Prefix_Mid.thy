@@ -22659,6 +22659,67 @@ proof -
       using hB\<^sub>0_bl hB\<^sub>0_sub_cut hB\<^sub>0_endpoints hB\<^sub>0_int_sub_I hPR_same_X\<^sub>0
       by (intro exI conjI)
   qed
+  have hD42_Q0S0_cut_chord_boundary_clean:
+      "\<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
+        \<and> B\<^sub>0 \<subseteq> geotop_polygon_interior J - A
+        \<and> geotop_arc_endpoints B\<^sub>0 {Q0, S0}
+        \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J
+        \<and> top1_in_same_component_on
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B\<^sub>0)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>0))
+            P R
+        \<and> B\<^sub>0 \<inter> J = {}
+        \<and> B\<^sub>0 \<inter> F\<^sub>1 = {}
+        \<and> B\<^sub>0 \<inter> F\<^sub>2 = {}
+        \<and> Q0 \<notin> J
+        \<and> S0 \<notin> J"
+  proof -
+    obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+      and hB\<^sub>0_sub_cut: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
+      and hB\<^sub>0_endpoints: "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+      and hB\<^sub>0_int_sub_I:
+        "geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J"
+      and hB\<^sub>0_same:
+        "top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B\<^sub>0)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B\<^sub>0))
+          P R"
+      using hD42_Q0S0_cut_chord_PR_same
+      by (elim exE conjE)
+    have hB\<^sub>0_sub_I: "B\<^sub>0 \<subseteq> geotop_polygon_interior J"
+      using hB\<^sub>0_sub_cut by (by100 blast)
+    have hB\<^sub>0_J: "B\<^sub>0 \<inter> J = {}"
+      using hB\<^sub>0_sub_I polygon_interior_disjoint_polygon[OF hJ]
+      by (by100 blast)
+    have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+      using hD42_F_J_split by (by100 blast)
+    have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+      using hD42_F_J_split by (by100 blast)
+    have hB\<^sub>0_F\<^sub>1: "B\<^sub>0 \<inter> F\<^sub>1 = {}"
+      using hB\<^sub>0_J hF\<^sub>1_sub_J by (by100 blast)
+    have hB\<^sub>0_F\<^sub>2: "B\<^sub>0 \<inter> F\<^sub>2 = {}"
+      using hB\<^sub>0_J hF\<^sub>2_sub_J by (by100 blast)
+    have hQ0_B\<^sub>0: "Q0 \<in> B\<^sub>0"
+      using geotop_arc_endpoints_pair_data_prefix[OF hB\<^sub>0_endpoints]
+      by (by100 blast)
+    have hS0_B\<^sub>0: "S0 \<in> B\<^sub>0"
+      using geotop_arc_endpoints_pair_data_prefix[OF hB\<^sub>0_endpoints]
+      by (by100 blast)
+    have hQ0_not_J: "Q0 \<notin> J"
+      using hQ0_B\<^sub>0 hB\<^sub>0_J by (by100 blast)
+    have hS0_not_J: "S0 \<notin> J"
+      using hS0_B\<^sub>0 hB\<^sub>0_J by (by100 blast)
+    show ?thesis
+      using hB\<^sub>0_bl hB\<^sub>0_sub_cut hB\<^sub>0_endpoints hB\<^sub>0_int_sub_I
+        hB\<^sub>0_same hB\<^sub>0_J hB\<^sub>0_F\<^sub>1 hB\<^sub>0_F\<^sub>2 hQ0_not_J hS0_not_J
+      by (intro exI conjI)
+  qed
   have hD42_QS_splice_theta_contradiction:
       False
     (**
@@ -22701,7 +22762,54 @@ proof -
         arc \<open>A\<close>, and preserves the P-R connectedness witness.  The cyclic
         order \<open>P,Q,R,S\<close>, together with the chosen Q-S boundary split through
         \<open>P\<close>, places \<open>R\<close> in the other boundary arc \<open>F\<^sub>2\<close>. **)
-      sorry
+      proof -
+        obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+          and hB\<^sub>0_sub_cut: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
+          and hB\<^sub>0_endpoints: "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
+          and hB\<^sub>0_int_sub_I:
+            "geotop_arc_interior B\<^sub>0 {Q0, S0} \<subseteq> geotop_polygon_interior J"
+          and hB\<^sub>0_same:
+            "top1_in_same_component_on
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>0)
+              (subspace_topology UNIV geotop_euclidean_topology
+                (closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J) - B\<^sub>0))
+              P R"
+          and hB\<^sub>0_J: "B\<^sub>0 \<inter> J = {}"
+          and hB\<^sub>0_F\<^sub>1: "B\<^sub>0 \<inter> F\<^sub>1 = {}"
+          and hB\<^sub>0_F\<^sub>2: "B\<^sub>0 \<inter> F\<^sub>2 = {}"
+          and hQ0_not_J: "Q0 \<notin> J"
+          and hS0_not_J: "S0 \<notin> J"
+          using hD42_Q0S0_cut_chord_boundary_clean
+          by (elim exE conjE)
+        have hD42_endpoint_splice_to_QS:
+            "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
+              \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
+              \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+                  geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}
+              \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+                  geotop_arc_interior F\<^sub>2 {Q, S} = {}
+              \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq>
+                  geotop_polygon_interior J
+              \<and> top1_in_same_component_on
+                  (closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                    (closure_on UNIV geotop_euclidean_topology
+                      (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+                  P R
+              \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+          (**
+            Remaining endpoint-splice core after the near-boundary chord has
+            been cleaned against \<open>J\<close>, \<open>F\<^sub>1\<close>, and \<open>F\<^sub>2\<close>.  Attach the two
+            local boundary-access pieces from \<open>Q\<close> to \<open>Q0\<close> and \<open>S0\<close> to
+            \<open>S\<close>; then use the cyclic order to prove that the selected
+            \<open>P\<close>-side boundary arc excludes \<open>R\<close>. **)
+        sorry
+        show ?thesis
+          by (rule hD42_endpoint_splice_to_QS)
+      qed
     show False
     proof -
       obtain B\<^sub>Q\<^sub>S where hB\<^sub>Q\<^sub>S_bl:
