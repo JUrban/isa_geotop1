@@ -18815,24 +18815,46 @@ proof -
           by (rule disjI2, rule disjI2[OF hcase])
       qed
     qed
-    show ?thesis
+    have hFigure33_supported_fold_induction_step:
+      "\<exists>J' K' f g \<sigma>.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2} < card ?T
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology g
+        \<and> (\<forall>P\<in>UNIV - U. g P = P)
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology (g \<circ> f)
+        \<and> (g \<circ> f) ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+        \<and> (\<forall>P\<in>UNIV - U. (g \<circ> f) P = P)"
       (**
-        Remaining supported fold construction.  The chosen free triangle
-        \<open>\<theta>\<close> is now in canonical selected-edge form:
-        \<open>?E\<theta>\<close> is finite, has cardinal at most two, and exactly covers
-        \<open>\<theta> \<inter> J\<close>.  The next proof step is the Moise Figure 3.3 case split
-        on \<open>h\<theta>selected_edge_cases\<close>, constructing the one-edge fold or the
-        two-edge corner inverse fold inside \<open>U\<close>, then composing with the
-        induction map using the fixed-outside composition lemmas above.  The
-        surrounding induction split now also has the exact two-triangle free
-        witness package \<open>htwo_free_witnesses_if_card2\<close> and the large-case
-        boundary-ear package \<open>hboundary_pair_if_gt2\<close>.  If the selected edge
-        set is nonempty, \<open>h\<theta>nonempty_contact_cases\<close> gives the literal
-        one-edge or two-edge boundary-contact form required by the book; the
-        full split \<open>h\<theta>contact_cases\<close> also exposes the empty-contact
-        alternative that must be ruled out or bypassed before applying the
-        Figure 3.3 fold. **)
+        Remaining Moise Figure 3.3 supported induction step.  From the
+        canonical free triangle \<open>\<theta>\<close>, split on \<open>h\<theta>contact_cases\<close>.
+        In the one-edge case, build the local Figure 3.3 fold on the triangle
+        plus its adjacent quadrilateral carrier inside \<open>U\<close>.  In the two-edge
+        case, use the inverse corner fold.  The empty-contact alternative is
+        either impossible for the boundary-ear chosen in the large case or is
+        bypassed by the two-free-triangle package in the two-triangle case.
+
+        The fold produces a new polygonal disk \<open>J'\<close> with triangulation
+        \<open>K'\<close>, strictly fewer 2-simplexes, and a plane homeomorphism \<open>f\<close>
+        fixed outside \<open>U\<close> carrying \<open>J\<close> to \<open>J'\<close>.  The induction hypothesis
+        supplies \<open>g\<close> normalizing \<open>J'\<close>, again fixed outside \<open>U\<close>.  The
+        existing fixed-outside composition lemmas then give the final map
+        \<open>g \<circ> f\<close>. **)
       sorry
+    show ?thesis
+      using hFigure33_supported_fold_induction_step by (by100 blast)
   qed
   have hfold_induction_book:
     "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
