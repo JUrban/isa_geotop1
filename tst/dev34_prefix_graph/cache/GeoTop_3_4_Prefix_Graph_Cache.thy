@@ -10262,6 +10262,18 @@ proof -
               hS_selected_germ_avoids_local hT_selected_germ_avoids_local
               hU_selected_germ_avoids_local
             by (by100 blast)
+          have hselected_germ_points_boundary_side_data:
+              "s0 \<in> ball w r
+                \<and> t0 \<in> ball w r
+                \<and> u0 \<in> ball w r
+                \<and> s0 \<notin> ?Lcomp
+                \<and> t0 \<notin> ?Lcomp
+                \<and> u0 \<notin> ?Lcomp
+                \<and> s0 \<in> S - {w}
+                \<and> t0 \<in> T - {w}
+                \<and> u0 \<in> U - {w}"
+            using hselected_germ_points hselected_germ_points_not_local
+            by (by100 blast)
           have hselected_germ_points_carrier_ball:
               "s0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})
                 \<and> t0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})
