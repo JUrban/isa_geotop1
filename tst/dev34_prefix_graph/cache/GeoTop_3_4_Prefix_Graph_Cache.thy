@@ -3870,6 +3870,18 @@ proof
     using hep hp_ep hp_ne by (by100 simp)
 qed
 
+lemma geotop_closure_member_imp_nonempty_prefix:
+  fixes A :: "'a::topological_space set"
+  assumes hx: "x \<in> closure A"
+  shows "A \<noteq> {}"
+proof
+  assume hA: "A = {}"
+  hence "closure A = {}"
+    by (by100 simp)
+  thus False
+    using hx by (by100 simp)
+qed
+
 lemma geotop_connected_local_component_closure_touch_three_sets_prefix:
   fixes A U G\<^sub>1 G\<^sub>2 G\<^sub>3 :: "'a::real_normed_vector set" and x :: 'a
   assumes hA_conn: "connected A"
@@ -9830,11 +9842,14 @@ proof -
             \<and> (U - {w}) \<inter> ball w r \<noteq> {}"
       proof (intro conjI)
         show "(S - {w}) \<inter> ball w r \<noteq> {}"
-          using hp_selected_germ_closure by (by100 auto)
+          by (rule geotop_closure_member_imp_nonempty_prefix
+              [OF hp_selected_germ_closure])
         show "(T - {w}) \<inter> ball w r \<noteq> {}"
-          using hy_selected_germ_closure by (by100 auto)
+          by (rule geotop_closure_member_imp_nonempty_prefix
+              [OF hy_selected_germ_closure])
         show "(U - {w}) \<inter> ball w r \<noteq> {}"
-          using hz_selected_germ_closure by (by100 auto)
+          by (rule geotop_closure_member_imp_nonempty_prefix
+              [OF hz_selected_germ_closure])
       qed
       have hpz_same_component_from_three:
           "top1_in_same_component_on (geotop_polyhedron L - {w})
