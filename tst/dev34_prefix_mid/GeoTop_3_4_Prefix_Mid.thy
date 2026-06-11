@@ -4877,6 +4877,88 @@ proof
     using hx\<tau> by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_boundary_subset_selected_edges_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "J \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+  (**
+    Boundary-edge cover in pointwise form.  The non-vertex boundary points are
+    already covered by selected boundary edges; if a boundary point were not in
+    the selected edge union, a small boundary arc around it would consist only
+    of finitely many complex vertices, contradicting that every polygon point
+    is a limit point of the polygon. **)
+proof
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+  have hK_fin: "finite K"
+    by (rule geotop_polygon_disk_complex_finite_prefix[OF hJ hK hK_poly])
+  have hE_fin: "finite ?E"
+    by (rule finite_subset[OF _ hK_fin]) (by100 blast)
+  have hverts_fin: "finite (geotop_complex_vertices K)"
+    by (rule geotop_finite_complex_vertices_finite_prefix[OF hK hK_fin])
+  have hE_closed_each: "\<And>e. e \<in> ?E \<Longrightarrow> closed e"
+  proof -
+    fix e
+    assume heE: "e \<in> ?E"
+    have heK: "e \<in> K"
+      using heE by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      using geotop_is_complex_simplex[OF hK] heK by (by100 blast)
+    show "closed e"
+      by (rule geotop_is_simplex_closed[OF he_simplex])
+  qed
+  have hE_closed_all: "\<forall>e\<in>?E. closed e"
+    using hE_closed_each by (by100 blast)
+  have hE_closed: "closed (\<Union>?E)"
+    by (rule closed_Union[OF hE_fin hE_closed_all])
+  have hnonvertex_cover:
+      "J - geotop_complex_vertices K \<subseteq> \<Union>?E"
+    by (rule geotop_polygon_disk_boundary_nonvertex_subset_selected_edges_prefix
+        [OF hJ hK hK_poly])
+  fix x
+  assume hxJ: "x \<in> J"
+  show "x \<in> \<Union>?E"
+  proof (rule ccontr)
+    assume hx_not: "x \<notin> \<Union>?E"
+    have hopen: "open (- \<Union>?E)"
+      by (rule open_Compl[OF hE_closed])
+    have hx_open: "x \<in> - \<Union>?E"
+      using hx_not by (by100 simp)
+    obtain r where hr: "0 < r" and hball: "ball x r \<subseteq> - \<Union>?E"
+      using openE[OF hopen hx_open] by (by100 blast)
+    have hinf: "infinite (J \<inter> ball x r)"
+      using polygon_islimpt[OF hJ hxJ] hr
+      unfolding islimpt_eq_infinite_ball by (by100 blast)
+    have hsubset_vertices: "J \<inter> ball x r \<subseteq> geotop_complex_vertices K"
+    proof
+      fix y
+      assume hy: "y \<in> J \<inter> ball x r"
+      have hyJ: "y \<in> J"
+        using hy by (by100 blast)
+      have hyball: "y \<in> ball x r"
+        using hy by (by100 blast)
+      show "y \<in> geotop_complex_vertices K"
+      proof (rule ccontr)
+        assume hynot: "y \<notin> geotop_complex_vertices K"
+        have "y \<in> J - geotop_complex_vertices K"
+          using hyJ hynot by (by100 blast)
+        hence hyE: "y \<in> \<Union>?E"
+          using hnonvertex_cover by (by100 blast)
+        have "y \<in> - \<Union>?E"
+          using hball hyball by (by100 blast)
+        thus False
+          using hyE by (by100 blast)
+      qed
+    qed
+    have "finite (J \<inter> ball x r)"
+      by (rule finite_subset[OF hsubset_vertices hverts_fin])
+    thus False
+      using hinf by (by100 blast)
+  qed
+qed
+
 lemma geotop_three_selected_boundary_edges_two_owner_2simplexes_prefix:
   fixes J e\<^sub>1 e\<^sub>2 e\<^sub>3 :: "(real^2) set" and K :: "(real^2) set set"
   assumes he\<^sub>1K: "e\<^sub>1 \<in> K"
@@ -24103,7 +24185,30 @@ lemma geotop_polygon_boundary_vertex_radial_segment_interior_radius_prefix:
     the vertex meets the disk in the corresponding wedge, and radial segments
     from the vertex into that wedge have punctured image in the polygon
     interior. **)
-  sorry
+proof -
+  obtain e where he_sel: "e \<in> {e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+    and hXe: "X \<in> e"
+    using geotop_polygon_disk_boundary_subset_selected_edges_prefix
+        [OF hJ hK hK_poly] hX
+    by (by100 blast)
+  have heK: "e \<in> K"
+    using he_sel by (by100 simp)
+  have hedge: "geotop_is_edge e"
+    using he_sel by (by100 simp)
+  have heJ: "e \<subseteq> J"
+    using he_sel by (by100 simp)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    using geotop_polygon_disk_boundary_edge_owned_by_2simplex_prefix
+      [OF hJ hK hK_poly heK hedge heJ]
+    by (elim bexE conjE)
+  have hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+    by (rule geotop_polygon_disk_boundary_edge_unique_incident_2simplex_prefix
+        [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face heJ])
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
