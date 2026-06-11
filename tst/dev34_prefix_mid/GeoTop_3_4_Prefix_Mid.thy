@@ -17577,18 +17577,333 @@ proof -
 		                                show "x \<in> \<tau> \<inter> J\<^sub>2"
 		                                  using hx\<tau> hxJ\<^sub>2 by (by100 blast)
 		                              qed
-		                              have h\<tau>_parent_contact_sub:
-		                                "\<tau> \<inter> J' \<subseteq>
-		                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
-		                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
-		                                (**
-		                                  Remaining endpoint/edge conversion for the
-		                                  singleton side-2 disk: after
-		                                  \<open>h\<tau>_parent_contact_sub_side\<close>, side-boundary
-		                                  contact on \<open>C\<^sub>2\<close> must be expressed as the two
-		                                  non-chord edge faces of \<open>\<tau>\<close> selected by the
-		                                  parent boundary. **)
-		                                sorry
+			                              have h\<tau>_parent_contact_sub:
+			                                "\<tau> \<inter> J' \<subseteq>
+			                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+			                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+			                              proof -
+			                                have h\<tau>K: "\<tau> \<in> K"
+			                                  using hL\<^sub>2_sub_K h\<tau>L\<^sub>2 by (by100 blast)
+			                                have hchord_L\<^sub>2:
+			                                  "closed_segment v\<^sub>0 v\<^sub>2 \<in> L\<^sub>2"
+			                                  using hL\<^sub>2_complex h\<tau>L\<^sub>2 h\<tau>_chord_face
+			                                  unfolding geotop_is_complex_def by (by100 blast)
+			                                have hchord_hull_segment_eq:
+			                                  "geotop_convex_hull {v\<^sub>0, v\<^sub>2} =
+			                                    closed_segment v\<^sub>0 v\<^sub>2"
+			                                  using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+			                                    geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+			                                  by (by100 simp)
+			                                have h\<tau>_edge_face_sub_J\<^sub>2:
+			                                  "\<And>e. e \<in> L\<^sub>2 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+			                                    geotop_is_face e \<tau> \<Longrightarrow> e \<subseteq> J\<^sub>2"
+			                                proof -
+			                                  fix e
+			                                  assume heL\<^sub>2: "e \<in> L\<^sub>2"
+			                                  assume hedge: "geotop_is_edge e"
+			                                  assume heface: "geotop_is_face e \<tau>"
+			                                  show "e \<subseteq> J\<^sub>2"
+			                                  proof (rule ccontr)
+			                                    assume hnot: "\<not> e \<subseteq> J\<^sub>2"
+			                                    obtain \<rho> where h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+			                                      and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+			                                      and he\<rho>: "geotop_is_face e \<rho>"
+			                                      and h\<rho>ne\<tau>: "\<rho> \<noteq> \<tau>"
+			                                      by (rule exE[OF
+			                                          geotop_polygon_disk_nonboundary_edge_has_other_2simplex_prefix
+			                                            [OF hJ\<^sub>2 hL\<^sub>2_complex hL\<^sub>2_poly_eq_singleton
+			                                              heL\<^sub>2 hedge h\<tau>L\<^sub>2 h\<tau>2 heface hnot]])
+			                                        (by100 blast)
+			                                    have h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
+			                                      using h\<rho>L\<^sub>2 h\<rho>2 by (by100 simp)
+			                                    have "\<rho> = \<tau>"
+			                                      using hT\<^sub>2_singleton h\<rho>T\<^sub>2 by (by100 simp)
+			                                    thus False
+			                                      using h\<rho>ne\<tau> by (by100 blast)
+			                                  qed
+			                                qed
+			                                have hnonchord_side_edge_sub_parent:
+			                                  "\<And>e. e \<in> L\<^sub>2 \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+			                                    geotop_is_face e \<tau> \<Longrightarrow> e \<subseteq> J\<^sub>2 \<Longrightarrow>
+			                                    e \<noteq> closed_segment v\<^sub>0 v\<^sub>2 \<Longrightarrow> e \<subseteq> J'"
+			                                proof
+			                                  fix e x
+			                                  assume heL\<^sub>2: "e \<in> L\<^sub>2"
+			                                  assume hedge: "geotop_is_edge e"
+			                                  assume heface: "geotop_is_face e \<tau>"
+			                                  assume heJ\<^sub>2: "e \<subseteq> J\<^sub>2"
+			                                  assume hene_chord:
+			                                    "e \<noteq> closed_segment v\<^sub>0 v\<^sub>2"
+			                                  assume hxe: "x \<in> e"
+			                                  show "x \<in> J'"
+			                                  proof (cases "x \<in> C\<^sub>2")
+			                                    case True
+			                                    show ?thesis
+			                                      using True hC\<^sub>2_sub_J' by (by100 blast)
+			                                  next
+			                                    case False
+			                                    have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+			                                      using hxe heJ\<^sub>2 by (by100 blast)
+			                                    have hxchord:
+			                                      "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+			                                      using hxJ\<^sub>2 False hJ\<^sub>2_boundary_def
+			                                      by (by100 blast)
+			                                    show ?thesis
+			                                    proof (cases "x \<in> {v\<^sub>0, v\<^sub>2}")
+			                                      case True
+			                                      have hC\<^sub>2_end_data:
+			                                        "v\<^sub>0 \<noteq> v\<^sub>2 \<and> v\<^sub>0 \<in> C\<^sub>2 \<and> v\<^sub>2 \<in> C\<^sub>2"
+			                                        by (rule geotop_arc_endpoints_pair_data_prefix[OF hC\<^sub>2E])
+			                                      show ?thesis
+			                                        using True hC\<^sub>2_end_data hC\<^sub>2_sub_J' by (by100 blast)
+			                                    next
+			                                      case hnot_end: False
+			                                      have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+			                                        using hv\<^sub>2_not by (by100 blast)
+			                                      have hx_inter:
+			                                        "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<inter> e"
+			                                        using hxchord hxe by (by100 blast)
+			                                      have hcap_nonempty:
+			                                        "closed_segment v\<^sub>0 v\<^sub>2 \<inter> e \<noteq> {}"
+			                                        using hx_inter by (by100 blast)
+			                                      have hfaces:
+			                                        "geotop_is_face
+			                                          (closed_segment v\<^sub>0 v\<^sub>2 \<inter> e)
+			                                          (closed_segment v\<^sub>0 v\<^sub>2)
+			                                        \<and> geotop_is_face
+			                                          (closed_segment v\<^sub>0 v\<^sub>2 \<inter> e) e"
+			                                        using geotop_is_complex_intersection[OF hL\<^sub>2_complex]
+			                                          hchord_L\<^sub>2 heL\<^sub>2 hcap_nonempty
+			                                        by (by100 blast)
+			                                      have hface_chord:
+			                                        "geotop_is_face
+			                                          (closed_segment v\<^sub>0 v\<^sub>2 \<inter> e)
+			                                          (closed_segment v\<^sub>0 v\<^sub>2)"
+			                                        using hfaces by (by100 blast)
+			                                      have hface_e:
+			                                        "geotop_is_face
+			                                          (closed_segment v\<^sub>0 v\<^sub>2 \<inter> e) e"
+			                                        using hfaces by (by100 blast)
+			                                      have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+			                                        using hnot_end by (by100 blast)
+			                                      have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+			                                        using hnot_end by (by100 blast)
+			                                      have hcap_eq:
+			                                        "closed_segment v\<^sub>0 v\<^sub>2 \<inter> e =
+			                                          closed_segment v\<^sub>0 v\<^sub>2"
+			                                        by (rule geotop_segment_face_with_nonendpoint_eq_prefix
+			                                            [OF hface_chord hv\<^sub>0v\<^sub>2 hx_inter
+			                                              hx_ne_v\<^sub>0 hx_ne_v\<^sub>2])
+			                                      have hchord_face_e:
+			                                        "geotop_is_face (closed_segment v\<^sub>0 v\<^sub>2) e"
+			                                        using hface_e hcap_eq by (by100 simp)
+			                                      have "closed_segment v\<^sub>0 v\<^sub>2 = e"
+			                                        by (rule geotop_edge_face_of_edge_eq_prefix
+			                                            [OF hchord_segment_edge_singleton hedge hchord_face_e])
+			                                      thus ?thesis
+			                                        using hene_chord by (by100 blast)
+			                                    qed
+			                                  qed
+			                                qed
+			                                obtain u where hu_not: "u \<notin> {v\<^sub>0, v\<^sub>2}"
+			                                  and h\<tau>vertices:
+			                                    "geotop_simplex_vertices \<tau> {v\<^sub>0, v\<^sub>2, u}"
+			                                proof -
+			                                  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+			                                    using hv\<^sub>2_not by (by100 blast)
+			                                  obtain a b u where hab: "a \<noteq> b"
+			                                    and hu_not_ab: "u \<notin> {a, b}"
+			                                    and hchord_ab:
+			                                      "closed_segment v\<^sub>0 v\<^sub>2 =
+			                                        geotop_convex_hull {a, b}"
+			                                    and h\<tau>ab:
+			                                      "geotop_simplex_vertices \<tau> {a, b, u}"
+			                                    by (rule geotop_2simplex_edge_face_vertices_prefix
+			                                        [OF h\<tau>2 hchord_segment_edge_singleton
+			                                          h\<tau>_chord_face])
+			                                  have hab_vertices:
+			                                    "geotop_simplex_vertices
+			                                      (closed_segment v\<^sub>0 v\<^sub>2) {a, b}"
+			                                  proof -
+			                                    have "geotop_simplex_vertices
+			                                        (geotop_convex_hull {a, b}) {a, b}"
+			                                      by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hab])
+			                                    thus ?thesis
+			                                      using hchord_ab by (by100 simp)
+			                                  qed
+			                                  have hv_vertices:
+			                                    "geotop_simplex_vertices
+			                                      (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+			                                    by (rule geotop_closed_segment_simplex_vertices[OF hv\<^sub>0v\<^sub>2])
+			                                  have hab_set: "{a, b} = {v\<^sub>0, v\<^sub>2}"
+			                                    by (rule geotop_simplex_vertices_unique
+			                                        [OF hab_vertices hv_vertices])
+			                                  have hu_not_v: "u \<notin> {v\<^sub>0, v\<^sub>2}"
+			                                    using hu_not_ab hab_set by (by100 simp)
+			                                  have hvertex_set:
+			                                    "{a, b, u} = {v\<^sub>0, v\<^sub>2, u}"
+			                                    using hab_set by (by100 blast)
+			                                  have h\<tau>v:
+			                                    "geotop_simplex_vertices \<tau> {v\<^sub>0, v\<^sub>2, u}"
+			                                    using h\<tau>ab hvertex_set by (by100 simp)
+			                                  show ?thesis
+			                                    by (rule that[OF hu_not_v h\<tau>v])
+			                                qed
+			                                let ?e\<^sub>0u = "geotop_convex_hull {v\<^sub>0, u}"
+			                                let ?e\<^sub>2u = "geotop_convex_hull {v\<^sub>2, u}"
+			                                have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+			                                  using hv\<^sub>2_not by (by100 blast)
+			                                have hother_edge_faces:
+			                                  "geotop_is_edge ?e\<^sub>0u
+			                                    \<and> geotop_is_face ?e\<^sub>0u \<tau>
+			                                    \<and> geotop_is_edge ?e\<^sub>2u
+			                                    \<and> geotop_is_face ?e\<^sub>2u \<tau>"
+			                                  by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+			                                      [OF h\<tau>vertices hv\<^sub>0v\<^sub>2 hu_not])
+			                                have he\<^sub>0u_edge: "geotop_is_edge ?e\<^sub>0u"
+			                                  using hother_edge_faces by (by100 blast)
+			                                have he\<^sub>0u_face: "geotop_is_face ?e\<^sub>0u \<tau>"
+			                                  using hother_edge_faces by (by100 blast)
+			                                have he\<^sub>2u_edge: "geotop_is_edge ?e\<^sub>2u"
+			                                  using hother_edge_faces by (by100 blast)
+			                                have he\<^sub>2u_face: "geotop_is_face ?e\<^sub>2u \<tau>"
+			                                  using hother_edge_faces by (by100 blast)
+			                                have he\<^sub>0u_L\<^sub>2: "?e\<^sub>0u \<in> L\<^sub>2"
+			                                  using hL\<^sub>2_complex h\<tau>L\<^sub>2 he\<^sub>0u_face
+			                                  unfolding geotop_is_complex_def by (by100 blast)
+			                                have he\<^sub>2u_L\<^sub>2: "?e\<^sub>2u \<in> L\<^sub>2"
+			                                  using hL\<^sub>2_complex h\<tau>L\<^sub>2 he\<^sub>2u_face
+			                                  unfolding geotop_is_complex_def by (by100 blast)
+			                                have htriangle_edge_hulls_distinct:
+			                                  "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> ?e\<^sub>0u
+			                                    \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> ?e\<^sub>2u
+			                                    \<and> ?e\<^sub>0u \<noteq> ?e\<^sub>2u"
+			                                  by (rule geotop_2simplex_vertices_edge_hulls_distinct_prefix
+			                                      [OF h\<tau>vertices hv\<^sub>0v\<^sub>2 hu_not])
+			                                have he\<^sub>0u_ne_chord:
+			                                  "?e\<^sub>0u \<noteq> closed_segment v\<^sub>0 v\<^sub>2"
+			                                  using htriangle_edge_hulls_distinct hchord_hull_segment_eq
+			                                  by (by100 blast)
+			                                have he\<^sub>2u_ne_chord:
+			                                  "?e\<^sub>2u \<noteq> closed_segment v\<^sub>0 v\<^sub>2"
+			                                  using htriangle_edge_hulls_distinct hchord_hull_segment_eq
+			                                  by (by100 blast)
+			                                have he\<^sub>0u_sub_J\<^sub>2: "?e\<^sub>0u \<subseteq> J\<^sub>2"
+			                                  by (rule h\<tau>_edge_face_sub_J\<^sub>2
+			                                      [OF he\<^sub>0u_L\<^sub>2 he\<^sub>0u_edge he\<^sub>0u_face])
+			                                have he\<^sub>2u_sub_J\<^sub>2: "?e\<^sub>2u \<subseteq> J\<^sub>2"
+			                                  by (rule h\<tau>_edge_face_sub_J\<^sub>2
+			                                      [OF he\<^sub>2u_L\<^sub>2 he\<^sub>2u_edge he\<^sub>2u_face])
+			                                have he\<^sub>0u_sub_J': "?e\<^sub>0u \<subseteq> J'"
+			                                  by (rule hnonchord_side_edge_sub_parent
+			                                      [OF he\<^sub>0u_L\<^sub>2 he\<^sub>0u_edge he\<^sub>0u_face
+			                                        he\<^sub>0u_sub_J\<^sub>2 he\<^sub>0u_ne_chord])
+			                                have he\<^sub>2u_sub_J': "?e\<^sub>2u \<subseteq> J'"
+			                                  by (rule hnonchord_side_edge_sub_parent
+			                                      [OF he\<^sub>2u_L\<^sub>2 he\<^sub>2u_edge he\<^sub>2u_face
+			                                        he\<^sub>2u_sub_J\<^sub>2 he\<^sub>2u_ne_chord])
+			                                have he\<^sub>0u_selected:
+			                                  "?e\<^sub>0u \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+			                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+			                                  using he\<^sub>0u_L\<^sub>2 he\<^sub>0u_edge he\<^sub>0u_face he\<^sub>0u_sub_J'
+			                                  by (by100 blast)
+			                                have he\<^sub>2u_selected:
+			                                  "?e\<^sub>2u \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+			                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+			                                  using he\<^sub>2u_L\<^sub>2 he\<^sub>2u_edge he\<^sub>2u_face he\<^sub>2u_sub_J'
+			                                  by (by100 blast)
+			                                have hv\<^sub>0_e\<^sub>0u: "v\<^sub>0 \<in> ?e\<^sub>0u"
+			                                proof -
+			                                  have "v\<^sub>0 \<in> convex hull {v\<^sub>0, u}"
+			                                    using hull_inc[of v\<^sub>0 "{v\<^sub>0, u}"] by (by100 simp)
+			                                  thus ?thesis
+			                                    using geotop_convex_hull_eq_HOL[of "{v\<^sub>0, u}"]
+			                                    by (by100 simp)
+			                                qed
+			                                have hv\<^sub>2_e\<^sub>2u: "v\<^sub>2 \<in> ?e\<^sub>2u"
+			                                proof -
+			                                  have "v\<^sub>2 \<in> convex hull {v\<^sub>2, u}"
+			                                    using hull_inc[of v\<^sub>2 "{v\<^sub>2, u}"] by (by100 simp)
+			                                  thus ?thesis
+			                                    using geotop_convex_hull_eq_HOL[of "{v\<^sub>2, u}"]
+			                                    by (by100 simp)
+			                                qed
+			                                have h\<tau>J\<^sub>2_sub_named_edges:
+			                                  "\<tau> \<inter> J\<^sub>2 \<subseteq>
+			                                    geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+			                                    ?e\<^sub>0u \<union> ?e\<^sub>2u"
+			                                  by (rule geotop_2simplex_polygon_boundary_inter_subset_three_edge_hulls_prefix
+			                                      [OF hJ\<^sub>2 h\<tau>L\<^sub>2 h\<tau>2 hL\<^sub>2_poly_eq_singleton
+			                                        h\<tau>vertices hv\<^sub>0v\<^sub>2 hu_not])
+			                                show ?thesis
+			                                proof
+			                                  fix x
+			                                  assume hx: "x \<in> \<tau> \<inter> J'"
+			                                  have hxJ': "x \<in> J'"
+			                                    using hx by (by100 blast)
+			                                  have hxJ\<^sub>2: "x \<in> \<tau> \<inter> J\<^sub>2"
+			                                    using h\<tau>_parent_contact_sub_side hx by (by100 blast)
+			                                  have hx_named:
+			                                    "x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+			                                      \<or> x \<in> ?e\<^sub>0u \<or> x \<in> ?e\<^sub>2u"
+			                                    using h\<tau>J\<^sub>2_sub_named_edges hxJ\<^sub>2 by (by100 blast)
+			                                  show "x \<in> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+			                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+			                                  proof (rule disjE[OF hx_named])
+			                                    assume hxchord_hull:
+			                                      "x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+			                                    have hxchord:
+			                                      "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+			                                      using hxchord_hull hchord_hull_segment_eq by (by100 simp)
+			                                    show ?thesis
+				                                    proof (cases "x \<in> {v\<^sub>0, v\<^sub>2}")
+				                                      case True
+				                                      have hx_endpoint_cases: "x = v\<^sub>0 \<or> x = v\<^sub>2"
+				                                        using True by (by100 blast)
+				                                      show ?thesis
+				                                      proof (rule disjE[OF hx_endpoint_cases])
+				                                        assume hxv\<^sub>0: "x = v\<^sub>0"
+			                                        have "x \<in> ?e\<^sub>0u"
+			                                          using hxv\<^sub>0 hv\<^sub>0_e\<^sub>0u by (by100 simp)
+			                                        thus ?thesis
+			                                          using he\<^sub>0u_selected by (by100 blast)
+			                                      next
+			                                        assume hxv\<^sub>2: "x = v\<^sub>2"
+			                                        have "x \<in> ?e\<^sub>2u"
+			                                          using hxv\<^sub>2 hv\<^sub>2_e\<^sub>2u by (by100 simp)
+			                                        thus ?thesis
+			                                          using he\<^sub>2u_selected by (by100 blast)
+			                                      qed
+			                                    next
+			                                      case False
+			                                      have hxarc:
+			                                        "x \<in> geotop_arc_interior
+			                                          (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+			                                        using hxchord False unfolding geotop_arc_interior_def
+			                                        by (by100 blast)
+			                                      have "x \<in> J' \<inter>
+			                                          geotop_arc_interior
+			                                            (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+			                                        using hxJ' hxarc by (by100 blast)
+			                                      thus ?thesis
+			                                        using hchord_arc_interior_disjoint_parent_book
+			                                        by (by100 blast)
+			                                    qed
+			                                  next
+			                                    assume hxrest: "x \<in> ?e\<^sub>0u \<or> x \<in> ?e\<^sub>2u"
+			                                    show ?thesis
+			                                    proof (rule disjE[OF hxrest])
+			                                      assume "x \<in> ?e\<^sub>0u"
+			                                      thus ?thesis
+			                                        using he\<^sub>0u_selected by (by100 blast)
+			                                    next
+			                                      assume "x \<in> ?e\<^sub>2u"
+			                                      thus ?thesis
+			                                        using he\<^sub>2u_selected by (by100 blast)
+			                                    qed
+			                                  qed
+			                                qed
+			                              qed
 		                              show "\<tau> \<inter> J' \<subseteq>
 		                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
 		                                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
