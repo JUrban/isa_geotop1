@@ -19386,6 +19386,65 @@ proof -
     using h\<sigma>K h\<sigma>2 h\<sigma>selected h\<sigma>ne\<theta> by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
+  fixes J \<theta> \<alpha> \<beta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  assumes h\<alpha>K: "\<alpha> \<in> K"
+  assumes h\<alpha>free: "geotop_free_2_simplex K J \<alpha>"
+  assumes h\<alpha>2: "geotop_simplex_dim \<alpha> 2"
+  assumes h\<alpha>_ne_\<theta>: "\<alpha> \<noteq> \<theta>"
+  assumes h\<alpha>E_empty:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J} = {}"
+  assumes h\<beta>K: "\<beta> \<in> K"
+  assumes h\<beta>2: "geotop_simplex_dim \<beta> 2"
+  assumes h\<beta>selected:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J} \<noteq> {}"
+  assumes h\<beta>_ne_\<theta>: "\<beta> \<noteq> \<theta>"
+  assumes h\<beta>_not_free: "\<not> geotop_free_2_simplex K J \<beta>"
+  assumes h\<beta>contact_cases:
+    "(\<exists>e x.
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<beta> \<and> d \<subseteq> J} = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<beta>
+        \<and> e \<subseteq> J
+        \<and> x \<in> \<beta> \<inter> J
+        \<and> x \<notin> e)
+    \<or> (\<exists>e1 e2 x.
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<beta> \<and> d \<subseteq> J} = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<beta>
+        \<and> geotop_is_face e2 \<beta>
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> x \<in> \<beta> \<inter> J
+        \<and> x \<notin> e1 \<union> e2)"
+  shows "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_free_2_simplex K J \<rho>
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Named form of the remaining Moise Figure 3.2 transfer used by the
+    Figure 3.3 ear selection.  The free witness \<open>\<alpha>\<close> has only empty
+    parent-boundary contact, while the selected boundary triangle \<open>\<beta>\<close> is
+    not free and therefore has contact outside its selected parent-boundary
+    edge set.  The book step cuts along the corresponding nonbase side,
+    applies the strong side-disk induction on the two smaller polygonal disks,
+    filters out the artificial-chord-only side witnesses, and transfers a
+    surviving selected free witness back to the parent disk. **)
+  sorry
+
 lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_from_side_transfer_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19545,7 +19604,11 @@ proof -
             [OF h\<beta>K h\<beta>2 h\<beta>E_sub h\<beta>E_allowed h\<beta>selected
               h\<beta>_not_free h\<beta>E_union_sub])
       show ?thesis
-        sorry
+        by (rule geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix
+            [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>contact
+              h\<alpha>K h\<alpha>free h\<alpha>2 h\<alpha>_ne_\<theta> hE\<alpha>_empty h\<beta>K h\<beta>2
+              h\<beta>selected h\<beta>_ne_\<theta> h\<beta>_not_free
+              h\<beta>_nonfree_selected_contact_cases])
     qed
     have h\<alpha>_empty_selected_residual_finishes:
         "?E\<alpha> = {} \<Longrightarrow> ?thesis"
