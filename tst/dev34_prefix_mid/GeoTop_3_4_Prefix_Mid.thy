@@ -22810,6 +22810,26 @@ proof -
 		        using hQ\<^sub>0_UQ0 hUQ0_sub by (by100 blast)
 		      have hS\<^sub>0_cut: "S\<^sub>0 \<in> geotop_polygon_interior J - A"
 		        using hS\<^sub>0_US0 hUS0_sub by (by100 blast)
+		      have hQ\<^sub>0_I: "Q\<^sub>0 \<in> geotop_polygon_interior J"
+		        using hQ\<^sub>0_cut by (by100 blast)
+		      have hS\<^sub>0_I: "S\<^sub>0 \<in> geotop_polygon_interior J"
+		        using hS\<^sub>0_cut by (by100 blast)
+		      have hQ\<^sub>0_not_J: "Q\<^sub>0 \<notin> J"
+		        using hQ\<^sub>0_I polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+		      have hS\<^sub>0_not_J: "S\<^sub>0 \<notin> J"
+		        using hS\<^sub>0_I polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+		      have hQ\<^sub>0_ne_Q: "Q\<^sub>0 \<noteq> Q"
+		        using hQ hQ\<^sub>0_not_J by (by100 blast)
+		      have hS\<^sub>0_ne_S: "S\<^sub>0 \<noteq> S"
+		        using hS hS\<^sub>0_not_J by (by100 blast)
+		      have hQ\<^sub>0_not_F\<^sub>1: "Q\<^sub>0 \<notin> F\<^sub>1"
+		        using hD42_F_J_split hQ\<^sub>0_not_J by (by100 blast)
+		      have hQ\<^sub>0_not_F\<^sub>2: "Q\<^sub>0 \<notin> F\<^sub>2"
+		        using hD42_F_J_split hQ\<^sub>0_not_J by (by100 blast)
+		      have hS\<^sub>0_not_F\<^sub>1: "S\<^sub>0 \<notin> F\<^sub>1"
+		        using hD42_F_J_split hS\<^sub>0_not_J by (by100 blast)
+		      have hS\<^sub>0_not_F\<^sub>2: "S\<^sub>0 \<notin> F\<^sub>2"
+		        using hD42_F_J_split hS\<^sub>0_not_J by (by100 blast)
 		      have hUQ0_conn_top:
 		          "top1_connected_on U\<^sub>Q0
 		            (subspace_topology UNIV geotop_euclidean_topology U\<^sub>Q0)"
