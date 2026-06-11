@@ -22977,6 +22977,50 @@ proof -
     using hs hlocal_eq by (by100 blast)
 qed
 
+lemma geotop_2simplex_interior_radial_segment_from_point_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hp: "p \<in> \<sigma>"
+  assumes hx: "x \<in> interior \<sigma>"
+  shows "closed_segment p x - {p} \<subseteq> interior \<sigma>"
+  (**
+    Local triangle radial step for Moise D42: in a convex two-simplex, every
+    punctured segment from any triangle point to an interior point stays in the
+    triangle interior. **)
+proof
+  fix y
+  assume hy: "y \<in> closed_segment p x - {p}"
+  have hconvex: "convex \<sigma>"
+    by (rule geotop_simplex_dim_convex_HOL_prefix[OF h\<sigma>2])
+  have hp_cl: "p \<in> closure \<sigma>"
+    using hp closure_subset by (by100 blast)
+  have hopen_xp: "open_segment x p \<subseteq> interior \<sigma>"
+    by (rule in_interior_closure_convex_segment[OF hconvex hx hp_cl])
+  have hopen_px: "open_segment p x \<subseteq> interior \<sigma>"
+    using hopen_xp open_segment_commute[of p x] by (by100 simp)
+  have hy_closed: "y \<in> closed_segment p x"
+    using hy by (by100 blast)
+  have hy_not_p: "y \<notin> {p}"
+    using hy by (by100 blast)
+  have hy_cases: "y \<in> open_segment p x \<or> y = x"
+  proof -
+    have "y \<in> open_segment p x \<union> {p, x}"
+      using hy_closed closed_segment_eq_open[of p x] by (by100 simp)
+    thus ?thesis
+      using hy_not_p by (by100 blast)
+  qed
+  show "y \<in> interior \<sigma>"
+  proof (rule disjE[OF hy_cases])
+    assume hy_open: "y \<in> open_segment p x"
+    show ?thesis
+      using hopen_px hy_open by (by100 blast)
+  next
+    assume hyx: "y = x"
+    show ?thesis
+      using hx hyx by (by100 simp)
+  qed
+qed
+
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
