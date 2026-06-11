@@ -18816,6 +18816,99 @@ proof -
         [OF hK_fin hcount])
 qed
 
+lemma geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
+  assumes hselected:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<noteq> {}"
+  shows "\<sigma> \<inter> J \<noteq> {}"
+  (**
+    Bookkeeping for the Figure 3.3 ear selection: a selected polygon-boundary
+    edge is a nonempty edge face of the triangle and lies in the polygon
+    boundary, hence gives actual boundary contact. **)
+proof -
+  obtain e where he_sel:
+      "e \<in> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+    using hselected by (by100 blast)
+  have hedge: "geotop_is_edge e"
+    using he_sel by (by100 simp)
+  have hface: "geotop_is_face e \<sigma>"
+    using he_sel by (by100 simp)
+  have heJ: "e \<subseteq> J"
+    using he_sel by (by100 simp)
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hae: "a \<in> e"
+    using he_seg by (by100 simp)
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset_prefix[OF hface])
+  have "a \<in> \<sigma> \<inter> J"
+    using hae he_sub_\<sigma> heJ by (by100 blast)
+  thus ?thesis
+    by (by100 blast)
+qed
+
+lemma geotop_polygon_disk_free_nonempty_selected_witness_avoids_empty_contact_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  shows "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_free_2_simplex K J \<rho>
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Moise Figure 3.3 boundary-ear selection, isolated from the fold itself.
+    The strong Theorem 3.3 induction must supply a free triangle whose selected
+    edge lies on the original polygon boundary, not merely an empty-contact
+    formal witness. **)
+  sorry
+
+lemma geotop_boundary_free_witness_from_free_nonempty_selected_edges_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<rho>K: "\<rho> \<in> K"
+  assumes h\<rho>free: "geotop_free_2_simplex K J \<rho>"
+  assumes h\<rho>2: "geotop_simplex_dim \<rho> 2"
+  assumes h\<rho>selected:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  shows "\<rho> \<in> K \<and> geotop_boundary_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Converts the selected boundary-ear witness into the boundary-contact
+    predicate used by the Figure 3.3 one-edge/two-edge fold split. **)
+proof -
+  have h\<rho>bf: "geotop_boundary_free_2_simplex K J \<rho>"
+    by (rule geotop_free_2_simplex_nonempty_selected_edges_imp_boundary_free_prefix
+        [OF hJ hK hK_poly h\<rho>K h\<rho>2 hT_gt1 h\<rho>free h\<rho>selected])
+  have h\<rho>contact_ne: "\<rho> \<inter> J \<noteq> {}"
+    by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
+        [OF h\<rho>selected])
+  have h\<rho>_ne_\<theta>: "\<rho> \<noteq> \<theta>"
+  proof
+    assume h_eq: "\<rho> = \<theta>"
+    have "\<rho> \<inter> J = {}"
+      using h_eq h\<theta>contact by (by100 simp)
+    thus False
+      using h\<rho>contact_ne by (by100 blast)
+  qed
+  show ?thesis
+    using h\<rho>K h\<rho>bf h\<rho>_ne_\<theta> by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_boundary_free_witness_avoids_empty_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -18838,7 +18931,22 @@ lemma geotop_polygon_disk_boundary_free_witness_avoids_empty_contact_prefix:
     form: if the first selected free triangle is disjoint from the polygon
     boundary, choose another free triangle whose selected boundary-edge set is
     nonempty, hence a \<open>geotop_boundary_free_2_simplex\<close>. **)
-  sorry
+proof -
+  obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+    and h\<rho>free: "geotop_free_2_simplex K J \<rho>"
+    and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    and h\<rho>selected:
+      "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    and h\<rho>\<theta>: "\<rho> \<noteq> \<theta>"
+    by (rule geotop_polygon_disk_free_nonempty_selected_witness_avoids_empty_contact_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt1 h\<theta>K h\<theta>free h\<theta>2 h\<theta>contact])
+  have h\<rho>data:
+      "\<rho> \<in> K \<and> geotop_boundary_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+    by (rule geotop_boundary_free_witness_from_free_nonempty_selected_edges_prefix
+        [OF hJ hK hK_poly hT_gt1 h\<rho>K h\<rho>free h\<rho>2 h\<rho>selected h\<theta>contact])
+  show ?thesis
+    using h\<rho>data by (by100 blast)
+qed
 
 lemma geotop_plane_homeomorphism_fixed_outside_comp_prefix:
   fixes f g :: "real^2 \<Rightarrow> real^2" and U :: "(real^2) set"
