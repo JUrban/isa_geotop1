@@ -24351,6 +24351,7 @@ lemma geotop_polygon_boundary_vertex_selected_edge_fan_wedge_radial_segment_pref
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
   assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
   assumes hK_poly:
     "geotop_polyhedron K =
       closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
@@ -24371,16 +24372,17 @@ lemma geotop_polygon_boundary_vertex_selected_edge_fan_wedge_radial_segment_pref
     Moise D42 boundary-vertex fan/wedge step.  The surrounding theorem has
     already reduced the boundary vertex to a selected boundary edge through
     \<open>X\<close> and the unique 2-simplex incident to that edge.  What remains is the
-    local finite fan argument at \<open>X\<close>: the boundary-star link is a broken-line
-    endpoint, so a small ball meets the closed disk in one wedge, and every
-    radial segment from \<open>X\<close> to a nearby polygon-interior point has its
-    punctured image in the polygon interior. **)
+    local finite fan argument at \<open>X\<close>: using \<open>finite K\<close>, the boundary-star
+    link is a finite broken-line endpoint, so a small ball meets the closed
+    disk in one wedge, and every radial segment from \<open>X\<close> to a nearby
+    polygon-interior point has its punctured image in the polygon interior. **)
   sorry
 
 lemma geotop_polygon_boundary_vertex_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
   assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
   assumes hK_poly:
     "geotop_polyhedron K =
       closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
@@ -24419,7 +24421,7 @@ proof -
         [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face heJ])
   show ?thesis
     by (rule geotop_polygon_boundary_vertex_selected_edge_fan_wedge_radial_segment_prefix
-        [OF hJ hK hK_poly hX hXv heK hedge heJ hXe h\<sigma>K h\<sigma>2 h\<sigma>face hfaces])
+        [OF hJ hK hK_fin hK_poly hX hXv heK hedge heJ hXe h\<sigma>K h\<sigma>2 h\<sigma>face hfaces])
 qed
 
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
@@ -24446,7 +24448,7 @@ proof -
     case True
     show ?thesis
       by (rule geotop_polygon_boundary_vertex_radial_segment_interior_radius_prefix
-          [OF hJ hK hK_poly hX True])
+          [OF hJ hK hK_fin hK_poly hX True])
   next
     case False
     show ?thesis
