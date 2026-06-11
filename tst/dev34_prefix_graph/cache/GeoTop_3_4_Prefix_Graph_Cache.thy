@@ -10422,8 +10422,29 @@ proof -
               using hfirst_entry_connected_local_complement_piece
               by (elim exE conjE)
             show ?thesis
-              by (rule geotop_connected_local_component_closure_touch_three_sets_prefix
-                  [OF hA_conn hA_sub hxA hS_A hT_A hU_A])
+            proof -
+              let ?C = "connected_component_set ?Lcomp x"
+              have hxL: "x \<in> ?Lcomp"
+                using hA_sub hxA by (by100 blast)
+              have hC_L: "?C \<in> components ?Lcomp"
+                by (rule hselected_component_at_local[OF hxL])
+              have hA_sub_C: "A \<subseteq> ?C"
+                by (rule hconnected_subset_selected_component
+                    [OF hxA hA_conn hA_sub])
+              have hcl_sub: "closure A \<subseteq> closure ?C"
+                by (rule closure_mono[OF hA_sub_C])
+              have hS_C:
+                  "(S - {w}) \<inter> ball w r \<inter> closure ?C \<noteq> {}"
+                using hS_A hcl_sub by (by100 blast)
+              have hT_C:
+                  "(T - {w}) \<inter> ball w r \<inter> closure ?C \<noteq> {}"
+                using hT_A hcl_sub by (by100 blast)
+              have hU_C:
+                  "(U - {w}) \<inter> ball w r \<inter> closure ?C \<noteq> {}"
+                using hU_A hcl_sub by (by100 blast)
+              show ?thesis
+                using hC_L hS_C hT_C hU_C by (intro exI conjI)
+            qed
           qed
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
