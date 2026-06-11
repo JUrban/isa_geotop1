@@ -22842,6 +22842,61 @@ proof -
 		        using hB\<^sub>S_sub hUS0_sub by (by100 blast)
 		      have hB\<^sub>Q_B\<^sub>S_disj: "B\<^sub>Q \<inter> B\<^sub>S = {}"
 		        using hB\<^sub>Q_sub hB\<^sub>S_sub hUQ0_US0_disj by (by100 blast)
+		      have hD42_oriented_local_spurs:
+		        "\<exists>B\<^sub>Q1 B\<^sub>S1.
+		          geotop_is_broken_line B\<^sub>Q1
+		          \<and> B\<^sub>Q1 \<subseteq> U\<^sub>Q0
+		          \<and> Q\<^sub>0 \<in> B\<^sub>Q1
+		          \<and> Q' \<in> B\<^sub>Q1
+		          \<and> (Q\<^sub>0 = Q'
+		            \<or> (\<exists>\<gamma>\<^sub>Q. arc \<gamma>\<^sub>Q \<and> path_image \<gamma>\<^sub>Q = B\<^sub>Q1
+		              \<and> pathstart \<gamma>\<^sub>Q = Q\<^sub>0
+		              \<and> pathfinish \<gamma>\<^sub>Q = Q'))
+		          \<and> geotop_is_broken_line B\<^sub>S1
+		          \<and> B\<^sub>S1 \<subseteq> U\<^sub>S0
+		          \<and> S' \<in> B\<^sub>S1
+		          \<and> S\<^sub>0 \<in> B\<^sub>S1
+		          \<and> (S' = S\<^sub>0
+		            \<or> (\<exists>\<gamma>\<^sub>S. arc \<gamma>\<^sub>S \<and> path_image \<gamma>\<^sub>S = B\<^sub>S1
+		              \<and> pathstart \<gamma>\<^sub>S = S'
+		              \<and> pathfinish \<gamma>\<^sub>S = S\<^sub>0))"
+		        (**
+		          Moise splice bookkeeping: orient the already extracted
+		          side-witness broken lines so that they can later be glued to
+		          the interior line in the order \<open>Q\<^sub>0\<close>--\<open>Q'\<close>--\<open>S'\<close>--\<open>S\<^sub>0\<close>. **)
+		      proof -
+		        obtain B\<^sub>Q1 where hB\<^sub>Q1_bl: "geotop_is_broken_line B\<^sub>Q1"
+		          and hB\<^sub>Q1_sub_B\<^sub>Q: "B\<^sub>Q1 \<subseteq> B\<^sub>Q"
+		          and hQ\<^sub>0_B\<^sub>Q1: "Q\<^sub>0 \<in> B\<^sub>Q1"
+		          and hQ'_B\<^sub>Q1: "Q' \<in> B\<^sub>Q1"
+		          and hB\<^sub>Q1_oriented:
+		            "Q\<^sub>0 = Q'
+		              \<or> (\<exists>\<gamma>\<^sub>Q. arc \<gamma>\<^sub>Q \<and> path_image \<gamma>\<^sub>Q = B\<^sub>Q1
+		                \<and> pathstart \<gamma>\<^sub>Q = Q\<^sub>0
+		                \<and> pathfinish \<gamma>\<^sub>Q = Q')"
+		          using geotop_broken_line_subarc[OF hB\<^sub>Q_bl hQ\<^sub>0_B\<^sub>Q hQ'_B\<^sub>Q]
+		          by (elim exE conjE)
+		        have hB\<^sub>Q1_sub_UQ0: "B\<^sub>Q1 \<subseteq> U\<^sub>Q0"
+		          using hB\<^sub>Q1_sub_B\<^sub>Q hB\<^sub>Q_sub by (by100 blast)
+		        obtain B\<^sub>S1 where hB\<^sub>S1_bl: "geotop_is_broken_line B\<^sub>S1"
+		          and hB\<^sub>S1_sub_B\<^sub>S: "B\<^sub>S1 \<subseteq> B\<^sub>S"
+		          and hS'_B\<^sub>S1: "S' \<in> B\<^sub>S1"
+		          and hS\<^sub>0_B\<^sub>S1: "S\<^sub>0 \<in> B\<^sub>S1"
+		          and hB\<^sub>S1_oriented:
+		            "S' = S\<^sub>0
+		              \<or> (\<exists>\<gamma>\<^sub>S. arc \<gamma>\<^sub>S \<and> path_image \<gamma>\<^sub>S = B\<^sub>S1
+		                \<and> pathstart \<gamma>\<^sub>S = S'
+		                \<and> pathfinish \<gamma>\<^sub>S = S\<^sub>0)"
+		          using geotop_broken_line_subarc[OF hB\<^sub>S_bl hS'_B\<^sub>S hS\<^sub>0_B\<^sub>S]
+		          by (elim exE conjE)
+		        have hB\<^sub>S1_sub_US0: "B\<^sub>S1 \<subseteq> U\<^sub>S0"
+		          using hB\<^sub>S1_sub_B\<^sub>S hB\<^sub>S_sub by (by100 blast)
+		        show ?thesis
+		          using hB\<^sub>Q1_bl hB\<^sub>Q1_sub_UQ0 hQ\<^sub>0_B\<^sub>Q1 hQ'_B\<^sub>Q1
+		            hB\<^sub>Q1_oriented hB\<^sub>S1_bl hB\<^sub>S1_sub_US0 hS'_B\<^sub>S1
+		            hS\<^sub>0_B\<^sub>S1 hB\<^sub>S1_oriented
+		          by (intro exI conjI)
+		      qed
 		      have hD42_QS_chord_splice_from_interior_line:
 		        "\<exists>B. geotop_is_broken_line B
 		          \<and> geotop_arc_endpoints B {Q, S}
