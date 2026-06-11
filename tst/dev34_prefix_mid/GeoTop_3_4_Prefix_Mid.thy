@@ -22027,6 +22027,20 @@ proof -
           \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))"
     using hD42_PR_on_QS_boundary_arc_interiors hD42_F\<^sub>1F\<^sub>2_int_disj
     by (by100 blast)
+  have hD42_P_not_F\<^sub>2:
+      "P \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD42_F\<^sub>1F\<^sub>2_int_disj hD42_P_F\<^sub>1
+    by (by100 blast)
+  have hD42_R_on_QS_boundary_arc:
+      "R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD42_PR_on_QS_boundary_arc_interiors
+    by (by100 blast)
+  have hD42_R_F\<^sub>2_if_not_F\<^sub>1:
+      "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S} \<Longrightarrow>
+        R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD42_R_on_QS_boundary_arc
+    by (by100 blast)
   have hD42_separated_sides_forbid_PR_same_component:
       "\<And>H K X :: (real^2) set.
         geotop_separated UNIV geotop_euclidean_topology H K \<Longrightarrow>
