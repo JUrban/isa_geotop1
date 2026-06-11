@@ -19286,6 +19286,84 @@ proof -
     using hid_homeo h\<sigma>2 hJ_frontier hsupport by (by100 blast)
 qed
 
+lemma geotop_figure33_contact_cases_supported_fold_prefix:
+  fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>boundary_contact_eq:
+    "\<theta> \<inter> J =
+      \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes h\<theta>contact_cases:
+    "\<theta> \<inter> J = {}
+      \<or> (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<theta>
+        \<and> e \<subseteq> J
+        \<and> \<theta> \<inter> J = e)
+      \<or> (\<exists>e1 e2.
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<theta>
+        \<and> geotop_is_face e2 \<theta>
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<theta> \<inter> J = e1 \<union> e2)"
+  assumes h\<theta>nonempty_contact_cases:
+    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<noteq> {}
+      \<Longrightarrow> (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<theta>
+        \<and> e \<subseteq> J
+        \<and> \<theta> \<inter> J = e)
+      \<or> (\<exists>e1 e2.
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<theta>
+        \<and> geotop_is_face e2 \<theta>
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<theta> \<inter> J = e1 \<union> e2)"
+  assumes h\<theta>alternate_free_witness:
+    "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+  shows "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+  (**
+    Moise Figure 3.3 fold package after the canonical contact bookkeeping has
+    been normalized.  The one-edge branch constructs the quadrilateral fold
+    supported in \<open>U\<close>; the two-edge branch uses the inverse corner fold; the
+    empty-contact branch first replaces \<open>\<theta>\<close> by the alternate free witness
+    supplied by the strong two-free-simplex form of Theorem 3.3, then applies
+    one of the boundary-contact fold branches. **)
+  sorry
+
 lemma geotop_free_triangle_supported_fold_reduction_prefix:
   fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19441,13 +19519,10 @@ proof -
               UNIV geotop_euclidean_topology f
         \<and> (\<forall>P\<in>UNIV - U. f P = P)
         \<and> f ` J = J'"
-    (**
-      Remaining Figure 3.3 case construction after canonical contact data.
-      Use \<open>h\<theta>contact_cases\<close> with \<open>h\<theta>boundary_contact_eq\<close>.  The
-      one-edge branch constructs the quadrilateral fold; the two-edge branch
-      constructs the inverse corner fold; the empty-contact branch uses
-      \<open>h\<theta>alternate_free_witness\<close> before folding. **)
-    sorry
+    by (rule geotop_figure33_contact_cases_supported_fold_prefix
+        [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<theta>K h\<theta>free
+          h\<theta>2 h\<theta>boundary_contact_eq h\<theta>contact_cases
+          h\<theta>nonempty_contact_cases h\<theta>alternate_free_witness])
   show ?thesis
     by (rule hFigure33_cases_book)
 qed
