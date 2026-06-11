@@ -21953,6 +21953,86 @@ proof (rule equals0I)
     using hAB hxAB by (by100 blast)
 qed
 
+lemma geotop_polygon_cut_subset_closed_minus_and_disjoint_prefix:
+  fixes J A B :: "(real^2) set"
+  assumes hB_sub_cut: "B \<subseteq> geotop_polygon_interior J - A"
+  shows "B \<subseteq> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - A
+      \<and> B \<inter> A = {}"
+  (**
+    D42 endpoint-splice bookkeeping: a chord carrier already lying in
+    \<open>I - A\<close> is also a subset of the closed polygonal disk minus \<open>A\<close>, and
+    is carrier-disjoint from \<open>A\<close>. **)
+proof (intro conjI)
+  show "B \<subseteq> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - A"
+  proof
+    fix x
+    assume hx: "x \<in> B"
+    have hx_cut: "x \<in> geotop_polygon_interior J - A"
+      by (rule subsetD[OF hB_sub_cut hx])
+    have hxI: "x \<in> geotop_polygon_interior J"
+      by (rule DiffD1[OF hx_cut])
+    have hx_not_A: "x \<notin> A"
+    proof
+      assume hxA: "x \<in> A"
+      show False
+        by (rule DiffD2[OF hx_cut hxA])
+    qed
+    have hxcl:
+      "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+      by (rule subsetD[OF subset_closure_on hxI])
+    show "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - A"
+      by (rule DiffI[OF hxcl hx_not_A])
+  qed
+  show "B \<inter> A = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> B \<inter> A"
+    have hxB: "x \<in> B"
+      using hx by (rule IntD1)
+    have hxA: "x \<in> A"
+      using hx by (rule IntD2)
+    have hx_cut: "x \<in> geotop_polygon_interior J - A"
+      by (rule subsetD[OF hB_sub_cut hxB])
+    have hx_not_A: "x \<notin> A"
+    proof
+      assume hxA': "x \<in> A"
+      show False
+        by (rule DiffD2[OF hx_cut hxA'])
+    qed
+    show False
+      by (rule notE[OF hx_not_A hxA])
+  qed
+qed
+
+lemma geotop_arc_interior_left_disjoint_if_carrier_disjoint_prefix:
+  fixes A B :: "(real^2) set"
+  assumes hAB: "A \<inter> B = {}"
+  shows "geotop_arc_interior A EA \<inter> B = {}"
+  (**
+    D42 endpoint-splice bookkeeping: the open arc interior is contained in
+    its carrier, so carrier-disjointness gives the corresponding
+    interior-carrier disjointness. **)
+proof (rule equals0I)
+  fix x
+  assume hx: "x \<in> geotop_arc_interior A EA \<inter> B"
+  have hxA_int: "x \<in> geotop_arc_interior A EA"
+    using hx by (rule IntD1)
+  have hxB: "x \<in> B"
+    using hx by (rule IntD2)
+  have hxA: "x \<in> A"
+    using hxA_int unfolding geotop_arc_interior_def by (rule DiffD1)
+  have hxAB: "x \<in> A \<inter> B"
+    by (rule IntI[OF hxA hxB])
+  have hx_not_AB: "x \<notin> A \<inter> B"
+    by (rule equals0D[OF hAB])
+  show False
+    by (rule notE[OF hx_not_AB hxAB])
+qed
+
 lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
     and P Q R S Q0 S0 :: "real^2"
@@ -23292,66 +23372,22 @@ proof -
             by (rule geotop_arc_interiors_disjoint_if_carriers_disjoint_prefix
                 [OF hB\<^sub>0_F\<^sub>2])
         qed
+        have hD42_near_chord_cut_data:
+            "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - A
+              \<and> B\<^sub>0 \<inter> A = {}"
+          by (rule geotop_polygon_cut_subset_closed_minus_and_disjoint_prefix
+              [OF hB\<^sub>0_sub_cut])
         have hD42_near_chord_sub_closed_minus_A:
             "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
                 (geotop_polygon_interior J) - A"
-        proof
-          fix x
-          assume hx: "x \<in> B\<^sub>0"
-          have hx_cut: "x \<in> geotop_polygon_interior J - A"
-            by (rule subsetD[OF hB\<^sub>0_sub_cut hx])
-          have hxI: "x \<in> geotop_polygon_interior J"
-            by (rule DiffD1[OF hx_cut])
-          have hxA: "x \<notin> A"
-          proof
-            assume hx_in_A: "x \<in> A"
-            show False
-              by (rule DiffD2[OF hx_cut hx_in_A])
-          qed
-          have hxcl: "x \<in> closure_on UNIV geotop_euclidean_topology
-              (geotop_polygon_interior J)"
-            by (rule subsetD[OF subset_closure_on hxI])
-          show "x \<in> closure_on UNIV geotop_euclidean_topology
-              (geotop_polygon_interior J) - A"
-            by (rule DiffI[OF hxcl hxA])
-        qed
+          using hD42_near_chord_cut_data by (by100 blast)
         have hD42_near_chord_misses_A: "B\<^sub>0 \<inter> A = {}"
-        proof (rule equals0I)
-          fix x
-          assume hx: "x \<in> B\<^sub>0 \<inter> A"
-          have hxB\<^sub>0: "x \<in> B\<^sub>0"
-            using hx by (rule IntD1)
-          have hxA: "x \<in> A"
-            using hx by (rule IntD2)
-          have hx_cut: "x \<in> geotop_polygon_interior J - A"
-            by (rule subsetD[OF hB\<^sub>0_sub_cut hxB\<^sub>0])
-          have hx_not_A: "x \<notin> A"
-          proof
-            assume hx_in_A: "x \<in> A"
-            show False
-              by (rule DiffD2[OF hx_cut hx_in_A])
-          qed
-          show False
-            by (rule notE[OF hx_not_A hxA])
-        qed
+          using hD42_near_chord_cut_data by (by100 blast)
         have hD42_near_chord_interior_misses_A:
             "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A = {}"
-        proof (rule equals0I)
-          fix x
-          assume hx: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter> A"
-          have hxB\<^sub>0_int: "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
-            using hx by (rule IntD1)
-          have hxA: "x \<in> A"
-            using hx by (rule IntD2)
-          have hxB\<^sub>0: "x \<in> B\<^sub>0"
-            using hxB\<^sub>0_int unfolding geotop_arc_interior_def by (rule DiffD1)
-          have hxBA: "x \<in> B\<^sub>0 \<inter> A"
-            by (rule IntI[OF hxB\<^sub>0 hxA])
-          have hx_not_BA: "x \<notin> B\<^sub>0 \<inter> A"
-            by (rule equals0D[OF hD42_near_chord_misses_A])
-          show False
-            by (rule notE[OF hx_not_BA hxBA])
-        qed
+          by (rule geotop_arc_interior_left_disjoint_if_carrier_disjoint_prefix
+              [OF hD42_near_chord_misses_A])
         have hD42_F\<^sub>1_near_chord_int_disj:
             "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
               geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
