@@ -21641,14 +21641,81 @@ proof -
 	        S' \<in> geotop_component_at UNIV geotop_euclidean_topology
 	          (geotop_polygon_interior J - A) Q' \<Longrightarrow>
 	        False"
-	    (**
-	      Moise theta contradiction for the chosen opposite side witnesses. From
-	      a same-component assumption, extract a broken line from the Q-side
-	      witness to the S-side witness inside \<open>I - A\<close>, use the local side
-	      neighborhoods to extend it to a Q-S chord in \<open>\<bar>I\<close> missing \<open>A\<close>, then
-	      apply \<open>hD42_same_component_contradiction_from_QS_chord\<close> with the two
-	      boundary arcs from Q to S. **)
-	    sorry
+		    (**
+		      Moise theta contradiction for the chosen opposite side witnesses. From
+		      a same-component assumption, extract a broken line from the Q-side
+		      witness to the S-side witness inside \<open>I - A\<close>, use the local side
+		      neighborhoods to extend it to a Q-S chord in \<open>\<bar>I\<close> missing \<open>A\<close>, then
+		      apply \<open>hD42_same_component_contradiction_from_QS_chord\<close> with the two
+		      boundary arcs from Q to S. **)
+		  proof -
+		    fix Q' S' U\<^sub>Q0 U\<^sub>S0
+		    assume hUQ0_conn: "connected U\<^sub>Q0"
+		    assume hUS0_conn: "connected U\<^sub>S0"
+		    assume hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+		    assume hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+		    assume hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+		    assume hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+		    assume hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+		    assume hS'_US0: "S' \<in> U\<^sub>S0"
+		    assume hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+		    assume hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+		    assume hS'_comp:
+		      "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+		        (geotop_polygon_interior J - A) Q'"
+		    have hD42_same_component_QS_chord_bridge:
+		      "\<exists>B. geotop_is_broken_line B
+		        \<and> geotop_arc_endpoints B {Q, S}
+		        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+		            geotop_arc_interior B {Q, S} = {}
+		        \<and> geotop_arc_interior B {Q, S} \<inter>
+		            geotop_arc_interior F\<^sub>2 {Q, S} = {}
+		        \<and> geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J
+		        \<and> top1_in_same_component_on
+		          (closure_on UNIV geotop_euclidean_topology
+		            (geotop_polygon_interior J) - B)
+		          (subspace_topology UNIV geotop_euclidean_topology
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B))
+		          P R"
+		      (**
+		        Exact remaining chord-extension step.  Use the connected side
+		        witnesses at \<open>Q\<close> and \<open>S\<close>, their frontier facts, and the broken
+		        line from \<open>Q'\<close> to \<open>S'\<close> inside \<open>I - A\<close> to splice a broken line
+		        chord from \<open>Q\<close> to \<open>S\<close>.  Its interior lies in \<open>I\<close>, misses the two
+		        boundary arcs except at endpoints, and still leaves \<open>A\<close> as a
+		        connected witness placing \<open>P\<close> and \<open>R\<close> in the same component of
+		        the closed disk minus the chord. **)
+		      sorry
+		    obtain B where hB_bl: "geotop_is_broken_line B"
+		      and hBE: "geotop_arc_endpoints B {Q, S}"
+		      and hF\<^sub>1B:
+		        "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+		          geotop_arc_interior B {Q, S} = {}"
+		      and hBF\<^sub>2:
+		        "geotop_arc_interior B {Q, S} \<inter>
+		          geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+		      and hB_inner:
+		        "geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J"
+		      and hPR_same:
+		        "top1_in_same_component_on
+		          (closure_on UNIV geotop_euclidean_topology
+		            (geotop_polygon_interior J) - B)
+		          (subspace_topology UNIV geotop_euclidean_topology
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B))
+		          P R"
+		      using hD42_same_component_QS_chord_bridge by (elim exE conjE)
+		    have hopposite:
+		      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+		          \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+		        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+		          \<and> R \<in> geotop_arc_interior F\<^sub>1 {Q, S})"
+		      using hD42_PR_unique_QS_boundary_arc_interiors by (by100 blast)
+		    show False
+		      by (rule hD42_same_component_contradiction_from_QS_chord
+		          [OF hB_bl hBE hF\<^sub>1B hBF\<^sub>2 hB_inner hPR_same hopposite])
+		  qed
 	  have hD42_different_component_open_split:
 	      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
 	        U\<^sub>Q0 \<in> geotop_euclidean_topology
