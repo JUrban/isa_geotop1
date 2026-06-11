@@ -23156,6 +23156,193 @@ proof -
     using hr hradial by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_boundary_edge_unique_incident_2simplex_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes heJ: "e \<subseteq> J"
+  shows "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  (**
+    Boundary-edge converse for the D42 local chart.  If a disk-boundary edge
+    had a second incident two-simplex, the shared-edge relative interior would
+    be an ordinary interior strip of the disk carrier while still lying on the
+    polygon boundary \<open>J\<close>, contradicting \<open>Int J \<inter> J = {}\<close>. **)
+proof -
+  let ?F = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+  have hF_sub: "?F \<subseteq> {\<sigma>}"
+  proof
+    fix \<rho>
+    assume h\<rho>F: "\<rho> \<in> ?F"
+    have h\<rho>K: "\<rho> \<in> K"
+      using h\<rho>F by (by100 simp)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using h\<rho>F by (by100 simp)
+    have h\<rho>face: "geotop_is_face e \<rho>"
+      using h\<rho>F by (by100 simp)
+    show "\<rho> \<in> {\<sigma>}"
+    proof (rule ccontr)
+      assume h\<rho>not: "\<rho> \<notin> {\<sigma>}"
+      have h\<sigma>\<rho>: "\<sigma> \<noteq> \<rho>"
+        using h\<rho>not by (by100 simp)
+      have he_dim: "geotop_simplex_dim e 1"
+        using hedge unfolding geotop_is_edge_def by (by100 simp)
+      have he_simplex: "geotop_is_simplex e"
+        by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+      obtain p where hp: "p \<in> rel_interior e"
+      proof -
+        have "rel_interior e \<noteq> {}"
+          by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
+        thus ?thesis
+          using that by (by100 blast)
+      qed
+      have hp_e: "p \<in> e"
+        using hp rel_interior_subset by (by100 blast)
+      have hpJ: "p \<in> J"
+        using heJ hp_e by (by100 blast)
+      have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<rho>)"
+        by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+            [OF hK h\<sigma>K h\<rho>K h\<sigma>2 h\<rho>2 h\<sigma>\<rho> h\<sigma>face h\<rho>face hedge])
+      have hp_int_union: "p \<in> interior (\<sigma> \<union> \<rho>)"
+        using hrel_int_union hp by (by100 blast)
+      have hunion_sub_poly: "\<sigma> \<union> \<rho> \<subseteq> geotop_polyhedron K"
+        using h\<sigma>K h\<rho>K unfolding geotop_polyhedron_def by (by100 blast)
+      have hp_int_poly: "p \<in> interior (geotop_polyhedron K)"
+      proof -
+        have "interior (\<sigma> \<union> \<rho>) \<subseteq> interior (geotop_polyhedron K)"
+          by (rule interior_mono[OF hunion_sub_poly])
+        thus ?thesis
+          using hp_int_union by (by100 blast)
+      qed
+      have hclosure_on:
+          "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) =
+            closure (geotop_polygon_interior J)"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have hpoly_closure:
+          "geotop_polyhedron K = closure (geotop_polygon_interior J)"
+        using hK_poly hclosure_on by (by100 simp)
+      have hpI: "p \<in> geotop_polygon_interior J"
+      proof -
+        have "p \<in> interior (closure (geotop_polygon_interior J))"
+          using hp_int_poly hpoly_closure by (by100 simp)
+        thus ?thesis
+          using geotop_polygon_interior_regular_closed_prefix[OF hJ]
+          by (by100 simp)
+      qed
+      have "p \<in> geotop_polygon_interior J \<inter> J"
+        using hpI hpJ by (by100 blast)
+      thus False
+        using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    qed
+  qed
+  have hsingle_sub: "{\<sigma>} \<subseteq> ?F"
+    using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  show ?thesis
+    using hF_sub hsingle_sub by (by100 blast)
+qed
+
+lemma geotop_complex_edge_point_nonvertex_rel_interior_prefix:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set" and x :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hx: "x \<in> e"
+  assumes hxnot: "x \<notin> geotop_complex_vertices K"
+  shows "x \<in> rel_interior e"
+  (**
+    Edge-carrier endpoint exclusion for the D42 non-vertex boundary case.
+    A point of a complex edge is either in the edge relative interior or is an
+    endpoint; endpoints are 0-faces of the edge, hence complex vertices. **)
+proof -
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hrel_eq: "rel_interior e = open_segment a b"
+    using he_seg hab rel_interior_closed_segment[of a b] by (by100 simp)
+  show ?thesis
+  proof (rule ccontr)
+    assume hx_not_rel: "x \<notin> rel_interior e"
+    have hx_closed: "x \<in> closed_segment a b"
+      using hx he_seg by (by100 simp)
+    have hx_open_or_end: "x \<in> open_segment a b \<union> {a, b}"
+      using hx_closed closed_segment_eq_open[of a b] by (by100 simp)
+    have hx_not_open: "x \<notin> open_segment a b"
+      using hx_not_rel hrel_eq by (by100 simp)
+    have hx_endpoint: "x = a \<or> x = b"
+      using hx_open_or_end hx_not_open by (by100 blast)
+    have hface: "geotop_is_face {x} e"
+      using geotop_closed_segment_is_face_endpoint[OF hab, of x]
+        hx_endpoint he_seg by (by100 simp)
+    have hface_closed:
+        "\<forall>\<rho>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<rho> \<longrightarrow> \<tau> \<in> K"
+      by (rule geotop_is_complex_face_closed[OF hK])
+    have hxK: "{x} \<in> K"
+      using hface_closed heK hface by (by100 blast)
+    have "x \<in> geotop_complex_vertices K"
+      using geotop_complex_vertices_eq_0_simplexes[OF hK] hxK by (by100 simp)
+    thus False
+      using hxnot by (by100 blast)
+  qed
+qed
+
+lemma geotop_polygon_boundary_nonvertex_radial_segment_interior_radius_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set" and X :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hX: "X \<in> J"
+  assumes hXnot: "X \<notin> geotop_complex_vertices K"
+  shows "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+  (**
+    Non-vertex boundary point case of Moise D42.  The boundary-edge cover
+    supplies an edge of the triangulation contained in \<open>J\<close>; non-vertexness
+    puts \<open>X\<close> in its relative interior; the boundary-edge ownership and
+    uniqueness lemmas reduce the point to the existing one-sided radial
+    segment lemma. **)
+proof -
+  have hcover:
+      "J - geotop_complex_vertices K
+        \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+    by (rule geotop_polygon_disk_boundary_nonvertex_subset_selected_edges_prefix
+        [OF hJ hK hK_poly])
+  have hX_cover: "X \<in> \<Union>{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+    using hcover hX hXnot by (by100 blast)
+  obtain e where he_sel: "e \<in> {e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+    and hXe: "X \<in> e"
+    using hX_cover by (by100 blast)
+  have heK: "e \<in> K"
+    using he_sel by (by100 simp)
+  have hedge: "geotop_is_edge e"
+    using he_sel by (by100 simp)
+  have heJ: "e \<subseteq> J"
+    using he_sel by (by100 simp)
+  have hXrel: "X \<in> rel_interior e"
+    by (rule geotop_complex_edge_point_nonvertex_rel_interior_prefix
+        [OF hK heK hedge hXe hXnot])
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    using geotop_polygon_disk_boundary_edge_owned_by_2simplex_prefix
+      [OF hJ hK hK_poly heK hedge heJ]
+    by (elim bexE conjE)
+  have hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+    by (rule geotop_polygon_disk_boundary_edge_unique_incident_2simplex_prefix
+        [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face heJ])
+  show ?thesis
+    by (rule geotop_polygon_unique_incident_boundary_edge_radial_segment_prefix
+        [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hXrel])
+qed
+
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
