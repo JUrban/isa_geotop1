@@ -3985,6 +3985,46 @@ proof -
   let ?G\<^sub>T = "(T - {w}) \<inter> ball w r"
   let ?G\<^sub>U = "(U - {w}) \<inter> ball w r"
   let ?H = "ball w r - (S \<union> T \<union> U)"
+  have hG\<^sub>S_nonempty: "?G\<^sub>S \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hp_cl])
+  have hG\<^sub>T_nonempty: "?G\<^sub>T \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hy_cl])
+  have hG\<^sub>U_nonempty: "?G\<^sub>U \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hz_cl])
+  have hG\<^sub>S_sub_ball: "?G\<^sub>S \<subseteq> ball w r"
+    by (by100 blast)
+  have hG\<^sub>T_sub_ball: "?G\<^sub>T \<subseteq> ball w r"
+    by (by100 blast)
+  have hG\<^sub>U_sub_ball: "?G\<^sub>U \<subseteq> ball w r"
+    by (by100 blast)
+  have hH_sub_ball: "?H \<subseteq> ball w r"
+    by (by100 blast)
+  have hG\<^sub>S_G\<^sub>T_disj: "?G\<^sub>S \<inter> ?G\<^sub>T = {}"
+    using hST_disj by (by100 blast)
+  have hG\<^sub>S_G\<^sub>U_disj: "?G\<^sub>S \<inter> ?G\<^sub>U = {}"
+    using hSU_disj by (by100 blast)
+  have hG\<^sub>T_G\<^sub>U_disj: "?G\<^sub>T \<inter> ?G\<^sub>U = {}"
+    using hTU_disj by (by100 blast)
+  have hG\<^sub>S_H_disj: "?G\<^sub>S \<inter> ?H = {}"
+    by (by100 blast)
+  have hG\<^sub>T_H_disj: "?G\<^sub>T \<inter> ?H = {}"
+    by (by100 blast)
+  have hG\<^sub>U_H_disj: "?G\<^sub>U \<inter> ?H = {}"
+    by (by100 blast)
+  have hM_ball_cover_named:
+      "M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+    by (rule hM_ball_cover)
+  have hN_ball_cover_named:
+      "N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+    by (rule hN_ball_cover)
+  have hpN: "p \<in> N"
+    using hpSN by (by100 blast)
+  have hyN: "y \<in> N"
+    using hyTN by (by100 blast)
+  have hpS_germ: "p \<in> S - {w}"
+    using hpSN by (by100 blast)
+  have hyT_germ: "y \<in> T - {w}"
+    using hyTN by (by100 blast)
   have hlocal_side:
       "\<exists>A x. connected A
         \<and> A \<subseteq> ?H
