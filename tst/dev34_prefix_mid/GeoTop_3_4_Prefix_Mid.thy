@@ -19831,6 +19831,80 @@ proof -
     using hsplit hL_poly by (by100 blast)
 qed
 
+lemma geotop_selected_nonfree_triangle_chord_boundary_split_through_base_prefix:
+  fixes J :: "(real^2) set" and a b c :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not: "c \<notin> {a, b}"
+  assumes hbase_ab_sub_J: "geotop_convex_hull {a, b} \<subseteq> J"
+  assumes hcJ: "c \<in> J"
+  shows "\<exists>C\<^sub>1 C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {a, c}
+      \<and> geotop_arc_endpoints C\<^sub>2 {a, c}
+      \<and> geotop_arc_interior C\<^sub>1 {a, c} \<inter>
+          geotop_arc_interior C\<^sub>2 {a, c} = {}
+      \<and> b \<in> geotop_arc_interior C\<^sub>1 {a, c}"
+  (**
+    Oriented version of the Figure 3.2 boundary split.  The parent-boundary
+    base edge puts \<open>b\<close> on \<open>J\<close>, and \<open>b\<close> is distinct from the chord endpoints
+    \<open>a,c\<close>; the finite graph boundary split can therefore be chosen so the
+    boundary arc named \<open>C\<^sub>1\<close> is the one passing through the base vertex. **)
+proof -
+  have hbase_segment:
+    "geotop_convex_hull {a, b} = closed_segment a b"
+    using segment_convex_hull[of a b] geotop_convex_hull_eq_HOL[of "{a, b}"]
+    by (by100 simp)
+  have ha_closed: "a \<in> closed_segment a b"
+    unfolding closed_segment_def
+    apply (rule CollectI)
+    apply (rule_tac x = 0 in exI)
+    apply (by100 simp)
+    done
+  have hb_closed: "b \<in> closed_segment a b"
+    by (by100 simp)
+  have ha_base: "a \<in> geotop_convex_hull {a, b}"
+    using hbase_segment ha_closed by (by100 simp)
+  have hb_base: "b \<in> geotop_convex_hull {a, b}"
+    using hbase_segment hb_closed by (by100 simp)
+  have haJ: "a \<in> J"
+    using hbase_ab_sub_J ha_base by (by100 blast)
+  have hbJ: "b \<in> J"
+    using hbase_ab_sub_J hb_base by (by100 blast)
+  have hac: "a \<noteq> c"
+    using hc_not by (by100 blast)
+  have hb_not_ac: "b \<notin> {a, c}"
+    using hab hc_not by (by100 blast)
+  obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_conn: "geotop_complex_connected L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and haL: "{a} \<in> L"
+      and hcL: "{c} \<in> L"
+    using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ haJ hcJ]
+    by (by100 blast)
+  have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+    using hJ hL_poly by (by100 simp)
+  have hb_poly: "b \<in> geotop_polyhedron L"
+    using hbJ hL_poly by (by100 simp)
+  have hsplit:
+    "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {a, c}
+      \<and> geotop_arc_endpoints C\<^sub>2 {a, c}
+      \<and> geotop_arc_interior C\<^sub>1 {a, c} \<inter>
+          geotop_arc_interior C\<^sub>2 {a, c} = {}
+      \<and> b \<in> geotop_arc_interior C\<^sub>1 {a, c}"
+    by (rule geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon haL hcL hac hb_poly hb_not_ac])
+  show ?thesis
+    using hsplit hL_poly by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
   fixes J \<theta> \<alpha> \<beta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19947,6 +20021,17 @@ proof -
     by (rule geotop_selected_nonfree_triangle_chord_arc_interior_subset_parent_interior_prefix
         [OF hJ hK hK_poly h\<beta>K h\<beta>2 h\<beta>_vertices_chord
           hab hc_not hchord_not_parent_boundary])
+  have hchord_boundary_split_through_base:
+    "\<exists>C\<^sub>1 C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {a, c}
+      \<and> geotop_arc_endpoints C\<^sub>2 {a, c}
+      \<and> geotop_arc_interior C\<^sub>1 {a, c} \<inter>
+          geotop_arc_interior C\<^sub>2 {a, c} = {}
+      \<and> b \<in> geotop_arc_interior C\<^sub>1 {a, c}"
+    by (rule geotop_selected_nonfree_triangle_chord_boundary_split_through_base_prefix
+        [OF hJ hab hc_not hbase_ab_sub_J hcJ])
   have hchord_boundary_split:
     "\<exists>C\<^sub>1 C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
       \<and> geotop_is_broken_line C\<^sub>1
@@ -19955,13 +20040,21 @@ proof -
       \<and> geotop_arc_endpoints C\<^sub>2 {a, c}
       \<and> geotop_arc_interior C\<^sub>1 {a, c} \<inter>
           geotop_arc_interior C\<^sub>2 {a, c} = {}"
-    by (rule geotop_selected_nonfree_triangle_chord_boundary_split_prefix
-        [OF hJ hab hc_not hbase_ab_sub_J hcJ])
+    using hchord_boundary_split_through_base by (by100 blast)
   have hac: "a \<noteq> c"
     using hc_not by (by100 blast)
-  have hchord_theta_decomposition:
-    "\<exists>C\<^sub>1 C\<^sub>2.
-      geotop_is_polygon (C\<^sub>1 \<union> closed_segment a c)
+  obtain C\<^sub>1 C\<^sub>2 where hJ_chord_split: "J = C\<^sub>1 \<union> C\<^sub>2"
+    and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+    and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+    and hC\<^sub>1_endpoints: "geotop_arc_endpoints C\<^sub>1 {a, c}"
+    and hC\<^sub>2_endpoints: "geotop_arc_endpoints C\<^sub>2 {a, c}"
+    and hC\<^sub>1C\<^sub>2_disjoint:
+      "geotop_arc_interior C\<^sub>1 {a, c} \<inter>
+        geotop_arc_interior C\<^sub>2 {a, c} = {}"
+    and hb_C\<^sub>1: "b \<in> geotop_arc_interior C\<^sub>1 {a, c}"
+    using hchord_boundary_split_through_base by (elim exE conjE)
+  have hchord_theta_decomposition_oriented:
+      "geotop_is_polygon (C\<^sub>1 \<union> closed_segment a c)
       \<and> geotop_is_polygon J
       \<and> geotop_is_polygon (closed_segment a c \<union> C\<^sub>2)
       \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
@@ -20001,15 +20094,20 @@ proof -
              geotop_arc_interior C\<^sub>1 {a, c})
             (geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2) \<union>
              geotop_arc_interior C\<^sub>2 {a, c})"
-    by (rule geotop_boundary_split_segment_chord_theta_decomposition_exists_prefix
-        [OF hac hchord_parent_boundary_inter
-          hchord_arc_interior_subset_parent_interior hchord_boundary_split])
-  obtain C\<^sub>1 C\<^sub>2 where hside1_polygon:
+    by (rule geotop_boundary_split_segment_chord_theta_decomposition_all_prefix
+        [OF hac hJ_chord_split hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1_endpoints
+          hC\<^sub>2_endpoints hC\<^sub>1C\<^sub>2_disjoint hchord_parent_boundary_inter
+          hchord_arc_interior_subset_parent_interior])
+  have hside1_polygon:
       "geotop_is_polygon (C\<^sub>1 \<union> closed_segment a c)"
-    and hparent_polygon: "geotop_is_polygon J"
-    and hside2_polygon:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hparent_polygon:
+      "geotop_is_polygon J"
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hside2_polygon:
       "geotop_is_polygon (closed_segment a c \<union> C\<^sub>2)"
-    and hchord_components:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hchord_components:
       "{C. \<exists>P\<in>geotop_polygon_interior J -
               geotop_arc_interior (closed_segment a c) {a, c}.
              C = geotop_component_at UNIV geotop_euclidean_topology
@@ -20018,41 +20116,79 @@ proof -
        =
        {geotop_polygon_interior (C\<^sub>1 \<union> closed_segment a c),
         geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2)}"
-    and hchord_closure_split:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hchord_closure_split:
       "closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior J) =
         closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment a c))
         \<union> closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2))"
-    and hchord_closure_minus:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hchord_closure_minus:
       "closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior J) - closed_segment a c =
         (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment a c) \<union>
          geotop_arc_interior C\<^sub>1 {a, c}) \<union>
         (geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2) \<union>
          geotop_arc_interior C\<^sub>2 {a, c})"
-    and hside1_connected:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hside1_connected:
       "top1_connected_on
         (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment a c) \<union>
          geotop_arc_interior C\<^sub>1 {a, c})
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment a c) \<union>
            geotop_arc_interior C\<^sub>1 {a, c}))"
-    and hside2_connected:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hside2_connected:
       "top1_connected_on
         (geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2) \<union>
          geotop_arc_interior C\<^sub>2 {a, c})
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2) \<union>
            geotop_arc_interior C\<^sub>2 {a, c}))"
-    and hside_separated:
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  have hside_separated:
       "geotop_separated UNIV geotop_euclidean_topology
         (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment a c) \<union>
          geotop_arc_interior C\<^sub>1 {a, c})
         (geotop_polygon_interior (closed_segment a c \<union> C\<^sub>2) \<union>
          geotop_arc_interior C\<^sub>2 {a, c})"
-    using hchord_theta_decomposition by (elim exE conjE)
+    using hchord_theta_decomposition_oriented by (by100 blast)
+  define J\<^sub>1 where "J\<^sub>1 = C\<^sub>1 \<union> closed_segment a c"
+  define J\<^sub>2 where "J\<^sub>2 = closed_segment a c \<union> C\<^sub>2"
+  have hsubdisk_book_facts:
+    "geotop_is_polygon J\<^sub>1
+      \<and> geotop_is_polygon J\<^sub>2
+      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {a, c}
+      \<and> geotop_arc_endpoints C\<^sub>2 {a, c}
+      \<and> b \<in> geotop_arc_interior C\<^sub>1 {a, c}
+      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment a c
+      \<and> J\<^sub>2 = closed_segment a c \<union> C\<^sub>2
+      \<and> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1)
+          \<union> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2)
+      \<and> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - closed_segment a c =
+          (geotop_polygon_interior J\<^sub>1 \<union>
+           geotop_arc_interior C\<^sub>1 {a, c}) \<union>
+          (geotop_polygon_interior J\<^sub>2 \<union>
+           geotop_arc_interior C\<^sub>2 {a, c})
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>1 \<union>
+           geotop_arc_interior C\<^sub>1 {a, c})
+          (geotop_polygon_interior J\<^sub>2 \<union>
+           geotop_arc_interior C\<^sub>2 {a, c})"
+    unfolding J\<^sub>1_def J\<^sub>2_def
+    using hside1_polygon hside2_polygon hJ_chord_split hC\<^sub>1_endpoints
+      hC\<^sub>2_endpoints hb_C\<^sub>1 hchord_closure_split hchord_closure_minus
+      hside_separated
+    by (by100 blast)
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
