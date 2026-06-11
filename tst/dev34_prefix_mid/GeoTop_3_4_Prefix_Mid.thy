@@ -18101,19 +18101,284 @@ proof -
   let ?T = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
   have hT_fin: "finite ?T"
     using hK_fin by (by100 simp)
+  have hT_nonempty_card: "card ?T \<ge> 1"
+  proof (rule ccontr)
+    assume hneg: "\<not> 1 \<le> card ?T"
+    have h_card_zero: "card ?T = 0"
+      using hneg by (by100 simp)
+    have h_no_2: "\<forall>\<sigma>\<in>K. \<not> geotop_simplex_dim \<sigma> 2"
+      using h_card_zero hT_fin by (by100 simp)
+    have h_K_simplex: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+      by (rule geotop_is_complex_simplex[OF hK])
+    have h_K_face_closed:
+      "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+      by (rule geotop_is_complex_face_closed[OF hK])
+    have h_all_le_1: "\<forall>\<sigma>\<in>K. \<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+    proof
+      fix \<sigma>
+      assume h\<sigma>K: "\<sigma> \<in> K"
+      have h_simplex: "geotop_is_simplex \<sigma>"
+        using h_K_simplex h\<sigma>K by (by100 blast)
+      obtain n where h_dim: "geotop_simplex_dim \<sigma> n"
+        using h_simplex
+        unfolding geotop_is_simplex_def geotop_simplex_dim_def
+        by (by100 blast)
+      have hn_le_1: "n \<le> 1"
+      proof (rule ccontr)
+        assume "\<not> n \<le> 1"
+        hence hn_ge_2: "2 \<le> n"
+          by (by100 simp)
+        obtain \<tau> where h\<tau>_face: "geotop_is_face \<tau> \<sigma>"
+          and h\<tau>_dim: "geotop_simplex_dim \<tau> 2"
+          using geotop_simplex_dim_ge_2_has_2_face[OF h_dim hn_ge_2]
+          by (by100 blast)
+        have h\<tau>K: "\<tau> \<in> K"
+          using h_K_face_closed h\<sigma>K h\<tau>_face by (by100 blast)
+        show False
+          using h_no_2 h\<tau>K h\<tau>_dim by (by100 blast)
+      qed
+      show "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+        using hn_le_1 h_dim by (by100 blast)
+    qed
+    have h_each_cl_int: "\<forall>\<sigma>\<in>K. closed \<sigma> \<and> interior \<sigma> = {}"
+    proof
+      fix \<sigma>
+      assume h\<sigma>K: "\<sigma> \<in> K"
+      obtain n where hn_le: "n \<le> 1" and h_dim: "geotop_simplex_dim \<sigma> n"
+        using h_all_le_1 h\<sigma>K by (by100 blast)
+      have h_cl: "closed \<sigma>"
+        by (rule geotop_simplex_dim_closed[OF h_dim])
+      have h_int: "interior \<sigma> = {}"
+        by (rule geotop_simplex_dim_le_1_empty_interior_R2[OF h_dim hn_le])
+      show "closed \<sigma> \<and> interior \<sigma> = {}"
+        using h_cl h_int by (by100 blast)
+    qed
+    have h_poly_eq_Union: "geotop_polyhedron K = \<Union>K"
+      unfolding geotop_polyhedron_def by (by100 simp)
+    have h_int_empty: "interior (geotop_polyhedron K) = {}"
+      using hK_fin h_each_cl_int h_poly_eq_Union finite_Union_closed_empty_interior
+      by (by100 simp)
+    have h_J_sph:
+      "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+      using hJ unfolding geotop_is_polygon_def by (by100 blast)
+    have h_pint_open: "open (geotop_polygon_interior J)"
+      by (rule polygon_interior_open[OF hJ])
+    have h_pint_comp: "geotop_polygon_interior J \<in> components (UNIV - J)"
+      by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+    have h_pint_ne: "geotop_polygon_interior J \<noteq> {}"
+      using h_pint_comp in_components_nonempty by (by100 blast)
+    have h_clos_eq:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+       = closure (geotop_polygon_interior J)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have h_poly_HOL:
+      "geotop_polyhedron K = closure (geotop_polygon_interior J)"
+      using hK_poly h_clos_eq by (by100 simp)
+    have h_pint_sub_int:
+      "geotop_polygon_interior J
+        \<subseteq> interior (closure (geotop_polygon_interior J))"
+      using h_pint_open closure_subset interior_maximal by (by100 blast)
+    have h_pint_sub_polyint:
+      "geotop_polygon_interior J \<subseteq> interior (geotop_polyhedron K)"
+      using h_pint_sub_int h_poly_HOL by (by100 simp)
+    have h_int_ne: "interior (geotop_polyhedron K) \<noteq> {}"
+      using h_pint_ne h_pint_sub_polyint by (by100 blast)
+    show False
+      using h_int_empty h_int_ne by (by100 simp)
+  qed
+  have hbase_one_triangle:
+    "card ?T = 1 \<Longrightarrow>
+      \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+            \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+  proof -
+    assume hcard_one: "card ?T = 1"
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and hunique2: "\<And>\<tau>. \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow> \<tau> = \<sigma>"
+    proof -
+      have hS_ne: "?T \<noteq> {}"
+        using hcard_one by (by100 force)
+      obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> ?T"
+        using hS_ne by (by100 blast)
+      obtain \<sigma>' where hS_singleton: "?T = {\<sigma>'}"
+        using hcard_one by (rule card_1_singletonE)
+      have h\<sigma>eq: "\<sigma> = \<sigma>'"
+        using hS_singleton h\<sigma>S by (by100 simp)
+      have hS_eq: "?T = {\<sigma>}"
+        using hS_singleton h\<sigma>eq by (by100 simp)
+      have h\<sigma>K: "\<sigma> \<in> K"
+        using h\<sigma>S by (by100 simp)
+      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        using h\<sigma>S by (by100 simp)
+      have hunique2:
+        "\<And>\<tau>. \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow> \<tau> = \<sigma>"
+      proof -
+        fix \<tau>
+        assume h\<tau>K: "\<tau> \<in> K" and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        have "\<tau> \<in> ?T"
+          using h\<tau>K h\<tau>2 by (by100 simp)
+        thus "\<tau> = \<sigma>"
+          using hS_eq by (by100 simp)
+      qed
+      show ?thesis
+        by (rule that[OF h\<sigma>K h\<sigma>2 hunique2])
+    qed
+    have hid_homeo:
+      "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology (\<lambda>x::real^2. x)"
+    proof -
+      have htop: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        unfolding geotop_euclidean_topology_eq_open_sets
+        by (rule top1_open_sets_is_topology_on_UNIV)
+      show ?thesis
+        using top1_homeomorphism_on_id[OF htop] unfolding id_def by (by100 simp)
+    qed
+    have hclosure_sigma: "closure (geotop_polygon_interior J) = \<sigma>"
+    proof -
+      let ?I = "geotop_polygon_interior J"
+      let ?R = "\<Union>(K - {\<sigma>})"
+      have hrest_fin: "finite (K - {\<sigma>})"
+        using hK_fin by (by100 simp)
+      have h_K_simplex: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+        by (rule geotop_is_complex_simplex[OF hK])
+      have hrest_each: "\<forall>\<tau>\<in>K - {\<sigma>}. closed \<tau> \<and> interior \<tau> = {}"
+      proof
+        fix \<tau>
+        assume h\<tau>rest: "\<tau> \<in> K - {\<sigma>}"
+        have h\<tau>K: "\<tau> \<in> K"
+          using h\<tau>rest by (by100 simp)
+        have h\<tau>ne: "\<tau> \<noteq> \<sigma>"
+          using h\<tau>rest by (by100 simp)
+        have h\<tau>simplex: "geotop_is_simplex \<tau>"
+          using h_K_simplex h\<tau>K by (by100 blast)
+        obtain n where h\<tau>dim: "geotop_simplex_dim \<tau> n"
+          using h\<tau>simplex
+          unfolding geotop_is_simplex_def geotop_simplex_dim_def
+          by (by100 blast)
+        have hn_le_2: "n \<le> 2"
+          by (rule geotop_simplex_dim_le_2_R2_prefix[OF h\<tau>dim])
+        have hn_ne_2: "n \<noteq> 2"
+        proof
+          assume hn2: "n = 2"
+          have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+            using h\<tau>dim hn2 by (by100 simp)
+          have "\<tau> = \<sigma>"
+            by (rule hunique2[OF h\<tau>K h\<tau>2])
+          thus False
+            using h\<tau>ne by (by100 simp)
+        qed
+        have hn_le_1: "n \<le> 1"
+          using hn_le_2 hn_ne_2 by (by100 linarith)
+        have h\<tau>closed: "closed \<tau>"
+          by (rule geotop_simplex_dim_closed[OF h\<tau>dim])
+        have h\<tau>int: "interior \<tau> = {}"
+          by (rule geotop_simplex_dim_le_1_empty_interior_R2[OF h\<tau>dim hn_le_1])
+        show "closed \<tau> \<and> interior \<tau> = {}"
+          using h\<tau>closed h\<tau>int by (by100 blast)
+      qed
+      have hrest_int_empty: "interior ?R = {}"
+        by (rule finite_Union_closed_empty_interior[OF hrest_fin hrest_each])
+      have h\<sigma>closed: "closed \<sigma>"
+        by (rule geotop_simplex_dim_closed[OF h\<sigma>2])
+      have hpoly_union: "geotop_polyhedron K = \<sigma> \<union> ?R"
+      proof -
+        have "\<Union>K = \<sigma> \<union> \<Union>(K - {\<sigma>})"
+          using h\<sigma>K by (by100 blast)
+        thus ?thesis
+          unfolding geotop_polyhedron_def by (by100 simp)
+      qed
+      have hpoly_int_sub_\<sigma>: "interior (geotop_polyhedron K) \<subseteq> \<sigma>"
+      proof -
+        have "interior (\<sigma> \<union> ?R) \<subseteq> \<sigma>"
+          by (rule interior_Un_subset_closed_left_if_right_empty
+              [OF h\<sigma>closed hrest_int_empty])
+        thus ?thesis
+          using hpoly_union by (by100 simp)
+      qed
+      have hI_open: "open ?I"
+        by (rule polygon_interior_open[OF hJ])
+      have hclos_on: "closure_on UNIV geotop_euclidean_topology ?I = closure ?I"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have hpoly_HOL: "geotop_polyhedron K = closure ?I"
+        using hK_poly hclos_on by (by100 simp)
+      have hI_sub_poly: "?I \<subseteq> geotop_polyhedron K"
+        using hpoly_HOL closure_subset by (by100 simp)
+      have hI_sub_int_poly: "?I \<subseteq> interior (geotop_polyhedron K)"
+        by (rule interior_maximal[OF hI_sub_poly hI_open])
+      have hI_sub_\<sigma>: "?I \<subseteq> \<sigma>"
+        using hI_sub_int_poly hpoly_int_sub_\<sigma> by (by100 blast)
+      have hclosure_sub_\<sigma>: "closure ?I \<subseteq> \<sigma>"
+        by (rule closure_minimal[OF hI_sub_\<sigma> h\<sigma>closed])
+      have h\<sigma>sub_closure: "\<sigma> \<subseteq> closure ?I"
+      proof -
+        have "\<sigma> \<subseteq> geotop_polyhedron K"
+          using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+        thus ?thesis
+          using hpoly_HOL by (by100 simp)
+      qed
+      show ?thesis
+        using hclosure_sub_\<sigma> h\<sigma>sub_closure by (by100 blast)
+    qed
+    have hJ_frontier:
+      "(\<lambda>x::real^2. x) ` J =
+        geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    proof -
+      have hclos_on:
+        "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+         = closure (geotop_polygon_interior J)"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have hpoly_sigma: "geotop_polyhedron K = \<sigma>"
+        using hK_poly hclos_on hclosure_sigma by (by100 simp)
+      have hpoly_front:
+        "geotop_frontier UNIV geotop_euclidean_topology (geotop_polyhedron K) = J"
+        by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
+      show ?thesis
+        using hpoly_front hpoly_sigma by (by100 simp)
+    qed
+    have hsupport: "\<forall>P\<in>UNIV - U. (\<lambda>x::real^2. x) P = P"
+      by (by100 simp)
+    show "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+            \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+      using hid_homeo h\<sigma>2 hJ_frontier hsupport by (by100 blast)
+  qed
+  have hfold_step_book:
+    "card ?T > 1 \<Longrightarrow>
+      \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+            \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+    (**
+      Remaining Moise Figure 3.3 fold induction step: choose a free triangle
+      using Theorem 3.3, carry out the one-edge or two-edge supported fold in
+      the local quadrilateral/triangle neighborhood inside U, compose with the
+      induction map for the smaller disk complex, and keep the composition
+      fixed on UNIV - U. **)
+    sorry
   have hfold_induction_book:
     "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
                    UNIV geotop_euclidean_topology h
             \<and> geotop_simplex_dim \<sigma> 2
             \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
             \<and> (\<forall>P\<in>UNIV - U. h P = P)"
-    (**
-      Remaining Moise Theorem 3.4/3.7 induction: induct on \<open>card ?T\<close>.  In
-      the one-triangle case use the identity map.  In the step case apply
-      Theorem 3.3 to choose a free triangle, perform the Figure 3.3 fold or its
-      inverse with support inside \<open>U\<close>, compose with the induction map for the
-      smaller complex, and preserve identity on \<open>UNIV - U\<close>. **)
-    sorry
+  proof (cases "card ?T = 1")
+    case True
+    show ?thesis
+      by (rule hbase_one_triangle[OF True])
+  next
+    case False
+    have hgt1: "card ?T > 1"
+      using hT_nonempty_card False by (by100 simp)
+    show ?thesis
+      by (rule hfold_step_book[OF hgt1])
+  qed
   show ?thesis
     by (rule hfold_induction_book)
 qed
