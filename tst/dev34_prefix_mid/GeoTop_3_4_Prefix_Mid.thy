@@ -21988,6 +21988,55 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology A)"
       by (rule hA_connected)
   qed
+  have hD42_A_witness_PR_same_in_closed_disk_minus:
+      "\<And>B. B \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
+        top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B))
+          P R"
+  proof -
+    fix B :: "(real^2) set"
+    assume hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+    let ?X =
+      "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - B"
+    have hA_book:
+        "A \<subseteq> ?X
+          \<and> P \<in> A
+          \<and> R \<in> A
+          \<and> top1_connected_on A
+              (subspace_topology UNIV geotop_euclidean_topology A)"
+      by (rule hD42_A_connected_PR_in_closed_disk_minus[OF hB_sub])
+    have hA_sub_X: "A \<subseteq> ?X"
+      using hA_book by (by100 blast)
+    have hP_A_book: "P \<in> A"
+      using hA_book by (by100 blast)
+    have hR_A_book: "R \<in> A"
+      using hA_book by (by100 blast)
+    have hA_conn_book:
+        "top1_connected_on A
+          (subspace_topology UNIV geotop_euclidean_topology A)"
+      using hA_book by (by100 blast)
+    have hsubspace:
+        "subspace_topology ?X
+          (subspace_topology UNIV geotop_euclidean_topology ?X) A =
+         subspace_topology UNIV geotop_euclidean_topology A"
+      by (rule subspace_topology_trans[OF hA_sub_X])
+    have hA_conn_X:
+        "top1_connected_on A
+          (subspace_topology ?X
+            (subspace_topology UNIV geotop_euclidean_topology ?X) A)"
+      using hA_conn_book hsubspace by (by100 simp)
+    show
+        "top1_in_same_component_on ?X
+          (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
+      unfolding top1_in_same_component_on_def
+      using hA_sub_X hP_A_book hR_A_book hA_conn_X
+      by (intro exI conjI)
+  qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
@@ -23046,6 +23095,16 @@ proof -
 		        using hB\<^sub>I_sub_cut by (by100 blast)
 		      have hA_B\<^sub>I: "A \<inter> B\<^sub>I = {}"
 		        using hB\<^sub>I_sub_cut by (by100 blast)
+		      have hPR_same_B\<^sub>I:
+		        "top1_in_same_component_on
+		          (closure_on UNIV geotop_euclidean_topology
+		            (geotop_polygon_interior J) - B\<^sub>I)
+		          (subspace_topology UNIV geotop_euclidean_topology
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B\<^sub>I))
+		          P R"
+		        by (rule hD42_A_witness_PR_same_in_closed_disk_minus
+		            [OF hB\<^sub>I_sub_cut])
 		      have hB\<^sub>I_J_disj: "B\<^sub>I \<inter> J = {}"
 		        using hB\<^sub>I_sub_I polygon_interior_disjoint_polygon[OF hJ]
 		        by (by100 blast)
