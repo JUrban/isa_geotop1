@@ -22369,6 +22369,11 @@ proof -
         R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
     using hD42_R_on_QS_boundary_arc
     by (by100 blast)
+  have hD42_R_not_F\<^sub>1_from_cyclic:
+      "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+    using hcyc hD42_P_F\<^sub>1 hD42_F_J_split hD42_F\<^sub>1E hD42_F\<^sub>2E
+      hD42_F\<^sub>1F\<^sub>2_int_disj
+    by (by100 blast)
   have hD42_separated_sides_forbid_PR_same_component:
       "\<And>H K X :: (real^2) set.
         geotop_separated UNIV geotop_euclidean_topology H K \<Longrightarrow>
@@ -23352,17 +23357,41 @@ proof -
                   (subspace_topology UNIV geotop_euclidean_topology
                     (closure_on UNIV geotop_euclidean_topology
                       (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
-                  P R
-              \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+                  P R"
           (**
             Remaining endpoint-splice core after the near-boundary chord has
             been cleaned against \<open>J\<close>, \<open>F\<^sub>1\<close>, and \<open>F\<^sub>2\<close>.  Attach the two
             local boundary-access pieces from \<open>Q\<close> to \<open>Q0\<close> and \<open>S0\<close> to
-            \<open>S\<close>; then use the cyclic order to prove that the selected
-            \<open>P\<close>-side boundary arc excludes \<open>R\<close>. **)
+            \<open>S\<close>.  The cyclic-order exclusion of \<open>R\<close> from the selected
+            \<open>P\<close>-side boundary arc is now proved separately as
+            \<open>hD42_R_not_F\<^sub>1_from_cyclic\<close>. **)
         sorry
+        obtain B\<^sub>Q\<^sub>S where hB\<^sub>Q\<^sub>S_bl:
+            "geotop_is_broken_line B\<^sub>Q\<^sub>S"
+          and hB\<^sub>Q\<^sub>SE:
+            "geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}"
+          and hF\<^sub>1B\<^sub>Q\<^sub>S:
+            "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+              geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}"
+          and hB\<^sub>Q\<^sub>SF\<^sub>2:
+            "geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+              geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+          and hB\<^sub>Q\<^sub>S_inner:
+            "geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq>
+              geotop_polygon_interior J"
+          and hB\<^sub>Q\<^sub>S_same:
+            "top1_in_same_component_on
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+              (subspace_topology UNIV geotop_euclidean_topology
+                (closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+              P R"
+          using hD42_endpoint_splice_to_QS by (elim exE conjE)
         show ?thesis
-          by (rule hD42_endpoint_splice_to_QS)
+          using hB\<^sub>Q\<^sub>S_bl hB\<^sub>Q\<^sub>SE hF\<^sub>1B\<^sub>Q\<^sub>S hB\<^sub>Q\<^sub>SF\<^sub>2
+            hB\<^sub>Q\<^sub>S_inner hB\<^sub>Q\<^sub>S_same hD42_R_not_F\<^sub>1_from_cyclic
+          by (intro exI conjI)
       qed
     show False
     proof -
