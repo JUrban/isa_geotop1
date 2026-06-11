@@ -19655,6 +19655,65 @@ proof -
   qed
 qed
 
+lemma geotop_selected_nonfree_triangle_chord_parent_boundary_inter_prefix:
+  fixes J :: "(real^2) set" and a b c :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not: "c \<notin> {a, b}"
+  assumes hbase_ab_sub_J: "geotop_convex_hull {a, b} \<subseteq> J"
+  assumes hcJ: "c \<in> J"
+  assumes hchord_arc_disjoint:
+    "J \<inter> geotop_arc_interior (closed_segment a c) {a, c} = {}"
+  shows "closed_segment a c \<inter> J = {a, c}"
+  (**
+    Chord-boundary endpoint extraction for the side-disk decomposition.  The
+    base edge gives \<open>a \<in> J\<close>, the previous endpoint lemma gives \<open>c \<in> J\<close>,
+    and the parent boundary misses the open chord, so the chord meets the
+    parent boundary exactly in its two endpoints. **)
+proof -
+  have hbase_segment:
+    "geotop_convex_hull {a, b} = closed_segment a b"
+    using segment_convex_hull[of a b] geotop_convex_hull_eq_HOL[of "{a, b}"]
+    by (by100 simp)
+  have ha_closed: "a \<in> closed_segment a b"
+    unfolding closed_segment_def
+    apply (rule CollectI)
+    apply (rule_tac x = 0 in exI)
+    apply (by100 simp)
+    done
+  have ha_base: "a \<in> geotop_convex_hull {a, b}"
+    using hbase_segment ha_closed by (by100 simp)
+  have haJ: "a \<in> J"
+    using hbase_ab_sub_J ha_base by (by100 blast)
+  show ?thesis
+  proof (rule subset_antisym)
+    show "closed_segment a c \<inter> J \<subseteq> {a, c}"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment a c \<inter> J"
+      have hxseg: "x \<in> closed_segment a c"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      show "x \<in> {a, c}"
+      proof (cases "x \<in> {a, c}")
+        case True
+        show ?thesis
+          by (rule True)
+      next
+        case False
+        have hxarc: "x \<in> geotop_arc_interior (closed_segment a c) {a, c}"
+          using hxseg False unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in> J \<inter> geotop_arc_interior (closed_segment a c) {a, c}"
+          using hxJ hxarc by (by100 blast)
+        thus ?thesis
+          using hchord_arc_disjoint by (by100 blast)
+      qed
+    qed
+    show "{a, c} \<subseteq> closed_segment a c \<inter> J"
+      using haJ hcJ by (by100 simp)
+  qed
+qed
+
 lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
   fixes J \<theta> \<alpha> \<beta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19762,6 +19821,9 @@ proof -
   have hcJ: "c \<in> J"
     by (rule geotop_selected_nonfree_triangle_chord_contact_endpoint_prefix
         [OF hab hc_not hcontact_chord hchord_arc_interior_disjoint_parent])
+  have hchord_parent_boundary_inter: "closed_segment a c \<inter> J = {a, c}"
+    by (rule geotop_selected_nonfree_triangle_chord_parent_boundary_inter_prefix
+        [OF hab hc_not hbase_ab_sub_J hcJ hchord_arc_interior_disjoint_parent])
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
