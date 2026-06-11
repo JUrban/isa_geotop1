@@ -19367,14 +19367,33 @@ proof -
       using False h\<alpha>K h\<alpha>free h\<alpha>_ne_\<theta> h\<beta>K h\<beta>2 h\<beta>selected
         h\<beta>_ne_\<theta> h\<beta>contact_nonempty
       by (by100 blast)
-    show ?thesis
+    have h\<alpha>2: "geotop_simplex_dim \<alpha> 2"
+      using h\<alpha>free unfolding geotop_free_2_simplex_def by (by100 blast)
+    let ?E\<alpha> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+    have h\<alpha>_empty_or_boundary_free:
+        "?E\<alpha> = {} \<or> geotop_boundary_free_2_simplex K J \<alpha>"
+      by (rule geotop_free_2_simplex_empty_or_boundary_free_prefix
+          [OF hJ hK hK_poly h\<alpha>K h\<alpha>2 hT_gt1 h\<alpha>free])
+    have h\<alpha>_boundary_free_finishes:
+        "geotop_boundary_free_2_simplex K J \<alpha> \<Longrightarrow> ?thesis"
+      using h\<alpha>K h\<alpha>free h\<alpha>2 h\<alpha>_ne_\<theta>
+        geotop_boundary_free_2_simplex_selected_edge_nonempty_prefix
+      by (by100 blast)
+    have h\<alpha>_empty_selected_residual_finishes:
+        "?E\<alpha> = {} \<Longrightarrow> ?thesis"
       (**
-        Remaining separated-witness Moise side-transfer case.  The free witness
-        \<open>\<alpha>\<close> and the selected parent-boundary candidate \<open>\<beta>\<close> are distinct;
-        the book proof must now use the Figure 3.2 side disks and the artificial
-        chord exclusion to choose a witness that is both free and selected on the
-        original polygon boundary. **)
+        Remaining separated-witness Moise side-transfer case after filtering:
+        the chosen free witness \<open>\<alpha>\<close> has no selected edge on the parent
+        boundary, while \<open>\<beta>\<close> is a distinct parent-boundary selected
+        candidate.  This is now exactly the artificial-chord exclusion step
+        from Figure 3.2: use the two side disks to replace the empty-selected
+        free witness by one whose selected edge lies on the original polygon
+        boundary. **)
       sorry
+    show ?thesis
+      using h\<alpha>_empty_or_boundary_free h\<alpha>_boundary_free_finishes
+        h\<alpha>_empty_selected_residual_finishes
+      by (by100 blast)
   qed
 qed
 
