@@ -23021,6 +23021,62 @@ proof
   qed
 qed
 
+lemma geotop_local_carrier_eq_interior_transfer_prefix:
+  fixes M \<sigma> :: "(real^2) set"
+  assumes hs: "0 < s"
+  assumes hlocal: "ball p s \<inter> M = ball p s \<inter> \<sigma>"
+  assumes hxM: "x \<in> interior M"
+  assumes hxnear: "x \<in> ball p (s / 2)"
+  shows "x \<in> interior \<sigma>"
+  (**
+    Metric interior-transfer step for the one-sided D42 chart: if the ambient
+    carrier and the local triangle agree in a ball around the boundary point,
+    then ambient interior points sufficiently close to that boundary point are
+    actual triangle-interior points. **)
+proof -
+  obtain e where he: "0 < e" and hballM: "ball x e \<subseteq> M"
+    using hxM unfolding mem_interior by (by100 blast)
+  define t where "t = min e (s / 2)"
+  have ht: "0 < t"
+    using he hs unfolding t_def by (by100 simp)
+  have ht_le_e: "t \<le> e"
+    unfolding t_def by (by100 simp)
+  have ht_le_s2: "t \<le> s / 2"
+    unfolding t_def by (by100 simp)
+  have hdist_xp: "dist x p < s / 2"
+    using hxnear dist_commute by (by100 simp)
+  have hsum: "dist x p + t \<le> s"
+    using hdist_xp ht_le_s2 by (by100 linarith)
+  have hball_ball: "ball x t \<subseteq> ball p s"
+    using hsum ht by (by100 simp add: ball_subset_ball_iff)
+  have hball_sub_M: "ball x t \<subseteq> M"
+  proof
+    fix y
+    assume hy: "y \<in> ball x t"
+    have "y \<in> ball x e"
+      using hy ht_le_e by (by100 simp)
+    thus "y \<in> M"
+      using hballM by (by100 blast)
+  qed
+  have hball_sub_\<sigma>: "ball x t \<subseteq> \<sigma>"
+  proof
+    fix y
+    assume hy: "y \<in> ball x t"
+    have hy_ball: "y \<in> ball p s"
+      using hball_ball hy by (by100 blast)
+    have hyM: "y \<in> M"
+      using hball_sub_M hy by (by100 blast)
+    have "y \<in> ball p s \<inter> M"
+      using hy_ball hyM by (by100 blast)
+    hence "y \<in> ball p s \<inter> \<sigma>"
+      using hlocal by (by100 simp)
+    thus "y \<in> \<sigma>"
+      by (by100 blast)
+  qed
+  show ?thesis
+    unfolding mem_interior using ht hball_sub_\<sigma> by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
