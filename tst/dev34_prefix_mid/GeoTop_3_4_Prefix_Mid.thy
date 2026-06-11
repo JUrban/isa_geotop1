@@ -18073,6 +18073,77 @@ proof -
   then show ?thesis by blast
 qed
 
+lemma geotop_plane_homeomorphism_fixed_outside_comp_prefix:
+  fixes f g :: "real^2 \<Rightarrow> real^2" and U :: "(real^2) set"
+  assumes hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f"
+  assumes hg: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology g"
+  assumes hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+  assumes hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
+  shows "top1_homeomorphism_on UNIV geotop_euclidean_topology
+           UNIV geotop_euclidean_topology (g \<circ> f)
+    \<and> (\<forall>P\<in>UNIV - U. (g \<circ> f) P = P)"
+proof -
+  have hcomp:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+      UNIV geotop_euclidean_topology (g \<circ> f)"
+    by (rule top1_homeomorphism_on_comp[OF hf hg])
+  have hfix: "\<forall>P\<in>UNIV - U. (g \<circ> f) P = P"
+  proof
+    fix P
+    assume hP: "P \<in> UNIV - U"
+    have hfP: "f P = P"
+      using hf_fix hP by (by100 blast)
+    have hgP: "g P = P"
+      using hg_fix hP by (by100 blast)
+    show "(g \<circ> f) P = P"
+      using hfP hgP by (by100 simp)
+  qed
+  show ?thesis
+    using hcomp hfix by (by100 blast)
+qed
+
+lemma geotop_plane_homeomorphism_fixed_outside_inv_prefix:
+  fixes h :: "real^2 \<Rightarrow> real^2" and U :: "(real^2) set"
+  assumes hh: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology h"
+  assumes hfix: "\<forall>P\<in>UNIV - U. h P = P"
+  shows "\<forall>P\<in>UNIV - U. inv_into UNIV h P = P"
+proof
+  fix P
+  assume hP: "P \<in> UNIV - U"
+  have hbij: "bij_betw h UNIV UNIV"
+    using hh unfolding top1_homeomorphism_on_def by (by100 blast)
+  have hinj: "inj_on h UNIV"
+    using hbij bij_betw_imp_inj_on by (by100 blast)
+  have hP_eq: "h P = P"
+    using hfix hP by (by100 blast)
+  have hinv_hP: "inv_into UNIV h (h P) = P"
+    by (rule inv_into_f_f[OF hinj]) (by100 simp)
+  show "inv_into UNIV h P = P"
+    using hP_eq hinv_hP by (by100 simp)
+qed
+
+lemma geotop_plane_homeomorphism_fixed_outside_sym_prefix:
+  fixes h :: "real^2 \<Rightarrow> real^2" and U :: "(real^2) set"
+  assumes hh: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology h"
+  assumes hfix: "\<forall>P\<in>UNIV - U. h P = P"
+  shows "top1_homeomorphism_on UNIV geotop_euclidean_topology
+           UNIV geotop_euclidean_topology (inv_into UNIV h)
+    \<and> (\<forall>P\<in>UNIV - U. inv_into UNIV h P = P)"
+proof -
+  have hsym:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+      UNIV geotop_euclidean_topology (inv_into UNIV h)"
+    by (rule top1_homeomorphism_on_sym[OF hh])
+  have hsym_fix: "\<forall>P\<in>UNIV - U. inv_into UNIV h P = P"
+    by (rule geotop_plane_homeomorphism_fixed_outside_inv_prefix[OF hh hfix])
+  show ?thesis
+    using hsym hsym_fix by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
   fixes J U :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
