@@ -22739,12 +22739,35 @@ proof -
 		        and hB\<^sub>1_sub_B\<^sub>0: "B\<^sub>1 \<subseteq> B\<^sub>0"
 		        and hQ'_B\<^sub>1: "Q' \<in> B\<^sub>1"
 		        and hS'_B\<^sub>1: "S' \<in> B\<^sub>1"
-		        and hB\<^sub>1E: "geotop_arc_endpoints B\<^sub>1 {Q', S'}"
-		        using geotop_broken_line_subarc_with_endpoints_prefix
-		          [OF hB\<^sub>0_bl hQ'_B\<^sub>0 hS'_B\<^sub>0 hQ'_ne_S']
+		        and hB\<^sub>1_oriented:
+		          "Q' = S' \<or> (\<exists>\<gamma>. arc \<gamma> \<and> path_image \<gamma> = B\<^sub>1
+		            \<and> pathstart \<gamma> = Q' \<and> pathfinish \<gamma> = S')"
+		        using geotop_broken_line_subarc[OF hB\<^sub>0_bl hQ'_B\<^sub>0 hS'_B\<^sub>0]
 		        by (elim exE conjE)
+		      obtain \<gamma>\<^sub>1 where h\<gamma>\<^sub>1_arc: "arc \<gamma>\<^sub>1"
+		        and h\<gamma>\<^sub>1_img: "path_image \<gamma>\<^sub>1 = B\<^sub>1"
+		        and h\<gamma>\<^sub>1_start: "pathstart \<gamma>\<^sub>1 = Q'"
+		        and h\<gamma>\<^sub>1_finish: "pathfinish \<gamma>\<^sub>1 = S'"
+		        using hB\<^sub>1_oriented hQ'_ne_S' by (by100 blast)
+		      have hB\<^sub>1E: "geotop_arc_endpoints B\<^sub>1 {Q', S'}"
+		      proof -
+		        have hE_raw:
+		          "geotop_arc_endpoints (path_image \<gamma>\<^sub>1)
+		            {pathstart \<gamma>\<^sub>1, pathfinish \<gamma>\<^sub>1}"
+		          by (rule geotop_HOL_arc_imp_geotop_arc_endpoints_prefix[OF h\<gamma>\<^sub>1_arc])
+		        show ?thesis
+		          using hE_raw h\<gamma>\<^sub>1_img h\<gamma>\<^sub>1_start h\<gamma>\<^sub>1_finish by (by100 simp)
+		      qed
 		      have hB\<^sub>1_sub_cut: "B\<^sub>1 \<subseteq> geotop_polygon_interior J - A"
 		        using hB\<^sub>1_sub_B\<^sub>0 hB\<^sub>0_sub by (by100 blast)
+		      have hB\<^sub>1_int_cut:
+		          "geotop_arc_interior B\<^sub>1 {Q', S'} \<subseteq>
+		            geotop_polygon_interior J - A"
+		        using hB\<^sub>1_sub_cut unfolding geotop_arc_interior_def by (by100 blast)
+		      have hB\<^sub>1_int_I:
+		          "geotop_arc_interior B\<^sub>1 {Q', S'} \<subseteq>
+		            geotop_polygon_interior J"
+		        using hB\<^sub>1_int_cut by (by100 blast)
 		      have hA_B\<^sub>1: "A \<inter> B\<^sub>1 = {}"
 		        using hA_B\<^sub>0 hB\<^sub>1_sub_B\<^sub>0 by (by100 blast)
 		      have hD42_QS_chord_splice_from_interior_line:
