@@ -21932,6 +21932,27 @@ proof -
     using hA_sub hP_A hR_A hA_connected_X by (intro exI conjI)
 qed
 
+lemma geotop_arc_interiors_disjoint_if_carriers_disjoint_prefix:
+  fixes A B :: "(real^2) set"
+  assumes hAB: "A \<inter> B = {}"
+  shows "geotop_arc_interior A EA \<inter> geotop_arc_interior B EB = {}"
+  (**
+    D42 endpoint-splice bookkeeping: once the near chord carrier is disjoint
+    from a boundary arc carrier, the corresponding open arc interiors are
+    disjoint as well. **)
+proof (rule equals0I)
+  fix x
+  assume hx: "x \<in> geotop_arc_interior A EA \<inter> geotop_arc_interior B EB"
+  have hxA: "x \<in> A"
+    using hx unfolding geotop_arc_interior_def by (by100 blast)
+  have hxB: "x \<in> B"
+    using hx unfolding geotop_arc_interior_def by (by100 blast)
+  have hxAB: "x \<in> A \<inter> B"
+    by (rule IntI[OF hxA hxB])
+  show False
+    using hAB hxAB by (by100 blast)
+qed
+
 lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
     and P Q R S Q0 S0 :: "real^2"
@@ -23260,54 +23281,16 @@ proof -
               \<and> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
                 geotop_arc_interior F\<^sub>2 {Q, S} = {}"
         proof
+          have hF\<^sub>1_B\<^sub>0: "F\<^sub>1 \<inter> B\<^sub>0 = {}"
+            using hB\<^sub>0_F\<^sub>1 by (by100 blast)
           show "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
               geotop_arc_interior B\<^sub>0 {Q0, S0} = {}"
-          proof (rule equals0I)
-            fix x
-            assume hx:
-              "x \<in> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                geotop_arc_interior B\<^sub>0 {Q0, S0}"
-            have hxF\<^sub>1_int:
-                "x \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
-              using hx by (rule IntD1)
-            have hxB\<^sub>0_int:
-                "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
-              using hx by (rule IntD2)
-            have hxF\<^sub>1: "x \<in> F\<^sub>1"
-              using hxF\<^sub>1_int unfolding geotop_arc_interior_def by (rule DiffD1)
-            have hxB\<^sub>0: "x \<in> B\<^sub>0"
-              using hxB\<^sub>0_int unfolding geotop_arc_interior_def by (rule DiffD1)
-            have hxBF\<^sub>1: "x \<in> B\<^sub>0 \<inter> F\<^sub>1"
-              by (rule IntI[OF hxB\<^sub>0 hxF\<^sub>1])
-            have hx_not_BF\<^sub>1: "x \<notin> B\<^sub>0 \<inter> F\<^sub>1"
-              by (rule equals0D[OF hB\<^sub>0_F\<^sub>1])
-            show False
-              by (rule notE[OF hx_not_BF\<^sub>1 hxBF\<^sub>1])
-          qed
+            by (rule geotop_arc_interiors_disjoint_if_carriers_disjoint_prefix
+                [OF hF\<^sub>1_B\<^sub>0])
           show "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
               geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          proof (rule equals0I)
-            fix x
-            assume hx:
-              "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
-                geotop_arc_interior F\<^sub>2 {Q, S}"
-            have hxB\<^sub>0_int:
-                "x \<in> geotop_arc_interior B\<^sub>0 {Q0, S0}"
-              using hx by (rule IntD1)
-            have hxF\<^sub>2_int:
-                "x \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
-              using hx by (rule IntD2)
-            have hxB\<^sub>0: "x \<in> B\<^sub>0"
-              using hxB\<^sub>0_int unfolding geotop_arc_interior_def by (rule DiffD1)
-            have hxF\<^sub>2: "x \<in> F\<^sub>2"
-              using hxF\<^sub>2_int unfolding geotop_arc_interior_def by (rule DiffD1)
-            have hxBF\<^sub>2: "x \<in> B\<^sub>0 \<inter> F\<^sub>2"
-              by (rule IntI[OF hxB\<^sub>0 hxF\<^sub>2])
-            have hx_not_BF\<^sub>2: "x \<notin> B\<^sub>0 \<inter> F\<^sub>2"
-              by (rule equals0D[OF hB\<^sub>0_F\<^sub>2])
-            show False
-              by (rule notE[OF hx_not_BF\<^sub>2 hxBF\<^sub>2])
-          qed
+            by (rule geotop_arc_interiors_disjoint_if_carriers_disjoint_prefix
+                [OF hB\<^sub>0_F\<^sub>2])
         qed
         have hD42_near_chord_sub_closed_minus_A:
             "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
