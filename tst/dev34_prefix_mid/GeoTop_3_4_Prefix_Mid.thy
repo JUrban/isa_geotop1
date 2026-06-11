@@ -5811,6 +5811,140 @@ proof -
     using hC_fin hC_card hcontact_can by (by100 blast)
 qed
 
+lemma geotop_free_2_simplex_nonempty_selected_edge_contact_cases_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes hfree: "geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  assumes hnonempty:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J} \<noteq> {}"
+  shows "(\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma>\<^sub>2 \<and> d \<subseteq> J} = {e}
+          \<and> geotop_is_edge e
+          \<and> geotop_is_face e \<sigma>\<^sub>2
+          \<and> e \<subseteq> J
+          \<and> \<sigma>\<^sub>2 \<inter> J = e)
+      \<or> (\<exists>e1 e2.
+          {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma>\<^sub>2 \<and> d \<subseteq> J} = {e1, e2}
+          \<and> e1 \<noteq> e2
+          \<and> geotop_is_edge e1
+          \<and> geotop_is_edge e2
+          \<and> geotop_is_face e1 \<sigma>\<^sub>2
+          \<and> geotop_is_face e2 \<sigma>\<^sub>2
+          \<and> e1 \<subseteq> J
+          \<and> e2 \<subseteq> J
+          \<and> \<sigma>\<^sub>2 \<inter> J = e1 \<union> e2)"
+  (**
+    Figure 3.3 contact split for a free triangle once the selected boundary
+    edge set is known to be nonempty.  This separates the actual fold cases
+    from the bookkeeping case where a different free triangle must be chosen.
+  **)
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J}"
+  have hcanonical:
+      "finite ?E \<and> card ?E \<le> 2 \<and> \<sigma>\<^sub>2 \<inter> J = \<Union>?E"
+    by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+        [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1 hfree])
+  have hE_fin: "finite ?E"
+    using hcanonical by (by100 blast)
+  have hE_card: "card ?E \<le> 2"
+    using hcanonical by (by100 blast)
+  have hcontact_eq: "\<sigma>\<^sub>2 \<inter> J = \<Union>?E"
+    using hcanonical by (by100 blast)
+  have hE_cases:
+      "?E = {}
+        \<or> (\<exists>e. ?E = {e} \<and> geotop_is_edge e
+          \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J)
+        \<or> (\<exists>e1 e2. ?E = {e1, e2} \<and> e1 \<noteq> e2
+          \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+          \<and> geotop_is_face e1 \<sigma>\<^sub>2
+          \<and> geotop_is_face e2 \<sigma>\<^sub>2
+          \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+        [OF hE_fin hE_card])
+  show ?thesis
+    using hE_cases
+  proof (elim disjE)
+    assume hE_empty: "?E = {}"
+    show ?thesis
+      using hnonempty hE_empty by (by100 blast)
+  next
+    assume hsingle:
+      "\<exists>e. ?E = {e} \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J"
+    obtain e where hEe: "?E = {e}"
+      and hedge: "geotop_is_edge e"
+      and hface: "geotop_is_face e \<sigma>\<^sub>2"
+      and heJ: "e \<subseteq> J"
+      using hsingle by (elim exE conjE)
+    have hcontact: "\<sigma>\<^sub>2 \<inter> J = e"
+      using hcontact_eq hEe by (by100 simp)
+    have hleft:
+      "\<exists>e. ?E = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<sigma>\<^sub>2
+        \<and> e \<subseteq> J
+        \<and> \<sigma>\<^sub>2 \<inter> J = e"
+    proof (rule exI[where x = e])
+      show "?E = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<sigma>\<^sub>2
+        \<and> e \<subseteq> J
+        \<and> \<sigma>\<^sub>2 \<inter> J = e"
+        by (intro conjI hEe hedge hface heJ hcontact)
+    qed
+    show ?thesis
+      by (rule disjI1[OF hleft])
+  next
+    assume hdouble:
+      "\<exists>e1 e2. ?E = {e1, e2} \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma>\<^sub>2
+        \<and> geotop_is_face e2 \<sigma>\<^sub>2
+        \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J"
+    obtain e1 e2 where hE12: "?E = {e1, e2}"
+      and he12: "e1 \<noteq> e2"
+      and he1edge: "geotop_is_edge e1"
+      and he2edge: "geotop_is_edge e2"
+      and he1face: "geotop_is_face e1 \<sigma>\<^sub>2"
+      and he2face: "geotop_is_face e2 \<sigma>\<^sub>2"
+      and he1J: "e1 \<subseteq> J"
+      and he2J: "e2 \<subseteq> J"
+      using hdouble by (elim exE conjE)
+    have hcontact: "\<sigma>\<^sub>2 \<inter> J = e1 \<union> e2"
+      using hcontact_eq hE12 by (by100 simp)
+    have hright:
+      "\<exists>e1 e2. ?E = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma>\<^sub>2
+        \<and> geotop_is_face e2 \<sigma>\<^sub>2
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<sigma>\<^sub>2 \<inter> J = e1 \<union> e2"
+    proof (rule exI[where x = e1], rule exI[where x = e2])
+      show "?E = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma>\<^sub>2
+        \<and> geotop_is_face e2 \<sigma>\<^sub>2
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<sigma>\<^sub>2 \<inter> J = e1 \<union> e2"
+        by (intro conjI hE12 he12 he1edge he2edge he1face he2face
+            he1J he2J hcontact)
+    qed
+    show ?thesis
+      by (rule disjI2[OF hright])
+  qed
+qed
+
 lemma geotop_restrict_polyhedron_contains_if_carriers_subset_prefix:
   fixes K :: "(real^2) set set" and B :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
