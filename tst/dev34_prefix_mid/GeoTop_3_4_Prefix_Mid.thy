@@ -22691,7 +22691,7 @@ proof -
                 (closure_on UNIV geotop_euclidean_topology
                   (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
               P R
-          \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+          \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
       (**
         Remaining Moise endpoint-splice package.  Extend the normalized
         near-boundary chord from \<open>Q0\<close> to \<open>S0\<close> to a completed broken chord
@@ -22725,8 +22725,11 @@ proof -
               (closure_on UNIV geotop_euclidean_topology
                 (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
             P R"
-        and hR_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+        and hR_not_F\<^sub>1:
+          "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
         using hD42_completed_QS_chord_data by (elim exE conjE)
+      have hR_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+        by (rule hD42_R_F\<^sub>2_if_not_F\<^sub>1[OF hR_not_F\<^sub>1])
       show False
         by (rule hD42_same_component_contradiction_from_QS_chord_R_second
             [OF hB\<^sub>Q\<^sub>S_bl hB\<^sub>Q\<^sub>SE hF\<^sub>1B\<^sub>Q\<^sub>S hB\<^sub>Q\<^sub>SF\<^sub>2
