@@ -3870,6 +3870,38 @@ proof
     using hep hp_ep hp_ne by (by100 simp)
 qed
 
+lemma geotop_connected_local_component_closure_touch_three_sets_prefix:
+  fixes A U G\<^sub>1 G\<^sub>2 G\<^sub>3 :: "'a::real_normed_vector set" and x :: 'a
+  assumes hA_conn: "connected A"
+  assumes hA_sub: "A \<subseteq> U"
+  assumes hxA: "x \<in> A"
+  assumes hG\<^sub>1: "G\<^sub>1 \<inter> closure A \<noteq> {}"
+  assumes hG\<^sub>2: "G\<^sub>2 \<inter> closure A \<noteq> {}"
+  assumes hG\<^sub>3: "G\<^sub>3 \<inter> closure A \<noteq> {}"
+  shows "\<exists>C. C \<in> components U
+    \<and> G\<^sub>1 \<inter> closure C \<noteq> {}
+    \<and> G\<^sub>2 \<inter> closure C \<noteq> {}
+    \<and> G\<^sub>3 \<inter> closure C \<noteq> {}"
+proof -
+  let ?C = "connected_component_set U x"
+  have hxU: "x \<in> U"
+    using hxA hA_sub by (by100 blast)
+  have hC_comp: "?C \<in> components U"
+    by (rule componentsI[OF hxU])
+  have hA_sub_C: "A \<subseteq> ?C"
+    by (rule connected_component_maximal[OF hxA hA_conn hA_sub])
+  have hcl_sub: "closure A \<subseteq> closure ?C"
+    by (rule closure_mono[OF hA_sub_C])
+  have hG\<^sub>1C: "G\<^sub>1 \<inter> closure ?C \<noteq> {}"
+    using hG\<^sub>1 hcl_sub by (by100 blast)
+  have hG\<^sub>2C: "G\<^sub>2 \<inter> closure ?C \<noteq> {}"
+    using hG\<^sub>2 hcl_sub by (by100 blast)
+  have hG\<^sub>3C: "G\<^sub>3 \<inter> closure ?C \<noteq> {}"
+    using hG\<^sub>3 hcl_sub by (by100 blast)
+  show ?thesis
+    using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
+qed
+
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -10237,16 +10269,40 @@ proof -
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
                 \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
                 \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
-            (**
-              Exact first-entry/local-star obligation.  Starting from the
-              connected witness \<open>M\<close> through the three selected sphere points,
-              use the small-star sector cover and the selected boundary
-              closure data to choose one HOL component of
-              \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three
-              punctured selected germs.  This is the Moise local-one-manifold
-              step; it is stronger than component algebra and must use the
-              selected three-germ setup above. **)
-            sorry
+          proof -
+            have hfirst_entry_connected_local_complement_piece:
+              "\<exists>A x. connected A
+                \<and> A \<subseteq> ?Lcomp
+                \<and> x \<in> A
+                \<and> (S - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
+                \<and> (T - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
+                \<and> (U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
+              (**
+                Exact first-entry/local-star obligation after factoring the
+                component bookkeeping.  Starting from the connected witness
+                \<open>M\<close> through the three selected sphere points, use the
+                small-star sector cover and selected boundary closure data to
+                extract a connected subset of the local complement
+                \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three
+                punctured selected germs.  This is the Moise
+                local-one-manifold step; it is stronger than component algebra
+                and must use the selected three-germ setup above. **)
+              sorry
+            obtain A x where hA_conn: "connected A"
+              and hA_sub: "A \<subseteq> ?Lcomp"
+              and hxA: "x \<in> A"
+              and hS_A:
+                "(S - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
+              and hT_A:
+                "(T - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
+              and hU_A:
+                "(U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
+              using hfirst_entry_connected_local_complement_piece
+              by (elim exE conjE)
+            show ?thesis
+              by (rule geotop_connected_local_component_closure_touch_three_sets_prefix
+                  [OF hA_conn hA_sub hxA hS_A hT_A hU_A])
+          qed
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
             \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
