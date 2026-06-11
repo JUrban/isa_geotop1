@@ -23120,6 +23120,27 @@ proof -
 		      have hB\<^sub>I0_sub_I:
 		          "B\<^sub>I0 \<subseteq> geotop_polygon_interior J"
 		        using hB\<^sub>I0_sub_cut by (by100 blast)
+		      have hB\<^sub>I0_J_disj: "B\<^sub>I0 \<inter> J = {}"
+		        using hB\<^sub>I0_sub_I polygon_interior_disjoint_polygon[OF hJ]
+		        by (by100 blast)
+		      have hF\<^sub>1_B\<^sub>I0_disj: "F\<^sub>1 \<inter> B\<^sub>I0 = {}"
+		      proof -
+		        have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+		          using hD42_F_J_split by (by100 blast)
+		        show ?thesis
+		          using hF\<^sub>1_sub_J hB\<^sub>I0_J_disj by (by100 blast)
+		      qed
+		      have hB\<^sub>I0_F\<^sub>2_disj: "B\<^sub>I0 \<inter> F\<^sub>2 = {}"
+		      proof -
+		        have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+		          using hD42_F_J_split by (by100 blast)
+		        show ?thesis
+		          using hF\<^sub>2_sub_J hB\<^sub>I0_J_disj by (by100 blast)
+		      qed
+		      have hQ_not_B\<^sub>I0: "Q \<notin> B\<^sub>I0"
+		        using hQ hB\<^sub>I0_J_disj by (by100 blast)
+		      have hS_not_B\<^sub>I0: "S \<notin> B\<^sub>I0"
+		        using hS hB\<^sub>I0_J_disj by (by100 blast)
 		      have hA_B\<^sub>I0: "A \<inter> B\<^sub>I0 = {}"
 		        using hB\<^sub>I0_sub_cut by (by100 blast)
 		      have hPR_same_B\<^sub>I0:
