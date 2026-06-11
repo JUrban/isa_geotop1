@@ -21941,6 +21941,102 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_polygon_interior_minus_arc_two_disjoint_frontier_accesses_dev34:
+  fixes J A :: "(real^2) set" and P Q R S :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hQ: "Q \<in> J"
+  assumes hS: "S \<in> J"
+  assumes hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  assumes hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  assumes hQ_ne_S: "Q \<noteq> S"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>r U\<^sub>Q U\<^sub>S Q' S' Q1 S1 B\<^sub>Q B\<^sub>S.
+        0 < r
+        \<and> connected U\<^sub>Q
+        \<and> connected U\<^sub>S
+        \<and> U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>Q \<subseteq> ball Q r
+        \<and> U\<^sub>S \<subseteq> ball S r
+        \<and> ball Q r \<inter> ball S r = {}
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+        \<and> Q' \<in> U\<^sub>Q
+        \<and> S' \<in> U\<^sub>S
+        \<and> Q' \<in> geotop_polygon_interior J - A
+        \<and> S' \<in> geotop_polygon_interior J - A
+        \<and> U\<^sub>Q \<inter> U\<^sub>S = {}
+        \<and> Q1 \<in> U\<^sub>Q
+        \<and> Q1 \<in> ball Q r
+        \<and> S1 \<in> U\<^sub>S
+        \<and> S1 \<in> ball S r
+        \<and> geotop_is_broken_line B\<^sub>Q
+        \<and> B\<^sub>Q \<subseteq> U\<^sub>Q
+        \<and> Q1 \<in> B\<^sub>Q
+        \<and> Q' \<in> B\<^sub>Q
+        \<and> geotop_is_broken_line B\<^sub>S
+        \<and> B\<^sub>S \<subseteq> U\<^sub>S
+        \<and> S1 \<in> B\<^sub>S
+        \<and> S' \<in> B\<^sub>S"
+  (**
+    Radius-controlled D42 side-access package.  After choosing the disjoint
+    connected local sides at \<open>Q\<close> and \<open>S\<close>, pick nearby points on those sides
+    and broken lines inside the same sides back to the previously chosen
+    interior witnesses.  This is the reusable Moise endpoint-access data needed
+    before the final endpoint splice attaches the boundary endpoints. **)
+proof -
+  obtain r U\<^sub>Q U\<^sub>S Q' S' where hr_pos: "0 < r"
+    and hU\<^sub>Q_conn: "connected U\<^sub>Q"
+    and hU\<^sub>S_conn: "connected U\<^sub>S"
+    and hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+    and hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+    and hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+    and hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+    and hU\<^sub>Q_ball: "U\<^sub>Q \<subseteq> ball Q r"
+    and hU\<^sub>S_ball: "U\<^sub>S \<subseteq> ball S r"
+    and hballs_disj: "ball Q r \<inter> ball S r = {}"
+    and hQ_front:
+      "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+    and hS_front:
+      "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+    and hQ'_U\<^sub>Q: "Q' \<in> U\<^sub>Q"
+    and hS'_U\<^sub>S: "S' \<in> U\<^sub>S"
+    and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+    and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+    and hU_disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+    using geotop_polygon_interior_minus_arc_two_disjoint_frontier_witnesses_dev34
+        [OF hJ hQ hS hQ_ne_PR hS_ne_PR hQ_ne_S hA hAJ]
+    by (elim exE conjE)
+  obtain Q1 B\<^sub>Q where hQ1_U: "Q1 \<in> U\<^sub>Q"
+    and hQ1_ball: "Q1 \<in> ball Q r"
+    and hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
+    and hB\<^sub>Q_sub: "B\<^sub>Q \<subseteq> U\<^sub>Q"
+    and hQ1_B: "Q1 \<in> B\<^sub>Q"
+    and hQ'_B: "Q' \<in> B\<^sub>Q"
+    using geotop_connected_open_frontier_near_broken_access_prefix
+        [OF hU\<^sub>Q_conn hU\<^sub>Q_open hQ_front hQ'_U\<^sub>Q hr_pos]
+    by (elim exE conjE)
+  obtain S1 B\<^sub>S where hS1_U: "S1 \<in> U\<^sub>S"
+    and hS1_ball: "S1 \<in> ball S r"
+    and hB\<^sub>S_bl: "geotop_is_broken_line B\<^sub>S"
+    and hB\<^sub>S_sub: "B\<^sub>S \<subseteq> U\<^sub>S"
+    and hS1_B: "S1 \<in> B\<^sub>S"
+    and hS'_B: "S' \<in> B\<^sub>S"
+    using geotop_connected_open_frontier_near_broken_access_prefix
+        [OF hU\<^sub>S_conn hU\<^sub>S_open hS_front hS'_U\<^sub>S hr_pos]
+    by (elim exE conjE)
+  show ?thesis
+    using hr_pos hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
+      hU\<^sub>Q_sub hU\<^sub>S_sub hU\<^sub>Q_ball hU\<^sub>S_ball hballs_disj
+      hQ_front hS_front hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+      hQ1_U hQ1_ball hS1_U hS1_ball hB\<^sub>Q_bl hB\<^sub>Q_sub hQ1_B hQ'_B
+      hB\<^sub>S_bl hB\<^sub>S_sub hS1_B hS'_B
+    by (intro exI conjI)
+qed
+
 lemma geotop_connected_witness_same_component_in_subspace_prefix:
   fixes X A :: "(real^2) set"
   assumes hA_sub: "A \<subseteq> X"
