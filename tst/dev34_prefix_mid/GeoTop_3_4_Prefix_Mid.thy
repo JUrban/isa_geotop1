@@ -19265,22 +19265,34 @@ lemma geotop_polygon_disk_gt2_boundary_free_witness_avoids_empty_contact_prefix:
     fold: in a multi-triangle disk one can choose a boundary-free ear, and such
     an ear cannot be the given empty-contact witness. **)
 proof -
+  have hselected_candidate:
+    "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+    using geotop_polygon_disk_gt2_nonempty_selected_2simplex_avoids_empty_contact_prefix
+        [OF hJ hK hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>contact]
+    by (by100 blast)
+  have hfree_selected_witness:
+    "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_free_2_simplex K J \<rho>
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+    (**
+      Remaining Moise boundary-ear bridge: combine the selected-boundary
+      candidate above with the Figure 3.2 side-witness transfer to choose a
+      free triangle whose selected edge lies on the original polygon boundary.
+      The broad free-count theorem alone is insufficient here, because it
+      permits empty-contact bookkeeping witnesses. **)
+    sorry
   obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+    and h\<rho>free: "geotop_free_2_simplex K J \<rho>"
     and h\<rho>2: "geotop_simplex_dim \<rho> 2"
     and h\<rho>selected:
       "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
     and h\<rho>\<theta>: "\<rho> \<noteq> \<theta>"
-    using geotop_polygon_disk_gt2_nonempty_selected_2simplex_avoids_empty_contact_prefix
-        [OF hJ hK hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>contact]
-    by (elim exE conjE)
-  have h\<rho>free: "geotop_free_2_simplex K J \<rho>"
-    (**
-      Remaining Moise boundary-ear bridge: upgrade the selected-boundary
-      2-simplex supplied by the two-boundary-simplex step to an actual free
-      triangle.  This is the nonempty-contact version of the Figure 3.2
-      side-witness transfer, not a consequence of the broad free-count theorem
-      alone. **)
-    sorry
+    using hfree_selected_witness by (elim exE conjE)
   have hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
     using hT_gt2 by (by100 linarith)
   have h\<rho>bf: "geotop_boundary_free_2_simplex K J \<rho>"
