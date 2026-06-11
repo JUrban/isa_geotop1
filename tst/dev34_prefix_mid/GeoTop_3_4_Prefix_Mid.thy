@@ -6575,6 +6575,116 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_nonfree_selected_boundary_edge_contact_cases_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
+  assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hEsub: "E \<subseteq> K"
+  assumes hEallowed:
+    "E = {} \<or>
+     (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+  assumes hEnonempty: "E \<noteq> {}"
+  assumes hnot_free: "\<not> geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  assumes hUnion_sub: "\<Union>E \<subseteq> \<sigma>\<^sub>2 \<inter> J"
+  shows
+    "(\<exists>e x. E = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<sigma>\<^sub>2
+        \<and> e \<subseteq> J
+        \<and> x \<in> \<sigma>\<^sub>2 \<inter> J
+        \<and> x \<notin> e)
+    \<or> (\<exists>e1 e2 x. E = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma>\<^sub>2
+        \<and> geotop_is_face e2 \<sigma>\<^sub>2
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> x \<in> \<sigma>\<^sub>2 \<inter> J
+        \<and> x \<notin> e1 \<union> e2)"
+  (**
+    Figure 3.2 nonfree selected-contact split.  Once the selected boundary-edge
+    family is known to be nonempty and has the one/two-edge canonical shape,
+    nonfreeness supplies actual polygon-boundary contact outside that selected
+    family; this isolates the one-edge and two-edge residuals used by the
+    side-witness transfer. **)
+proof -
+  have hcontact_outside:
+      "\<exists>x. x \<in> \<sigma>\<^sub>2 \<inter> J \<and> x \<notin> \<Union>E"
+    by (rule geotop_nonfree_selected_edges_contact_outside_prefix
+        [OF h\<sigma>K h\<sigma>2 hEsub hEallowed hnot_free hUnion_sub])
+  obtain x where hx\<sigma>J: "x \<in> \<sigma>\<^sub>2 \<inter> J"
+    and hx_not_E: "x \<notin> \<Union>E"
+    using hcontact_outside by (elim exE conjE)
+  show ?thesis
+    using hEallowed
+  proof (elim disjE)
+    assume hE_empty: "E = {}"
+    have False
+      using hEnonempty hE_empty by (by100 blast)
+    thus ?thesis
+      by (by100 blast)
+  next
+    assume hsingle:
+      "\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J"
+    obtain e where hEe: "E = {e}"
+      and hedge: "geotop_is_edge e"
+      and hface: "geotop_is_face e \<sigma>\<^sub>2"
+      and heJ: "e \<subseteq> J"
+      using hsingle by (elim exE conjE)
+    have hx_not_e: "x \<notin> e"
+      using hx_not_E hEe by (by100 simp)
+    have hleft:
+      "\<exists>e x. E = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<sigma>\<^sub>2
+        \<and> e \<subseteq> J
+        \<and> x \<in> \<sigma>\<^sub>2 \<inter> J
+        \<and> x \<notin> e"
+      using hEe hedge hface heJ hx\<sigma>J hx_not_e by (by100 blast)
+    show ?thesis
+      by (rule disjI1[OF hleft])
+  next
+    assume hdouble:
+      "\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J"
+    obtain e1 e2 where hE12: "E = {e1, e2}"
+      and he12: "e1 \<noteq> e2"
+      and he1edge: "geotop_is_edge e1"
+      and he2edge: "geotop_is_edge e2"
+      and he1face: "geotop_is_face e1 \<sigma>\<^sub>2"
+      and he2face: "geotop_is_face e2 \<sigma>\<^sub>2"
+      and he1J: "e1 \<subseteq> J"
+      and he2J: "e2 \<subseteq> J"
+      using hdouble by (elim exE conjE)
+    have hx_not_e12: "x \<notin> e1 \<union> e2"
+      using hx_not_E hE12 by (by100 simp)
+    have hright:
+      "\<exists>e1 e2 x. E = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma>\<^sub>2
+        \<and> geotop_is_face e2 \<sigma>\<^sub>2
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> x \<in> \<sigma>\<^sub>2 \<inter> J
+        \<and> x \<notin> e1 \<union> e2"
+      using hE12 he12 he1edge he2edge he1face he2face he1J he2J
+        hx\<sigma>J hx_not_e12
+      by (by100 blast)
+    show ?thesis
+      by (rule disjI2[OF hright])
+  qed
+qed
+
 lemma geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
@@ -19414,11 +19524,6 @@ proof -
             [OF h\<beta>E_fin h\<beta>E_card_le2])
       have h\<beta>E_union_sub: "\<Union>?E\<beta> \<subseteq> \<beta> \<inter> J"
         by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
-      have h\<beta>_contact_outside_selected:
-          "\<exists>x. x \<in> \<beta> \<inter> J \<and> x \<notin> \<Union>?E\<beta>"
-        by (rule geotop_nonfree_selected_edges_contact_outside_prefix
-            [OF h\<beta>K h\<beta>2 h\<beta>E_sub h\<beta>E_allowed h\<beta>_not_free
-              h\<beta>E_union_sub])
       have h\<beta>_nonfree_selected_contact_cases:
           "(\<exists>e x. ?E\<beta> = {e}
               \<and> geotop_is_edge e
@@ -19436,73 +19541,9 @@ proof -
               \<and> e2 \<subseteq> J
               \<and> x \<in> \<beta> \<inter> J
               \<and> x \<notin> e1 \<union> e2)"
-      proof -
-        obtain x where hx\<beta>J: "x \<in> \<beta> \<inter> J"
-          and hx_not_E\<beta>: "x \<notin> \<Union>?E\<beta>"
-          using h\<beta>_contact_outside_selected by (elim exE conjE)
-        show ?thesis
-          using h\<beta>E_allowed
-        proof (elim disjE)
-          assume hE\<beta>_empty: "?E\<beta> = {}"
-          have False
-            using h\<beta>selected hE\<beta>_empty by (by100 simp)
-          thus ?thesis
-            by (by100 blast)
-        next
-          assume hsingle:
-            "\<exists>e. ?E\<beta> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J"
-          obtain e where hE\<beta>e: "?E\<beta> = {e}"
-            and hedge: "geotop_is_edge e"
-            and hface: "geotop_is_face e \<beta>"
-            and heJ: "e \<subseteq> J"
-            using hsingle by (elim exE conjE)
-          have hx_not_e: "x \<notin> e"
-            using hx_not_E\<beta> hE\<beta>e by (by100 simp)
-          have hleft:
-            "\<exists>e x. ?E\<beta> = {e}
-              \<and> geotop_is_edge e
-              \<and> geotop_is_face e \<beta>
-              \<and> e \<subseteq> J
-              \<and> x \<in> \<beta> \<inter> J
-              \<and> x \<notin> e"
-            using hE\<beta>e hedge hface heJ hx\<beta>J hx_not_e by (by100 blast)
-          show ?thesis
-            by (rule disjI1[OF hleft])
-        next
-          assume hdouble:
-            "\<exists>e1 e2. ?E\<beta> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
-              geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
-              geotop_is_face e1 \<beta> \<and> geotop_is_face e2 \<beta> \<and>
-              e1 \<subseteq> J \<and> e2 \<subseteq> J"
-          obtain e1 e2 where hE\<beta>12: "?E\<beta> = {e1, e2}"
-            and he12: "e1 \<noteq> e2"
-            and he1edge: "geotop_is_edge e1"
-            and he2edge: "geotop_is_edge e2"
-            and he1face: "geotop_is_face e1 \<beta>"
-            and he2face: "geotop_is_face e2 \<beta>"
-            and he1J: "e1 \<subseteq> J"
-            and he2J: "e2 \<subseteq> J"
-            using hdouble by (elim exE conjE)
-          have hx_not_e12: "x \<notin> e1 \<union> e2"
-            using hx_not_E\<beta> hE\<beta>12 by (by100 simp)
-          have hright:
-            "\<exists>e1 e2 x. ?E\<beta> = {e1, e2}
-              \<and> e1 \<noteq> e2
-              \<and> geotop_is_edge e1
-              \<and> geotop_is_edge e2
-              \<and> geotop_is_face e1 \<beta>
-              \<and> geotop_is_face e2 \<beta>
-              \<and> e1 \<subseteq> J
-              \<and> e2 \<subseteq> J
-              \<and> x \<in> \<beta> \<inter> J
-              \<and> x \<notin> e1 \<union> e2"
-            using hE\<beta>12 he12 he1edge he2edge he1face he2face he1J he2J
-              hx\<beta>J hx_not_e12
-            by (by100 blast)
-          show ?thesis
-            by (rule disjI2[OF hright])
-        qed
-      qed
+        by (rule geotop_nonfree_selected_boundary_edge_contact_cases_prefix
+            [OF h\<beta>K h\<beta>2 h\<beta>E_sub h\<beta>E_allowed h\<beta>selected
+              h\<beta>_not_free h\<beta>E_union_sub])
       show ?thesis
         sorry
     qed
