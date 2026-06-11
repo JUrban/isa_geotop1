@@ -21901,6 +21901,37 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_connected_witness_same_component_in_subspace_prefix:
+  fixes X A :: "(real^2) set"
+  assumes hA_sub: "A \<subseteq> X"
+  assumes hP_A: "P \<in> A"
+  assumes hR_A: "R \<in> A"
+  assumes hA_connected:
+    "top1_connected_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "top1_in_same_component_on X
+    (subspace_topology UNIV geotop_euclidean_topology X) P R"
+  (**
+    D42 bookkeeping lemma: the original P-R arc acts as the connected witness
+    that P and R remain in one component after deleting a candidate Q-S chord.
+    Naming this step keeps the endpoint-splice proof focused on the genuine
+    Moise access-arc construction. **)
+proof -
+  have hsubspace:
+      "subspace_topology X
+        (subspace_topology UNIV geotop_euclidean_topology X) A =
+       subspace_topology UNIV geotop_euclidean_topology A"
+    by (rule subspace_topology_trans[OF hA_sub])
+  have hA_connected_X:
+      "top1_connected_on A
+        (subspace_topology X
+          (subspace_topology UNIV geotop_euclidean_topology X) A)"
+    using hA_connected hsubspace by (by100 simp)
+  show ?thesis
+    unfolding top1_in_same_component_on_def
+    using hA_sub hP_A hR_A hA_connected_X by (intro exI conjI)
+qed
+
 lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
     and P Q R S Q0 S0 :: "real^2"
@@ -22122,22 +22153,11 @@ proof -
   let ?X =
     "closure_on UNIV geotop_euclidean_topology
       (geotop_polygon_interior J) - B"
-  have hsubspace:
-      "subspace_topology ?X
-        (subspace_topology UNIV geotop_euclidean_topology ?X) A =
-       subspace_topology UNIV geotop_euclidean_topology A"
-    by (rule subspace_topology_trans[OF hA_sub_closed_minus])
-  have hA_conn_X:
-      "top1_connected_on A
-        (subspace_topology ?X
-          (subspace_topology UNIV geotop_euclidean_topology ?X) A)"
-    using hA_connected hsubspace by (by100 simp)
   have hPR_same:
       "top1_in_same_component_on ?X
         (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
-    unfolding top1_in_same_component_on_def
-    using hA_sub_closed_minus hP_A hR_A hA_conn_X
-    by (intro exI conjI)
+    by (rule geotop_connected_witness_same_component_in_subspace_prefix
+        [OF hA_sub_closed_minus hP_A hR_A hA_connected])
   have hQ_ne_P: "Q \<noteq> P"
   proof
     assume hQP: "Q = P"
@@ -23045,22 +23065,11 @@ proof -
       show "x \<in> ?X\<^sub>0"
         using hx_cl hx_not_B\<^sub>0 by (by100 blast)
     qed
-    have hsubspace_X\<^sub>0:
-        "subspace_topology ?X\<^sub>0
-          (subspace_topology UNIV geotop_euclidean_topology ?X\<^sub>0) A =
-         subspace_topology UNIV geotop_euclidean_topology A"
-      by (rule subspace_topology_trans[OF hA_sub_X\<^sub>0])
-    have hA_conn_X\<^sub>0:
-        "top1_connected_on A
-          (subspace_topology ?X\<^sub>0
-            (subspace_topology UNIV geotop_euclidean_topology ?X\<^sub>0) A)"
-      using hA_connected hsubspace_X\<^sub>0 by (by100 simp)
     have hPR_same_X\<^sub>0:
         "top1_in_same_component_on ?X\<^sub>0
           (subspace_topology UNIV geotop_euclidean_topology ?X\<^sub>0) P R"
-      unfolding top1_in_same_component_on_def
-      using hA_sub_X\<^sub>0 hP_A hR_A hA_conn_X\<^sub>0
-      by (intro exI conjI)
+      by (rule geotop_connected_witness_same_component_in_subspace_prefix
+          [OF hA_sub_X\<^sub>0 hP_A hR_A hA_connected])
     show ?thesis
       using hB\<^sub>0_bl hB\<^sub>0_sub_cut hB\<^sub>0_endpoints hB\<^sub>0_int_sub_I hPR_same_X\<^sub>0
       by (intro exI conjI)
@@ -24024,22 +24033,11 @@ proof -
         "top1_connected_on A
           (subspace_topology UNIV geotop_euclidean_topology A)"
       using hA_book by (by100 blast)
-    have hsubspace:
-        "subspace_topology ?X
-          (subspace_topology UNIV geotop_euclidean_topology ?X) A =
-         subspace_topology UNIV geotop_euclidean_topology A"
-      by (rule subspace_topology_trans[OF hA_sub_X])
-    have hA_conn_X:
-        "top1_connected_on A
-          (subspace_topology ?X
-            (subspace_topology UNIV geotop_euclidean_topology ?X) A)"
-      using hA_conn_book hsubspace by (by100 simp)
     show
         "top1_in_same_component_on ?X
           (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
-      unfolding top1_in_same_component_on_def
-      using hA_sub_X hP_A_book hR_A_book hA_conn_X
-      by (intro exI conjI)
+      by (rule geotop_connected_witness_same_component_in_subspace_prefix
+          [OF hA_sub_X hP_A_book hR_A_book hA_conn_book])
   qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
@@ -24369,22 +24367,11 @@ proof -
       using hA_book by (by100 blast)
     let ?X = "closure_on UNIV geotop_euclidean_topology
       (geotop_polygon_interior J) - B"
-    have hsubspace:
-        "subspace_topology ?X
-          (subspace_topology UNIV geotop_euclidean_topology ?X) A =
-         subspace_topology UNIV geotop_euclidean_topology A"
-      by (rule subspace_topology_trans[OF hA_sub_X])
-    have hA_conn_X:
-        "top1_connected_on A
-          (subspace_topology ?X
-            (subspace_topology UNIV geotop_euclidean_topology ?X) A)"
-      using hA_conn_book hsubspace by (by100 simp)
     have hPR_same:
         "top1_in_same_component_on ?X
           (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
-      unfolding top1_in_same_component_on_def
-      using hA_sub_X hP_A_book hR_A_book hA_conn_X
-      by (intro exI conjI)
+      by (rule geotop_connected_witness_same_component_in_subspace_prefix
+          [OF hA_sub_X hP_A_book hR_A_book hA_conn_book])
     show "\<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> geotop_polygon_interior J - A
           \<and> Q' \<in> B \<and> S' \<in> B
