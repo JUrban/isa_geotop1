@@ -21167,6 +21167,46 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_connected_open_frontier_near_broken_access_prefix:
+  fixes U :: "(real^2) set" and X X0 :: "real^2" and r :: real
+  assumes hU_conn: "connected U"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hX_front: "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+  assumes hX0_U: "X0 \<in> U"
+  assumes hr: "0 < r"
+  shows "\<exists>X1 B. X1 \<in> U \<and> X1 \<in> ball X r
+      \<and> geotop_is_broken_line B
+      \<and> B \<subseteq> U
+      \<and> X1 \<in> B
+      \<and> X0 \<in> B"
+  (**
+    D42 endpoint-access substep.  Moise chooses points near the boundary
+    endpoints inside the two open sides, then joins those nearby side points to
+    the already selected interior endpoints by broken lines inside the same
+    connected open side. **)
+proof -
+  have hmeet: "ball X r \<inter> U \<noteq> {}"
+    by (rule geotop_frontier_ball_meets_set_prefix[OF hX_front hr])
+  obtain X1 where hX1_ball: "X1 \<in> ball X r" and hX1_U: "X1 \<in> U"
+    using hmeet by (by100 blast)
+  have hU_conn_top:
+      "top1_connected_on U
+        (subspace_topology UNIV geotop_euclidean_topology U)"
+    using hU_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hU_bl: "geotop_broken_line_connected U"
+    by (rule Theorem_GT_1_13[OF hU_open hU_conn_top])
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub: "B \<subseteq> U"
+    and hX1_B: "X1 \<in> B"
+    and hX0_B: "X0 \<in> B"
+    using hU_bl hX1_U hX0_U
+    unfolding geotop_broken_line_connected_def
+    by (by100 blast)
+  show ?thesis
+    using hX1_U hX1_ball hB_bl hB_sub hX1_B hX0_B
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_interior_minus_arc_frontier_witness_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
