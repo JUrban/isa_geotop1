@@ -19458,6 +19458,103 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_selected_nonfree_triangle_choose_contact_chord_prefix:
+  fixes J \<beta> :: "(real^2) set" and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes h\<beta>_vertices: "geotop_simplex_vertices \<beta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hbase_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+  assumes hnonbase_contact:
+    "\<exists>x. x \<in> \<beta> \<inter> J
+      \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+  assumes hnonbase_not_boundary:
+    "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+  shows "\<exists>a b c.
+      a \<noteq> b
+      \<and> c \<notin> {a, b}
+      \<and> geotop_simplex_vertices \<beta> {a, b, c}
+      \<and> geotop_convex_hull {a, b} \<subseteq> J
+      \<and> (\<exists>x. x \<in> \<beta> \<inter> J
+          \<and> x \<notin> closed_segment a b
+          \<and> x \<in> closed_segment a c - {a})
+      \<and> \<not> closed_segment a c \<subseteq> J
+      \<and> \<not> closed_segment b c \<subseteq> J"
+  (**
+    Moise Figure 3.2 side-choice normalization.  The selected boundary edge is
+    kept as the base, but the two base vertices may be swapped so that the
+    contacted nonbase side is always named as the chord \<open>a-c\<close>. **)
+proof -
+  obtain x where hx\<beta>J: "x \<in> \<beta> \<inter> J"
+    and hx_not_base: "x \<notin> closed_segment v\<^sub>0 v\<^sub>1"
+    and hx_nonbase:
+      "x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+        \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    using hnonbase_contact by (elim exE conjE)
+  have hside_cases:
+    "x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0}
+      \<or> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1}"
+    using hx_nonbase by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hside_cases])
+    assume hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0}"
+    have hwitness:
+      "v\<^sub>0 \<noteq> v\<^sub>1
+      \<and> v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}
+      \<and> geotop_simplex_vertices \<beta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J
+      \<and> (\<exists>x. x \<in> \<beta> \<inter> J
+          \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+          \<and> x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+      \<and> \<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+      using hv\<^sub>0v\<^sub>1 hv\<^sub>2_not h\<beta>_vertices hbase_sub_J
+        hx\<beta>J hx_not_base hx_chord hnonbase_not_boundary
+      by (by100 blast)
+    show ?thesis
+      using hwitness by (by100 blast)
+  next
+    assume hx_chord: "x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1}"
+    have hv\<^sub>1v\<^sub>0: "v\<^sub>1 \<noteq> v\<^sub>0"
+      using hv\<^sub>0v\<^sub>1 by (by100 blast)
+    have hv\<^sub>2_not_swap: "v\<^sub>2 \<notin> {v\<^sub>1, v\<^sub>0}"
+      using hv\<^sub>2_not by (by100 blast)
+    have h\<beta>_vertices_swap: "geotop_simplex_vertices \<beta> {v\<^sub>1, v\<^sub>0, v\<^sub>2}"
+    proof -
+      have "{v\<^sub>1, v\<^sub>0, v\<^sub>2} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+        by (by100 blast)
+      thus ?thesis
+        using h\<beta>_vertices by (by100 simp)
+    qed
+    have hbase_sub_J_swap: "geotop_convex_hull {v\<^sub>1, v\<^sub>0} \<subseteq> J"
+    proof -
+      have "{v\<^sub>1, v\<^sub>0} = {v\<^sub>0, v\<^sub>1}"
+        by (rule insert_commute)
+      thus ?thesis
+        using hbase_sub_J by (by100 simp)
+    qed
+    have hx_not_base_swap: "x \<notin> closed_segment v\<^sub>1 v\<^sub>0"
+      using hx_not_base by (subst closed_segment_commute)
+    have hwitness:
+      "v\<^sub>1 \<noteq> v\<^sub>0
+      \<and> v\<^sub>2 \<notin> {v\<^sub>1, v\<^sub>0}
+      \<and> geotop_simplex_vertices \<beta> {v\<^sub>1, v\<^sub>0, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>0} \<subseteq> J
+      \<and> (\<exists>x. x \<in> \<beta> \<inter> J
+          \<and> x \<notin> closed_segment v\<^sub>1 v\<^sub>0
+          \<and> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})
+      \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J
+      \<and> \<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J"
+      using hv\<^sub>1v\<^sub>0 hv\<^sub>2_not_swap h\<beta>_vertices_swap hbase_sub_J_swap
+        hx\<beta>J hx_not_base_swap hx_chord hnonbase_not_boundary
+      by (by100 blast)
+    show ?thesis
+      using hwitness by (by100 blast)
+  qed
+qed
+
 lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
   fixes J \<theta> \<alpha> \<beta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19540,14 +19637,30 @@ proof -
      \<or> (\<exists>x. x \<in> \<beta> \<inter> J
         \<and> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
     using hnonbase_contact by (by100 blast)
+  obtain a b c where hab: "a \<noteq> b"
+    and hc_not: "c \<notin> {a, b}"
+    and h\<beta>_vertices_chord: "geotop_simplex_vertices \<beta> {a, b, c}"
+    and hbase_ab_sub_J: "geotop_convex_hull {a, b} \<subseteq> J"
+    and hcontact_chord:
+      "\<exists>x. x \<in> \<beta> \<inter> J
+        \<and> x \<notin> closed_segment a b
+        \<and> x \<in> closed_segment a c - {a}"
+    and hnonbase_ab_not_boundary:
+      "\<not> closed_segment a c \<subseteq> J
+        \<and> \<not> closed_segment b c \<subseteq> J"
+    using geotop_selected_nonfree_triangle_choose_contact_chord_prefix
+        [OF hv\<^sub>0v\<^sub>1 hv\<^sub>2_not h\<beta>_vertices hbase_sub_J
+          hnonbase_contact hnonbase_not_boundary]
+    by (by100 blast)
   show ?thesis
     (**
-      Remaining side-disk transfer, now after extracting the Figure 3.2
-      vertices and nonbase side.  The next book step is to cut along the
-      contacted nonbase side, form the two chord-side polygonal disks, apply
-      the strong induction to both side complexes, discard any artificial
-      chord-only witness, and transfer a surviving selected free witness to
-      the parent disk. **)
+      Remaining side-disk transfer, now after normalizing the Figure 3.2
+      vertices so the contacted nonbase side is the chord \<open>a-c\<close> and the
+      selected parent-boundary base edge is \<open>a-b\<close>.  The next book step is to
+      form the two chord-side polygonal disks along \<open>a-c\<close>, apply the strong
+      induction to both side complexes, discard any artificial-chord-only
+      witness, and transfer a surviving selected free witness to the parent
+      disk. **)
     sorry
 qed
 
