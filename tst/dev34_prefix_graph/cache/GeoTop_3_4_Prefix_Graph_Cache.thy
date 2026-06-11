@@ -10231,6 +10231,19 @@ proof -
                 \<and> t0 \<in> T - {w} \<and> t0 \<in> ball w r
                 \<and> u0 \<in> U - {w} \<and> u0 \<in> ball w r"
             using hs0_germ ht0_germ hu0_germ by (by100 blast)
+          have hselected_germ_points_distinct:
+              "s0 \<noteq> t0 \<and> s0 \<noteq> u0 \<and> t0 \<noteq> u0"
+          proof (intro conjI)
+            show "s0 \<noteq> t0"
+              using hs0_germ ht0_germ hST_disj by (by100 blast)
+            show "s0 \<noteq> u0"
+              using hs0_germ hu0_germ hSU_disj by (by100 blast)
+            show "t0 \<noteq> u0"
+              using ht0_germ hu0_germ hTU_disj by (by100 blast)
+          qed
+          have hselected_germ_points_card:
+              "card {s0, t0, u0} = 3"
+            using hselected_germ_points_distinct by (by100 simp)
           have hselected_germ_points_not_local:
               "s0 \<notin> ?Lcomp \<and> t0 \<notin> ?Lcomp \<and> u0 \<notin> ?Lcomp"
             using hs0_germ ht0_germ hu0_germ
