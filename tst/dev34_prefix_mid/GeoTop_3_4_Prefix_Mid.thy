@@ -23077,6 +23077,85 @@ proof -
     unfolding mem_interior using ht hball_sub_\<sigma> by (by100 blast)
 qed
 
+lemma geotop_polygon_unique_incident_boundary_edge_radial_segment_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  assumes hp: "p \<in> rel_interior e"
+  shows "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball p r \<longrightarrow>
+      closed_segment p X1 - {p} \<subseteq> geotop_polygon_interior J"
+  (**
+    One-sided boundary-edge case of Moise D42.  The edge has a unique incident
+    two-simplex, so the local carrier is that simplex; nearby polygon-interior
+    points are simplex-interior points, and the convex two-simplex radial
+    lemma keeps the punctured segment inside the polygon interior. **)
+proof -
+  let ?I = "geotop_polygon_interior J"
+  let ?M = "geotop_polyhedron K"
+  obtain s where hs: "0 < s"
+    and hlocal: "ball p s \<inter> ?M = ball p s \<inter> \<sigma>"
+    by (rule exE[OF geotop_unique_incident_edge_rel_interior_local_polyhedron_eq_simplex_prefix
+        [OF hK heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hp]]) blast
+  have hclosure_on: "closure_on UNIV geotop_euclidean_topology ?I = closure ?I"
+    by (rule closure_on_geotop_UNIV_eq_closure)
+  have hM_closure: "?M = closure ?I"
+    using hK_poly hclosure_on by (by100 simp)
+  have hM_int: "interior ?M = ?I"
+    using geotop_polygon_interior_regular_closed_prefix[OF hJ] hM_closure
+    by (by100 simp)
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset_prefix[OF h\<sigma>face])
+  have hp_\<sigma>: "p \<in> \<sigma>"
+    using hp_e he_sub_\<sigma> by (by100 blast)
+  have h\<sigma>subM: "\<sigma> \<subseteq> ?M"
+    using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hinterior_\<sigma>_sub_I: "interior \<sigma> \<subseteq> ?I"
+  proof -
+    have "interior \<sigma> \<subseteq> interior ?M"
+      by (rule interior_mono[OF h\<sigma>subM])
+    thus ?thesis
+      using hM_int by (by100 simp)
+  qed
+  define r where "r = s / 2"
+  have hr: "0 < r"
+    using hs unfolding r_def by (by100 simp)
+  have hradial:
+      "\<forall>X1. X1 \<in> ?I \<longrightarrow>
+        X1 \<in> ball p r \<longrightarrow>
+        closed_segment p X1 - {p} \<subseteq> ?I"
+  proof (intro allI impI)
+    fix X1
+    assume hX1I: "X1 \<in> ?I"
+    assume hX1ball: "X1 \<in> ball p r"
+    have hX1_int_M: "X1 \<in> interior ?M"
+      using hX1I hM_int by (by100 simp)
+    have hX1_near: "X1 \<in> ball p (s / 2)"
+      using hX1ball unfolding r_def by (by100 simp)
+    have hX1_int_\<sigma>: "X1 \<in> interior \<sigma>"
+      by (rule geotop_local_carrier_eq_interior_transfer_prefix
+          [OF hs hlocal hX1_int_M hX1_near])
+    have hseg_\<sigma>: "closed_segment p X1 - {p} \<subseteq> interior \<sigma>"
+      by (rule geotop_2simplex_interior_radial_segment_from_point_prefix
+          [OF h\<sigma>2 hp_\<sigma> hX1_int_\<sigma>])
+    show "closed_segment p X1 - {p} \<subseteq> ?I"
+      using hseg_\<sigma> hinterior_\<sigma>_sub_I by (by100 blast)
+  qed
+  show ?thesis
+    using hr hradial by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
