@@ -22963,6 +22963,15 @@ proof -
 		          using hB\<^sub>I_bl hB\<^sub>I_sub hQ\<^sub>0_B\<^sub>I hS\<^sub>0_B\<^sub>I
 		          by (intro exI conjI)
 		      qed
+		      obtain B\<^sub>I where hB\<^sub>I_bl: "geotop_is_broken_line B\<^sub>I"
+		        and hB\<^sub>I_sub_cut: "B\<^sub>I \<subseteq> geotop_polygon_interior J - A"
+		        and hQ\<^sub>0_B\<^sub>I: "Q\<^sub>0 \<in> B\<^sub>I"
+		        and hS\<^sub>0_B\<^sub>I: "S\<^sub>0 \<in> B\<^sub>I"
+		        using hD42_Q\<^sub>0_S\<^sub>0_interior_spliced_line by (elim exE conjE)
+		      have hB\<^sub>I_sub_I: "B\<^sub>I \<subseteq> geotop_polygon_interior J"
+		        using hB\<^sub>I_sub_cut by (by100 blast)
+		      have hA_B\<^sub>I: "A \<inter> B\<^sub>I = {}"
+		        using hB\<^sub>I_sub_cut by (by100 blast)
 		      have hD42_QS_chord_splice_from_interior_line:
 		        "\<exists>B. geotop_is_broken_line B
 		          \<and> geotop_arc_endpoints B {Q, S}
