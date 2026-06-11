@@ -19379,17 +19379,34 @@ proof -
       using h\<alpha>K h\<alpha>free h\<alpha>2 h\<alpha>_ne_\<theta>
         geotop_boundary_free_2_simplex_selected_edge_nonempty_prefix
       by (by100 blast)
+    have h\<beta>_free_finishes:
+        "geotop_free_2_simplex K J \<beta> \<Longrightarrow> ?thesis"
+      using h\<beta>K h\<beta>2 h\<beta>selected h\<beta>_ne_\<theta> by (by100 blast)
+    have h\<alpha>_empty_\<beta>_nonfree_residual_finishes:
+        "?E\<alpha> = {} \<Longrightarrow> \<not> geotop_free_2_simplex K J \<beta> \<Longrightarrow> ?thesis"
+      (**
+        Remaining filtered Figure 3.2 case: \<open>\<alpha>\<close> is a free triangle with
+        no selected edge on the parent polygon boundary, while \<open>\<beta>\<close> is a
+        distinct selected parent-boundary triangle which is not itself free.
+        The side-disk/chord proof must replace this pair by a transferable
+        free selected witness. **)
+      sorry
     have h\<alpha>_empty_selected_residual_finishes:
         "?E\<alpha> = {} \<Longrightarrow> ?thesis"
-      (**
-        Remaining separated-witness Moise side-transfer case after filtering:
-        the chosen free witness \<open>\<alpha>\<close> has no selected edge on the parent
-        boundary, while \<open>\<beta>\<close> is a distinct parent-boundary selected
-        candidate.  This is now exactly the artificial-chord exclusion step
-        from Figure 3.2: use the two side disks to replace the empty-selected
-        free witness by one whose selected edge lies on the original polygon
-        boundary. **)
-      sorry
+    proof -
+      assume hE\<alpha>_empty: "?E\<alpha> = {}"
+      show ?thesis
+      proof (cases "geotop_free_2_simplex K J \<beta>")
+        case True
+        show ?thesis
+          by (rule h\<beta>_free_finishes[OF True])
+      next
+        case False
+        show ?thesis
+          by (rule h\<alpha>_empty_\<beta>_nonfree_residual_finishes
+              [OF hE\<alpha>_empty False])
+      qed
+    qed
     show ?thesis
       using h\<alpha>_empty_or_boundary_free h\<alpha>_boundary_free_finishes
         h\<alpha>_empty_selected_residual_finishes
