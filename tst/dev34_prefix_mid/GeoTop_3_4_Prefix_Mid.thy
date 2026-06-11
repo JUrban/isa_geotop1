@@ -21573,6 +21573,75 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_polygon_interior_minus_arc_two_disjoint_frontier_witnesses_dev34:
+  fixes J A :: "(real^2) set" and P Q R S :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hQ: "Q \<in> J"
+  assumes hS: "S \<in> J"
+  assumes hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  assumes hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  assumes hQ_ne_S: "Q \<noteq> S"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
+        0 < r
+        \<and> connected U\<^sub>Q
+        \<and> connected U\<^sub>S
+        \<and> U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>Q \<subseteq> ball Q r
+        \<and> U\<^sub>S \<subseteq> ball S r
+        \<and> ball Q r \<inter> ball S r = {}
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+        \<and> Q' \<in> U\<^sub>Q
+        \<and> S' \<in> U\<^sub>S
+        \<and> Q' \<in> geotop_polygon_interior J - A
+        \<and> S' \<in> geotop_polygon_interior J - A
+        \<and> U\<^sub>Q \<inter> U\<^sub>S = {}"
+  (**
+    D42 endpoint-hygiene package.  The local cut-interior witnesses at the
+    two boundary points can be chosen in disjoint balls, so later component
+    and splice arguments may work with connected frontier witnesses rather
+    than arbitrary points obtained from frontier-ball nonemptiness. **)
+proof -
+  obtain r where hr_pos: "0 < r"
+    and hr_disj: "ball Q r \<inter> ball S r = {}"
+    using geotop_distinct_points_disjoint_small_balls_prefix[OF hQ_ne_S]
+    by (elim exE conjE)
+  obtain U\<^sub>Q Q' where hU\<^sub>Q_conn: "connected U\<^sub>Q"
+    and hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+    and hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+    and hU\<^sub>Q_ball: "U\<^sub>Q \<subseteq> ball Q r"
+    and hQ_front:
+      "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+    and hQ'_U\<^sub>Q: "Q' \<in> U\<^sub>Q"
+    and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+    using geotop_polygon_interior_minus_arc_connected_frontier_witness_in_ball_dev34
+        [OF hJ hQ hQ_ne_PR hA hAJ hr_pos]
+    by (elim exE conjE)
+  obtain U\<^sub>S S' where hU\<^sub>S_conn: "connected U\<^sub>S"
+    and hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+    and hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+    and hU\<^sub>S_ball: "U\<^sub>S \<subseteq> ball S r"
+    and hS_front:
+      "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+    and hS'_U\<^sub>S: "S' \<in> U\<^sub>S"
+    and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+    using geotop_polygon_interior_minus_arc_connected_frontier_witness_in_ball_dev34
+        [OF hJ hS hS_ne_PR hA hAJ hr_pos]
+    by (elim exE conjE)
+  have hU_disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+    using hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj by (by100 blast)
+  show ?thesis
+    using hr_pos hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
+      hU\<^sub>Q_sub hU\<^sub>S_sub hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj
+      hQ_front hS_front hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+    by (intro exI conjI)
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
