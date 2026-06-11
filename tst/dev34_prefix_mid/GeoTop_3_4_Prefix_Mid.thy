@@ -18816,6 +18816,30 @@ proof -
         [OF hK_fin hcount])
 qed
 
+lemma geotop_polygon_disk_boundary_free_witness_avoids_empty_contact_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  shows "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_boundary_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Moise Figure 3.3 witness-selection bridge for the empty-contact branch.
+    The formal predicate \<open>geotop_free_2_simplex\<close> admits the bookkeeping case
+    \<open>\<theta> \<inter> J = {}\<close>, but the Figure 3.3 fold deletes a boundary ear.  Therefore
+    the strong two-free-triangle theorem must be used in its boundary-contact
+    form: if the first selected free triangle is disjoint from the polygon
+    boundary, choose another free triangle whose selected boundary-edge set is
+    nonempty, hence a \<open>geotop_boundary_free_2_simplex\<close>. **)
+  sorry
+
 lemma geotop_plane_homeomorphism_fixed_outside_comp_prefix:
   fixes f g :: "real^2 \<Rightarrow> real^2" and U :: "(real^2) set"
   assumes hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
@@ -19395,8 +19419,6 @@ lemma geotop_free_triangle_empty_contact_supported_fold_prefix:
   assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
   assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
   assumes hcontact: "\<theta> \<inter> J = {}"
-  assumes halternate:
-    "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
   shows "\<exists>J' K' f.
         geotop_is_polygon J'
         \<and> geotop_is_complex K'
@@ -19417,7 +19439,82 @@ lemma geotop_free_triangle_empty_contact_supported_fold_prefix:
     triangle does not meet the boundary, use the strong Theorem 3.3 count to
     choose an alternate free triangle with boundary contact, then apply the
     corresponding one-edge or two-edge supported fold branch. **)
-  sorry
+proof -
+  obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+    and h\<rho>bf: "geotop_boundary_free_2_simplex K J \<rho>"
+    and h\<rho>\<theta>: "\<rho> \<noteq> \<theta>"
+    by (rule geotop_polygon_disk_boundary_free_witness_avoids_empty_contact_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt1 h\<theta>K h\<theta>free h\<theta>2 hcontact])
+  have h\<rho>free: "geotop_free_2_simplex K J \<rho>"
+    by (rule geotop_boundary_free_2_simplex_imp_free_prefix[OF h\<rho>bf])
+  have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    using h\<rho>bf unfolding geotop_boundary_free_2_simplex_def by (by100 blast)
+  have h\<rho>cases:
+    "(\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} = {e}
+      \<and> geotop_is_edge e
+      \<and> geotop_is_face e \<rho>
+      \<and> e \<subseteq> J
+      \<and> \<rho> \<inter> J = e)
+    \<or> (\<exists>e1 e2.
+      {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} = {e1, e2}
+      \<and> e1 \<noteq> e2
+      \<and> geotop_is_edge e1
+      \<and> geotop_is_edge e2
+      \<and> geotop_is_face e1 \<rho>
+      \<and> geotop_is_face e2 \<rho>
+      \<and> e1 \<subseteq> J
+      \<and> e2 \<subseteq> J
+      \<and> \<rho> \<inter> J = e1 \<union> e2)"
+    by (rule geotop_boundary_free_2_simplex_contact_cases_prefix
+        [OF hJ hK hK_poly h\<rho>K h\<rho>2 hT_gt1 h\<rho>bf])
+  show ?thesis
+    using h\<rho>cases
+  proof (elim disjE)
+    assume "\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} = {e}
+      \<and> geotop_is_edge e
+      \<and> geotop_is_face e \<rho>
+      \<and> e \<subseteq> J
+      \<and> \<rho> \<inter> J = e"
+    then obtain e where hE:
+        "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} = {e}"
+      and hedge: "geotop_is_edge e"
+      and heface: "geotop_is_face e \<rho>"
+      and heJ: "e \<subseteq> J"
+      and hcontact\<rho>: "\<rho> \<inter> J = e"
+      by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_free_triangle_one_boundary_edge_supported_fold_prefix
+          [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<rho>K
+            h\<rho>free h\<rho>2 hE hedge heface heJ hcontact\<rho>])
+  next
+    assume "\<exists>e1 e2.
+      {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} = {e1, e2}
+      \<and> e1 \<noteq> e2
+      \<and> geotop_is_edge e1
+      \<and> geotop_is_edge e2
+      \<and> geotop_is_face e1 \<rho>
+      \<and> geotop_is_face e2 \<rho>
+      \<and> e1 \<subseteq> J
+      \<and> e2 \<subseteq> J
+      \<and> \<rho> \<inter> J = e1 \<union> e2"
+    then obtain e1 e2 where hE:
+        "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<rho> \<and> d \<subseteq> J} = {e1, e2}"
+      and he12: "e1 \<noteq> e2"
+      and he1edge: "geotop_is_edge e1"
+      and he2edge: "geotop_is_edge e2"
+      and he1face: "geotop_is_face e1 \<rho>"
+      and he2face: "geotop_is_face e2 \<rho>"
+      and he1J: "e1 \<subseteq> J"
+      and he2J: "e2 \<subseteq> J"
+      and hcontact\<rho>: "\<rho> \<inter> J = e1 \<union> e2"
+      by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_free_triangle_two_boundary_edges_supported_inverse_fold_prefix
+          [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<rho>K
+            h\<rho>free h\<rho>2 hE he12 he1edge he2edge he1face he2face
+            he1J he2J hcontact\<rho>])
+  qed
+qed
 
 lemma geotop_figure33_contact_cases_supported_fold_prefix:
   fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
@@ -19471,8 +19568,6 @@ lemma geotop_figure33_contact_cases_supported_fold_prefix:
         \<and> e1 \<subseteq> J
         \<and> e2 \<subseteq> J
         \<and> \<theta> \<inter> J = e1 \<union> e2)"
-  assumes h\<theta>alternate_free_witness:
-    "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
   shows "\<exists>J' K' f.
         geotop_is_polygon J'
         \<and> geotop_is_complex K'
@@ -19492,9 +19587,9 @@ lemma geotop_figure33_contact_cases_supported_fold_prefix:
     Moise Figure 3.3 fold package after the canonical contact bookkeeping has
     been normalized.  The one-edge branch constructs the quadrilateral fold
     supported in \<open>U\<close>; the two-edge branch uses the inverse corner fold; the
-    empty-contact branch first replaces \<open>\<theta>\<close> by the alternate free witness
-    supplied by the strong two-free-simplex form of Theorem 3.3, then applies
-    one of the boundary-contact fold branches. **)
+    empty-contact branch first replaces \<open>\<theta>\<close> by a boundary-contact free
+    witness supplied by the strong two-free-simplex form of Theorem 3.3, then
+    applies one of the boundary-contact fold branches. **)
 proof -
   let ?R = "\<exists>J' K' f.
         geotop_is_polygon J'
@@ -19533,8 +19628,8 @@ proof -
     (**
       The remaining Moise Figure 3.3 geometric fold package, now split into
       the exact book branches:
-      (1) empty contact: use \<open>h\<theta>alternate_free_witness\<close> to replace \<open>\<theta>\<close> by
-          a boundary-contact free triangle and fold that triangle;
+      (1) empty contact: replace \<open>\<theta>\<close> by a boundary-contact free triangle
+          and fold that triangle;
       (2) one boundary edge: build the supported quadrilateral fold across
           the unique edge in \<open>J\<close>;
       (3) two boundary edges: use the inverse corner fold.  In all branches
@@ -19548,7 +19643,7 @@ proof -
       show ?R
         by (rule geotop_free_triangle_empty_contact_supported_fold_prefix
             [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<theta>K
-              h\<theta>free h\<theta>2 hcontact h\<theta>alternate_free_witness])
+              h\<theta>free h\<theta>2 hcontact])
     qed
     show "\<forall>e. {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e} \<longrightarrow>
           geotop_is_edge e \<longrightarrow>
@@ -19732,10 +19827,6 @@ proof -
     using h\<theta>boundary_free_iff_selected_edges_nonempty
       h\<theta>boundary_free_contact_cases
     by (by100 blast)
-  have h\<theta>alternate_free_witness:
-      "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
-    by (rule geotop_polygon_disk_free_2simplex_witness_avoids_given_prefix
-        [OF hJ hK hK_fin hK_poly hT_gt1])
   have hFigure33_cases_book:
     "\<exists>J' K' f.
         geotop_is_polygon J'
@@ -19755,7 +19846,7 @@ proof -
     by (rule geotop_figure33_contact_cases_supported_fold_prefix
         [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<theta>K h\<theta>free
           h\<theta>2 h\<theta>boundary_contact_eq h\<theta>contact_cases
-          h\<theta>nonempty_contact_cases h\<theta>alternate_free_witness])
+          h\<theta>nonempty_contact_cases])
   show ?thesis
     by (rule hFigure33_cases_book)
 qed
