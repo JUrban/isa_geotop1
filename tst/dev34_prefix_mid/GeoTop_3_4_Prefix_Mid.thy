@@ -19312,6 +19312,36 @@ proof -
     using geotop_polygon_disk_gt2_nonempty_selected_2simplex_avoids_empty_contact_prefix
         [OF hJ hK hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>contact]
     by (by100 blast)
+  have hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+    using hT_gt2 by (by100 linarith)
+  have hfree_count:
+      "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+    by (rule geotop_polygon_disk_free_2simplex_count_ge2_prefix
+        [OF hJ hK hK_poly hT_gt1])
+  have hfree_away:
+      "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+    by (rule geotop_free_2_simplex_witness_avoids_given_prefix
+        [OF hK_fin hfree_count])
+  obtain \<alpha> where h\<alpha>K: "\<alpha> \<in> K"
+    and h\<alpha>free: "geotop_free_2_simplex K J \<alpha>"
+    and h\<alpha>_ne_\<theta>: "\<alpha> \<noteq> \<theta>"
+    using hfree_away by (elim exE conjE)
+  obtain \<beta> where h\<beta>K: "\<beta> \<in> K"
+    and h\<beta>2: "geotop_simplex_dim \<beta> 2"
+    and h\<beta>selected:
+      "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J} \<noteq> {}"
+    and h\<beta>_ne_\<theta>: "\<beta> \<noteq> \<theta>"
+    using hselected_candidate by (elim exE conjE)
+  have h\<beta>contact_nonempty: "\<beta> \<inter> J \<noteq> {}"
+    by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
+        [OF h\<beta>selected])
+  have hfree_selected_transfer_if_same:
+      "\<alpha> = \<beta> \<Longrightarrow> \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+    using h\<alpha>K h\<alpha>free h\<alpha>_ne_\<theta> h\<beta>2 h\<beta>selected by (by100 blast)
   show ?thesis
     (**
       Remaining Moise boundary-ear bridge: combine \<open>h\<theta>free\<close> and
