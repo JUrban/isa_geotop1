@@ -18358,23 +18358,6 @@ lemma geotop_free_triangle_supported_fold_induction_step_prefix:
   assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
   assumes h\<theta>K: "\<theta> \<in> K"
   assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
-  assumes h\<theta>contact_cases:
-    "\<theta> \<inter> J = {}
-      \<or> (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
-        \<and> geotop_is_edge e
-        \<and> geotop_is_face e \<theta>
-        \<and> e \<subseteq> J
-        \<and> \<theta> \<inter> J = e)
-      \<or> (\<exists>e1 e2.
-        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
-        \<and> e1 \<noteq> e2
-        \<and> geotop_is_edge e1
-        \<and> geotop_is_edge e2
-        \<and> geotop_is_face e1 \<theta>
-        \<and> geotop_is_face e2 \<theta>
-        \<and> e1 \<subseteq> J
-        \<and> e2 \<subseteq> J
-        \<and> \<theta> \<inter> J = e1 \<union> e2)"
   shows "\<exists>J' K' f g \<sigma>.
         geotop_is_polygon J'
         \<and> geotop_is_complex K'
@@ -18416,6 +18399,39 @@ proof -
     using h\<theta>canonical_contact by (by100 blast)
   have h\<theta>boundary_contact_eq: "\<theta> \<inter> J = \<Union>?E\<theta>"
     using h\<theta>canonical_contact by (by100 blast)
+  have h\<theta>selected_edge_cases:
+    "?E\<theta> = {}
+      \<or> (\<exists>e. ?E\<theta> = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<theta>
+        \<and> e \<subseteq> J)
+      \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<theta>
+        \<and> geotop_is_face e2 \<theta>
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J)"
+    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+        [OF h\<theta>selected_edges_fin h\<theta>selected_edges_card_le2])
+  have h\<theta>contact_cases:
+    "\<theta> \<inter> J = {}
+      \<or> (\<exists>e. ?E\<theta> = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<theta>
+        \<and> e \<subseteq> J
+        \<and> \<theta> \<inter> J = e)
+      \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<theta>
+        \<and> geotop_is_face e2 \<theta>
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<theta> \<inter> J = e1 \<union> e2)"
+    using h\<theta>selected_edge_cases h\<theta>boundary_contact_eq by (by100 auto)
   have hFigure33_cases_book:
     "\<exists>J' K' f g \<sigma>.
         geotop_is_polygon J'
@@ -18998,7 +19014,7 @@ proof -
         supplies \<open>g\<close> normalizing \<open>J'\<close>, again fixed outside \<open>U\<close>. **)
       by (rule geotop_free_triangle_supported_fold_induction_step_prefix
           [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hcard_gt1
-            h\<theta>K h\<theta>free h\<theta>contact_cases])
+            h\<theta>K h\<theta>free])
     obtain J' K' f g \<sigma> where hJ': "geotop_is_polygon J'"
       and hK': "geotop_is_complex K'"
       and hK'_fin: "finite K'"
