@@ -19386,6 +19386,78 @@ proof -
     using h\<sigma>K h\<sigma>2 h\<sigma>selected h\<sigma>ne\<theta> by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_selected_nonfree_triangle_nonbase_split_data_prefix:
+  fixes J \<beta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 2"
+  assumes h\<beta>K: "\<beta> \<in> K"
+  assumes h\<beta>2: "geotop_simplex_dim \<beta> 2"
+  assumes h\<beta>selected:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J} \<noteq> {}"
+  assumes h\<beta>_not_free: "\<not> geotop_free_2_simplex K J \<beta>"
+  shows "\<exists>v\<^sub>0 v\<^sub>1 v\<^sub>2.
+      v\<^sub>0 \<noteq> v\<^sub>1
+      \<and> v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}
+      \<and> geotop_simplex_vertices \<beta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J
+      \<and> (\<exists>x. x \<in> \<beta> \<inter> J
+          \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+          \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+              \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1}))
+      \<and> \<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+  (**
+    Figure 3.2 data extraction for the remaining selected-witness transfer.
+    A selected parent-boundary edge of the nonfree triangle is the base edge;
+    the nonfree contact lies on a nonbase side, and neither nonbase side is
+    already a parent-boundary edge. **)
+proof -
+  obtain e where he_sel:
+      "e \<in> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J}"
+    using h\<beta>selected by (by100 blast)
+  have heK: "e \<in> K"
+    using he_sel by (by100 simp)
+  have hedge: "geotop_is_edge e"
+    using he_sel by (by100 simp)
+  have heface: "geotop_is_face e \<beta>"
+    using he_sel by (by100 simp)
+  have heJ: "e \<subseteq> J"
+    using he_sel by (by100 simp)
+  obtain v\<^sub>0 v\<^sub>1 v\<^sub>2 where hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+    and hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+    and he_eq: "e = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    and h\<beta>_vertices: "geotop_simplex_vertices \<beta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix
+        [OF h\<beta>2 hedge heface])
+  have hbase_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+    using he_eq heJ by (by100 simp)
+  have hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+    using hT_gt2 by (by100 linarith)
+  have hcontact_nonbase:
+    "\<exists>x. x \<in> \<beta> \<inter> J
+      \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    by (rule geotop_nonfree_boundary_triangle_contact_on_nonbase_segment_off_base_prefix
+        [OF hJ hK hK_poly hT_gt1 h\<beta>K h\<beta>2 h\<beta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hbase_sub_J h\<beta>_not_free])
+  have hneither_nonbase_boundary:
+    "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+    by (rule geotop_nonfree_boundary_triangle_neither_nonbase_segment_on_boundary_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt1 h\<beta>K h\<beta>2 h\<beta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hbase_sub_J h\<beta>_not_free])
+  show ?thesis
+    using hv\<^sub>0v\<^sub>1 hv\<^sub>2_not h\<beta>_vertices hbase_sub_J
+      hcontact_nonbase hneither_nonbase_boundary
+    by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
   fixes J \<theta> \<alpha> \<beta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19443,7 +19515,41 @@ lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
     applies the strong side-disk induction on the two smaller polygonal disks,
     filters out the artificial-chord-only side witnesses, and transfers a
     surviving selected free witness back to the parent disk. **)
-  sorry
+proof -
+  obtain v\<^sub>0 v\<^sub>1 v\<^sub>2 where hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+    and hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+    and h\<beta>_vertices: "geotop_simplex_vertices \<beta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    and hbase_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+    and hnonbase_contact:
+      "\<exists>x. x \<in> \<beta> \<inter> J
+        \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+        \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+            \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    and hnonbase_not_boundary:
+      "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+        \<and> \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+    using geotop_polygon_disk_selected_nonfree_triangle_nonbase_split_data_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt2 h\<beta>K h\<beta>2
+          h\<beta>selected h\<beta>_not_free]
+    by (by100 blast)
+  have hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+    using hT_gt2 by (by100 linarith)
+  have hnonbase_side_case:
+    "(\<exists>x. x \<in> \<beta> \<inter> J
+        \<and> x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+     \<or> (\<exists>x. x \<in> \<beta> \<inter> J
+        \<and> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    using hnonbase_contact by (by100 blast)
+  show ?thesis
+    (**
+      Remaining side-disk transfer, now after extracting the Figure 3.2
+      vertices and nonbase side.  The next book step is to cut along the
+      contacted nonbase side, form the two chord-side polygonal disks, apply
+      the strong induction to both side complexes, discard any artificial
+      chord-only witness, and transfer a surviving selected free witness to
+      the parent disk. **)
+    sorry
+qed
 
 lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_from_side_transfer_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
