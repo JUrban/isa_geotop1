@@ -20403,6 +20403,26 @@ proof -
     hence "S \<in> {P, R}" using hAJ by (by100 simp)
     thus False using hS_ne_PR by (by100 blast)
   qed
+  have hQ_not_cut: "Q \<notin> geotop_polygon_interior J - A"
+  proof
+    assume hQcut: "Q \<in> geotop_polygon_interior J - A"
+    have hQint: "Q \<in> geotop_polygon_interior J"
+      using hQcut by (by100 blast)
+    have "Q \<notin> geotop_polygon_interior J"
+      using hQ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hQint by (by100 blast)
+  qed
+  have hS_not_cut: "S \<notin> geotop_polygon_interior J - A"
+  proof
+    assume hScut: "S \<in> geotop_polygon_interior J - A"
+    have hSint: "S \<in> geotop_polygon_interior J"
+      using hScut by (by100 blast)
+    have "S \<notin> geotop_polygon_interior J"
+      using hS polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hSint by (by100 blast)
+  qed
   have hP_A: "P \<in> A"
     using hAJ hP by (by100 blast)
   have hR_A: "R \<in> A"
