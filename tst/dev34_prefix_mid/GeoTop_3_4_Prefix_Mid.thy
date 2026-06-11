@@ -20881,6 +20881,79 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_homeomorphism_pullback_local_frontier_witness_dev34:
+  fixes h k :: "real^2 \<Rightarrow> real^2"
+    and U S :: "(real^2) set"
+    and X Y Y' :: "real^2"
+    and r :: real
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  assumes hU_conn: "connected U"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hY_front: "Y \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+  assumes hY'_U: "Y' \<in> U"
+  assumes hX_eq: "X = k Y"
+  assumes hkU_sub_S: "k ` U \<subseteq> S"
+  assumes hkU_sub_ball: "k ` U \<subseteq> ball X r"
+  shows "\<exists>W X'. connected W
+        \<and> W \<in> geotop_euclidean_topology
+        \<and> W \<subseteq> S
+        \<and> W \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology W
+        \<and> X' \<in> W
+        \<and> X' \<in> S"
+  (**
+    Pullback packaging for the D42 normalization step.  Once a normalized
+    local side has been chosen and its inverse image is known to lie in the
+    desired polygon side and ball, a plane homeomorphism preserves connectedness,
+    openness, and the frontier point. **)
+proof -
+  let ?W = "k ` U"
+  have hkh: "homeomorphism UNIV UNIV k h"
+    by (rule homeomorphism_symD[OF hhk])
+  have hU_open_HOL: "open U"
+    using hU_open
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hU_int: "interior U = U"
+    using hU_open_HOL by (by100 simp)
+  have hW_int: "interior ?W = ?W"
+  proof -
+    have "k ` interior U = interior (k ` U)"
+      by (rule homeomorphism_UNIV_image_interior[OF hkh])
+    thus ?thesis
+      using hU_int by (by100 simp)
+  qed
+  have hW_open_HOL: "open ?W"
+    using hW_int by (by100 simp)
+  have hW_open: "?W \<in> geotop_euclidean_topology"
+    using hW_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hk_cont_UNIV: "continuous_on UNIV k"
+    using hkh unfolding homeomorphism_def by (by100 simp)
+  have hk_cont_U: "continuous_on U k"
+    by (rule continuous_on_subset[OF hk_cont_UNIV subset_UNIV])
+  have hW_conn: "connected ?W"
+    by (rule connected_continuous_image[OF hk_cont_U hU_conn])
+  have hY_front_HOL: "Y \<in> frontier U"
+    using hY_front geotop_frontier_UNIV_eq_frontier[of U] by (by100 simp)
+  have hfront_W: "k ` frontier U = frontier ?W"
+    by (rule homeomorphism_UNIV_image_frontier[OF hkh])
+  have hX_front_W_HOL: "X \<in> frontier ?W"
+    using hY_front_HOL hfront_W hX_eq by (by100 blast)
+  have hX_front_W:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology ?W"
+    using hX_front_W_HOL geotop_frontier_UNIV_eq_frontier[of ?W]
+    by (by100 simp)
+  have hX'_W: "k Y' \<in> ?W"
+    using hY'_U by (by100 blast)
+  have hX'_S: "k Y' \<in> S"
+    using hY'_U hkU_sub_S by (by100 blast)
+  show ?thesis
+    using hW_conn hW_open hkU_sub_S hkU_sub_ball hX_front_W hX'_W hX'_S
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
