@@ -19162,6 +19162,43 @@ proof -
   have h\<theta>selected_edges_nonempty_card_cases:
       "?E\<theta> \<noteq> {} \<Longrightarrow> card ?E\<theta> = 1 \<or> card ?E\<theta> = 2"
     using h\<theta>selected_edges_fin h\<theta>selected_edges_card_cases by (by100 simp)
+  have h\<theta>boundary_free_contact_cases:
+      "geotop_boundary_free_2_simplex K J \<theta>
+        \<Longrightarrow> (\<exists>e. ?E\<theta> = {e}
+          \<and> geotop_is_edge e
+          \<and> geotop_is_face e \<theta>
+          \<and> e \<subseteq> J
+          \<and> \<theta> \<inter> J = e)
+        \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
+          \<and> e1 \<noteq> e2
+          \<and> geotop_is_edge e1
+          \<and> geotop_is_edge e2
+          \<and> geotop_is_face e1 \<theta>
+          \<and> geotop_is_face e2 \<theta>
+          \<and> e1 \<subseteq> J
+          \<and> e2 \<subseteq> J
+          \<and> \<theta> \<inter> J = e1 \<union> e2)"
+    by (rule geotop_boundary_free_2_simplex_contact_cases_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
+  have h\<theta>nonempty_contact_cases:
+      "?E\<theta> \<noteq> {}
+        \<Longrightarrow> (\<exists>e. ?E\<theta> = {e}
+          \<and> geotop_is_edge e
+          \<and> geotop_is_face e \<theta>
+          \<and> e \<subseteq> J
+          \<and> \<theta> \<inter> J = e)
+        \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
+          \<and> e1 \<noteq> e2
+          \<and> geotop_is_edge e1
+          \<and> geotop_is_edge e2
+          \<and> geotop_is_face e1 \<theta>
+          \<and> geotop_is_face e2 \<theta>
+          \<and> e1 \<subseteq> J
+          \<and> e2 \<subseteq> J
+          \<and> \<theta> \<inter> J = e1 \<union> e2)"
+    using h\<theta>boundary_free_iff_selected_edges_nonempty
+      h\<theta>boundary_free_contact_cases
+    by (by100 blast)
   have hFigure33_cases_book:
     "\<exists>J' K' f.
         geotop_is_polygon J'
