@@ -798,7 +798,7 @@ focus_target() {
     mid-fold)
       printf '%s\t%s\t%s\n' \
         dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
-        geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix \
+        'lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix' \
         'free triangle fold normalization support induction'
       ;;
     mid-support)

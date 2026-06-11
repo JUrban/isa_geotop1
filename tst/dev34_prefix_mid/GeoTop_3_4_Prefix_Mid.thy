@@ -19252,7 +19252,7 @@ lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
     2-simplex, so its boundary is carried to the frontier of a 2-simplex. **)
 proof -
   have hnormalize_by_count:
-    "\<And>n J0 K0. geotop_is_polygon J0 \<Longrightarrow>
+    "\<And>(n::nat) J0 K0. geotop_is_polygon J0 \<Longrightarrow>
       geotop_is_complex K0 \<Longrightarrow>
       finite K0 \<Longrightarrow>
       geotop_polyhedron K0 =
@@ -19264,9 +19264,23 @@ proof -
           \<and> geotop_simplex_dim \<sigma> 2
           \<and> h ` J0 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
           \<and> (\<forall>P\<in>UNIV - U. h P = P)"
-  proof (induct n rule: less_induct)
-    case (less n)
-    let ?T0 = "{\<tau>\<in>K0. geotop_simplex_dim \<tau> 2}"
+  proof -
+    fix n :: nat
+    show "\<And>J0 K0. geotop_is_polygon J0 \<Longrightarrow>
+      geotop_is_complex K0 \<Longrightarrow>
+      finite K0 \<Longrightarrow>
+      geotop_polyhedron K0 =
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J0) \<Longrightarrow>
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J0) \<subseteq> U \<Longrightarrow>
+      card {\<tau>\<in>K0. geotop_simplex_dim \<tau> 2} = n \<Longrightarrow>
+      \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J0 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+    proof (induct n rule: less_induct)
+      case (less n)
+      let ?T0 = "{\<tau>\<in>K0. geotop_simplex_dim \<tau> 2}"
     have hT0_pos: "card ?T0 \<ge> 1"
       by (rule geotop_polygon_disk_triangulation_2simplex_count_ge1_prefix
           [OF less.prems(1) less.prems(2) less.prems(3) less.prems(4)])
