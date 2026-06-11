@@ -18432,7 +18432,57 @@ proof -
       the local quadrilateral/triangle neighborhood inside U, compose with the
       induction map for the smaller disk complex, and keep the composition
       fixed on UNIV - U. **)
-    sorry
+  proof -
+    assume hcard_gt1: "card ?T > 1"
+    have hfree_triangle_book:
+      "\<exists>\<theta>\<in>K. geotop_free_2_simplex K J \<theta>"
+    proof -
+      obtain \<theta> where h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+        using Theorem_GT_3_3[OF hJ hK hK_poly hcard_gt1]
+        by (by100 blast)
+      have h\<theta>K: "\<theta> \<in> K"
+        using h\<theta>free unfolding geotop_free_2_simplex_def by (by100 blast)
+      show ?thesis
+        using h\<theta>K h\<theta>free by (by100 blast)
+    qed
+    obtain \<theta> where h\<theta>K: "\<theta> \<in> K"
+      and h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+      using hfree_triangle_book by (by100 blast)
+    have h\<theta>2: "geotop_simplex_dim \<theta> 2"
+      using h\<theta>free unfolding geotop_free_2_simplex_def by (by100 blast)
+    let ?E\<theta> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J}"
+    have h\<theta>canonical_contact:
+        "finite ?E\<theta> \<and> card ?E\<theta> \<le> 2 \<and> \<theta> \<inter> J = \<Union>?E\<theta>"
+      by (rule geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hcard_gt1 h\<theta>free])
+    have h\<theta>selected_edges_fin: "finite ?E\<theta>"
+      using h\<theta>canonical_contact by (by100 blast)
+    have h\<theta>selected_edges_card_le2: "card ?E\<theta> \<le> 2"
+      using h\<theta>canonical_contact by (by100 blast)
+    have h\<theta>boundary_contact_eq: "\<theta> \<inter> J = \<Union>?E\<theta>"
+      using h\<theta>canonical_contact by (by100 blast)
+    have h\<theta>selected_edge_cases:
+      "?E\<theta> = {}
+        \<or> (\<exists>e. ?E\<theta> = {e} \<and> geotop_is_edge e
+          \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J)
+        \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2
+          \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+          \<and> geotop_is_face e1 \<theta>
+          \<and> geotop_is_face e2 \<theta>
+          \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+      by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+          [OF h\<theta>selected_edges_fin h\<theta>selected_edges_card_le2])
+    show ?thesis
+      (**
+        Remaining supported fold construction.  The chosen free triangle
+        \<open>\<theta>\<close> is now in canonical selected-edge form:
+        \<open>?E\<theta>\<close> is finite, has cardinal at most two, and exactly covers
+        \<open>\<theta> \<inter> J\<close>.  The next proof step is the Moise Figure 3.3 case split
+        on \<open>h\<theta>selected_edge_cases\<close>, constructing the one-edge fold or the
+        two-edge corner inverse fold inside \<open>U\<close>, then composing with the
+        induction map using the fixed-outside composition lemmas above. **)
+      sorry
+  qed
   have hfold_induction_book:
     "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
                    UNIV geotop_euclidean_topology h
