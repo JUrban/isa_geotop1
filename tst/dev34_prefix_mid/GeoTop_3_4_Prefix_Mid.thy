@@ -22892,11 +22892,25 @@ proof -
       by (rule IntI[OF hx_access hxF])
     thus False using haccess_F\<^sub>2 by (by100 blast)
   qed
-	  show ?thesis
-	    using hC_bl hX_C hX0_C hC_closed hC_A hC_int_I
-	      hX0_not_F\<^sub>1 hX0_not_F\<^sub>2 hF\<^sub>1C hCF\<^sub>2
-	    by (intro exI conjI)
+  show ?thesis
+    using hC_bl hX_C hX0_C hC_closed hC_A hC_int_I
+      hX0_not_F\<^sub>1 hX0_not_F\<^sub>2 hF\<^sub>1C hCF\<^sub>2
+    by (intro exI conjI)
 qed
+
+lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
+  fixes J :: "(real^2) set" and X :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  shows "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+  (**
+    Moise D42 local polygon chart in radial form.  At a polygon boundary
+    point, choose the local half-disk/wedge chart; every sufficiently short
+    radial segment from the boundary point to the polygon interior has its
+    punctured segment inside the polygon interior. **)
+  sorry
 
 lemma geotop_polygon_boundary_endpoint_clean_segment_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
@@ -22914,7 +22928,73 @@ lemma geotop_polygon_boundary_endpoint_clean_segment_radius_prefix:
     polygon-interior point sufficiently close to the boundary endpoint is joined
     to the endpoint by a segment lying in the closed polygonal disk, with the
     deleted endpoint segment in the polygon interior. **)
-  sorry
+proof -
+  obtain r where hr: "0 < r"
+    and hradial: "\<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+    using geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix
+        [OF hJ hX]
+    by (elim exE conjE)
+  have hX_not_I: "X \<notin> geotop_polygon_interior J"
+    using polygon_interior_disjoint_polygon[OF hJ] hX by (by100 blast)
+  have hclosure_eq:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) =
+      geotop_polygon_interior J \<union> J"
+  proof -
+    have hclosure_on:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) =
+        closure (geotop_polygon_interior J)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    show ?thesis
+      using hclosure_on polygon_interior_closure_eq[OF hJ] by (by100 simp)
+  qed
+  have hpointwise: "\<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      X \<noteq> X1
+      \<and> closed_segment X X1 \<subseteq>
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      \<and> closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+  proof (intro allI impI)
+    fix X1
+    assume hX1_I: "X1 \<in> geotop_polygon_interior J"
+    assume hX1_ball: "X1 \<in> ball X r"
+    have hseg_del:
+      "closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+      using hradial hX1_I hX1_ball by (by100 blast)
+    have hneq: "X \<noteq> X1"
+      using hX_not_I hX1_I by (by100 blast)
+    have hseg_closure:
+      "closed_segment X X1 \<subseteq>
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    proof
+      fix y
+      assume hy: "y \<in> closed_segment X X1"
+      show "y \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+      proof (cases "y = X")
+        case True
+        show ?thesis
+          using True hX hclosure_eq by (by100 blast)
+      next
+        case False
+        have "y \<in> closed_segment X X1 - {X}"
+          using hy False by (by100 blast)
+        hence "y \<in> geotop_polygon_interior J"
+          using hseg_del by (by100 blast)
+        thus ?thesis
+          using hclosure_eq by (by100 blast)
+      qed
+    qed
+    show "X \<noteq> X1
+      \<and> closed_segment X X1 \<subseteq>
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      \<and> closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+      using hneq hseg_closure hseg_del by (by100 blast)
+  qed
+  show ?thesis
+    using hr hpointwise by (by100 blast)
+qed
 
 lemma geotop_polygon_boundary_endpoint_clean_segment_radius_away_from_arc_prefix:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
