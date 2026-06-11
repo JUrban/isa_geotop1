@@ -22568,7 +22568,65 @@ proof -
       \<open>hD42_same_component_contradiction_from_QS_chord_R_second\<close> applies
       once the completed Q-S chord is available and cyclic order gives
       \<open>R \<in> arc_interior F\<^sub>2 {Q,S}\<close>. **)
-    sorry
+  proof -
+    have hD42_completed_QS_chord_data:
+        "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
+          \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
+          \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+              geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}
+          \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+              geotop_arc_interior F\<^sub>2 {Q, S} = {}
+          \<and> geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq>
+              geotop_polygon_interior J
+          \<and> top1_in_same_component_on
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+              (subspace_topology UNIV geotop_euclidean_topology
+                (closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+              P R
+          \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+      (**
+        Remaining Moise endpoint-splice package.  Extend the normalized
+        near-boundary chord from \<open>Q0\<close> to \<open>S0\<close> to a completed broken chord
+        from \<open>Q\<close> to \<open>S\<close> by attaching the local side-access pieces supplied
+        by the frontier witnesses at \<open>Q\<close> and \<open>S\<close>.  The resulting chord lies
+        in the closed polygonal disk, has interior in \<open>I\<close>, misses the P-R
+        arc \<open>A\<close>, and preserves the P-R connectedness witness.  The cyclic
+        order \<open>P,Q,R,S\<close>, together with the chosen Q-S boundary split through
+        \<open>P\<close>, places \<open>R\<close> in the other boundary arc \<open>F\<^sub>2\<close>. **)
+      sorry
+    show False
+    proof -
+      obtain B\<^sub>Q\<^sub>S where hB\<^sub>Q\<^sub>S_bl:
+          "geotop_is_broken_line B\<^sub>Q\<^sub>S"
+        and hB\<^sub>Q\<^sub>SE:
+          "geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}"
+        and hF\<^sub>1B\<^sub>Q\<^sub>S:
+          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}"
+        and hB\<^sub>Q\<^sub>SF\<^sub>2:
+          "geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+        and hB\<^sub>Q\<^sub>S_inner:
+          "geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} \<subseteq>
+            geotop_polygon_interior J"
+        and hB\<^sub>Q\<^sub>S_same:
+          "top1_in_same_component_on
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J) - B\<^sub>Q\<^sub>S))
+            P R"
+        and hR_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+        using hD42_completed_QS_chord_data by (elim exE conjE)
+      show False
+        by (rule hD42_same_component_contradiction_from_QS_chord_R_second
+            [OF hB\<^sub>Q\<^sub>S_bl hB\<^sub>Q\<^sub>SE hF\<^sub>1B\<^sub>Q\<^sub>S hB\<^sub>Q\<^sub>SF\<^sub>2
+              hB\<^sub>Q\<^sub>S_inner hB\<^sub>Q\<^sub>S_same hR_F\<^sub>2])
+    qed
+  qed
   show False
     by (rule hD42_QS_splice_theta_contradiction)
 qed
