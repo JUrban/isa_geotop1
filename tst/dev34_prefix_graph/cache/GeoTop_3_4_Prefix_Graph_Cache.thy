@@ -3970,7 +3970,38 @@ lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
     closure.  This is deliberately not stated for arbitrary connected sets in
     arbitrary finite graphs; the simple-closed-curve carrier and local star
     data are part of the statement, as required by the expert audit. **)
-  sorry
+proof -
+  let ?G\<^sub>S = "(S - {w}) \<inter> ball w r"
+  let ?G\<^sub>T = "(T - {w}) \<inter> ball w r"
+  let ?G\<^sub>U = "(U - {w}) \<inter> ball w r"
+  let ?H = "ball w r - (S \<union> T \<union> U)"
+  have hlocal_side:
+      "\<exists>A x. connected A
+        \<and> A \<subseteq> ?H
+        \<and> x \<in> A
+        \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
+        \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}
+        \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
+    (**
+      Remaining first-entry/local-side subclaim from Moise's branch-point
+      argument.  Starting with the connected witness \<open>M\<close> in the punctured
+      carrier, use the small-star cover \<open>hM_ball_cover\<close> and the facts that
+      \<open>p\<close>, \<open>y\<close>, and \<open>z\<close> lie outside the ball but in the closures of the
+      three selected inward germs.  The first entries of \<open>M\<close> into the ball,
+      with the edge germs deleted, determine one connected local side subset
+      of \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure touches all three germs. **)
+    sorry
+  obtain A x where hA_conn: "connected A"
+    and hA_sub: "A \<subseteq> ?H"
+    and hxA: "x \<in> A"
+    and hS_touch_A: "?G\<^sub>S \<inter> closure A \<noteq> {}"
+    and hT_touch_A: "?G\<^sub>T \<inter> closure A \<noteq> {}"
+    and hU_touch_A: "?G\<^sub>U \<inter> closure A \<noteq> {}"
+    using hlocal_side by (elim exE conjE)
+  show ?thesis
+    by (rule geotop_connected_local_component_closure_touch_three_sets_prefix
+        [OF hA_conn hA_sub hxA hS_touch_A hT_touch_A hU_touch_A])
+qed
 
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
