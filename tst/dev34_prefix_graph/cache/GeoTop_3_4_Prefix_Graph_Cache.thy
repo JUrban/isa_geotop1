@@ -10172,6 +10172,42 @@ proof -
           have hU_selected_germ_avoids_local:
               "((U - {w}) \<inter> ball w r) \<inter> ?Lcomp = {}"
             by (by100 blast)
+          obtain s0 t0 u0 where hs0_germ:
+              "s0 \<in> (S - {w}) \<inter> ball w r"
+            and ht0_germ: "t0 \<in> (T - {w}) \<inter> ball w r"
+            and hu0_germ: "u0 \<in> (U - {w}) \<inter> ball w r"
+            using hS_selected_germ_nonempty hT_selected_germ_nonempty
+              hU_selected_germ_nonempty
+            by (by100 blast)
+          have hselected_germ_points:
+              "s0 \<in> S - {w} \<and> s0 \<in> ball w r
+                \<and> t0 \<in> T - {w} \<and> t0 \<in> ball w r
+                \<and> u0 \<in> U - {w} \<and> u0 \<in> ball w r"
+            using hs0_germ ht0_germ hu0_germ by (by100 blast)
+          have hselected_germ_points_not_local:
+              "s0 \<notin> ?Lcomp \<and> t0 \<notin> ?Lcomp \<and> u0 \<notin> ?Lcomp"
+            using hs0_germ ht0_germ hu0_germ
+              hS_selected_germ_avoids_local hT_selected_germ_avoids_local
+              hU_selected_germ_avoids_local
+            by (by100 blast)
+          have hselected_germ_points_carrier_ball:
+              "s0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})
+                \<and> t0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})
+                \<and> u0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+          proof (intro conjI)
+            have hS_sub_poly: "S \<subseteq> geotop_polyhedron L"
+              using hS_E unfolding E_def geotop_polyhedron_def by (by100 blast)
+            show "s0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+              using hs0_germ hS_sub_poly by (by100 blast)
+            have hT_sub_poly: "T \<subseteq> geotop_polyhedron L"
+              using hT_E unfolding E_def geotop_polyhedron_def by (by100 blast)
+            show "t0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+              using ht0_germ hT_sub_poly by (by100 blast)
+            have hU_sub_poly: "U \<subseteq> geotop_polyhedron L"
+              using hU_E unfolding E_def geotop_polyhedron_def by (by100 blast)
+            show "u0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+              using hu0_germ hU_sub_poly by (by100 blast)
+          qed
           have hlocal_selected_components_fin:
               "finite (components ?Lcomp)"
             using hlocal_components_fin hcomponents_selected_eq by (by100 simp)
