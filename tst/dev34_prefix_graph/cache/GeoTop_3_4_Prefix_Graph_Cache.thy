@@ -3916,7 +3916,7 @@ qed
 
 lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
   fixes L :: "(real^2) set set"
-    and S T U M :: "(real^2) set"
+    and S T U M N :: "(real^2) set"
     and w p y z :: "real^2"
     and r :: real
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -3957,6 +3957,16 @@ lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
         \<union> ((T - {w}) \<inter> ball w r)
         \<union> ((U - {w}) \<inter> ball w r)
         \<union> (ball w r - (S \<union> T \<union> U))"
+  assumes hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+  assumes hN_conn: "connected N"
+  assumes hpSN: "p \<in> (S - {w}) \<inter> N"
+  assumes hyTN: "y \<in> (T - {w}) \<inter> N"
+  assumes hN_ball_cover:
+    "N \<inter> ball w r
+      \<subseteq> ((S - {w}) \<inter> ball w r)
+        \<union> ((T - {w}) \<inter> ball w r)
+        \<union> ((U - {w}) \<inter> ball w r)
+        \<union> (ball w r - (S \<union> T \<union> U))"
   shows "\<exists>C. C \<in> components (ball w r - (S \<union> T \<union> U))
     \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
     \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
@@ -3984,12 +3994,13 @@ proof -
         \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
     (**
       Remaining first-entry/local-side subclaim from Moise's branch-point
-      argument.  Starting with the connected witness \<open>M\<close> in the punctured
-      carrier, use the small-star cover \<open>hM_ball_cover\<close> and the facts that
-      \<open>p\<close>, \<open>y\<close>, and \<open>z\<close> lie outside the ball but in the closures of the
-      three selected inward germs.  The first entries of \<open>M\<close> into the ball,
-      with the edge germs deleted, determine one connected local side subset
-      of \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure touches all three germs. **)
+      argument.  The global witness \<open>M\<close> carries the three selected sphere
+      points through the punctured simple closed curve.  The split-side witness
+      \<open>N\<close> is the local side data: it connects the selected \<open>S\<close>- and
+      \<open>T\<close>-germs in the punctured carrier and has the same small-star sector
+      cover.  Together these witnesses determine one connected local side
+      subset of \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure touches all three
+      germs. **)
     sorry
   obtain A x where hA_conn: "connected A"
     and hA_sub: "A \<subseteq> ?H"
@@ -10639,7 +10650,8 @@ proof -
                     hST hSU hTU hST_disj hSU_disj hTU_disj
                     hM_sub_arg hM_conn_arg hpM_arg hyM_arg hzM_arg
                     hp_selected_germ_cl hy_selected_germ_cl hz_selected_germ_cl
-                    hp_not_ball hy_not_ball hz_not_ball hM_ball_cover_arg])
+                    hp_not_ball hy_not_ball hz_not_ball hM_ball_cover_arg
+                    hN_sub hN_conn_HOL hpSN hyTN hN_ball_sector_cover])
           qed
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
