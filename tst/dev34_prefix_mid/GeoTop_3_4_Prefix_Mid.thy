@@ -21567,12 +21567,30 @@ proof -
     show ?thesis
       using hA_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
   qed
-  obtain B where hB_bl: "geotop_is_broken_line B"
-    and hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
-    and hQ'_B: "Q' \<in> B"
-    and hS'_B: "S' \<in> B"
+  obtain Braw where hBraw_bl: "geotop_is_broken_line Braw"
+    and hBraw_sub: "Braw \<subseteq> geotop_polygon_interior J - A"
+    and hQ'_Braw: "Q' \<in> Braw"
+    and hS'_Braw: "S' \<in> Braw"
     using geotop_open_component_broken_line_between_prefix[OF hcut_open hQ'_cut hS'_comp]
     by (elim exE conjE)
+  have hQ'_ne_S': "Q' \<noteq> S'"
+  proof
+    assume hQS': "Q' = S'"
+    have "Q' \<in> U\<^sub>Q \<inter> U\<^sub>S"
+      using hQ'_U\<^sub>Q hS'_U\<^sub>S hQS' by (by100 blast)
+    thus False
+      using hU\<^sub>Q_US\<^sub>disj by (by100 blast)
+  qed
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub_Braw: "B \<subseteq> Braw"
+    and hQ'_B: "Q' \<in> B"
+    and hS'_B: "S' \<in> B"
+    and hB_endpoints: "geotop_arc_endpoints B {Q', S'}"
+    using geotop_broken_line_subarc_with_endpoints_prefix
+        [OF hBraw_bl hQ'_Braw hS'_Braw hQ'_ne_S']
+    by (elim exE conjE)
+  have hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+    using hB_sub_Braw hBraw_sub by (by100 blast)
   have hA_B: "A \<inter> B = {}"
   proof (rule equals0I)
     fix x
@@ -21631,12 +21649,13 @@ proof -
       False
     (**
       Exact remaining Moise D42 splice/theta step.  From the broken line
-      \<open>B\<close> joining \<open>Q'\<close> to \<open>S'\<close> inside \<open>I - A\<close>, the connected side
-      witnesses at \<open>Q\<close> and \<open>S\<close> and their frontier data produce a broken
-      Q-S chord in \<open>closure I\<close> whose interior lies in \<open>I\<close> and misses \<open>A\<close>.
-      The cyclic order places \<open>P\<close> and \<open>R\<close> on opposite Q-S boundary arcs.
-      The boundary-arc/chord theta decomposition then separates \<open>P\<close> from
-      \<open>R\<close>, contradicting \<open>hPR_same\<close>. **)
+      \<open>B\<close> with endpoints \<open>{Q', S'}\<close> inside \<open>I - A\<close>, the connected side
+      witnesses at \<open>Q\<close> and \<open>S\<close> and their frontier data splice endpoint
+      access arcs onto \<open>B\<close>, producing a broken Q-S chord in \<open>closure I\<close>
+      whose interior lies in \<open>I\<close> and misses \<open>A\<close>.  The cyclic order places
+      \<open>P\<close> and \<open>R\<close> on opposite Q-S boundary arcs.  The boundary-arc/chord
+      theta decomposition then separates \<open>P\<close> from \<open>R\<close>, contradicting
+      \<open>hPR_same\<close>. **)
     sorry
   show False
     by (rule hD42_QS_splice_theta_contradiction)
