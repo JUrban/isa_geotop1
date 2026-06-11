@@ -20916,14 +20916,35 @@ proof -
       using geotop_polygon_interior_minus_arc_frontier_witness_point_dev34
           [OF hJ hS hS_ne_PR hA hAJ]
       by (elim exE conjE)
-    show ?thesis
-      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
-        hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut
-      by (intro exI conjI)
-  qed
-  have hD42_same_component_broken_line:
-      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
-        U\<^sub>Q0 \<in> geotop_euclidean_topology
+	    show ?thesis
+	      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
+	        hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut
+	      by (intro exI conjI)
+	  qed
+	  have hD42_connected_side_points:
+	      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+	        connected U\<^sub>Q0
+	        \<and> connected U\<^sub>S0
+	        \<and> U\<^sub>Q0 \<in> geotop_euclidean_topology
+	        \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
+	        \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
+	        \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
+	        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
+	        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+	        \<and> Q' \<in> U\<^sub>Q0
+	        \<and> S' \<in> U\<^sub>S0
+	        \<and> Q' \<in> geotop_polygon_interior J - A
+	        \<and> S' \<in> geotop_polygon_interior J - A"
+	    (**
+	      Moise local-side selection at the boundary points.  The witnesses
+	      near \<open>Q\<close> and \<open>S\<close> should be chosen as connected small cut-interior
+	      neighborhoods, not as the whole open set \<open>I - A\<close>.  This is the
+	      local half-disk side fact needed to transfer the frontier points to
+	      the ambient components of \<open>I - A\<close>. **)
+	    sorry
+	  have hD42_same_component_broken_line:
+	      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+	        U\<^sub>Q0 \<in> geotop_euclidean_topology
         \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
         \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
         \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
@@ -21556,15 +21577,38 @@ proof -
       have hR_F\<^sub>1: "R \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
         using hcase by (by100 blast)
       show False
-        by (rule hD42_QS_boundary_chord_theta_contradiction_swapped
-            [OF hD42_F_J_split hD42_F\<^sub>1_bl hB_bl hD42_F\<^sub>2_bl
-              hD42_F\<^sub>1E hBE hD42_F\<^sub>2E hF\<^sub>1B hF\<^sub>1F\<^sub>2 hBF\<^sub>2
-              hB_inner hP_F\<^sub>2 hR_F\<^sub>1 hsame])
-    qed
-  qed
-  have hD42_different_component_open_split:
-      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
-        U\<^sub>Q0 \<in> geotop_euclidean_topology
+	        by (rule hD42_QS_boundary_chord_theta_contradiction_swapped
+	            [OF hD42_F_J_split hD42_F\<^sub>1_bl hB_bl hD42_F\<^sub>2_bl
+	              hD42_F\<^sub>1E hBE hD42_F\<^sub>2E hF\<^sub>1B hF\<^sub>1F\<^sub>2 hBF\<^sub>2
+	              hB_inner hP_F\<^sub>2 hR_F\<^sub>1 hsame])
+	    qed
+	  qed
+	  have hD42_same_component_theta_contradiction:
+	      "\<And>Q' S' U\<^sub>Q0 U\<^sub>S0.
+	        connected U\<^sub>Q0 \<Longrightarrow>
+	        connected U\<^sub>S0 \<Longrightarrow>
+	        U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
+	        U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
+	        Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0 \<Longrightarrow>
+	        S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0 \<Longrightarrow>
+	        Q' \<in> U\<^sub>Q0 \<Longrightarrow>
+	        S' \<in> U\<^sub>S0 \<Longrightarrow>
+	        Q' \<in> geotop_polygon_interior J - A \<Longrightarrow>
+	        S' \<in> geotop_polygon_interior J - A \<Longrightarrow>
+	        S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+	          (geotop_polygon_interior J - A) Q' \<Longrightarrow>
+	        False"
+	    (**
+	      Moise theta contradiction for the chosen opposite side witnesses. From
+	      a same-component assumption, extract a broken line from the Q-side
+	      witness to the S-side witness inside \<open>I - A\<close>, use the local side
+	      neighborhoods to extend it to a Q-S chord in \<open>\<bar>I\<close> missing \<open>A\<close>, then
+	      apply \<open>hD42_same_component_contradiction_from_QS_chord\<close> with the two
+	      boundary arcs from Q to S. **)
+	    sorry
+	  have hD42_different_component_open_split:
+	      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+	        U\<^sub>Q0 \<in> geotop_euclidean_topology
         \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
         \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
         \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
@@ -21956,43 +22000,23 @@ proof -
       into a broken line in \<open>I - A\<close>; the remaining content is the cyclic-order
       theta contradiction with the two P-R boundary arcs. **)
   proof -
-    have hD42_dichotomy_resolves_to_open_split_book:
-      "\<And>Q' S' U\<^sub>Q0 U\<^sub>S0.
-        U\<^sub>Q0 \<in> geotop_euclidean_topology \<Longrightarrow>
-        U\<^sub>S0 \<in> geotop_euclidean_topology \<Longrightarrow>
-        U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
+	    have hD42_dichotomy_resolves_to_open_split_book:
+	      "\<And>Q' S' U\<^sub>Q0 U\<^sub>S0.
+	        connected U\<^sub>Q0 \<Longrightarrow>
+	        connected U\<^sub>S0 \<Longrightarrow>
+	        U\<^sub>Q0 \<in> geotop_euclidean_topology \<Longrightarrow>
+	        U\<^sub>S0 \<in> geotop_euclidean_topology \<Longrightarrow>
+	        U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
         U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
         Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0 \<Longrightarrow>
         S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0 \<Longrightarrow>
-        Q' \<in> U\<^sub>Q0 \<Longrightarrow>
-        S' \<in> U\<^sub>S0 \<Longrightarrow>
-        Q' \<in> geotop_polygon_interior J - A \<Longrightarrow>
-        S' \<in> geotop_polygon_interior J - A \<Longrightarrow>
-        (S' \<in> geotop_component_at UNIV geotop_euclidean_topology
-            (geotop_polygon_interior J - A) Q'
-          \<longrightarrow> (\<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> geotop_polygon_interior J - A
-            \<and> Q' \<in> B \<and> S' \<in> B
-            \<and> A \<inter> B = {}
-            \<and> top1_in_same_component_on
-                  (closure_on UNIV geotop_euclidean_topology
-                    (geotop_polygon_interior J) - B)
-                  (subspace_topology UNIV geotop_euclidean_topology
-                    (closure_on UNIV geotop_euclidean_topology
-                      (geotop_polygon_interior J) - B))
-                  P R)) \<Longrightarrow>
-        (S' \<notin> geotop_component_at UNIV geotop_euclidean_topology
-            (geotop_polygon_interior J - A) Q'
-          \<longrightarrow> (\<exists>V W. V \<in> geotop_euclidean_topology
-            \<and> W \<in> geotop_euclidean_topology
-            \<and> V \<subseteq> geotop_polygon_interior J - A
-            \<and> W \<subseteq> geotop_polygon_interior J - A
-            \<and> Q' \<in> V \<and> S' \<in> W
-            \<and> V \<inter> W = {}
-            \<and> geotop_polygon_interior J - A = V \<union> W)) \<Longrightarrow>
-        \<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
-          \<and> U\<^sub>S \<in> geotop_euclidean_topology
-          \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+	        Q' \<in> U\<^sub>Q0 \<Longrightarrow>
+	        S' \<in> U\<^sub>S0 \<Longrightarrow>
+	        Q' \<in> geotop_polygon_interior J - A \<Longrightarrow>
+	        S' \<in> geotop_polygon_interior J - A \<Longrightarrow>
+	        \<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
+	          \<and> U\<^sub>S \<in> geotop_euclidean_topology
+	          \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
           \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
           \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
           \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
@@ -22001,54 +22025,70 @@ proof -
       (**
         Exact remaining Moise D42 package: the same-component alternative is
         forbidden by the theta-graph contradiction above, while the
-        different-component alternative must transfer the frontier witnesses
-        at \<open>Q\<close> and \<open>S\<close> from the small side neighborhoods to the two open
-        components of \<open>I - A\<close>. **)
-      sorry
-    show ?thesis
-    proof -
-      obtain Q' S' U\<^sub>Q0 U\<^sub>S0
-        where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
-          and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
-          and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
-          and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+	        different-component alternative must transfer the frontier witnesses
+	        at \<open>Q\<close> and \<open>S\<close> from the small side neighborhoods to the two open
+	        components of \<open>I - A\<close>. **)
+	    proof -
+	      fix Q' S' :: "real^2"
+	      fix U\<^sub>Q0 U\<^sub>S0 :: "(real^2) set"
+	      assume hUQ0_conn: "connected U\<^sub>Q0"
+	      assume hUS0_conn: "connected U\<^sub>S0"
+	      assume hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+	      assume hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+	      assume hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+	      assume hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+	      assume hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+	      assume hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+	      assume hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+	      assume hS'_US0: "S' \<in> U\<^sub>S0"
+	      assume hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+	      assume hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+	      have hS'_not_comp:
+	          "S' \<notin> geotop_component_at UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J - A) Q'"
+	      proof
+	        assume hS'_comp:
+	          "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J - A) Q'"
+	        show False
+	          by (rule hD42_same_component_theta_contradiction
+	              [OF hUQ0_conn hUS0_conn hUQ0_sub hUS0_sub hQ_front hS_front
+	                hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut hS'_comp])
+	      qed
+	      show "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
+	          \<and> U\<^sub>S \<in> geotop_euclidean_topology
+	          \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+	          \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+	          \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+	          \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+	          \<and> U\<^sub>Q \<inter> U\<^sub>S = {}
+	          \<and> geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+	        by (rule hD42_different_component_resolves_if_side_witnesses_connected
+	            [OF hUQ0_conn hUS0_conn hUQ0_sub hUS0_sub hQ'_UQ0 hS'_US0
+	              hQ_front hS_front hQ'_cut hS'_cut hS'_not_comp])
+	    qed
+	    show ?thesis
+	    proof -
+	      obtain Q' S' U\<^sub>Q0 U\<^sub>S0
+	        where hUQ0_conn: "connected U\<^sub>Q0"
+	          and hUS0_conn: "connected U\<^sub>S0"
+	          and hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+	          and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+	          and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+	          and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
           and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
           and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
           and hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
-          and hS'_US0: "S' \<in> U\<^sub>S0"
-          and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
-          and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
-          and hsame_imp:
-            "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
-                (geotop_polygon_interior J - A) Q'
-              \<longrightarrow> (\<exists>B. geotop_is_broken_line B
-                \<and> B \<subseteq> geotop_polygon_interior J - A
-                \<and> Q' \<in> B \<and> S' \<in> B
-                \<and> A \<inter> B = {}
-                \<and> top1_in_same_component_on
-                      (closure_on UNIV geotop_euclidean_topology
-                        (geotop_polygon_interior J) - B)
-                      (subspace_topology UNIV geotop_euclidean_topology
-                        (closure_on UNIV geotop_euclidean_topology
-                          (geotop_polygon_interior J) - B))
-                      P R)"
-          and hdiff_imp:
-            "S' \<notin> geotop_component_at UNIV geotop_euclidean_topology
-                (geotop_polygon_interior J - A) Q'
-              \<longrightarrow> (\<exists>V W. V \<in> geotop_euclidean_topology
-                \<and> W \<in> geotop_euclidean_topology
-                \<and> V \<subseteq> geotop_polygon_interior J - A
-                \<and> W \<subseteq> geotop_polygon_interior J - A
-                \<and> Q' \<in> V \<and> S' \<in> W
-                \<and> V \<inter> W = {}
-                \<and> geotop_polygon_interior J - A = V \<union> W)"
-        using hD42_side_point_component_dichotomy by (elim exE conjE)
-      show ?thesis
-        by (rule hD42_dichotomy_resolves_to_open_split_book
-            [OF hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
-                hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut hsame_imp hdiff_imp])
-    qed
-  qed
+	          and hS'_US0: "S' \<in> U\<^sub>S0"
+	          and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+	          and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+	        using hD42_connected_side_points by (elim exE conjE)
+	      show ?thesis
+	        by (rule hD42_dichotomy_resolves_to_open_split_book
+	            [OF hUQ0_conn hUS0_conn hUQ0_open hUS0_open hUQ0_sub hUS0_sub
+	                hQ_front hS_front hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut])
+	    qed
+	  qed
   show ?thesis
     using hD42_theta_component_book_step by (by100 blast)
 qed
