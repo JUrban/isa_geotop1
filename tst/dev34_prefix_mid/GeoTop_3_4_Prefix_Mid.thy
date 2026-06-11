@@ -18296,6 +18296,54 @@ proof -
     using hsym hsym_fix by (by100 blast)
 qed
 
+lemma geotop_supported_fold_normalization_compose_prefix:
+  fixes J J' U \<sigma> :: "(real^2) set" and f g :: "real^2 \<Rightarrow> real^2"
+  assumes hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f"
+  assumes hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+  assumes hfJ: "f ` J = J'"
+  assumes hg: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology g"
+  assumes hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hgJ': "g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+  shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+proof -
+  have hcomp_data:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+       UNIV geotop_euclidean_topology (g \<circ> f)
+     \<and> (\<forall>P\<in>UNIV - U. (g \<circ> f) P = P)"
+    by (rule geotop_plane_homeomorphism_fixed_outside_comp_prefix
+        [OF hf hg hf_fix hg_fix])
+  have hcomp_homeo:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+       UNIV geotop_euclidean_topology (g \<circ> f)"
+    using hcomp_data by (by100 blast)
+  have hcomp_fix: "\<forall>P\<in>UNIV - U. (g \<circ> f) P = P"
+    using hcomp_data by (by100 blast)
+  have hcomp_image:
+    "(g \<circ> f) ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+  proof -
+    have "(g \<circ> f) ` J = g ` (f ` J)"
+      by (rule image_comp[symmetric])
+    thus ?thesis
+      using hfJ hgJ' by (by100 simp)
+  qed
+  show ?thesis
+  proof (rule exI[where x = "g \<circ> f"])
+    show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology (g \<circ> f)
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> (g \<circ> f) ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. (g \<circ> f) P = P)"
+      using hcomp_homeo h\<sigma> hcomp_image hcomp_fix by (by100 blast)
+  qed
+qed
+
 lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
   fixes J U :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -18832,11 +18880,7 @@ proof -
               UNIV geotop_euclidean_topology g
         \<and> (\<forall>P\<in>UNIV - U. g P = P)
         \<and> geotop_simplex_dim \<sigma> 2
-        \<and> g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
-        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
-              UNIV geotop_euclidean_topology (g \<circ> f)
-        \<and> (g \<circ> f) ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
-        \<and> (\<forall>P\<in>UNIV - U. (g \<circ> f) P = P)"
+        \<and> g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
       (**
         Remaining Moise Figure 3.3 supported induction step.  From the
         canonical free triangle \<open>\<theta>\<close>, split on \<open>h\<theta>contact_cases\<close>.
@@ -18849,12 +18893,29 @@ proof -
         The fold produces a new polygonal disk \<open>J'\<close> with triangulation
         \<open>K'\<close>, strictly fewer 2-simplexes, and a plane homeomorphism \<open>f\<close>
         fixed outside \<open>U\<close> carrying \<open>J\<close> to \<open>J'\<close>.  The induction hypothesis
-        supplies \<open>g\<close> normalizing \<open>J'\<close>, again fixed outside \<open>U\<close>.  The
-        existing fixed-outside composition lemmas then give the final map
-        \<open>g \<circ> f\<close>. **)
+        supplies \<open>g\<close> normalizing \<open>J'\<close>, again fixed outside \<open>U\<close>. **)
       sorry
+    obtain J' K' f g \<sigma> where hJ': "geotop_is_polygon J'"
+      and hK': "geotop_is_complex K'"
+      and hK'_fin: "finite K'"
+      and hK'_poly: "geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')"
+      and hK'_less: "card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2} < card ?T"
+      and hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f"
+      and hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+      and hfJ: "f ` J = J'"
+      and hg: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology g"
+      and hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and hgJ': "g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+      using hFigure33_supported_fold_induction_step
+      by (elim exE conjE)
     show ?thesis
-      using hFigure33_supported_fold_induction_step by (by100 blast)
+      by (rule geotop_supported_fold_normalization_compose_prefix
+          [OF hf hf_fix hfJ hg hg_fix h\<sigma>2 hgJ'])
   qed
   have hfold_induction_book:
     "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
