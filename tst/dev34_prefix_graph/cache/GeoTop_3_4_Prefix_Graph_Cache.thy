@@ -3914,46 +3914,6 @@ proof -
     using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
 qed
 
-lemma geotop_branch_vertex_first_entry_connected_local_complement_piece_prefix:
-  fixes M S T U :: "(real^2) set" and w p y z :: "real^2" and r :: real
-  assumes hM_conn: "connected M"
-  assumes hpM: "p \<in> M"
-  assumes hyM: "y \<in> M"
-  assumes hzM: "z \<in> M"
-  assumes hcover:
-    "M \<inter> ball w r
-      \<subseteq> ((S - {w}) \<inter> ball w r)
-        \<union> ((T - {w}) \<inter> ball w r)
-        \<union> ((U - {w}) \<inter> ball w r)
-        \<union> (ball w r - (S \<union> T \<union> U))"
-  assumes hlocal_open: "open (ball w r - (S \<union> T \<union> U))"
-  assumes hS_cl: "p \<in> closure ((S - {w}) \<inter> ball w r)"
-  assumes hT_cl: "y \<in> closure ((T - {w}) \<inter> ball w r)"
-  assumes hU_cl: "z \<in> closure ((U - {w}) \<inter> ball w r)"
-  assumes hp_not_ball: "p \<notin> ball w r"
-  assumes hy_not_ball: "y \<notin> ball w r"
-  assumes hz_not_ball: "z \<notin> ball w r"
-  assumes hS_disj:
-    "((S - {w}) \<inter> ball w r) \<inter> (ball w r - (S \<union> T \<union> U)) = {}"
-  assumes hT_disj:
-    "((T - {w}) \<inter> ball w r) \<inter> (ball w r - (S \<union> T \<union> U)) = {}"
-  assumes hU_disj:
-    "((U - {w}) \<inter> ball w r) \<inter> (ball w r - (S \<union> T \<union> U)) = {}"
-  shows "\<exists>A x. connected A
-    \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
-    \<and> x \<in> A
-    \<and> (S - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
-    \<and> (T - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
-    \<and> (U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
-  (**
-    Moise branch-vertex first-entry bridge.  Starting with a connected
-    punctured simple-closed-curve witness through the three selected sphere
-    points, intersect the witness with the small-star complement
-    \<open>ball w r - (S \<union> T \<union> U)\<close>.  The first-entry/last-exit points against the
-    three selected edge germs determine one connected local-complement piece
-    whose closure touches all three germs. **)
-  sorry
-
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -10572,12 +10532,17 @@ proof -
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
                 \<and> (T - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}
                 \<and> (U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
-              by (rule geotop_branch_vertex_first_entry_connected_local_complement_piece_prefix
-                  [OF hM_conn_arg hpM_arg hyM_arg hzM_arg hM_ball_cover_arg
-                    hlocal_selected_open hp_selected_germ_cl hy_selected_germ_cl
-                    hz_selected_germ_cl hp_not_ball hy_not_ball hz_not_ball
-                    hS_selected_germ_avoids_local hT_selected_germ_avoids_local
-                    hU_selected_germ_avoids_local])
+              (**
+                Exact remaining first-entry/local-star inference in the
+                branch-vertex proof.  The surrounding context includes the
+                simple-closed-curve carrier, the selected split-side data, and
+                the three canonical sphere-germ closure facts.  From those
+                data one must take the connected punctured carrier witness,
+                intersect it with the small-star complement, and select the
+                local complement piece whose closure touches the three
+                selected incident germs.  This is intentionally kept here
+                rather than as an under-assumed standalone graph lemma. **)
+              sorry
             obtain A x where hA_conn: "connected A"
               and hA_sub: "A \<subseteq> ?Lcomp"
               and hxA: "x \<in> A"
