@@ -20122,6 +20122,45 @@ proof -
         [OF hUopen hP hQ hneq hX_front hY_front hY_not_U])
 qed
 
+lemma geotop_connected_subset_frontier_component_transfer_prefix:
+  fixes U V :: "'a::real_normed_vector set"
+  assumes hVconn: "connected V"
+  assumes hVsub: "V \<subseteq> U"
+  assumes hxV: "x \<in> V"
+  assumes hX_front:
+    "X \<in> geotop_frontier UNIV geotop_euclidean_topology V"
+  assumes hX_not_U: "X \<notin> U"
+  shows "X \<in> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_component_at UNIV geotop_euclidean_topology U x)"
+  (**
+    D42 bridge: once a side witness is known to be connected and contained in
+    the cut-open set, an exterior frontier point transfers to the ambient
+    component containing the witness point. **)
+proof -
+  let ?C = "geotop_component_at UNIV geotop_euclidean_topology U x"
+  have hC_eq: "?C = connected_component_set U x"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hV_sub_C_HOL: "V \<subseteq> connected_component_set U x"
+    by (rule connected_component_maximal[OF hxV hVconn hVsub])
+  have hV_sub_C: "V \<subseteq> ?C"
+    using hC_eq hV_sub_C_HOL by (by100 simp)
+  have hX_front_HOL: "X \<in> frontier V"
+    using hX_front geotop_frontier_UNIV_eq_frontier[of V] by (by100 simp)
+  have hX_cl_V: "X \<in> closure V"
+    using hX_front_HOL unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hX_cl_C: "X \<in> closure ?C"
+    using hV_sub_C hX_cl_V closure_mono by (by100 blast)
+  have hC_sub_U: "?C \<subseteq> U"
+    using hC_eq connected_component_subset by (by100 simp)
+  have hX_not_int_C: "X \<notin> interior ?C"
+    using hX_not_U hC_sub_U interior_subset by (by100 blast)
+  have hX_front_C_HOL: "X \<in> frontier ?C"
+    using hX_cl_C hX_not_int_C
+    unfolding Elementary_Topology.frontier_def by (by100 blast)
+  show ?thesis
+    using hX_front_C_HOL geotop_frontier_UNIV_eq_frontier[of ?C] by (by100 simp)
+qed
+
 lemma geotop_polygon_interior_minus_arc_open_prefix:
   fixes J A :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
