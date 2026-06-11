@@ -6006,7 +6006,44 @@ proof -
   have hE_ne: "E \<noteq> {}"
     using hEallowed by (by100 blast)
   have hE_sub_C: "E \<subseteq> ?C"
-    using hEsub hEallowed by (by100 blast)
+  proof
+    fix x
+    assume hxE: "x \<in> E"
+    have hxK: "x \<in> K"
+      using hEsub hxE by (by100 blast)
+    show "x \<in> ?C"
+    proof (rule disjE[OF hEallowed])
+      assume "\<exists>e. E = {e} \<and> geotop_is_edge e \<and>
+          geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J"
+      then obtain e where hE: "E = {e}"
+        and hedge: "geotop_is_edge e"
+        and hface: "geotop_is_face e \<sigma>\<^sub>2"
+        and heJ: "e \<subseteq> J"
+        by (elim exE conjE)
+      have hx: "x = e"
+        using hE hxE by (by100 simp)
+      show ?thesis
+        using hx hxK hedge hface heJ by (by100 simp)
+    next
+      assume "\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+          geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+          geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+          e1 \<subseteq> J \<and> e2 \<subseteq> J"
+      then obtain e1 e2 where hE: "E = {e1, e2}"
+        and he1edge: "geotop_is_edge e1"
+        and he2edge: "geotop_is_edge e2"
+        and he1face: "geotop_is_face e1 \<sigma>\<^sub>2"
+        and he2face: "geotop_is_face e2 \<sigma>\<^sub>2"
+        and he1J: "e1 \<subseteq> J"
+        and he2J: "e2 \<subseteq> J"
+        by (elim exE conjE)
+      have hx_cases: "x = e1 \<or> x = e2"
+        using hE hxE by (by100 simp)
+      show ?thesis
+        using hx_cases hxK he1edge he2edge he1face he2face he1J he2J
+        by (by100 auto)
+    qed
+  qed
   show ?thesis
     using hE_ne hE_sub_C by (by100 blast)
 qed
@@ -6097,7 +6134,12 @@ proof -
       and hcontact: "\<sigma>\<^sub>2 \<inter> J = e"
       using hsingle by (elim exE conjE)
     have heK: "e \<in> K"
-      using hE by (by100 simp)
+    proof -
+      have "e \<in> ?E"
+        using hE by (by100 simp)
+      then show ?thesis
+        by (by100 simp)
+    qed
     have hEsub: "{e} \<subseteq> K"
       using heK by (by100 simp)
     have hallowed:
@@ -6108,10 +6150,23 @@ proof -
           \<and> geotop_is_face e1 \<sigma>\<^sub>2
           \<and> geotop_is_face e2 \<sigma>\<^sub>2
           \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
-    proof (rule disjI1, rule exI[where x = e])
-      show "{e} = {e} \<and> geotop_is_edge e \<and>
-          geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J"
-        by (intro conjI refl hedge hface heJ)
+    proof (rule disjI1)
+      show "\<exists>e'. {e} = {e'} \<and> geotop_is_edge e'
+          \<and> geotop_is_face e' \<sigma>\<^sub>2 \<and> e' \<subseteq> J"
+      proof (rule exI[where x = e])
+        show "{e} = {e} \<and> geotop_is_edge e \<and>
+            geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J"
+        proof (intro conjI)
+          show "{e} = {e}"
+            by simp
+          show "geotop_is_edge e"
+            by (rule hedge)
+          show "geotop_is_face e \<sigma>\<^sub>2"
+            by (rule hface)
+          show "e \<subseteq> J"
+            by (rule heJ)
+        qed
+      qed
     qed
     have hwit:
       "{e} \<subseteq> K
@@ -6158,9 +6213,19 @@ proof -
       and hcontact: "\<sigma>\<^sub>2 \<inter> J = e1 \<union> e2"
       using hdouble by (elim exE conjE)
     have he1K: "e1 \<in> K"
-      using hE by (by100 simp)
+    proof -
+      have "e1 \<in> ?E"
+        using hE by (by100 simp)
+      then show ?thesis
+        by (by100 simp)
+    qed
     have he2K: "e2 \<in> K"
-      using hE by (by100 simp)
+    proof -
+      have "e2 \<in> ?E"
+        using hE by (by100 simp)
+      then show ?thesis
+        by (by100 simp)
+    qed
     have hEsub: "{e1, e2} \<subseteq> K"
       using he1K he2K by (by100 simp)
     have hallowed:
@@ -6176,7 +6241,24 @@ proof -
           geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
           geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
           e1 \<subseteq> J \<and> e2 \<subseteq> J"
-        by (intro conjI refl he12 he1edge he2edge he1face he2face he1J he2J)
+      proof (intro conjI)
+        show "{e1, e2} = {e1, e2}"
+          by simp
+        show "e1 \<noteq> e2"
+          by (rule he12)
+        show "geotop_is_edge e1"
+          by (rule he1edge)
+        show "geotop_is_edge e2"
+          by (rule he2edge)
+        show "geotop_is_face e1 \<sigma>\<^sub>2"
+          by (rule he1face)
+        show "geotop_is_face e2 \<sigma>\<^sub>2"
+          by (rule he2face)
+        show "e1 \<subseteq> J"
+          by (rule he1J)
+        show "e2 \<subseteq> J"
+          by (rule he2J)
+      qed
     qed
     have hwit:
       "{e1, e2} \<subseteq> K
@@ -10246,8 +10328,10 @@ proof -
     have hraw:
       "closed_segment v\<^sub>1 v\<^sub>2 \<inter> closed_segment v\<^sub>2 v\<^sub>0 = {v\<^sub>2}"
       by (rule Int_closed_segment[OF disjI2[OF hnot_col]])
+    have hseg_comm: "closed_segment v\<^sub>2 v\<^sub>0 = closed_segment v\<^sub>0 v\<^sub>2"
+      by (rule closed_segment_commute)
     show ?thesis
-      using hraw closed_segment_commute[of v\<^sub>0 v\<^sub>2] by (by100 simp)
+      using hraw hseg_comm by simp
   qed
   have h\<theta>\<^sub>s_chord_inter_v\<^sub>2:
     "\<theta>\<^sub>s \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>2}"
@@ -10334,8 +10418,20 @@ proof -
       by (by100 simp)
     have hv\<^sub>1_\<theta>s: "v\<^sub>1 \<in> \<theta>\<^sub>s"
       using h\<theta>_\<theta>\<^sub>s_inter_side hv\<^sub>1_side by (by100 blast)
+    have hv\<^sub>1_not_chord_segment_\<theta>s: "v\<^sub>1 \<notin> closed_segment v\<^sub>0 v\<^sub>2"
+    proof
+      assume hv\<^sub>1_chord: "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      have hchord_col: "collinear (closed_segment v\<^sub>0 v\<^sub>2)"
+        by (rule collinear_closed_segment)
+      have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> closed_segment v\<^sub>0 v\<^sub>2"
+        using hv\<^sub>1_chord by (by100 simp)
+      have hcol: "collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+        by (rule collinear_subset[OF hchord_col hverts_sub])
+      show False
+        using h\<theta>_not_col hcol by (by100 blast)
+    qed
     have hv\<^sub>1C: "v\<^sub>1 \<in> ?C"
-      using hv\<^sub>1_\<theta>s hv\<^sub>1_not_chord_segment by (by100 blast)
+      using hv\<^sub>1_\<theta>s hv\<^sub>1_not_chord_segment_\<theta>s by (by100 blast)
     have hv\<^sub>1R\<^sub>1: "v\<^sub>1 \<in> ?R\<^sub>1"
       using hv\<^sub>1_C\<^sub>1_int by (by100 blast)
     show ?thesis
@@ -11699,7 +11795,7 @@ proof -
       using h\<rho>ne by (by100 simp)
     have "card {\<rho>, \<theta>\<^sub>c} \<le> card ?T\<^sub>2"
       by (rule card_mono[OF hT\<^sub>2_fin hpair_sub])
-    thus ?thesis
+    then show "card ?T\<^sub>2 > 1"
       using hpair_card by (by100 arith)
   qed
   have hT\<^sub>2_singleton_if_card_le1_and_contains_\<theta>\<^sub>c:
@@ -12320,6 +12416,8 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
 	      geotop_is_polygon J\<^sub>1
 		      \<and> geotop_is_polygon J\<^sub>2
 		      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+		      \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		      \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
 		      \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
 		      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
@@ -13072,6 +13170,31 @@ proof -
       exactly the already-proved chord decomposition rewritten with names. **)
 		    using hchord_decomposition hJ_boundary_split hC\<^sub>1E hC\<^sub>2E hv\<^sub>1_C\<^sub>1_int
 		    unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
+  have hsubdisk_split_facts:
+    "geotop_is_polygon J\<^sub>1
+      \<and> geotop_is_polygon J\<^sub>2
+      \<and> J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+      \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
+      \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1)
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>2)
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+           (geotop_polygon_interior J\<^sub>1 \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+           (geotop_polygon_interior J\<^sub>2 \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    using hsubdisk_book_facts by (by100 blast)
   have hsubdisk_side_witnesses_exist_book:
     "\<And>L\<^sub>1 L\<^sub>2.
       L\<^sub>1 =
@@ -13409,6 +13532,8 @@ proof -
 		      geotop_is_polygon J\<^sub>1
 		        \<and> geotop_is_polygon J\<^sub>2
 		        \<and> J = C\<^sub>1 \<union> C\<^sub>2
+		        \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+		        \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
 		        \<and> v\<^sub>1 \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}
 		        \<and> J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2
 	        \<and> J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2
@@ -13507,17 +13632,17 @@ proof -
           hsubdisk_side_witnesses_from_split])
 qed
 
-(** from \<S>3 Theorem 3 (geotop.tex:762)
-    LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
-      triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
-theorem Theorem_GT_3_3:
+(** from \<S>3 Theorem 3 (geotop.tex:762), strong induction form.
+    Moise proves the stronger assertion that a triangulated polygonal disk
+    with more than one 2-simplex has at least two free 2-simplexes. **)
+lemma geotop_polygon_disk_free_2simplex_count_ge2_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
   assumes hK: "geotop_is_complex K"
   assumes hKI: "geotop_polyhedron K =
     closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
   assumes hcard: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
-  shows "\<exists>\<sigma>\<^sub>2. geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
   (** Moise proof (geotop.tex:764). The stronger claim: K has at least two free
       2-simplexes, by induction on the number of 2-simplexes.
       Base: exactly 2 two-simplexes \<Rightarrow> both free.
@@ -18640,11 +18765,55 @@ proof -
     show ?thesis
       using hSC_induction[OF hK hSC_K_fin hKI hcard] by (by100 simp)
   qed
-  have h_nonempty: "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<noteq> {}"
-    using strong_claim by (by100 force)
-  have hex: "\<exists>\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2"
-    using h_nonempty by (by100 blast)
-  then show ?thesis by blast
+  show ?thesis
+    using strong_claim by (by100 simp)
+qed
+
+(** from \<S>3 Theorem 3 (geotop.tex:762)
+    LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
+      triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
+theorem Theorem_GT_3_3:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hKI: "geotop_polyhedron K =
+    closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hcard: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+  shows "\<exists>\<sigma>\<^sub>2. geotop_free_2_simplex K J \<sigma>\<^sub>2"
+proof -
+  have hcount:
+    "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+    by (rule geotop_polygon_disk_free_2simplex_count_ge2_prefix
+        [OF hJ hK hKI hcard])
+  have hnonempty:
+    "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<noteq> {}"
+    using hcount by (by100 force)
+  show ?thesis
+    using hnonempty by (by100 blast)
+qed
+
+lemma geotop_polygon_disk_free_2simplex_witness_avoids_given_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  shows "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Fold-preparation extraction from Moise's strong Theorem 3.3: when the
+    first chosen free triangle is not the one wanted for the Figure 3.3 fold,
+    the two-free-simplex count supplies another free witness. **)
+proof -
+  have hcount:
+    "card {\<rho>\<in>K. geotop_free_2_simplex K J \<rho>} \<ge> 2"
+    by (rule geotop_polygon_disk_free_2simplex_count_ge2_prefix
+        [OF hJ hK hK_poly hT_gt1])
+  show ?thesis
+    by (rule geotop_free_2_simplex_witness_avoids_given_prefix
+        [OF hK_fin hcount])
 qed
 
 lemma geotop_plane_homeomorphism_fixed_outside_comp_prefix:
@@ -19208,7 +19377,13 @@ proof -
     using h\<theta>selected_edges_fin h\<theta>selected_edges_card_le2 by (by100 linarith)
   have h\<theta>selected_edges_nonempty_card_cases:
       "?E\<theta> \<noteq> {} \<Longrightarrow> card ?E\<theta> = 1 \<or> card ?E\<theta> = 2"
-    using h\<theta>selected_edges_fin h\<theta>selected_edges_card_cases by (by100 simp)
+  proof -
+    assume hnonempty: "?E\<theta> \<noteq> {}"
+    have hcard_nonzero: "card ?E\<theta> \<noteq> 0"
+      using h\<theta>selected_edges_fin hnonempty by (by100 simp)
+    show ?thesis
+      using h\<theta>selected_edges_card_cases hcard_nonzero by (by100 blast)
+  qed
   have h\<theta>boundary_free_contact_cases:
       "geotop_boundary_free_2_simplex K J \<theta>
         \<Longrightarrow> (\<exists>e. ?E\<theta> = {e}
@@ -19246,6 +19421,10 @@ proof -
     using h\<theta>boundary_free_iff_selected_edges_nonempty
       h\<theta>boundary_free_contact_cases
     by (by100 blast)
+  have h\<theta>alternate_free_witness:
+      "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+    by (rule geotop_polygon_disk_free_2simplex_witness_avoids_given_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt1])
   have hFigure33_cases_book:
     "\<exists>J' K' f.
         geotop_is_polygon J'
@@ -19266,8 +19445,8 @@ proof -
       Remaining Figure 3.3 case construction after canonical contact data.
       Use \<open>h\<theta>contact_cases\<close> with \<open>h\<theta>boundary_contact_eq\<close>.  The
       one-edge branch constructs the quadrilateral fold; the two-edge branch
-      constructs the inverse corner fold; the empty-contact branch is resolved
-      by choosing the appropriate two-free-triangle witness before folding. **)
+      constructs the inverse corner fold; the empty-contact branch uses
+      \<open>h\<theta>alternate_free_witness\<close> before folding. **)
     sorry
   show ?thesis
     by (rule hFigure33_cases_book)
@@ -20969,8 +21148,10 @@ proof -
       using hz by (by100 simp)
     have htri: "dist X Y \<le> dist X z + dist z Y"
       by (rule dist_triangle)
+    have hYz': "dist z Y < ?r"
+      using hYz by (simp add: dist_commute)
     have hsum: "dist X z + dist z Y < dist X Y"
-      using hXz hYz hr by (by100 simp add: dist_commute)
+      using hXz hYz' hr by (by100 linarith)
     show False
       using htri hsum by (by100 linarith)
   qed
@@ -21009,7 +21190,7 @@ proof -
   have hnotA_open: "open (- A)"
     by (rule open_Compl[OF hA_closed])
   obtain r where hr_pos: "0 < r" and hr_sub: "ball X r \<subseteq> - A"
-    using open_contains_ball[OF hnotA_open hX_not_A] by (by100 blast)
+    using hnotA_open hX_not_A open_contains_ball by blast
   have hr_disj: "ball X r \<inter> A = {}"
     using hr_sub by (by100 blast)
   show ?thesis
@@ -21067,9 +21248,10 @@ proof -
   have hX_closure_U: "X \<in> closure ?U"
   proof -
     have hclosure_test:
-      "\<forall>A. \<forall>T\<subseteq>A. open T \<longrightarrow> X \<in> T \<longrightarrow> ?U \<inter> A \<noteq> {}"
+      "\<forall>(A::(real^2) set) (T::(real^2) set).
+        T \<subseteq> A \<longrightarrow> open T \<longrightarrow> X \<in> T \<longrightarrow> ?U \<inter> A \<noteq> {}"
     proof (intro allI impI)
-      fix A T
+      fix A T :: "(real^2) set"
       assume hT_sub_A: "T \<subseteq> A"
       assume hT_open: "open T"
       assume hX_T: "X \<in> T"
@@ -21091,7 +21273,7 @@ proof -
   proof
     assume hXS: "X \<in> S"
     have "X \<in> interior S"
-      using hS_open hXS by (by100 simp)
+      using hXS interior_open[OF hS_open] by simp
     moreover have "X \<notin> interior S"
       using hX_front unfolding Elementary_Topology.frontier_def by (by100 simp)
     ultimately show False
@@ -21226,7 +21408,7 @@ proof -
     unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
     by (by100 simp)
   have hU_int: "interior U = U"
-    using hU_open_HOL by (by100 simp)
+    by (rule interior_open[OF hU_open_HOL])
   have hW_int: "interior ?W = ?W"
   proof -
     have "k ` interior U = interior (k ` U)"
@@ -21235,7 +21417,7 @@ proof -
       using hU_int by (by100 simp)
   qed
   have hW_open_HOL: "open ?W"
-    using hW_int by (by100 simp)
+    using hW_int interior_eq by (by100 blast)
   have hW_open: "?W \<in> geotop_euclidean_topology"
     using hW_open_HOL
     unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
@@ -21293,7 +21475,7 @@ proof -
   have h_bij: "bij h"
     by (rule homeomorphism_UNIV_imp_bij[OF hhk])
   have h_inj: "inj h"
-    using h_bij by (by100 simp)
+    using h_bij unfolding bij_def by blast
   have h_image_UNIV: "h ` UNIV = UNIV"
     using h_bij unfolding bij_def by (by100 simp)
   have h_image_compl: "h ` (UNIV - J) = UNIV - ?J'"
@@ -21339,8 +21521,10 @@ proof -
   have hJ'_poly: "geotop_is_polygon ?J'"
     by (rule geotop_2simplex_frontier_is_polygon_prefix[OF h\<sigma>2])
   show ?thesis
-    by (rule polygon_interior_unique[OF hJ'_poly])
-      (use himage_comp himage_bounded in \<open>by (by100 blast)\<close>)
+  proof (rule polygon_interior_unique[OF hJ'_poly])
+    show "h ` ?I \<in> components (UNIV - ?J') \<and> bounded (h ` ?I)"
+      using himage_comp himage_bounded by (by100 blast)
+  qed
 qed
 
 lemma geotop_homeomorphism_small_inverse_ball_dev34:
