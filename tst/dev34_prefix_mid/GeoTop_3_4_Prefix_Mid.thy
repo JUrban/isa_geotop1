@@ -19196,6 +19196,55 @@ proof -
     using h\<rho>K h\<rho>free h\<rho>2 hselected_\<rho> h\<rho>\<theta> by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_gt2_nonempty_selected_2simplex_avoids_empty_contact_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>contact: "\<theta> \<inter> J = {}"
+  shows "\<exists>\<rho>. \<rho> \<in> K
+      \<and> geotop_simplex_dim \<rho> 2
+      \<and> {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+      \<and> \<rho> \<noteq> \<theta>"
+  (**
+    Boundary-contact extraction for the multi-triangle Figure 3.3 ear
+    selection.  Moise's two-boundary-simplex step supplies selected
+    polygon-boundary edge contact on two distinct 2-simplexes; an
+    empty-contact bookkeeping triangle cannot be one of these selected
+    boundary witnesses. **)
+proof -
+  obtain \<sigma> \<tau> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and h\<sigma>selected:
+      "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<noteq> {}"
+    and h\<tau>selected:
+      "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<noteq> {}"
+    using geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix
+        [OF hJ hK hK_poly hT_gt2]
+    by (elim exE conjE)
+  have h\<sigma>contact_ne: "\<sigma> \<inter> J \<noteq> {}"
+    by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
+        [OF h\<sigma>selected])
+  have h\<sigma>ne\<theta>: "\<sigma> \<noteq> \<theta>"
+  proof
+    assume h\<sigma>\<theta>: "\<sigma> = \<theta>"
+    have "\<sigma> \<inter> J = {}"
+      using h\<sigma>\<theta> h\<theta>contact by (by100 simp)
+    thus False
+      using h\<sigma>contact_ne by (by100 blast)
+  qed
+  show ?thesis
+    using h\<sigma>K h\<sigma>2 h\<sigma>selected h\<sigma>ne\<theta> by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_gt2_boundary_free_witness_avoids_empty_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19215,7 +19264,31 @@ lemma geotop_polygon_disk_gt2_boundary_free_witness_avoids_empty_contact_prefix:
     witnesses; this package records the book assertion actually used by the
     fold: in a multi-triangle disk one can choose a boundary-free ear, and such
     an ear cannot be the given empty-contact witness. **)
-  sorry
+proof -
+  obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+    and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    and h\<rho>selected:
+      "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    and h\<rho>\<theta>: "\<rho> \<noteq> \<theta>"
+    using geotop_polygon_disk_gt2_nonempty_selected_2simplex_avoids_empty_contact_prefix
+        [OF hJ hK hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>contact]
+    by (elim exE conjE)
+  have h\<rho>free: "geotop_free_2_simplex K J \<rho>"
+    (**
+      Remaining Moise boundary-ear bridge: upgrade the selected-boundary
+      2-simplex supplied by the two-boundary-simplex step to an actual free
+      triangle.  This is the nonempty-contact version of the Figure 3.2
+      side-witness transfer, not a consequence of the broad free-count theorem
+      alone. **)
+    sorry
+  have hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+    using hT_gt2 by (by100 linarith)
+  have h\<rho>bf: "geotop_boundary_free_2_simplex K J \<rho>"
+    by (rule geotop_free_2_simplex_nonempty_selected_edges_imp_boundary_free_prefix
+        [OF hJ hK hK_poly h\<rho>K h\<rho>2 hT_gt1 h\<rho>free h\<rho>selected])
+  show ?thesis
+    using h\<rho>K h\<rho>bf h\<rho>\<theta> by (by100 blast)
+qed
 
 lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_avoids_empty_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
