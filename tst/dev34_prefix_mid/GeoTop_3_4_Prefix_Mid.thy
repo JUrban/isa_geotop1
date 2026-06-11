@@ -18734,6 +18734,87 @@ proof -
           by (rule disjI2[OF hright])
       qed
     qed
+    have h\<theta>contact_cases:
+        "\<theta> \<inter> J = {}
+          \<or> (\<exists>e. ?E\<theta> = {e}
+            \<and> geotop_is_edge e
+            \<and> geotop_is_face e \<theta>
+            \<and> e \<subseteq> J
+            \<and> \<theta> \<inter> J = e)
+          \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
+            \<and> e1 \<noteq> e2
+            \<and> geotop_is_edge e1
+            \<and> geotop_is_edge e2
+            \<and> geotop_is_face e1 \<theta>
+            \<and> geotop_is_face e2 \<theta>
+            \<and> e1 \<subseteq> J
+            \<and> e2 \<subseteq> J
+            \<and> \<theta> \<inter> J = e1 \<union> e2)"
+    proof -
+      show ?thesis
+        using h\<theta>selected_edge_cases
+      proof (elim disjE)
+        assume hE\<theta>empty: "?E\<theta> = {}"
+        have hcontact_empty: "\<theta> \<inter> J = {}"
+          using h\<theta>boundary_contact_eq hE\<theta>empty by (by100 simp)
+        show ?thesis
+          by (rule disjI1[OF hcontact_empty])
+      next
+        assume hsingle:
+          "\<exists>e. ?E\<theta> = {e} \<and> geotop_is_edge e
+            \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J"
+        obtain e where hE\<theta>e: "?E\<theta> = {e}"
+          and hedge: "geotop_is_edge e"
+          and hface: "geotop_is_face e \<theta>"
+          and heJ: "e \<subseteq> J"
+          using hsingle by (elim exE conjE)
+        have hcontact: "\<theta> \<inter> J = e"
+          using h\<theta>boundary_contact_eq hE\<theta>e by (by100 simp)
+        have hcase:
+          "\<exists>e. ?E\<theta> = {e} \<and> geotop_is_edge e \<and>
+            geotop_is_face e \<theta> \<and> e \<subseteq> J \<and> \<theta> \<inter> J = e"
+        proof (rule exI[where x = e])
+          show "?E\<theta> = {e} \<and> geotop_is_edge e \<and>
+            geotop_is_face e \<theta> \<and> e \<subseteq> J \<and> \<theta> \<inter> J = e"
+            by (intro conjI hE\<theta>e hedge hface heJ hcontact)
+        qed
+        show ?thesis
+          by (rule disjI2, rule disjI1[OF hcase])
+      next
+        assume hdouble:
+          "\<exists>e1 e2. ?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2
+            \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+            \<and> geotop_is_face e1 \<theta>
+            \<and> geotop_is_face e2 \<theta>
+            \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J"
+        obtain e1 e2 where hE\<theta>12: "?E\<theta> = {e1, e2}"
+          and he12: "e1 \<noteq> e2"
+          and he1edge: "geotop_is_edge e1"
+          and he2edge: "geotop_is_edge e2"
+          and he1face: "geotop_is_face e1 \<theta>"
+          and he2face: "geotop_is_face e2 \<theta>"
+          and he1J: "e1 \<subseteq> J"
+          and he2J: "e2 \<subseteq> J"
+          using hdouble by (elim exE conjE)
+        have hcontact: "\<theta> \<inter> J = e1 \<union> e2"
+          using h\<theta>boundary_contact_eq hE\<theta>12 by (by100 simp)
+        have hcase:
+          "\<exists>e1 e2. ?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+            geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and>
+            e1 \<subseteq> J \<and> e2 \<subseteq> J \<and> \<theta> \<inter> J = e1 \<union> e2"
+        proof (rule exI[where x = e1], rule exI[where x = e2])
+          show "?E\<theta> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+            geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+            geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and>
+            e1 \<subseteq> J \<and> e2 \<subseteq> J \<and> \<theta> \<inter> J = e1 \<union> e2"
+            by (intro conjI hE\<theta>12 he12 he1edge he2edge he1face he2face
+                he1J he2J hcontact)
+        qed
+        show ?thesis
+          by (rule disjI2, rule disjI2[OF hcase])
+      qed
+    qed
     show ?thesis
       (**
         Remaining supported fold construction.  The chosen free triangle
@@ -18747,7 +18828,10 @@ proof -
         witness package \<open>htwo_free_witnesses_if_card2\<close> and the large-case
         boundary-ear package \<open>hboundary_pair_if_gt2\<close>.  If the selected edge
         set is nonempty, \<open>h\<theta>nonempty_contact_cases\<close> gives the literal
-        one-edge or two-edge boundary-contact form required by the book. **)
+        one-edge or two-edge boundary-contact form required by the book; the
+        full split \<open>h\<theta>contact_cases\<close> also exposes the empty-contact
+        alternative that must be ruled out or bypassed before applying the
+        Figure 3.3 fold. **)
       sorry
   qed
   have hfold_induction_book:
