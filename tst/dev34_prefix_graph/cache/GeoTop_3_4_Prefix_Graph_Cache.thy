@@ -10250,18 +10250,55 @@ proof -
                 \<and> u0 \<in> closure ((U - {w}) \<inter> ball w r)"
           proof (intro conjI)
             show "s0 \<in> closure ((S - {w}) \<inter> ball w r)"
-              using hs0_germ closure_subset by (by100 blast)
+            proof -
+              have hs0_set: "s0 \<in> (S - {w}) \<inter> ball w r"
+                using hs0_germ by (by100 blast)
+              show ?thesis
+                by (rule subsetD[OF closure_subset hs0_set])
+            qed
             show "t0 \<in> closure ((T - {w}) \<inter> ball w r)"
-              using ht0_germ closure_subset by (by100 blast)
+            proof -
+              have ht0_set: "t0 \<in> (T - {w}) \<inter> ball w r"
+                using ht0_germ by (by100 blast)
+              show ?thesis
+                by (rule subsetD[OF closure_subset ht0_set])
+            qed
             show "u0 \<in> closure ((U - {w}) \<inter> ball w r)"
-              using hu0_germ closure_subset by (by100 blast)
+            proof -
+              have hu0_set: "u0 \<in> (U - {w}) \<inter> ball w r"
+                using hu0_germ by (by100 blast)
+              show ?thesis
+                by (rule subsetD[OF closure_subset hu0_set])
+            qed
           qed
           have hselected_germ_points_not_local:
               "s0 \<notin> ?Lcomp \<and> t0 \<notin> ?Lcomp \<and> u0 \<notin> ?Lcomp"
-            using hs0_germ ht0_germ hu0_germ
-              hS_selected_germ_avoids_local hT_selected_germ_avoids_local
-              hU_selected_germ_avoids_local
-            by (by100 blast)
+          proof (intro conjI)
+            show "s0 \<notin> ?Lcomp"
+            proof
+              assume hs0_local: "s0 \<in> ?Lcomp"
+              have "s0 \<in> ((S - {w}) \<inter> ball w r) \<inter> ?Lcomp"
+                using hs0_germ hs0_local by (by100 blast)
+              thus False
+                using hS_selected_germ_avoids_local by (by100 simp)
+            qed
+            show "t0 \<notin> ?Lcomp"
+            proof
+              assume ht0_local: "t0 \<in> ?Lcomp"
+              have "t0 \<in> ((T - {w}) \<inter> ball w r) \<inter> ?Lcomp"
+                using ht0_germ ht0_local by (by100 blast)
+              thus False
+                using hT_selected_germ_avoids_local by (by100 simp)
+            qed
+            show "u0 \<notin> ?Lcomp"
+            proof
+              assume hu0_local: "u0 \<in> ?Lcomp"
+              have "u0 \<in> ((U - {w}) \<inter> ball w r) \<inter> ?Lcomp"
+                using hu0_germ hu0_local by (by100 blast)
+              thus False
+                using hU_selected_germ_avoids_local by (by100 simp)
+            qed
+          qed
           have hselected_germ_points_boundary_side_data:
               "s0 \<in> ball w r
                 \<and> t0 \<in> ball w r
@@ -10291,6 +10328,77 @@ proof -
               using hU_E unfolding E_def geotop_polyhedron_def by (by100 blast)
             show "u0 \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
               using hu0_germ hU_sub_poly by (by100 blast)
+          qed
+          let ?Mloc = "M \<inter> ?Lcomp"
+          have hM_local_trace_sub:
+              "?Mloc \<subseteq> ?Lcomp"
+            by (by100 blast)
+          have hM_local_trace_carrier_ball:
+              "?Mloc \<subseteq> ball w r \<inter> (geotop_polyhedron L - {w})"
+            using hM_sub_arg by (by100 blast)
+          have hM_ball_cover_by_selected_and_trace:
+              "M \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?Mloc"
+          proof
+            fix a
+            assume ha: "a \<in> M \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))"
+              using hM_ball_cover_arg ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?Mloc"
+              using ha ha_cover by (by100 blast)
+          qed
+          have hM_local_trace_disjoint_selected_germs:
+              "?Mloc \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> ?Mloc \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> ?Mloc \<inter> ((U - {w}) \<inter> ball w r) = {}"
+            by (by100 blast)
+          have hM_selected_trace_reduction_package:
+              "?Mloc \<subseteq> ?Lcomp
+                \<and> ?Mloc \<subseteq> ball w r \<inter> (geotop_polyhedron L - {w})
+                \<and> M \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> ?Mloc
+                \<and> ?Mloc \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> ?Mloc \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> ?Mloc \<inter> ((U - {w}) \<inter> ball w r) = {}
+                \<and> p \<notin> ?Mloc
+                \<and> y \<notin> ?Mloc
+                \<and> z \<notin> ?Mloc"
+          proof (intro conjI)
+            show "?Mloc \<subseteq> ?Lcomp"
+              by (rule hM_local_trace_sub)
+            show "?Mloc \<subseteq> ball w r \<inter> (geotop_polyhedron L - {w})"
+              by (rule hM_local_trace_carrier_ball)
+            show "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> ?Mloc"
+              by (rule hM_ball_cover_by_selected_and_trace)
+            show "?Mloc \<inter> ((S - {w}) \<inter> ball w r) = {}"
+              using hM_local_trace_disjoint_selected_germs by (by100 blast)
+            show "?Mloc \<inter> ((T - {w}) \<inter> ball w r) = {}"
+              using hM_local_trace_disjoint_selected_germs by (by100 blast)
+            show "?Mloc \<inter> ((U - {w}) \<inter> ball w r) = {}"
+              using hM_local_trace_disjoint_selected_germs by (by100 blast)
+            show "p \<notin> ?Mloc"
+              using hp_not_ball by (by100 blast)
+            show "y \<notin> ?Mloc"
+              using hy_not_ball by (by100 blast)
+            show "z \<notin> ?Mloc"
+              using hz_not_ball by (by100 blast)
           qed
           have hlocal_selected_components_fin:
               "finite (components ?Lcomp)"
@@ -10372,13 +10480,26 @@ proof -
             have hcomp_E:
                 "connected_component_set ?Lcomp x \<in> components ?Ecomp"
               by (rule hselected_component_at[OF hx])
+            have hnonempty:
+                "connected_component_set ?Lcomp x \<noteq> {}"
+              using hsummary by (by100 blast)
+            have hsubset:
+                "connected_component_set ?Lcomp x \<subseteq> ?Lcomp"
+              using hsummary by (by100 blast)
+            have hconnected:
+                "connected (connected_component_set ?Lcomp x)"
+              using hsummary by (by100 blast)
+            have hpath:
+                "path_connected (connected_component_set ?Lcomp x)"
+              using hsummary by (by100 blast)
             show "connected_component_set ?Lcomp x \<noteq> {}
               \<and> connected_component_set ?Lcomp x \<subseteq> ?Lcomp
               \<and> connected (connected_component_set ?Lcomp x)
               \<and> path_connected (connected_component_set ?Lcomp x)
               \<and> x \<in> connected_component_set ?Lcomp x
               \<and> connected_component_set ?Lcomp x \<in> components ?Ecomp"
-              using hsummary hx_comp hcomp_E by (intro conjI)
+              using hnonempty hsubset hconnected hpath hx_comp hcomp_E
+              by (intro conjI)
           qed
           have hconnected_subset_selected_component:
               "\<And>A x. x \<in> A
