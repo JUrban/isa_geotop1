@@ -23137,6 +23137,36 @@ proof -
 		            geotop_polygon_interior J"
 		        using hB\<^sub>I0_sub_I unfolding geotop_arc_interior_def
 		        by (by100 blast)
+		      have hF\<^sub>1_B\<^sub>I0_int_disj:
+		          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+		            geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} = {}"
+		      proof -
+		        have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+		          using hD42_F_J_split by (by100 blast)
+		        have hF\<^sub>1_int_sub_J:
+		            "geotop_arc_interior F\<^sub>1 {Q, S} \<subseteq> J"
+		          using hF\<^sub>1_sub_J unfolding geotop_arc_interior_def
+		          by (by100 blast)
+		        show ?thesis
+		          using hF\<^sub>1_int_sub_J hB\<^sub>I0_int_I
+		            polygon_interior_disjoint_polygon[OF hJ]
+		          by (by100 blast)
+		      qed
+		      have hB\<^sub>I0_int_F\<^sub>2_disj:
+		          "geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<inter>
+		            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+		      proof -
+		        have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+		          using hD42_F_J_split by (by100 blast)
+		        have hF\<^sub>2_int_sub_J:
+		            "geotop_arc_interior F\<^sub>2 {Q, S} \<subseteq> J"
+		          using hF\<^sub>2_sub_J unfolding geotop_arc_interior_def
+		          by (by100 blast)
+		        show ?thesis
+		          using hF\<^sub>2_int_sub_J hB\<^sub>I0_int_I
+		            polygon_interior_disjoint_polygon[OF hJ]
+		          by (by100 blast)
+		      qed
 		      have hB\<^sub>I_J_disj: "B\<^sub>I \<inter> J = {}"
 		        using hB\<^sub>I_sub_I polygon_interior_disjoint_polygon[OF hJ]
 		        by (by100 blast)
