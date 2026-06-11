@@ -20667,6 +20667,57 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_polygon_boundary_point_arc_avoiding_ball_dev34:
+  fixes J A :: "(real^2) set" and X P R :: "real^2"
+  assumes hX: "X \<in> J"
+  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>r>0. ball X r \<inter> A = {}"
+  (**
+    First local reduction in Moise D42: a boundary point different from the
+    two arc endpoints has a small Euclidean ball disjoint from the cutting arc.
+    Thus, near that point, the cut-open interior agrees with the polygon
+    interior. **)
+proof -
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+    and h\<gamma>_img: "path_image \<gamma> = A"
+    using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+  have hA_closed: "closed A"
+    using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+  have hX_not_A: "X \<notin> A"
+  proof
+    assume hXA: "X \<in> A"
+    have "X \<in> A \<inter> J"
+      using hXA hX by (by100 blast)
+    hence "X = P \<or> X = R"
+      using hAJ by (by100 blast)
+    thus False
+      using hX_ne by (by100 blast)
+  qed
+  have hnotA_open: "open (- A)"
+    by (rule open_Compl[OF hA_closed])
+  obtain r where hr_pos: "0 < r" and hr_sub: "ball X r \<subseteq> - A"
+    using open_contains_ball[OF hnotA_open hX_not_A] by (by100 blast)
+  have hr_disj: "ball X r \<inter> A = {}"
+    using hr_sub by (by100 blast)
+  show ?thesis
+    using hr_pos hr_disj by (by100 blast)
+qed
+
+lemma geotop_polygon_interior_minus_arc_agrees_locally_dev34:
+  fixes J A :: "(real^2) set" and X :: "real^2" and r :: real
+  assumes hball_A: "ball X r \<inter> A = {}"
+  shows "ball X r \<inter> (geotop_polygon_interior J - A) =
+         ball X r \<inter> geotop_polygon_interior J"
+  (**
+    Local equality after the arc-avoidance reduction: inside an arc-disjoint
+    ball, the cut-open set is just the polygon interior. **)
+proof -
+  show ?thesis
+    using hball_A by (by100 blast)
+qed
+
 lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -20685,7 +20736,53 @@ lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34:
     cutting arc endpoints, choose a small connected cut-interior neighborhood
     whose frontier contains the boundary point.  This is the local half-disk
     or local wedge fact used before passing to components of \<open>I - A\<close>. **)
-  sorry
+proof -
+  obtain r where hr_pos: "0 < r" and hr_A: "ball X r \<inter> A = {}"
+    using geotop_polygon_boundary_point_arc_avoiding_ball_dev34
+        [OF hX hX_ne hA hAJ]
+    by (elim exE conjE)
+  have hlocal_cut_eq:
+      "ball X r \<inter> (geotop_polygon_interior J - A) =
+       ball X r \<inter> geotop_polygon_interior J"
+    by (rule geotop_polygon_interior_minus_arc_agrees_locally_dev34[OF hr_A])
+  have hX_front_I:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    using Theorem_GT_2_6(1)[OF hJ] hX by (by100 simp)
+  have hlocal_polygon_side:
+      "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J
+        \<and> U \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior J"
+    (**
+      Remaining pure polygon local-side fact: at a boundary point of a polygon
+      and inside any sufficiently small ball, the polygon interior has a
+      connected open side-neighborhood whose frontier contains the boundary
+      point.  This is the half-disk/wedge step from Moise's rectangular
+      normalization, now separated from the cutting arc by \<open>hr_A\<close>. **)
+    sorry
+  obtain U X' where hU_conn: "connected U"
+    and hU_open: "U \<in> geotop_euclidean_topology"
+    and hU_I: "U \<subseteq> geotop_polygon_interior J"
+    and hU_ball: "U \<subseteq> ball X r"
+    and hX_front_U:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    and hX'_U: "X' \<in> U"
+    and hX'_I: "X' \<in> geotop_polygon_interior J"
+    using hlocal_polygon_side by (elim exE conjE)
+  have hU_A_empty: "U \<inter> A = {}"
+    using hU_ball hr_A by (by100 blast)
+  have hU_cut: "U \<subseteq> geotop_polygon_interior J - A"
+    using hU_I hU_A_empty by (by100 blast)
+  have hX'_cut: "X' \<in> geotop_polygon_interior J - A"
+    using hX'_U hU_cut by (by100 blast)
+  show ?thesis
+    using hU_conn hU_open hU_cut hX_front_U hX'_U hX'_cut
+    by (intro exI conjI)
+qed
 
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
