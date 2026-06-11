@@ -10232,17 +10232,39 @@ proof -
                 \<Longrightarrow> A \<subseteq> ?Lcomp
                 \<Longrightarrow> A \<subseteq> connected_component_set ?Lcomp x"
             by (rule connected_component_maximal)
+          have hfirst_entry_local_component_bridge:
+              "\<exists>C. C \<in> components ?Lcomp
+                \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+                \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+                \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+            (**
+              Exact first-entry/local-star obligation.  Starting from the
+              connected witness \<open>M\<close> through the three selected sphere points,
+              use the small-star sector cover and the selected boundary
+              closure data to choose one HOL component of
+              \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure meets all three
+              punctured selected germs.  This is the Moise local-one-manifold
+              step; it is stronger than component algebra and must use the
+              selected three-germ setup above. **)
+            sorry
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
             \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
             \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
-            (**
-              Remaining nontrivial first-exit/local-star inference.  The
-              next step should work in \<open>?Lcomp\<close>, use
-              \<open>hcomponents_selected_eq\<close> to return to \<open>?Ecomp\<close>, and
-              identify the component forced by the connected witness and the
-              local sector cover. **)
-            sorry
+          proof -
+            obtain C where hC_L: "C \<in> components ?Lcomp"
+              and hS_touch:
+                "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+              and hT_touch:
+                "(T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+              and hU_touch:
+                "(U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+              using hfirst_entry_local_component_bridge by (elim exE conjE)
+            have hC_E: "C \<in> components ?Ecomp"
+              using hC_L hcomponents_selected_eq by (by100 simp)
+            show ?thesis
+              using hC_E hS_touch hT_touch hU_touch by (intro exI conjI)
+          qed
         qed
         show ?thesis
           by (rule hfirst_exit_component_from_connected_witness
