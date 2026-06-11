@@ -24282,7 +24282,8 @@ proof -
       the named endpoint-hygiene package so the later D42 splice uses the
       canonical connected disjoint witnesses. **)
   proof -
-    obtain r U\<^sub>Q0 U\<^sub>S0 Q' S' where hr_pos: "0 < r"
+    obtain r U\<^sub>Q0 U\<^sub>S0 Q' S' Q1 S1 B\<^sub>Q B\<^sub>S
+      where hr_pos: "0 < r"
       and hUQ0_conn: "connected U\<^sub>Q0"
       and hUS0_conn: "connected U\<^sub>S0"
       and hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
@@ -24299,7 +24300,19 @@ proof -
       and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
       and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
       and hUQ0_US0_disj: "U\<^sub>Q0 \<inter> U\<^sub>S0 = {}"
-      using geotop_polygon_interior_minus_arc_two_disjoint_frontier_witnesses_dev34
+      and hQ1_UQ0: "Q1 \<in> U\<^sub>Q0"
+      and hQ1_ball: "Q1 \<in> ball Q r"
+      and hS1_US0: "S1 \<in> U\<^sub>S0"
+      and hS1_ball: "S1 \<in> ball S r"
+      and hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
+      and hB\<^sub>Q_sub: "B\<^sub>Q \<subseteq> U\<^sub>Q0"
+      and hQ1_B\<^sub>Q: "Q1 \<in> B\<^sub>Q"
+      and hQ'_B\<^sub>Q: "Q' \<in> B\<^sub>Q"
+      and hB\<^sub>S_bl: "geotop_is_broken_line B\<^sub>S"
+      and hB\<^sub>S_sub: "B\<^sub>S \<subseteq> U\<^sub>S0"
+      and hS1_B\<^sub>S: "S1 \<in> B\<^sub>S"
+      and hS'_B\<^sub>S: "S' \<in> B\<^sub>S"
+      using geotop_polygon_interior_minus_arc_two_disjoint_frontier_accesses_dev34
           [OF hJ hQ hS hQ_ne_PR hS_ne_PR hQ_ne_S hA hAJ]
       by (elim exE conjE)
     show ?thesis
