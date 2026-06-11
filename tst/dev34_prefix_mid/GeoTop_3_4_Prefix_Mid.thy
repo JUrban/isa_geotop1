@@ -22033,6 +22033,36 @@ proof (rule equals0I)
     by (rule notE[OF hx_not_AB hxAB])
 qed
 
+lemma geotop_boundary_subarc_interior_misses_cross_arc_prefix:
+  fixes J A C :: "(real^2) set" and P R :: "real^2"
+  assumes hC_sub_J: "C \<subseteq> J"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "geotop_arc_interior C {P, R} \<inter> A = {}"
+  (**
+    D42 boundary-arc bookkeeping: if a selected boundary subarc lies in
+    \<open>J\<close>, then its open arc interior misses the cross-arc \<open>A\<close>, since
+    \<open>A \<inter> J\<close> consists only of the excluded endpoints \<open>P,R\<close>. **)
+proof (rule equals0I)
+  fix x
+  assume hx: "x \<in> geotop_arc_interior C {P, R} \<inter> A"
+  have hxC_int: "x \<in> geotop_arc_interior C {P, R}"
+    using hx by (rule IntD1)
+  have hxA: "x \<in> A"
+    using hx by (rule IntD2)
+  have hxC: "x \<in> C"
+    using hxC_int unfolding geotop_arc_interior_def by (rule DiffD1)
+  have hx_not_PR: "x \<notin> {P, R}"
+    using hxC_int unfolding geotop_arc_interior_def by (rule DiffD2)
+  have hxJ: "x \<in> J"
+    by (rule subsetD[OF hC_sub_J hxC])
+  have hxAJ: "x \<in> A \<inter> J"
+    by (rule IntI[OF hxA hxJ])
+  have hxPR: "x \<in> {P, R}"
+    using hAJ hxAJ by (by100 simp)
+  show False
+    by (rule notE[OF hx_not_PR hxPR])
+qed
+
 lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
     and P Q R S Q0 S0 :: "real^2"
@@ -23706,41 +23736,13 @@ proof -
     have hC\<^sub>1_sub_J: "C\<^sub>1 \<subseteq> J"
       using hD42_J_split by (by100 blast)
     show "geotop_arc_interior C\<^sub>1 {P, R} \<inter> A = {}"
-    proof (rule equals0I)
-      fix x
-      assume hx: "x \<in> geotop_arc_interior C\<^sub>1 {P, R} \<inter> A"
-      have hxC\<^sub>1: "x \<in> C\<^sub>1"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hx_not_PR: "x \<notin> {P, R}"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hxJ: "x \<in> J"
-        using hC\<^sub>1_sub_J hxC\<^sub>1 by (by100 blast)
-      have hxA: "x \<in> A"
-        using hx by (by100 blast)
-      have "x \<in> {P, R}"
-        using hAJ hxA hxJ by (by100 blast)
-      thus False
-        using hx_not_PR by (by100 blast)
-    qed
+      by (rule geotop_boundary_subarc_interior_misses_cross_arc_prefix
+          [OF hC\<^sub>1_sub_J hAJ])
     have hC\<^sub>2_sub_J: "C\<^sub>2 \<subseteq> J"
       using hD42_J_split by (by100 blast)
     show "geotop_arc_interior C\<^sub>2 {P, R} \<inter> A = {}"
-    proof (rule equals0I)
-      fix x
-      assume hx: "x \<in> geotop_arc_interior C\<^sub>2 {P, R} \<inter> A"
-      have hxC\<^sub>2: "x \<in> C\<^sub>2"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hx_not_PR: "x \<notin> {P, R}"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hxJ: "x \<in> J"
-        using hC\<^sub>2_sub_J hxC\<^sub>2 by (by100 blast)
-      have hxA: "x \<in> A"
-        using hx by (by100 blast)
-      have "x \<in> {P, R}"
-        using hAJ hxA hxJ by (by100 blast)
-      thus False
-        using hx_not_PR by (by100 blast)
-    qed
+      by (rule geotop_boundary_subarc_interior_misses_cross_arc_prefix
+          [OF hC\<^sub>2_sub_J hAJ])
   qed
   have hD42_broken_boundary_arc_split:
       "\<exists>D\<^sub>1 D\<^sub>2.
@@ -23797,41 +23799,13 @@ proof -
     have hD\<^sub>1_sub_J: "D\<^sub>1 \<subseteq> J"
       using hD42_D_J_split by (by100 blast)
     show "geotop_arc_interior D\<^sub>1 {P, R} \<inter> A = {}"
-    proof (rule equals0I)
-      fix x
-      assume hx: "x \<in> geotop_arc_interior D\<^sub>1 {P, R} \<inter> A"
-      have hxD\<^sub>1: "x \<in> D\<^sub>1"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hx_not_PR: "x \<notin> {P, R}"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hxJ: "x \<in> J"
-        using hD\<^sub>1_sub_J hxD\<^sub>1 by (by100 blast)
-      have hxA: "x \<in> A"
-        using hx by (by100 blast)
-      have "x \<in> {P, R}"
-        using hAJ hxA hxJ by (by100 blast)
-      thus False
-        using hx_not_PR by (by100 blast)
-    qed
+      by (rule geotop_boundary_subarc_interior_misses_cross_arc_prefix
+          [OF hD\<^sub>1_sub_J hAJ])
     have hD\<^sub>2_sub_J: "D\<^sub>2 \<subseteq> J"
       using hD42_D_J_split by (by100 blast)
     show "geotop_arc_interior D\<^sub>2 {P, R} \<inter> A = {}"
-    proof (rule equals0I)
-      fix x
-      assume hx: "x \<in> geotop_arc_interior D\<^sub>2 {P, R} \<inter> A"
-      have hxD\<^sub>2: "x \<in> D\<^sub>2"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hx_not_PR: "x \<notin> {P, R}"
-        using hx unfolding geotop_arc_interior_def by (by100 blast)
-      have hxJ: "x \<in> J"
-        using hD\<^sub>2_sub_J hxD\<^sub>2 by (by100 blast)
-      have hxA: "x \<in> A"
-        using hx by (by100 blast)
-      have "x \<in> {P, R}"
-        using hAJ hxA hxJ by (by100 blast)
-      thus False
-      using hx_not_PR by (by100 blast)
-    qed
+      by (rule geotop_boundary_subarc_interior_misses_cross_arc_prefix
+          [OF hD\<^sub>2_sub_J hAJ])
   qed
   have hD42_PR_on_broken_boundary_arcs:
       "P \<in> D\<^sub>1 \<and> R \<in> D\<^sub>1 \<and> P \<in> D\<^sub>2 \<and> R \<in> D\<^sub>2"
