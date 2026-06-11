@@ -10501,12 +10501,6 @@ proof -
               using hnonempty hsubset hconnected hpath hx_comp hcomp_E
               by (intro conjI)
           qed
-          have hconnected_subset_selected_component:
-              "\<And>A x. x \<in> A
-                \<Longrightarrow> connected A
-                \<Longrightarrow> A \<subseteq> ?Lcomp
-                \<Longrightarrow> A \<subseteq> connected_component_set ?Lcomp x"
-            by (rule connected_component_maximal)
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
@@ -10542,30 +10536,28 @@ proof -
                 "(U - {w}) \<inter> ball w r \<inter> closure A \<noteq> {}"
               using hfirst_entry_connected_local_complement_piece
               by (elim exE conjE)
-            show ?thesis
-            proof -
-              let ?C = "connected_component_set ?Lcomp x"
-              have hxL: "x \<in> ?Lcomp"
-                using hA_sub hxA by (by100 blast)
-              have hC_L: "?C \<in> components ?Lcomp"
-                by (rule hselected_component_at_local[OF hxL])
-              have hA_sub_C: "A \<subseteq> ?C"
-                by (rule hconnected_subset_selected_component
-                    [OF hxA hA_conn hA_sub])
-              have hcl_sub: "closure A \<subseteq> closure ?C"
-                by (rule closure_mono[OF hA_sub_C])
-              have hS_C:
-                  "(S - {w}) \<inter> ball w r \<inter> closure ?C \<noteq> {}"
-                using hS_A hcl_sub by (by100 blast)
-              have hT_C:
-                  "(T - {w}) \<inter> ball w r \<inter> closure ?C \<noteq> {}"
-                using hT_A hcl_sub by (by100 blast)
-              have hU_C:
-                  "(U - {w}) \<inter> ball w r \<inter> closure ?C \<noteq> {}"
-                using hU_A hcl_sub by (by100 blast)
-              show ?thesis
-                using hC_L hS_C hT_C hU_C by (intro exI conjI)
+            have hbridge:
+                "\<exists>C. C \<in> components ?Lcomp
+                  \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                  \<and> ((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                  \<and> ((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+            proof (rule geotop_connected_local_component_closure_touch_three_sets_prefix
+                [where A=A and U="?Lcomp" and x=x])
+              show "connected A"
+                by (rule hA_conn)
+              show "A \<subseteq> ?Lcomp"
+                by (rule hA_sub)
+              show "x \<in> A"
+                by (rule hxA)
+              show "((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+                using hS_A by (by100 blast)
+              show "((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+                using hT_A by (by100 blast)
+              show "((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+                using hU_A by (by100 blast)
             qed
+            show ?thesis
+              using hbridge by (by100 blast)
           qed
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
