@@ -390,7 +390,7 @@ geotop_pi_locally_commutative_at               GeoTop.thy                       
 geotop_pi_locally_commutative_at               dev34_pre/GeoTop.thy                 line 31148
 geotop_pi_mult                                 GeoTop.thy                           line 28814
 geotop_pi_mult                                 dev34_pre/GeoTop.thy                 line 28814
-geotop_polygon_cyclic_order                    dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22790
+geotop_polygon_cyclic_order                    dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22904
 geotop_polygon_exterior                        gp/GeoTop_Prefix.thy                 line 1414
 geotop_polygon_interior                        gp/GeoTop_Prefix.thy                 line 1407
 geotop_polyhedron                              gb0/GeoTopBase0.thy                  line 385
@@ -2529,10 +2529,10 @@ geotop_plane_chart_point_complement_connected  dev34_facts/GeoTop_3_4_Facts.thy 
 geotop_plane_homeomorphism_fixed_outside_comp_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 18819
 geotop_plane_homeomorphism_fixed_outside_inv_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 18850
 geotop_plane_homeomorphism_fixed_outside_sym_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 18871
-geotop_polygon_arc_opposite_boundary_decomposition_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 25893
+geotop_polygon_arc_opposite_boundary_decomposition_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 26007
 geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22717
-geotop_polygon_arc_opposite_boundary_same_component_theta_contradiction_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22817
-geotop_polygon_arc_opposite_boundary_theta_component_split_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 24224
+geotop_polygon_arc_opposite_boundary_same_component_theta_contradiction_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22931
+geotop_polygon_arc_opposite_boundary_theta_component_split_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 24338
 geotop_polygon_boundary_2simplex_frontier_forces_same_interior_prefix  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy  line 3861
 geotop_polygon_boundary_contact_triangle_frontier_eq_prefix  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy  line 3830
 geotop_polygon_boundary_contact_triangle_interior_component_prefix  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy  line 3756
@@ -2541,7 +2541,7 @@ geotop_polygon_boundary_point_in_2simplex_frontier_prefix  dev34_prefix_base/Geo
 geotop_polygon_boundary_point_in_simplex_not_in_interior_prefix  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy  line 3909
 geotop_polygon_components_set_eq               gp/GeoTop_Prefix.thy                 line 1202
 geotop_polygon_cut_subset_closed_minus_and_disjoint_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22092
-geotop_polygon_cyclic_orderE_prefix            dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22798
+geotop_polygon_cyclic_orderE_prefix            dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 22912
 geotop_polygon_disk_all_triangle_boundary_closure_subset_prefix  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy  line 3884
 geotop_polygon_disk_boundary_edge_in_selected_edges_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 5411
 geotop_polygon_disk_boundary_edge_owned_by_2simplex_prefix  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 4551
@@ -4658,7 +4658,7 @@ Theorem_GT_4_10                                dev34/GeoTop_3_4.thy             
 Theorem_GT_4_10                                dev34_pre/GeoTop.thy                 line 24808
 Theorem_GT_4_2                                 GeoTop.thy                           line 24314
 Theorem_GT_4_2                                 dev34_pre/GeoTop.thy                 line 24314
-Theorem_GT_4_2                                 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 26036
+Theorem_GT_4_2                                 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  line 26150
 Theorem_GT_4_3                                 GeoTop.thy                           line 24372
 Theorem_GT_4_3                                 dev34_pre/GeoTop.thy                 line 24372
 Theorem_GT_4_3                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 7
@@ -5460,7 +5460,7 @@ top1_same_homotopy_type_strict                 b0/AlgTop_JCT_Base0.thy          
   Theorem_GT_4_2:
     GeoTop.thy                           theorem  line 24314
     dev34_pre/GeoTop.thy                 theorem  line 24314
-    dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  theorem  line 26036
+    dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy  theorem  line 26150
   Theorem_GT_4_3:
     GeoTop.thy                           theorem  line 24372
     dev34_pre/GeoTop.thy                 theorem  line 24372

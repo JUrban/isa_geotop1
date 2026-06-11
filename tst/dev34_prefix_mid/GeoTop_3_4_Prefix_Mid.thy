@@ -22785,7 +22785,121 @@ lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
     boundary arcs, and preserves the P-R connectedness witness through the
     original P-R arc \<open>A\<close>.  This is the formal endpoint-hygiene step singled
     out in the expert D42 audits. **)
-  sorry
+proof -
+  have hP_A: "P \<in> A"
+    using hAJ by (by100 blast)
+  have hR_A: "R \<in> A"
+    using hAJ by (by100 blast)
+  have hA_connected:
+      "top1_connected_on A
+        (subspace_topology UNIV geotop_euclidean_topology A)"
+  proof -
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A"
+      using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+    have h\<gamma>_path: "path \<gamma>"
+      using h\<gamma>_arc unfolding arc_def by (by100 simp)
+    have hA_conn_HOL: "connected A"
+      using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
+    show ?thesis
+      using hA_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  qed
+  have hQ0_I: "Q0 \<in> geotop_polygon_interior J"
+    using hQ0_U\<^sub>Q hU\<^sub>Q_sub by (by100 blast)
+  have hS0_I: "S0 \<in> geotop_polygon_interior J"
+    using hS0_U\<^sub>S hU\<^sub>S_sub by (by100 blast)
+  have hB\<^sub>0_closed:
+      "B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    using hB\<^sub>0_closed_minus_A by (by100 blast)
+  have hB\<^sub>0_A: "B\<^sub>0 \<inter> A = {}"
+    using hB\<^sub>0_closed_minus_A by (by100 blast)
+  have hD42_boundary_access_arcs:
+      "\<exists>C\<^sub>Q C\<^sub>S.
+        geotop_is_broken_line C\<^sub>Q
+        \<and> geotop_is_broken_line C\<^sub>S
+        \<and> Q \<in> C\<^sub>Q
+        \<and> Q0 \<in> C\<^sub>Q
+        \<and> S0 \<in> C\<^sub>S
+        \<and> S \<in> C\<^sub>S
+        \<and> C\<^sub>Q \<subseteq> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)
+        \<and> C\<^sub>S \<subseteq> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)
+        \<and> C\<^sub>Q \<inter> A = {}
+        \<and> C\<^sub>S \<inter> A = {}
+        \<and> geotop_arc_interior C\<^sub>Q {Q, Q0} \<subseteq> geotop_polygon_interior J
+        \<and> geotop_arc_interior C\<^sub>S {S0, S} \<subseteq> geotop_polygon_interior J
+        \<and> Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<and> Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}
+        \<and> S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<and> S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior C\<^sub>Q {Q, Q0} = {}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior C\<^sub>S {S0, S} = {}
+        \<and> geotop_arc_interior C\<^sub>Q {Q, Q0} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}
+        \<and> geotop_arc_interior C\<^sub>S {S0, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    (**
+      Remaining local Moise endpoint-access construction.  From the polygon
+      half-disk/wedge neighborhoods at the boundary points \<open>Q\<close> and \<open>S\<close>,
+      choose broken access arcs from \<open>Q\<close> to \<open>Q0\<close> and from \<open>S0\<close> to \<open>S\<close>
+      whose open parts lie in the polygon interior, miss the cutting arc, and
+      avoid the two Q-S boundary arcs except at the intended endpoints. **)
+    sorry
+  obtain C\<^sub>Q C\<^sub>S where hC\<^sub>Q_bl: "geotop_is_broken_line C\<^sub>Q"
+    and hC\<^sub>S_bl: "geotop_is_broken_line C\<^sub>S"
+    and hQ_C\<^sub>Q: "Q \<in> C\<^sub>Q"
+    and hQ0_C\<^sub>Q: "Q0 \<in> C\<^sub>Q"
+    and hS0_C\<^sub>S: "S0 \<in> C\<^sub>S"
+    and hS_C\<^sub>S: "S \<in> C\<^sub>S"
+    and hC\<^sub>Q_closed:
+      "C\<^sub>Q \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    and hC\<^sub>S_closed:
+      "C\<^sub>S \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    and hC\<^sub>Q_A: "C\<^sub>Q \<inter> A = {}"
+    and hC\<^sub>S_A: "C\<^sub>S \<inter> A = {}"
+    and hC\<^sub>Q_int_I:
+      "geotop_arc_interior C\<^sub>Q {Q, Q0} \<subseteq> geotop_polygon_interior J"
+    and hC\<^sub>S_int_I:
+      "geotop_arc_interior C\<^sub>S {S0, S} \<subseteq> geotop_polygon_interior J"
+    and hQ0_not_F\<^sub>1:
+      "Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+    and hQ0_not_F\<^sub>2:
+      "Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+    and hS0_not_F\<^sub>1:
+      "S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+    and hS0_not_F\<^sub>2:
+      "S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+    and hF\<^sub>1C\<^sub>Q:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior C\<^sub>Q {Q, Q0} = {}"
+    and hF\<^sub>1C\<^sub>S:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior C\<^sub>S {S0, S} = {}"
+    and hC\<^sub>QF\<^sub>2:
+      "geotop_arc_interior C\<^sub>Q {Q, Q0} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    and hC\<^sub>SF\<^sub>2:
+      "geotop_arc_interior C\<^sub>S {S0, S} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    using hD42_boundary_access_arcs by (elim exE conjE)
+  show ?thesis
+    by (rule geotop_QS_chord_from_boundary_access_arcs_prefix
+        [OF hAsub hP_A hR_A hA_connected hQ_ne_S
+          hC\<^sub>Q_bl hB\<^sub>0_bl hC\<^sub>S_bl
+          hQ_C\<^sub>Q hQ0_C\<^sub>Q hQ0_B\<^sub>0 hS0_B\<^sub>0 hS0_C\<^sub>S hS_C\<^sub>S
+          hC\<^sub>Q_closed hB\<^sub>0_closed hC\<^sub>S_closed
+          hC\<^sub>Q_A hB\<^sub>0_A hC\<^sub>S_A hQ0_I hS0_I
+          hC\<^sub>Q_int_I hB\<^sub>0_int_I hC\<^sub>S_int_I
+          hQ0_not_F\<^sub>1 hQ0_not_F\<^sub>2 hS0_not_F\<^sub>1 hS0_not_F\<^sub>2
+          hF\<^sub>1C\<^sub>Q hF\<^sub>1B\<^sub>0 hF\<^sub>1C\<^sub>S
+          hC\<^sub>QF\<^sub>2 hB\<^sub>0F\<^sub>2 hC\<^sub>SF\<^sub>2])
+qed
 
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
