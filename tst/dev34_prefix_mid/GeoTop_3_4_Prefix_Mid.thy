@@ -23188,6 +23188,39 @@ proof -
 		            polygon_interior_disjoint_polygon[OF hJ]
 		          by (by100 blast)
 		      qed
+		      have hB\<^sub>I0_core_chord_package:
+		        "geotop_is_broken_line B\<^sub>I0
+		          \<and> geotop_arc_endpoints B\<^sub>I0 {Q\<^sub>0, S\<^sub>0}
+		          \<and> Q\<^sub>0 \<in> B\<^sub>I0
+		          \<and> S\<^sub>0 \<in> B\<^sub>I0
+		          \<and> B\<^sub>I0 \<subseteq> geotop_polygon_interior J - A
+		          \<and> A \<inter> B\<^sub>I0 = {}
+		          \<and> B\<^sub>I0 \<inter> J = {}
+		          \<and> Q \<notin> B\<^sub>I0
+		          \<and> S \<notin> B\<^sub>I0"
+		        using hB\<^sub>I0_bl hB\<^sub>I0E hQ\<^sub>0_B\<^sub>I0 hS\<^sub>0_B\<^sub>I0
+		          hB\<^sub>I0_sub_cut hA_B\<^sub>I0 hB\<^sub>I0_J_disj hQ_not_B\<^sub>I0
+		          hS_not_B\<^sub>I0
+		        by (intro conjI)
+		      have hB\<^sub>I0_core_for_QS_splice:
+		        "geotop_is_broken_line B\<^sub>I0
+		          \<and> geotop_arc_endpoints B\<^sub>I0 {Q\<^sub>0, S\<^sub>0}
+		          \<and> geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<subseteq>
+		            geotop_polygon_interior J
+		          \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+		            geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} = {}
+		          \<and> geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<inter>
+		            geotop_arc_interior F\<^sub>2 {Q, S} = {}
+		          \<and> top1_in_same_component_on
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B\<^sub>I0)
+		            (subspace_topology UNIV geotop_euclidean_topology
+		              (closure_on UNIV geotop_euclidean_topology
+		                (geotop_polygon_interior J) - B\<^sub>I0))
+		            P R"
+		        using hB\<^sub>I0_bl hB\<^sub>I0E hB\<^sub>I0_int_I
+		          hF\<^sub>1_B\<^sub>I0_int_disj hB\<^sub>I0_int_F\<^sub>2_disj hPR_same_B\<^sub>I0
+		        by (intro conjI)
 		      have hB\<^sub>I_J_disj: "B\<^sub>I \<inter> J = {}"
 		        using hB\<^sub>I_sub_I polygon_interior_disjoint_polygon[OF hJ]
 		        by (by100 blast)
