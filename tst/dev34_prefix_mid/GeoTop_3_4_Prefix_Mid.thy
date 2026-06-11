@@ -21686,7 +21686,48 @@ proof -
 		        boundary arcs except at endpoints, and still leaves \<open>A\<close> as a
 		        connected witness placing \<open>P\<close> and \<open>R\<close> in the same component of
 		        the closed disk minus the chord. **)
-		      sorry
+		    proof -
+		      obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+		        and hB\<^sub>0_sub: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
+		        and hQ'_B\<^sub>0: "Q' \<in> B\<^sub>0"
+		        and hS'_B\<^sub>0: "S' \<in> B\<^sub>0"
+		        and hA_B\<^sub>0: "A \<inter> B\<^sub>0 = {}"
+		        and hPR_same_B\<^sub>0:
+		          "top1_in_same_component_on
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B\<^sub>0)
+		            (subspace_topology UNIV geotop_euclidean_topology
+		              (closure_on UNIV geotop_euclidean_topology
+		                (geotop_polygon_interior J) - B\<^sub>0))
+		            P R"
+		        by (rule hD42_same_component_to_PR_same[OF hQ'_cut hS'_comp])
+		      have hD42_QS_chord_splice_from_interior_line:
+		        "\<exists>B. geotop_is_broken_line B
+		          \<and> geotop_arc_endpoints B {Q, S}
+		          \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+		              geotop_arc_interior B {Q, S} = {}
+		          \<and> geotop_arc_interior B {Q, S} \<inter>
+		              geotop_arc_interior F\<^sub>2 {Q, S} = {}
+		          \<and> geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J
+		          \<and> top1_in_same_component_on
+		            (closure_on UNIV geotop_euclidean_topology
+		              (geotop_polygon_interior J) - B)
+		            (subspace_topology UNIV geotop_euclidean_topology
+		              (closure_on UNIV geotop_euclidean_topology
+		                (geotop_polygon_interior J) - B))
+		            P R"
+		      (**
+		        Remaining Moise splice step after the interior broken line has
+		        been extracted.  Extend \<open>B\<^sub>0\<close> from \<open>Q'\<close> to \<open>Q\<close> inside the
+		        connected local side witness \<open>U\<^sub>Q0\<close>, and from \<open>S'\<close> to \<open>S\<close>
+		        inside \<open>U\<^sub>S0\<close>.  The resulting broken line has endpoints
+		        \<open>{Q,S}\<close>, interior in \<open>I\<close>, no boundary-arc interior contact, and
+		        preserves the connected witness placing \<open>P\<close> and \<open>R\<close> in the
+		        closed disk minus the enlarged chord. **)
+		        sorry
+		      show ?thesis
+		        using hD42_QS_chord_splice_from_interior_line .
+		    qed
 		    obtain B where hB_bl: "geotop_is_broken_line B"
 		      and hBE: "geotop_arc_endpoints B {Q, S}"
 		      and hF\<^sub>1B:
