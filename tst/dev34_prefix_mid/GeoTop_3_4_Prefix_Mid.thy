@@ -22897,6 +22897,31 @@ proof -
 		            hS\<^sub>0_B\<^sub>S1 hB\<^sub>S1_oriented
 		          by (intro exI conjI)
 		      qed
+		      obtain B\<^sub>Q1 B\<^sub>S1 where hB\<^sub>Q1_bl: "geotop_is_broken_line B\<^sub>Q1"
+		        and hB\<^sub>Q1_sub_UQ0: "B\<^sub>Q1 \<subseteq> U\<^sub>Q0"
+		        and hQ\<^sub>0_B\<^sub>Q1: "Q\<^sub>0 \<in> B\<^sub>Q1"
+		        and hQ'_B\<^sub>Q1: "Q' \<in> B\<^sub>Q1"
+		        and hB\<^sub>Q1_oriented:
+		          "Q\<^sub>0 = Q'
+		            \<or> (\<exists>\<gamma>\<^sub>Q. arc \<gamma>\<^sub>Q \<and> path_image \<gamma>\<^sub>Q = B\<^sub>Q1
+		              \<and> pathstart \<gamma>\<^sub>Q = Q\<^sub>0
+		              \<and> pathfinish \<gamma>\<^sub>Q = Q')"
+		        and hB\<^sub>S1_bl: "geotop_is_broken_line B\<^sub>S1"
+		        and hB\<^sub>S1_sub_US0: "B\<^sub>S1 \<subseteq> U\<^sub>S0"
+		        and hS'_B\<^sub>S1: "S' \<in> B\<^sub>S1"
+		        and hS\<^sub>0_B\<^sub>S1: "S\<^sub>0 \<in> B\<^sub>S1"
+		        and hB\<^sub>S1_oriented:
+		          "S' = S\<^sub>0
+		            \<or> (\<exists>\<gamma>\<^sub>S. arc \<gamma>\<^sub>S \<and> path_image \<gamma>\<^sub>S = B\<^sub>S1
+		              \<and> pathstart \<gamma>\<^sub>S = S'
+		              \<and> pathfinish \<gamma>\<^sub>S = S\<^sub>0)"
+		        using hD42_oriented_local_spurs by (elim exE conjE)
+		      have hB\<^sub>Q1_sub_cut: "B\<^sub>Q1 \<subseteq> geotop_polygon_interior J - A"
+		        using hB\<^sub>Q1_sub_UQ0 hUQ0_sub by (by100 blast)
+		      have hB\<^sub>S1_sub_cut: "B\<^sub>S1 \<subseteq> geotop_polygon_interior J - A"
+		        using hB\<^sub>S1_sub_US0 hUS0_sub by (by100 blast)
+		      have hB\<^sub>Q1_B\<^sub>S1_disj: "B\<^sub>Q1 \<inter> B\<^sub>S1 = {}"
+		        using hB\<^sub>Q1_sub_UQ0 hB\<^sub>S1_sub_US0 hUQ0_US0_disj by (by100 blast)
 		      have hD42_QS_chord_splice_from_interior_line:
 		        "\<exists>B. geotop_is_broken_line B
 		          \<and> geotop_arc_endpoints B {Q, S}
