@@ -10400,6 +10400,24 @@ proof -
             show "z \<notin> ?Mloc"
               using hz_not_ball by (by100 blast)
           qed
+          have hM_local_trace_component_cover:
+              "?Mloc \<subseteq>
+                \<Union>{C\<in>components ?Lcomp. C \<inter> ?Mloc \<noteq> {}}"
+          proof
+            fix a
+            assume ha: "a \<in> ?Mloc"
+            have haL: "a \<in> ?Lcomp"
+              by (rule subsetD[OF hM_local_trace_sub ha])
+            let ?C = "connected_component_set ?Lcomp a"
+            have hC_comp: "?C \<in> components ?Lcomp"
+              by (rule componentsI[OF haL])
+            have haC: "a \<in> ?C"
+              using haL connected_component_refl by (by100 simp)
+            have hC_meets: "?C \<inter> ?Mloc \<noteq> {}"
+              using ha haC by (by100 blast)
+            show "a \<in> \<Union>{C \<in> components ?Lcomp. C \<inter> ?Mloc \<noteq> {}}"
+              using hC_comp hC_meets haC by (by100 blast)
+          qed
           have hlocal_selected_components_fin:
               "finite (components ?Lcomp)"
             using hlocal_components_fin hcomponents_selected_eq by (by100 simp)
