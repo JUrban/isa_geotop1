@@ -23343,6 +23343,27 @@ proof -
         [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hXrel])
 qed
 
+lemma geotop_polygon_boundary_vertex_radial_segment_interior_radius_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set" and X :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hX: "X \<in> J"
+  assumes hXv: "X \<in> geotop_complex_vertices K"
+  shows "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+  (**
+    Remaining vertex case of the Moise D42 local polygon chart.  In the
+    triangulated closed disk, the boundary vertex star is a finite fan whose
+    link is a boundary arc; a sufficiently small Euclidean neighborhood of
+    the vertex meets the disk in the corresponding wedge, and radial segments
+    from the vertex into that wedge have punctured image in the polygon
+    interior. **)
+  sorry
+
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -23355,7 +23376,26 @@ lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
     point, choose the local half-disk/wedge chart; every sufficiently short
     radial segment from the boundary point to the polygon interior has its
     punctured segment inside the polygon interior. **)
-  sorry
+proof -
+  obtain K where hK: "geotop_is_complex K"
+    and hK_fin: "finite K"
+    and hK_poly:
+      "geotop_polyhedron K =
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    using Theorem_GT_2_2[OF hJ] by (by100 blast)
+  show ?thesis
+  proof (cases "X \<in> geotop_complex_vertices K")
+    case True
+    show ?thesis
+      by (rule geotop_polygon_boundary_vertex_radial_segment_interior_radius_prefix
+          [OF hJ hK hK_poly hX True])
+  next
+    case False
+    show ?thesis
+      by (rule geotop_polygon_boundary_nonvertex_radial_segment_interior_radius_prefix
+          [OF hJ hK hK_poly hX False])
+  qed
+qed
 
 lemma geotop_polygon_boundary_endpoint_clean_segment_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
