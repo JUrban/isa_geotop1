@@ -18344,6 +18344,66 @@ proof -
   qed
 qed
 
+lemma geotop_free_triangle_supported_fold_induction_step_prefix:
+  fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>contact_cases:
+    "\<theta> \<inter> J = {}
+      \<or> (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
+        \<and> geotop_is_edge e
+        \<and> geotop_is_face e \<theta>
+        \<and> e \<subseteq> J
+        \<and> \<theta> \<inter> J = e)
+      \<or> (\<exists>e1 e2.
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
+        \<and> e1 \<noteq> e2
+        \<and> geotop_is_edge e1
+        \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<theta>
+        \<and> geotop_is_face e2 \<theta>
+        \<and> e1 \<subseteq> J
+        \<and> e2 \<subseteq> J
+        \<and> \<theta> \<inter> J = e1 \<union> e2)"
+  shows "\<exists>J' K' f g \<sigma>.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology g
+        \<and> (\<forall>P\<in>UNIV - U. g P = P)
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> g ` J' = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+  (**
+    Moise Figure 3.3 supported fold induction step.  Split on the canonical
+    boundary-contact alternatives for the selected free triangle.  The
+    one-edge case uses the local quadrilateral fold; the two-edge case uses
+    the inverse corner fold; the empty-contact/base alternative is discharged
+    by the two-free-triangle bookkeeping.  The constructed fold is supported
+    inside \<open>U\<close>, gives a smaller polygonal disk triangulation, and the strong
+    induction hypothesis normalizes that smaller disk with the same support
+    control. **)
+  sorry
+
 lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
   fixes J U :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -18894,7 +18954,9 @@ proof -
         \<open>K'\<close>, strictly fewer 2-simplexes, and a plane homeomorphism \<open>f\<close>
         fixed outside \<open>U\<close> carrying \<open>J\<close> to \<open>J'\<close>.  The induction hypothesis
         supplies \<open>g\<close> normalizing \<open>J'\<close>, again fixed outside \<open>U\<close>. **)
-      sorry
+      by (rule geotop_free_triangle_supported_fold_induction_step_prefix
+          [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hcard_gt1
+            h\<theta>K h\<theta>free h\<theta>contact_cases])
     obtain J' K' f g \<sigma> where hJ': "geotop_is_polygon J'"
       and hK': "geotop_is_complex K'"
       and hK'_fin: "finite K'"
