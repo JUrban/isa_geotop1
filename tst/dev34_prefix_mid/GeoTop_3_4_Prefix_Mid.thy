@@ -19286,6 +19286,139 @@ proof -
     using hid_homeo h\<sigma>2 hJ_frontier hsupport by (by100 blast)
 qed
 
+lemma geotop_free_triangle_one_boundary_edge_supported_fold_prefix:
+  fixes J U \<theta> e :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes hE:
+    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}"
+  assumes hedge: "geotop_is_edge e"
+  assumes heface: "geotop_is_face e \<theta>"
+  assumes heJ: "e \<subseteq> J"
+  assumes hcontact: "\<theta> \<inter> J = e"
+  shows "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+  (**
+    Moise Figure 3.3 Case 1.  The free triangle has exactly one boundary
+    edge.  Choose the auxiliary vertices v3,v4,v5 in the small quadrilateral
+    carrier inside \<open>U\<close>, fix the outside and the vertices v0,v2,v3,v4, send
+    v5 to the opposite vertex v1, extend simplicially over the four indicated
+    triangles, and read the image boundary as the polygonal disk triangulated
+    by a complex with one fewer 2-simplex. **)
+  sorry
+
+lemma geotop_free_triangle_two_boundary_edges_supported_inverse_fold_prefix:
+  fixes J U \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes hE:
+    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}"
+  assumes he12: "e1 \<noteq> e2"
+  assumes he1edge: "geotop_is_edge e1"
+  assumes he2edge: "geotop_is_edge e2"
+  assumes he1face: "geotop_is_face e1 \<theta>"
+  assumes he2face: "geotop_is_face e2 \<theta>"
+  assumes he1J: "e1 \<subseteq> J"
+  assumes he2J: "e2 \<subseteq> J"
+  assumes hcontact: "\<theta> \<inter> J = e1 \<union> e2"
+  shows "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+  (**
+    Moise Figure 3.3 Case 2.  The free triangle is a corner whose boundary
+    contact consists of two edges.  Use the inverse of the Case 1 PL
+    homeomorphism, supported in the same local carrier inside \<open>U\<close>, so the
+    corner triangle is deleted and the remaining edge becomes the replacement
+    boundary edge of the smaller polygonal disk. **)
+  sorry
+
+lemma geotop_free_triangle_empty_contact_supported_fold_prefix:
+  fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes hcontact: "\<theta> \<inter> J = {}"
+  assumes halternate:
+    "\<exists>\<rho>. \<rho> \<in> K \<and> geotop_free_2_simplex K J \<rho> \<and> \<rho> \<noteq> \<theta>"
+  shows "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+  (**
+    Moise Figure 3.3 empty-contact branch.  When the initially chosen free
+    triangle does not meet the boundary, use the strong Theorem 3.3 count to
+    choose an alternate free triangle with boundary contact, then apply the
+    corresponding one-edge or two-edge supported fold branch. **)
+  sorry
+
 lemma geotop_figure33_contact_cases_supported_fold_prefix:
   fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19408,7 +19541,58 @@ proof -
           the fold carrier lies in \<open>U\<close>, the new closed disk is triangulated
           by a complex with one fewer 2-simplex, and the fold is the identity
           on \<open>UNIV - U\<close>. **)
-    sorry
+  proof (intro conjI)
+    show "\<theta> \<inter> J = {} \<longrightarrow> ?R"
+    proof
+      assume hcontact: "\<theta> \<inter> J = {}"
+      show ?R
+        by (rule geotop_free_triangle_empty_contact_supported_fold_prefix
+            [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<theta>K
+              h\<theta>free h\<theta>2 hcontact h\<theta>alternate_free_witness])
+    qed
+    show "\<forall>e. {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e} \<longrightarrow>
+          geotop_is_edge e \<longrightarrow>
+          geotop_is_face e \<theta> \<longrightarrow> e \<subseteq> J \<longrightarrow> \<theta> \<inter> J = e \<longrightarrow> ?R"
+    proof (intro allI impI)
+      fix e
+      assume hE:
+        "{d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}"
+      assume hedge: "geotop_is_edge e"
+      assume heface: "geotop_is_face e \<theta>"
+      assume heJ: "e \<subseteq> J"
+      assume hcontact: "\<theta> \<inter> J = e"
+      show ?R
+        by (rule geotop_free_triangle_one_boundary_edge_supported_fold_prefix
+            [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<theta>K
+              h\<theta>free h\<theta>2 hE hedge heface heJ hcontact])
+    qed
+    show "\<forall>e1 e2.
+          {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2} \<longrightarrow>
+          e1 \<noteq> e2 \<longrightarrow>
+          geotop_is_edge e1 \<longrightarrow>
+          geotop_is_edge e2 \<longrightarrow>
+          geotop_is_face e1 \<theta> \<longrightarrow>
+          geotop_is_face e2 \<theta> \<longrightarrow>
+          e1 \<subseteq> J \<longrightarrow> e2 \<subseteq> J \<longrightarrow> \<theta> \<inter> J = e1 \<union> e2 \<longrightarrow> ?R"
+    proof (intro allI impI)
+      fix e1 e2
+      assume hE:
+        "{d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}"
+      assume he12: "e1 \<noteq> e2"
+      assume he1edge: "geotop_is_edge e1"
+      assume he2edge: "geotop_is_edge e2"
+      assume he1face: "geotop_is_face e1 \<theta>"
+      assume he2face: "geotop_is_face e2 \<theta>"
+      assume he1J: "e1 \<subseteq> J"
+      assume he2J: "e2 \<subseteq> J"
+      assume hcontact: "\<theta> \<inter> J = e1 \<union> e2"
+      show ?R
+        by (rule geotop_free_triangle_two_boundary_edges_supported_inverse_fold_prefix
+            [OF hJ hK hK_fin hK_poly hU_open hI_sub_U hT_gt1 h\<theta>K
+              h\<theta>free h\<theta>2 hE he12 he1edge he2edge he1face he2face
+              he1J he2J hcontact])
+    qed
+  qed
   show ?thesis
     using h\<theta>contact_cases hFigure33_branch_package by (by100 blast)
 qed
