@@ -22925,6 +22925,8 @@ lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   assumes hF\<^sub>2_bl: "geotop_is_broken_line F\<^sub>2"
   assumes hF\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
   assumes hF\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+  assumes hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+  assumes hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
   assumes hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
   assumes hB\<^sub>0E: "geotop_arc_endpoints B\<^sub>0 {Q0, S0}"
   assumes hB\<^sub>0_closed_minus_A:
@@ -23026,16 +23028,28 @@ proof -
           geotop_arc_interior F\<^sub>2 {Q, S} = {}
       \<and> geotop_arc_interior C\<^sub>S {S0, S} \<inter>
           geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-  (**
-      Remaining local Moise endpoint-access construction.  From the polygon
-      half-disk/wedge neighborhoods at the boundary points \<open>Q\<close> and \<open>S\<close>,
-      choose broken access arcs from \<open>Q\<close> to \<open>Q0\<close> and from \<open>S0\<close> to \<open>S\<close>
-      whose open parts lie in the polygon interior, miss the cutting arc, and
-      avoid the two Q-S boundary arcs except at the intended endpoints. **)
-  proof -
-    have hD42_endpoint_access_linear_data:
-      "\<exists>Q1 S1 B\<^sub>Q B\<^sub>S.
-        Q \<noteq> Q1
+	  (**
+	      Remaining local Moise endpoint-access construction.  From the polygon
+	      half-disk/wedge neighborhoods at the boundary points \<open>Q\<close> and \<open>S\<close>,
+	      choose broken access arcs from \<open>Q\<close> to \<open>Q0\<close> and from \<open>S0\<close> to \<open>S\<close>
+	      whose open parts lie in the polygon interior, miss the cutting arc, and
+	      avoid the two Q-S boundary arcs except at the intended endpoints. **)
+	  proof -
+	    have hI_J_disj: "geotop_polygon_interior J \<inter> J = {}"
+	      by (rule polygon_interior_disjoint_polygon[OF hJ])
+	    have hF\<^sub>1_int_sub_J:
+	        "geotop_arc_interior F\<^sub>1 {Q, S} \<subseteq> J"
+	      using hF\<^sub>1_sub_J unfolding geotop_arc_interior_def by (by100 blast)
+	    have hF\<^sub>2_int_sub_J:
+	        "geotop_arc_interior F\<^sub>2 {Q, S} \<subseteq> J"
+	      using hF\<^sub>2_sub_J unfolding geotop_arc_interior_def by (by100 blast)
+	    have hU\<^sub>Q_sub_I: "U\<^sub>Q \<subseteq> geotop_polygon_interior J"
+	      using hU\<^sub>Q_sub by (by100 blast)
+	    have hU\<^sub>S_sub_I: "U\<^sub>S \<subseteq> geotop_polygon_interior J"
+	      using hU\<^sub>S_sub by (by100 blast)
+	    have hD42_endpoint_access_linear_data:
+	      "\<exists>Q1 S1 B\<^sub>Q B\<^sub>S.
+	        Q \<noteq> Q1
         \<and> S \<noteq> S1
         \<and> geotop_is_broken_line B\<^sub>Q
         \<and> geotop_is_broken_line B\<^sub>S
@@ -23071,81 +23085,54 @@ proof -
         Exact remaining local Moise geometry.  In half-disk/wedge
         neighborhoods at the boundary endpoints \<open>Q\<close> and \<open>S\<close>, choose short
         clean segments into the polygon interior and connect their interior
-        endpoints to \<open>Q0\<close> and \<open>S0\<close> inside the corresponding open sides.
-        The side broken lines and the short segments are chosen away from
-        the cutting arc and from the two boundary arcs except at the intended
-        boundary endpoints. **)
-      proof -
-        have hD42_endpoint_segment_neighborhood_data:
-          "\<exists>r>0.
-            Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
-            \<and> Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}
-            \<and> S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}
-            \<and> S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}
-            \<and> (\<forall>Q1. Q1 \<in> U\<^sub>Q \<longrightarrow> Q1 \<in> ball Q r \<longrightarrow>
-              Q \<noteq> Q1
-              \<and> closed_segment Q Q1 \<subseteq>
-                  closure_on UNIV geotop_euclidean_topology
-                    (geotop_polygon_interior J)
-              \<and> closed_segment Q Q1 \<inter> A = {}
-              \<and> closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J
-              \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                  ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) = {}
-              \<and> ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) \<inter>
-                  geotop_arc_interior F\<^sub>2 {Q, S} = {})
-            \<and> (\<forall>S1. S1 \<in> U\<^sub>S \<longrightarrow> S1 \<in> ball S r \<longrightarrow>
-              S \<noteq> S1
-              \<and> closed_segment S S1 \<subseteq>
-                  closure_on UNIV geotop_euclidean_topology
-                    (geotop_polygon_interior J)
-              \<and> closed_segment S S1 \<inter> A = {}
-              \<and> closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J
-              \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                  ((closed_segment S S1 - {S}) \<union> U\<^sub>S) = {}
-              \<and> ((closed_segment S S1 - {S}) \<union> U\<^sub>S) \<inter>
-                  geotop_arc_interior F\<^sub>2 {Q, S} = {})"
-          (**
-            Remaining local Moise half-disk/wedge radius.  Choose endpoint
-            neighborhoods at \<open>Q\<close> and \<open>S\<close> so that every side point close enough
-            to the boundary endpoint is joined to it by a segment lying in the
-            closed polygonal disk, with its deleted endpoint in the polygon
-            interior, away from the cutting arc, and separated from the two
-            boundary arcs except at the intended boundary endpoint. **)
-          sorry
-        obtain r where hr_pos: "0 < r"
-          and hQ0_not_F\<^sub>1:
-            "Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
-          and hQ0_not_F\<^sub>2:
-            "Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
-          and hS0_not_F\<^sub>1:
-            "S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
-          and hS0_not_F\<^sub>2:
-            "S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
-          and hQ_segment_radius:
-            "\<forall>Q1. Q1 \<in> U\<^sub>Q \<longrightarrow> Q1 \<in> ball Q r \<longrightarrow>
-              Q \<noteq> Q1
-              \<and> closed_segment Q Q1 \<subseteq>
-                  closure_on UNIV geotop_euclidean_topology
-                    (geotop_polygon_interior J)
-              \<and> closed_segment Q Q1 \<inter> A = {}
-              \<and> closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J
-              \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                  ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) = {}
-              \<and> ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) \<inter>
-                  geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          and hS_segment_radius:
-            "\<forall>S1. S1 \<in> U\<^sub>S \<longrightarrow> S1 \<in> ball S r \<longrightarrow>
-              S \<noteq> S1
-              \<and> closed_segment S S1 \<subseteq>
-                  closure_on UNIV geotop_euclidean_topology
-                    (geotop_polygon_interior J)
-              \<and> closed_segment S S1 \<inter> A = {}
-              \<and> closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J
-              \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                  ((closed_segment S S1 - {S}) \<union> U\<^sub>S) = {}
-              \<and> ((closed_segment S S1 - {S}) \<union> U\<^sub>S) \<inter>
-                  geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          using hD42_endpoint_segment_neighborhood_data by (elim exE conjE)
+	        endpoints to \<open>Q0\<close> and \<open>S0\<close> inside the corresponding open sides.
+	        The side broken lines and the short segments are chosen away from
+	        the cutting arc and from the two boundary arcs except at the intended
+	        boundary endpoints. **)
+	      proof -
+	        have hD42_endpoint_clean_segment_radius_data:
+	          "\<exists>r>0.
+	            (\<forall>Q1. Q1 \<in> U\<^sub>Q \<longrightarrow> Q1 \<in> ball Q r \<longrightarrow>
+	              Q \<noteq> Q1
+	              \<and> closed_segment Q Q1 \<subseteq>
+	                  closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J)
+	              \<and> closed_segment Q Q1 \<inter> A = {}
+	              \<and> closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J)
+	            \<and> (\<forall>S1. S1 \<in> U\<^sub>S \<longrightarrow> S1 \<in> ball S r \<longrightarrow>
+	              S \<noteq> S1
+	              \<and> closed_segment S S1 \<subseteq>
+	                  closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J)
+	              \<and> closed_segment S S1 \<inter> A = {}
+	              \<and> closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J)"
+	          (**
+	            Remaining local Moise half-disk/wedge radius.  Choose endpoint
+	            neighborhoods at \<open>Q\<close> and \<open>S\<close> so that every side point close enough
+	            to the boundary endpoint is joined to it by a segment lying in the
+	            closed polygonal disk, with its deleted endpoint in the polygon
+	            interior, and away from the cutting arc.  Boundary-arc avoidance
+	            is now proved from the explicit carrier facts \<open>F\<^sub>1 \<subseteq> J\<close> and
+	            \<open>F\<^sub>2 \<subseteq> J\<close>. **)
+	          sorry
+	        obtain r where hr_pos: "0 < r"
+	          and hQ_segment_radius:
+	            "\<forall>Q1. Q1 \<in> U\<^sub>Q \<longrightarrow> Q1 \<in> ball Q r \<longrightarrow>
+	              Q \<noteq> Q1
+	              \<and> closed_segment Q Q1 \<subseteq>
+	                  closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J)
+	              \<and> closed_segment Q Q1 \<inter> A = {}
+	              \<and> closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J"
+	          and hS_segment_radius:
+	            "\<forall>S1. S1 \<in> U\<^sub>S \<longrightarrow> S1 \<in> ball S r \<longrightarrow>
+	              S \<noteq> S1
+	              \<and> closed_segment S S1 \<subseteq>
+	                  closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J)
+	              \<and> closed_segment S S1 \<inter> A = {}
+	              \<and> closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J"
+	          using hD42_endpoint_clean_segment_radius_data by (elim exE conjE)
         obtain Q1 B\<^sub>Q where hQ1_U: "Q1 \<in> U\<^sub>Q"
           and hQ1_ball: "Q1 \<in> ball Q r"
           and hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
@@ -23164,30 +23151,22 @@ proof -
           using geotop_connected_open_frontier_near_broken_access_prefix
             [OF hU\<^sub>S_conn hU\<^sub>S_open hS_front hS0_U\<^sub>S hr_pos]
           by (elim exE conjE)
-        have hQ_pack:
-          "Q \<noteq> Q1
-            \<and> closed_segment Q Q1 \<subseteq>
-                closure_on UNIV geotop_euclidean_topology
-                  (geotop_polygon_interior J)
-            \<and> closed_segment Q Q1 \<inter> A = {}
-            \<and> closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J
-            \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) = {}
-            \<and> ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) \<inter>
-                geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          using hQ_segment_radius hQ1_U hQ1_ball by (by100 blast)
-        have hS_pack:
-          "S \<noteq> S1
-            \<and> closed_segment S S1 \<subseteq>
-                closure_on UNIV geotop_euclidean_topology
-                  (geotop_polygon_interior J)
-            \<and> closed_segment S S1 \<inter> A = {}
-            \<and> closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J
-            \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-                ((closed_segment S S1 - {S}) \<union> U\<^sub>S) = {}
-            \<and> ((closed_segment S S1 - {S}) \<union> U\<^sub>S) \<inter>
-                geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          using hS_segment_radius hS1_U hS1_ball by (by100 blast)
+	        have hQ_pack:
+	          "Q \<noteq> Q1
+	            \<and> closed_segment Q Q1 \<subseteq>
+	                closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J)
+	            \<and> closed_segment Q Q1 \<inter> A = {}
+	            \<and> closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J"
+	          using hQ_segment_radius hQ1_U hQ1_ball by (by100 blast)
+	        have hS_pack:
+	          "S \<noteq> S1
+	            \<and> closed_segment S S1 \<subseteq>
+	                closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J)
+	            \<and> closed_segment S S1 \<inter> A = {}
+	            \<and> closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J"
+	          using hS_segment_radius hS1_U hS1_ball by (by100 blast)
         have hQ_Q1: "Q \<noteq> Q1"
           using hQ_pack by (by100 blast)
         have hS_S1: "S \<noteq> S1"
@@ -23209,25 +23188,37 @@ proof -
         have hQseg_int_I:
           "closed_segment Q Q1 - {Q} \<subseteq> geotop_polygon_interior J"
           using hQ_pack by (by100 blast)
-        have hSseg_int_I:
-          "closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J"
-          using hS_pack by (by100 blast)
-        have hF\<^sub>1_Qaccess_big:
-          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-            ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) = {}"
-          using hQ_pack by (by100 blast)
-        have hQaccess_F\<^sub>2_big:
-          "((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) \<inter>
-            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          using hQ_pack by (by100 blast)
-        have hF\<^sub>1_Saccess_big:
-          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-            ((closed_segment S S1 - {S}) \<union> U\<^sub>S) = {}"
-          using hS_pack by (by100 blast)
-        have hSaccess_F\<^sub>2_big:
-          "((closed_segment S S1 - {S}) \<union> U\<^sub>S) \<inter>
-            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-          using hS_pack by (by100 blast)
+	        have hSseg_int_I:
+	          "closed_segment S S1 - {S} \<subseteq> geotop_polygon_interior J"
+	          using hS_pack by (by100 blast)
+	        have hQ0_not_F\<^sub>1:
+	          "Q0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+	          using hQ0_U\<^sub>Q hU\<^sub>Q_sub_I hF\<^sub>1_int_sub_J hI_J_disj by (by100 blast)
+	        have hQ0_not_F\<^sub>2:
+	          "Q0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+	          using hQ0_U\<^sub>Q hU\<^sub>Q_sub_I hF\<^sub>2_int_sub_J hI_J_disj by (by100 blast)
+	        have hS0_not_F\<^sub>1:
+	          "S0 \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+	          using hS0_U\<^sub>S hU\<^sub>S_sub_I hF\<^sub>1_int_sub_J hI_J_disj by (by100 blast)
+	        have hS0_not_F\<^sub>2:
+	          "S0 \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+	          using hS0_U\<^sub>S hU\<^sub>S_sub_I hF\<^sub>2_int_sub_J hI_J_disj by (by100 blast)
+	        have hF\<^sub>1_Qaccess_big:
+	          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+	            ((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) = {}"
+	          using hF\<^sub>1_int_sub_J hQseg_int_I hU\<^sub>Q_sub_I hI_J_disj by (by100 blast)
+	        have hQaccess_F\<^sub>2_big:
+	          "((closed_segment Q Q1 - {Q}) \<union> U\<^sub>Q) \<inter>
+	            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+	          using hF\<^sub>2_int_sub_J hQseg_int_I hU\<^sub>Q_sub_I hI_J_disj by (by100 blast)
+	        have hF\<^sub>1_Saccess_big:
+	          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+	            ((closed_segment S S1 - {S}) \<union> U\<^sub>S) = {}"
+	          using hF\<^sub>1_int_sub_J hSseg_int_I hU\<^sub>S_sub_I hI_J_disj by (by100 blast)
+	        have hSaccess_F\<^sub>2_big:
+	          "((closed_segment S S1 - {S}) \<union> U\<^sub>S) \<inter>
+	            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+	          using hF\<^sub>2_int_sub_J hSseg_int_I hU\<^sub>S_sub_I hI_J_disj by (by100 blast)
         have hF\<^sub>1_Qaccess:
           "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
             ((closed_segment Q Q1 - {Q}) \<union> B\<^sub>Q) = {}"
@@ -24709,8 +24700,8 @@ proof -
             "geotop_arc_interior B\<^sub>0 {Q0, S0} \<inter>
               geotop_arc_interior F\<^sub>2 {Q, S} = {}"
           by (rule conjunct2[OF hD42_near_chord_interior_boundary_disj])
-        have hD42_near_chord_splice_ready:
-            "geotop_is_broken_line B\<^sub>0
+	        have hD42_near_chord_splice_ready:
+	            "geotop_is_broken_line B\<^sub>0
               \<and> geotop_arc_endpoints B\<^sub>0 {Q0, S0}
               \<and> B\<^sub>0 \<subseteq> closure_on UNIV geotop_euclidean_topology
                   (geotop_polygon_interior J) - A
@@ -24753,11 +24744,15 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology
                 (closure_on UNIV geotop_euclidean_topology
                   (geotop_polygon_interior J) - B\<^sub>0))
-              P R"
-            by (rule hB\<^sub>0_same)
-        qed
-        have hD42_endpoint_splice_to_QS:
-            "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
+	              P R"
+	            by (rule hB\<^sub>0_same)
+	        qed
+	        have hD42_F\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+	          using hD42_F_J_split by (by100 blast)
+	        have hD42_F\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+	          using hD42_F_J_split by (by100 blast)
+	        have hD42_endpoint_splice_to_QS:
+	            "\<exists>B\<^sub>Q\<^sub>S. geotop_is_broken_line B\<^sub>Q\<^sub>S
               \<and> geotop_arc_endpoints B\<^sub>Q\<^sub>S {Q, S}
               \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
                   geotop_arc_interior B\<^sub>Q\<^sub>S {Q, S} = {}
@@ -24780,13 +24775,14 @@ proof -
             \<open>P\<close>-side boundary arc is now proved separately as
             \<open>hD42_R_not_F\<^sub>1_from_cyclic\<close>. **)
           by (rule geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix
-              [OF hJ hQ hS hQ_ne_PR hS_ne_PR hQ_ne_S hA hAsub hAJ
-                hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
-                hQ_front hS_front hQ0_U\<^sub>Q hS0_U\<^sub>S
-                hD42_F\<^sub>1_bl hD42_F\<^sub>2_bl hD42_F\<^sub>1E hD42_F\<^sub>2E
-                hB\<^sub>0_bl hB\<^sub>0_endpoints hD42_near_chord_sub_closed_minus_A
-                hB\<^sub>0_int_sub_I hD42_near_chord_interior_misses_A
-                hD42_F\<^sub>1_near_chord_int_disj hD42_near_chord_F\<^sub>2_int_disj
+	              [OF hJ hQ hS hQ_ne_PR hS_ne_PR hQ_ne_S hA hAsub hAJ
+	                hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
+	                hQ_front hS_front hQ0_U\<^sub>Q hS0_U\<^sub>S
+	                hD42_F\<^sub>1_bl hD42_F\<^sub>2_bl hD42_F\<^sub>1E hD42_F\<^sub>2E
+	                hD42_F\<^sub>1_sub_J hD42_F\<^sub>2_sub_J
+	                hB\<^sub>0_bl hB\<^sub>0_endpoints hD42_near_chord_sub_closed_minus_A
+	                hB\<^sub>0_int_sub_I hD42_near_chord_interior_misses_A
+	                hD42_F\<^sub>1_near_chord_int_disj hD42_near_chord_F\<^sub>2_int_disj
                 hB\<^sub>0_same])
         obtain B\<^sub>Q\<^sub>S where hB\<^sub>Q\<^sub>S_bl:
             "geotop_is_broken_line B\<^sub>Q\<^sub>S"
