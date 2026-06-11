@@ -22922,6 +22922,47 @@ proof -
 		        using hB\<^sub>S1_sub_US0 hUS0_sub by (by100 blast)
 		      have hB\<^sub>Q1_B\<^sub>S1_disj: "B\<^sub>Q1 \<inter> B\<^sub>S1 = {}"
 		        using hB\<^sub>Q1_sub_UQ0 hB\<^sub>S1_sub_US0 hUQ0_US0_disj by (by100 blast)
+		      have hD42_Q\<^sub>0_S\<^sub>0_interior_spliced_line:
+		        "\<exists>B\<^sub>I. geotop_is_broken_line B\<^sub>I
+		          \<and> B\<^sub>I \<subseteq> geotop_polygon_interior J - A
+		          \<and> Q\<^sub>0 \<in> B\<^sub>I
+		          \<and> S\<^sub>0 \<in> B\<^sub>I"
+		      (**
+		        Moise splice core inside the cut-open polygon: glue the
+		        oriented side spur \<open>B\<^sub>Q1\<close>, the interior line \<open>B\<^sub>1\<close>, and the
+		        oriented side spur \<open>B\<^sub>S1\<close> through the common points \<open>Q'\<close>
+		        and \<open>S'\<close>.  This gives the interior broken-line part of the
+		        later boundary chord. **)
+		      proof -
+		        have hcut_open_geo:
+		            "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
+		          by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
+		        have hcut_open_HOL: "open (geotop_polygon_interior J - A)"
+		          using hcut_open_geo
+		          unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+		          by (by100 simp)
+		        obtain B\<^sub>Q1\<^sub>I where hB\<^sub>Q1\<^sub>I_bl:
+		            "geotop_is_broken_line B\<^sub>Q1\<^sub>I"
+		          and hB\<^sub>Q1\<^sub>I_sub:
+		            "B\<^sub>Q1\<^sub>I \<subseteq> geotop_polygon_interior J - A"
+		          and hQ\<^sub>0_B\<^sub>Q1\<^sub>I: "Q\<^sub>0 \<in> B\<^sub>Q1\<^sub>I"
+		          and hS'_B\<^sub>Q1\<^sub>I: "S' \<in> B\<^sub>Q1\<^sub>I"
+		          using geotop_broken_line_concat
+		            [OF hB\<^sub>Q1_bl hB\<^sub>Q1_sub_cut hB\<^sub>1_bl hB\<^sub>1_sub_cut
+		              hQ\<^sub>0_B\<^sub>Q1 hQ'_B\<^sub>Q1 hQ'_B\<^sub>1 hS'_B\<^sub>1 hcut_open_HOL]
+		          by (elim exE conjE)
+		        obtain B\<^sub>I where hB\<^sub>I_bl: "geotop_is_broken_line B\<^sub>I"
+		          and hB\<^sub>I_sub: "B\<^sub>I \<subseteq> geotop_polygon_interior J - A"
+		          and hQ\<^sub>0_B\<^sub>I: "Q\<^sub>0 \<in> B\<^sub>I"
+		          and hS\<^sub>0_B\<^sub>I: "S\<^sub>0 \<in> B\<^sub>I"
+		          using geotop_broken_line_concat
+		            [OF hB\<^sub>Q1\<^sub>I_bl hB\<^sub>Q1\<^sub>I_sub hB\<^sub>S1_bl hB\<^sub>S1_sub_cut
+		              hQ\<^sub>0_B\<^sub>Q1\<^sub>I hS'_B\<^sub>Q1\<^sub>I hS'_B\<^sub>S1 hS\<^sub>0_B\<^sub>S1 hcut_open_HOL]
+		          by (elim exE conjE)
+		        show ?thesis
+		          using hB\<^sub>I_bl hB\<^sub>I_sub hQ\<^sub>0_B\<^sub>I hS\<^sub>0_B\<^sub>I
+		          by (intro exI conjI)
+		      qed
 		      have hD42_QS_chord_splice_from_interior_line:
 		        "\<exists>B. geotop_is_broken_line B
 		          \<and> geotop_arc_endpoints B {Q, S}
