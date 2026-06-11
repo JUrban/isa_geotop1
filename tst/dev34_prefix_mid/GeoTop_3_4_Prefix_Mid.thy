@@ -21849,6 +21849,84 @@ proof -
       using hC\<^sub>S_bl hC\<^sub>S_sub hS0_C\<^sub>S hS'_C\<^sub>S hC\<^sub>S_endpoints
       by (by100 blast)
   qed
+  have hD42_QS_broken_boundary_arc_split:
+      "\<exists>F\<^sub>1 F\<^sub>2.
+        J = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  proof -
+    obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_conn: "geotop_complex_connected L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hQL: "{Q} \<in> L"
+      and hSL: "{S} \<in> L"
+      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ hQ hS]
+      by (by100 blast)
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+      using hJ hL_poly by (by100 simp)
+    obtain F\<^sub>1 F\<^sub>2 where hsplit:
+        "geotop_polyhedron L = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hQL hSL hQ_ne_S]
+      by (by100 blast)
+    show ?thesis
+      using hsplit hL_poly by (by100 blast)
+  qed
+  obtain F\<^sub>1 F\<^sub>2 where hD42_F_J_split: "J = F\<^sub>1 \<union> F\<^sub>2"
+    and hD42_F\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
+    and hD42_F\<^sub>2_bl: "geotop_is_broken_line F\<^sub>2"
+    and hD42_F\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
+    and hD42_F\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+    and hD42_F\<^sub>1F\<^sub>2_int_disj:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    using hD42_QS_broken_boundary_arc_split
+    by (elim exE conjE)
+  have hD42_F\<^sub>1F\<^sub>2_inter: "F\<^sub>1 \<inter> F\<^sub>2 = {Q, S}"
+    by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+        [OF hD42_F\<^sub>1E hD42_F\<^sub>2E hD42_F\<^sub>1F\<^sub>2_int_disj])
+  have hD42_QS_on_broken_boundary_arcs:
+      "Q \<in> F\<^sub>1 \<and> S \<in> F\<^sub>1 \<and> Q \<in> F\<^sub>2 \<and> S \<in> F\<^sub>2"
+  proof (intro conjI)
+    show "Q \<in> F\<^sub>1"
+      using hD42_F\<^sub>1E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "S \<in> F\<^sub>1"
+      using hD42_F\<^sub>1E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "Q \<in> F\<^sub>2"
+      using hD42_F\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "S \<in> F\<^sub>2"
+      using hD42_F\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+  qed
+  have hD42_PR_on_QS_boundary_arc_interiors:
+      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> P \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<and> (R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})"
+    using hD42_F_J_split hP hR hQ_ne_PR hS_ne_PR
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD42_PR_unique_QS_boundary_arc_interiors:
+      "((P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))
+        \<and> ((R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (R \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))"
+    using hD42_PR_on_QS_boundary_arc_interiors hD42_F\<^sub>1F\<^sub>2_int_disj
+    by (by100 blast)
   have hD42_QS_splice_theta_contradiction:
       False
     (**
@@ -21858,10 +21936,11 @@ proof -
       \<open>B\<^sub>Q\<close> and \<open>B\<^sub>S\<close> (with endpoint-normalized subarcs when nontrivial)
       inside the connected side witnesses, splice endpoint
       access arcs onto \<open>B\<close>.  This produces a broken Q-S chord in \<open>closure I\<close>
-      whose interior lies in \<open>I\<close> and misses \<open>A\<close>.  The cyclic order places
-      \<open>P\<close> and \<open>R\<close> on opposite Q-S boundary arcs.  The boundary-arc/chord
-      theta decomposition then separates \<open>P\<close> from \<open>R\<close>, contradicting
-      \<open>hPR_same\<close>. **)
+      whose interior lies in \<open>I\<close> and misses \<open>A\<close>.  The Q-S boundary arcs
+      \<open>F\<^sub>1,F\<^sub>2\<close> are now available with \<open>P,R\<close> lying uniquely on their
+      interiors.  The remaining cyclic-order step must put \<open>P\<close> and \<open>R\<close>
+      on opposite Q-S boundary arcs, after which the boundary-arc/chord theta
+      decomposition separates \<open>P\<close> from \<open>R\<close>, contradicting \<open>hPR_same\<close>. **)
     sorry
   show False
     by (rule hD42_QS_splice_theta_contradiction)
