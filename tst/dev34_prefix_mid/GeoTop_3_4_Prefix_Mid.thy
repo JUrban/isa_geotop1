@@ -22096,6 +22096,56 @@ proof
     using hP_A hR_A hP_C hR_C by (by100 blast)
 qed
 
+lemma geotop_cross_arc_same_component_after_deleting_cut_subset_prefix:
+  fixes J A B :: "(real^2) set" and P R :: "real^2"
+  assumes hAsub:
+    "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+  assumes hP_A: "P \<in> A"
+  assumes hR_A: "R \<in> A"
+  assumes hA_connected:
+    "top1_connected_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "top1_in_same_component_on
+    (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) - B)
+    (subspace_topology UNIV geotop_euclidean_topology
+      (closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) - B))
+    P R"
+  (**
+    D42 connected-witness bookkeeping: deleting a candidate Q-S chord lying in
+    \<open>I - A\<close> does not remove any point of the original P-R cross-arc \<open>A\<close>, so
+    \<open>A\<close> itself witnesses that \<open>P\<close> and \<open>R\<close> remain in one component of the
+    closed disk minus that chord. **)
+proof -
+  let ?X =
+    "closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J) - B"
+  have hA_sub_X: "A \<subseteq> ?X"
+  proof
+    fix x
+    assume hxA: "x \<in> A"
+    have hx_cl:
+      "x \<in> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+      using hAsub hxA by (by100 blast)
+    have hx_not_B: "x \<notin> B"
+    proof
+      assume hxB: "x \<in> B"
+      have hx_cut: "x \<in> geotop_polygon_interior J - A"
+        by (rule subsetD[OF hB_sub hxB])
+      show False
+        using hxA hx_cut by (by100 blast)
+    qed
+    show "x \<in> ?X"
+      by (rule DiffI[OF hx_cl hx_not_B])
+  qed
+  show ?thesis
+    by (rule geotop_connected_witness_same_component_in_subspace_prefix
+        [OF hA_sub_X hP_A hR_A hA_connected])
+qed
+
 lemma geotop_polygon_arc_opposite_boundary_endpoint_splice_to_QS_prefix:
   fixes J A F\<^sub>1 F\<^sub>2 B\<^sub>0 U\<^sub>Q U\<^sub>S :: "(real^2) set"
     and P Q R S Q0 S0 :: "real^2"
@@ -24021,31 +24071,16 @@ proof -
   proof -
     fix B :: "(real^2) set"
     assume hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
-    let ?X =
-      "closure_on UNIV geotop_euclidean_topology
-        (geotop_polygon_interior J) - B"
-    have hA_book:
-        "A \<subseteq> ?X
-          \<and> P \<in> A
-          \<and> R \<in> A
-          \<and> top1_connected_on A
-              (subspace_topology UNIV geotop_euclidean_topology A)"
-      by (rule hD42_A_connected_PR_in_closed_disk_minus[OF hB_sub])
-    have hA_sub_X: "A \<subseteq> ?X"
-      using hA_book by (by100 blast)
-    have hP_A_book: "P \<in> A"
-      using hA_book by (by100 blast)
-    have hR_A_book: "R \<in> A"
-      using hA_book by (by100 blast)
-    have hA_conn_book:
-        "top1_connected_on A
-          (subspace_topology UNIV geotop_euclidean_topology A)"
-      using hA_book by (by100 blast)
     show
-        "top1_in_same_component_on ?X
-          (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
-      by (rule geotop_connected_witness_same_component_in_subspace_prefix
-          [OF hA_sub_X hP_A_book hR_A_book hA_conn_book])
+        "top1_in_same_component_on
+          (closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) - B))
+          P R"
+      by (rule geotop_cross_arc_same_component_after_deleting_cut_subset_prefix
+          [OF hAsub hB_sub hP_A hR_A hA_connected])
   qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
@@ -24353,33 +24388,13 @@ proof -
       thus False
         using hxA by (by100 blast)
     qed
-    have hA_book:
-        "A \<subseteq> closure_on UNIV geotop_euclidean_topology
-              (geotop_polygon_interior J) - B
-          \<and> P \<in> A
-          \<and> R \<in> A
-          \<and> top1_connected_on A
-              (subspace_topology UNIV geotop_euclidean_topology A)"
-      by (rule hD42_A_connected_PR_in_closed_disk_minus[OF hB_sub])
-    have hA_sub_X:
-        "A \<subseteq> closure_on UNIV geotop_euclidean_topology
-              (geotop_polygon_interior J) - B"
-      using hA_book by (by100 blast)
-    have hP_A_book: "P \<in> A"
-      using hA_book by (by100 blast)
-    have hR_A_book: "R \<in> A"
-      using hA_book by (by100 blast)
-    have hA_conn_book:
-        "top1_connected_on A
-          (subspace_topology UNIV geotop_euclidean_topology A)"
-      using hA_book by (by100 blast)
     let ?X = "closure_on UNIV geotop_euclidean_topology
       (geotop_polygon_interior J) - B"
     have hPR_same:
         "top1_in_same_component_on ?X
           (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
-      by (rule geotop_connected_witness_same_component_in_subspace_prefix
-          [OF hA_sub_X hP_A_book hR_A_book hA_conn_book])
+      by (rule geotop_cross_arc_same_component_after_deleting_cut_subset_prefix
+          [OF hAsub hB_sub hP_A hR_A hA_connected])
     show "\<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> geotop_polygon_interior J - A
           \<and> Q' \<in> B \<and> S' \<in> B
