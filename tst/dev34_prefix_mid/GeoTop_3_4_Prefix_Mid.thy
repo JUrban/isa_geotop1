@@ -19362,7 +19362,56 @@ lemma geotop_figure33_contact_cases_supported_fold_prefix:
     empty-contact branch first replaces \<open>\<theta>\<close> by the alternate free witness
     supplied by the strong two-free-simplex form of Theorem 3.3, then applies
     one of the boundary-contact fold branches. **)
-  sorry
+proof -
+  let ?R = "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+  have hFigure33_branch_package:
+    "(\<theta> \<inter> J = {} \<longrightarrow> ?R)
+      \<and> (\<forall>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
+          \<longrightarrow> geotop_is_edge e
+          \<longrightarrow> geotop_is_face e \<theta>
+          \<longrightarrow> e \<subseteq> J
+          \<longrightarrow> \<theta> \<inter> J = e
+          \<longrightarrow> ?R)
+      \<and> (\<forall>e1 e2.
+          {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
+          \<longrightarrow> e1 \<noteq> e2
+          \<longrightarrow> geotop_is_edge e1
+          \<longrightarrow> geotop_is_edge e2
+          \<longrightarrow> geotop_is_face e1 \<theta>
+          \<longrightarrow> geotop_is_face e2 \<theta>
+          \<longrightarrow> e1 \<subseteq> J
+          \<longrightarrow> e2 \<subseteq> J
+          \<longrightarrow> \<theta> \<inter> J = e1 \<union> e2
+          \<longrightarrow> ?R)"
+    (**
+      The remaining Moise Figure 3.3 geometric fold package, now split into
+      the exact book branches:
+      (1) empty contact: use \<open>h\<theta>alternate_free_witness\<close> to replace \<open>\<theta>\<close> by
+          a boundary-contact free triangle and fold that triangle;
+      (2) one boundary edge: build the supported quadrilateral fold across
+          the unique edge in \<open>J\<close>;
+      (3) two boundary edges: use the inverse corner fold.  In all branches
+          the fold carrier lies in \<open>U\<close>, the new closed disk is triangulated
+          by a complex with one fewer 2-simplex, and the fold is the identity
+          on \<open>UNIV - U\<close>. **)
+    sorry
+  show ?thesis
+    using h\<theta>contact_cases hFigure33_branch_package by (by100 blast)
+qed
 
 lemma geotop_free_triangle_supported_fold_reduction_prefix:
   fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
