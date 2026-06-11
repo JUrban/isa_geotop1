@@ -74,6 +74,34 @@ lemma geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix:
     subarc, obtain one component whose frontier contains the subarc endpoints,
     and transfer that component-frontier statement to \<open>Q,S\<close> by cyclic order. **)
 proof -
+  have hQ_ne_P: "Q \<noteq> P"
+    using hcard by (auto simp: card_insert_if split: if_splits)
+  have hQ_ne_R: "Q \<noteq> R"
+    using hcard by (auto simp: card_insert_if split: if_splits)
+  have hS_ne_P: "S \<noteq> P"
+    using hcard by (auto simp: card_insert_if split: if_splits)
+  have hS_ne_R: "S \<noteq> R"
+    using hcard by (auto simp: card_insert_if split: if_splits)
+  have hP_in_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hR_in_A2: "R \<in> A2"
+    using hA2J by (by100 blast)
+  have hQ_not_A1: "Q \<notin> A1"
+    using hA1J hQ hQ_ne_P by (by100 blast)
+  have hQ_not_A2: "Q \<notin> A2"
+    using hA2J hQ hQ_ne_R by (by100 blast)
+  have hS_not_A1: "S \<notin> A1"
+    using hA1J hS hS_ne_P by (by100 blast)
+  have hS_not_A2: "S \<notin> A2"
+    using hA2J hS hS_ne_R by (by100 blast)
+  have hQ_not_A12: "Q \<notin> A1 \<union> A2"
+    using hQ_not_A1 hQ_not_A2 by (by100 blast)
+  have hS_not_A12: "S \<notin> A1 \<union> A2"
+    using hS_not_A1 hS_not_A2 by (by100 blast)
+  have hQ_not_cut: "Q \<notin> geotop_polygon_interior J - (A1 \<union> A2)"
+    using polygon_interior_disjoint_polygon[OF hJ] hQ by (by100 blast)
+  have hS_not_cut: "S \<notin> geotop_polygon_interior J - (A1 \<union> A2)"
+    using polygon_interior_disjoint_polygon[OF hJ] hS by (by100 blast)
   have hD44_book_steps:
     "(\<exists>G. geotop_brick_decomposition G \<and>
           closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)

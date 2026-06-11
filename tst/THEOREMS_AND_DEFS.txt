@@ -4662,7 +4662,7 @@ dev34_pre/GeoTop.thy|theorem|Theorem_GT_4_3|24372
 dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_3|7
 GeoTop.thy|theorem|Theorem_GT_4_4|24405
 dev34_pre/GeoTop.thy|theorem|Theorem_GT_4_4|24405
-dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_4|115
+dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_4|143
 GeoTop.thy|theorem|Theorem_GT_4_5|24511
 dev34_facts/GeoTop_3_4_Facts.thy|theorem|Theorem_GT_4_5|11
 dev34_pre/GeoTop.thy|theorem|Theorem_GT_4_5|24511
