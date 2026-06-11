@@ -20327,6 +20327,40 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_interior_minus_arc_frontier_witness_point_dev34:
+  fixes J A :: "(real^2) set" and X P R :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>U X'. U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior J - A"
+  (**
+    Endpoint-witness form of the D42 boundary step: a boundary point of the
+    polygon away from the cutting arc endpoints has an open cut-interior
+    witness whose non-emptiness supplies an interior point. **)
+proof -
+  obtain U where hU_open: "U \<in> geotop_euclidean_topology"
+    and hU_sub: "U \<subseteq> geotop_polygon_interior J - A"
+    and hX_front: "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    using geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
+        [OF hJ hX hX_ne hA hAJ]
+    by (elim exE conjE)
+  have hU_ne: "U \<noteq> {}"
+    by (rule geotop_frontier_member_imp_set_nonempty_prefix[OF hX_front])
+  obtain X' where hX'_U: "X' \<in> U"
+    using hU_ne by (by100 blast)
+  have hX'_cut: "X' \<in> geotop_polygon_interior J - A"
+    using hX'_U hU_sub by (by100 blast)
+  show ?thesis
+    using hU_open hU_sub hX_front hX'_U hX'_cut
+    by (intro exI conjI)
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -20866,26 +20900,22 @@ proof -
         \<and> Q' \<in> geotop_polygon_interior J - A
         \<and> S' \<in> geotop_polygon_interior J - A"
   proof -
-    obtain U\<^sub>Q0 where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+    obtain U\<^sub>Q0 Q' where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
       and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
       and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
-      using hQ_frontier_witness by (elim exE conjE)
-    obtain U\<^sub>S0 where hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+      and hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+      using geotop_polygon_interior_minus_arc_frontier_witness_point_dev34
+          [OF hJ hQ hQ_ne_PR hA hAJ]
+      by (elim exE conjE)
+    obtain U\<^sub>S0 S' where hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
       and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
       and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
-      using hS_frontier_witness by (elim exE conjE)
-    have hUQ0_ne: "U\<^sub>Q0 \<noteq> {}"
-      by (rule geotop_frontier_member_imp_set_nonempty_prefix[OF hQ_front])
-    have hUS0_ne: "U\<^sub>S0 \<noteq> {}"
-      by (rule geotop_frontier_member_imp_set_nonempty_prefix[OF hS_front])
-    obtain Q' where hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
-      using hUQ0_ne by (by100 blast)
-    obtain S' where hS'_US0: "S' \<in> U\<^sub>S0"
-      using hUS0_ne by (by100 blast)
-    have hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
-      using hQ'_UQ0 hUQ0_sub by (by100 blast)
-    have hS'_cut: "S' \<in> geotop_polygon_interior J - A"
-      using hS'_US0 hUS0_sub by (by100 blast)
+      and hS'_US0: "S' \<in> U\<^sub>S0"
+      and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+      using geotop_polygon_interior_minus_arc_frontier_witness_point_dev34
+          [OF hJ hS hS_ne_PR hA hAJ]
+      by (elim exE conjE)
     show ?thesis
       using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
         hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut
