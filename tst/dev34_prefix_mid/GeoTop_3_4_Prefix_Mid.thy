@@ -21310,6 +21310,68 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_polygon_interior_minus_arc_connected_frontier_witness_in_ball_dev34:
+  fixes J A :: "(real^2) set" and X P R :: "real^2" and r :: real
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  assumes hr: "0 < r"
+  shows "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> U \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior J - A"
+  (**
+    Radius-controlled form of the D42 local-side witness.  This is the
+    endpoint-hygiene version needed for Moise's splice from interior points
+    near \<open>Q\<close> and \<open>S\<close> to the actual boundary endpoints: the connected witness
+    can be made to lie in any prescribed small ball around the boundary point.
+  **)
+proof -
+  obtain rA where hrA_pos: "0 < rA" and hrA_disj: "ball X rA \<inter> A = {}"
+    using geotop_polygon_boundary_point_arc_avoiding_ball_dev34
+        [OF hX hX_ne hA hAJ]
+    by (elim exE conjE)
+  define \<rho> where "\<rho> = min r rA / 2"
+  have h\<rho>_pos: "0 < \<rho>"
+    unfolding \<rho>_def using hr hrA_pos by (by100 simp)
+  have h\<rho>_le_r: "\<rho> \<le> r"
+    unfolding \<rho>_def using hr hrA_pos by (by100 simp)
+  have h\<rho>_le_rA: "\<rho> \<le> rA"
+    unfolding \<rho>_def using hr hrA_pos by (by100 simp)
+  have hball_\<rho>_sub_r: "ball X \<rho> \<subseteq> ball X r"
+    using h\<rho>_le_r by (by100 auto)
+  have hball_\<rho>_sub_rA: "ball X \<rho> \<subseteq> ball X rA"
+    using h\<rho>_le_rA by (by100 auto)
+  have hball_\<rho>_A: "ball X \<rho> \<inter> A = {}"
+    using hball_\<rho>_sub_rA hrA_disj by (by100 blast)
+  obtain U X' where hU_conn: "connected U"
+    and hU_open: "U \<in> geotop_euclidean_topology"
+    and hU_I: "U \<subseteq> geotop_polygon_interior J"
+    and hU_ball_\<rho>: "U \<subseteq> ball X \<rho>"
+    and hX_front_U:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    and hX'_U: "X' \<in> U"
+    and hX'_I: "X' \<in> geotop_polygon_interior J"
+    using geotop_polygon_local_side_witness_dev34[OF hJ hX h\<rho>_pos]
+    by (elim exE conjE)
+  have hU_ball_r: "U \<subseteq> ball X r"
+    using hU_ball_\<rho> hball_\<rho>_sub_r by (by100 blast)
+  have hU_A_empty: "U \<inter> A = {}"
+    using hU_ball_\<rho> hball_\<rho>_A by (by100 blast)
+  have hU_cut: "U \<subseteq> geotop_polygon_interior J - A"
+    using hU_I hU_A_empty by (by100 blast)
+  have hX'_cut: "X' \<in> geotop_polygon_interior J - A"
+    using hX'_U hU_cut by (by100 blast)
+  show ?thesis
+    using hU_conn hU_open hU_cut hU_ball_r hX_front_U hX'_U hX'_cut
+    by (intro exI conjI)
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -21897,8 +21959,8 @@ proof -
 	      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
 	      and hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
 	      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
-	      using geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34
-	          [OF hJ hQ hQ_ne_PR hA hAJ]
+	      using geotop_polygon_interior_minus_arc_connected_frontier_witness_in_ball_dev34
+	          [OF hJ hQ hQ_ne_PR hA hAJ zero_less_one]
 	      by (elim exE conjE)
 	    obtain U\<^sub>S0 S' where hUS0_conn: "connected U\<^sub>S0"
 	      and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
@@ -21906,8 +21968,8 @@ proof -
 	      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
 	      and hS'_US0: "S' \<in> U\<^sub>S0"
 	      and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
-	      using geotop_polygon_interior_minus_arc_connected_frontier_witness_point_dev34
-	          [OF hJ hS hS_ne_PR hA hAJ]
+	      using geotop_polygon_interior_minus_arc_connected_frontier_witness_in_ball_dev34
+	          [OF hJ hS hS_ne_PR hA hAJ zero_less_one]
 	      by (elim exE conjE)
 	    show ?thesis
 	      using hUQ0_conn hUS0_conn hUQ0_open hUS0_open hUQ0_sub hUS0_sub
