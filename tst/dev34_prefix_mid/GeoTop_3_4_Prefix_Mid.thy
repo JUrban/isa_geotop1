@@ -19390,7 +19390,38 @@ proof -
         distinct selected parent-boundary triangle which is not itself free.
         The side-disk/chord proof must replace this pair by a transferable
         free selected witness. **)
-      sorry
+    proof -
+      assume hE\<alpha>_empty: "?E\<alpha> = {}"
+      assume h\<beta>_not_free: "\<not> geotop_free_2_simplex K J \<beta>"
+      let ?E\<beta> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J}"
+      have h\<beta>E_card_data: "finite ?E\<beta> \<and> card ?E\<beta> \<le> 2"
+        by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+            [OF hJ hK hK_poly h\<beta>K h\<beta>2 hT_gt1])
+      have h\<beta>E_fin: "finite ?E\<beta>"
+        using h\<beta>E_card_data by (by100 blast)
+      have h\<beta>E_card_le2: "card ?E\<beta> \<le> 2"
+        using h\<beta>E_card_data by (by100 blast)
+      have h\<beta>E_sub: "?E\<beta> \<subseteq> K"
+        by (by100 simp)
+      have h\<beta>E_allowed:
+          "?E\<beta> = {} \<or>
+           (\<exists>e. ?E\<beta> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J) \<or>
+           (\<exists>e1 e2. ?E\<beta> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+              geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+              geotop_is_face e1 \<beta> \<and> geotop_is_face e2 \<beta> \<and>
+              e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+        by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+            [OF h\<beta>E_fin h\<beta>E_card_le2])
+      have h\<beta>E_union_sub: "\<Union>?E\<beta> \<subseteq> \<beta> \<inter> J"
+        by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+      have h\<beta>_contact_outside_selected:
+          "\<exists>x. x \<in> \<beta> \<inter> J \<and> x \<notin> \<Union>?E\<beta>"
+        by (rule geotop_nonfree_selected_edges_contact_outside_prefix
+            [OF h\<beta>K h\<beta>2 h\<beta>E_sub h\<beta>E_allowed h\<beta>_not_free
+              h\<beta>E_union_sub])
+      show ?thesis
+        sorry
+    qed
     have h\<alpha>_empty_selected_residual_finishes:
         "?E\<alpha> = {} \<Longrightarrow> ?thesis"
     proof -
