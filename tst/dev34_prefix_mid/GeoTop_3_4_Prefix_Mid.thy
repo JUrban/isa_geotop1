@@ -21645,13 +21645,219 @@ proof -
     unfolding top1_in_same_component_on_def
     using hA_sub_closed_minus hP_A hR_A hA_conn_X
     by (intro exI conjI)
+  have hQ_ne_P: "Q \<noteq> P"
+  proof
+    assume hQP: "Q = P"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQP card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hQ_ne_R: "Q \<noteq> R"
+  proof
+    assume hQR: "Q = R"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQR card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hS_ne_P: "S \<noteq> P"
+  proof
+    assume hSP: "S = P"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hSP card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hS_ne_R: "S \<noteq> R"
+  proof
+    assume hSR: "S = R"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hSR card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+    using hQ_ne_P hQ_ne_R by (by100 blast)
+  have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+    using hS_ne_P hS_ne_R by (by100 blast)
+  have hQ_ne_S: "Q \<noteq> S"
+  proof
+    assume hQS: "Q = S"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQS card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  obtain rQ where hrQ_pos: "0 < rQ"
+    and hrQ_A: "ball Q rQ \<inter> A = {}"
+    using geotop_polygon_boundary_point_arc_avoiding_ball_dev34
+        [OF hQ hQ_ne_PR hA hAJ]
+    by (elim exE conjE)
+  obtain rS where hrS_pos: "0 < rS"
+    and hrS_A: "ball S rS \<inter> A = {}"
+    using geotop_polygon_boundary_point_arc_avoiding_ball_dev34
+        [OF hS hS_ne_PR hA hAJ]
+    by (elim exE conjE)
+  obtain rQS where hrQS_pos: "0 < rQS"
+    and hrQS_disj: "ball Q rQS \<inter> ball S rQS = {}"
+    using geotop_distinct_points_disjoint_small_balls_prefix[OF hQ_ne_S]
+    by (elim exE conjE)
+  define \<rho> where "\<rho> = min rQS (min rQ rS) / 2"
+  have h\<rho>_pos: "0 < \<rho>"
+    unfolding \<rho>_def using hrQS_pos hrQ_pos hrS_pos by (by100 simp)
+  have h\<rho>_le_rQ: "\<rho> \<le> rQ"
+    unfolding \<rho>_def using hrQS_pos hrQ_pos hrS_pos by (by100 simp)
+  have h\<rho>_le_rS: "\<rho> \<le> rS"
+    unfolding \<rho>_def using hrQS_pos hrQ_pos hrS_pos by (by100 simp)
+  have h\<rho>_le_rQS: "\<rho> \<le> rQS"
+    unfolding \<rho>_def using hrQS_pos hrQ_pos hrS_pos by (by100 simp)
+  have hQ_ball_\<rho>_sub_Avoid: "ball Q \<rho> \<inter> A = {}"
+  proof -
+    have "ball Q \<rho> \<subseteq> ball Q rQ"
+      using h\<rho>_le_rQ by (by100 auto)
+    thus ?thesis
+      using hrQ_A by (by100 blast)
+  qed
+  have hS_ball_\<rho>_sub_Avoid: "ball S \<rho> \<inter> A = {}"
+  proof -
+    have "ball S \<rho> \<subseteq> ball S rS"
+      using h\<rho>_le_rS by (by100 auto)
+    thus ?thesis
+      using hrS_A by (by100 blast)
+  qed
+  have hQS_ball_\<rho>_disj: "ball Q \<rho> \<inter> ball S \<rho> = {}"
+  proof -
+    have hQ_sub: "ball Q \<rho> \<subseteq> ball Q rQS"
+      using h\<rho>_le_rQS by (by100 auto)
+    have hS_sub: "ball S \<rho> \<subseteq> ball S rQS"
+      using h\<rho>_le_rQS by (by100 auto)
+    show ?thesis
+      using hQ_sub hS_sub hrQS_disj by (by100 blast)
+  qed
+  obtain Q0 where hQ0_ball: "Q0 \<in> ball Q \<rho>"
+    and hQ0_U\<^sub>Q: "Q0 \<in> U\<^sub>Q"
+  proof -
+    have "ball Q \<rho> \<inter> U\<^sub>Q \<noteq> {}"
+      by (rule geotop_frontier_ball_meets_set_prefix[OF hQ_front h\<rho>_pos])
+    then obtain Q0 where "Q0 \<in> ball Q \<rho>" and "Q0 \<in> U\<^sub>Q"
+      by (by100 blast)
+    thus ?thesis
+      by (rule that)
+  qed
+  obtain S0 where hS0_ball: "S0 \<in> ball S \<rho>"
+    and hS0_U\<^sub>S: "S0 \<in> U\<^sub>S"
+  proof -
+    have "ball S \<rho> \<inter> U\<^sub>S \<noteq> {}"
+      by (rule geotop_frontier_ball_meets_set_prefix[OF hS_front h\<rho>_pos])
+    then obtain S0 where "S0 \<in> ball S \<rho>" and "S0 \<in> U\<^sub>S"
+      by (by100 blast)
+    thus ?thesis
+      by (rule that)
+  qed
+  have hQ0_cut: "Q0 \<in> geotop_polygon_interior J - A"
+    using hU\<^sub>Q_sub hQ0_U\<^sub>Q by (by100 blast)
+  have hS0_cut: "S0 \<in> geotop_polygon_interior J - A"
+    using hU\<^sub>S_sub hS0_U\<^sub>S by (by100 blast)
+  have hQ0_not_A: "Q0 \<notin> A"
+    using hQ0_ball hQ_ball_\<rho>_sub_Avoid by (by100 blast)
+  have hS0_not_A: "S0 \<notin> A"
+    using hS0_ball hS_ball_\<rho>_sub_Avoid by (by100 blast)
+  have hQ0_ne_S0: "Q0 \<noteq> S0"
+  proof
+    assume hQ0S0: "Q0 = S0"
+    have "Q0 \<in> ball Q \<rho> \<inter> ball S \<rho>"
+      using hQ0_ball hS0_ball hQ0S0 by (by100 blast)
+    thus False
+      using hQS_ball_\<rho>_disj by (by100 blast)
+  qed
+  have hU\<^sub>Q_conn_top:
+      "top1_connected_on U\<^sub>Q
+        (subspace_topology UNIV geotop_euclidean_topology U\<^sub>Q)"
+    using hU\<^sub>Q_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hU\<^sub>S_conn_top:
+      "top1_connected_on U\<^sub>S
+        (subspace_topology UNIV geotop_euclidean_topology U\<^sub>S)"
+    using hU\<^sub>S_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hU\<^sub>Q_broken_connected: "geotop_broken_line_connected U\<^sub>Q"
+    by (rule Theorem_GT_1_13[OF hU\<^sub>Q_open hU\<^sub>Q_conn_top])
+  have hU\<^sub>S_broken_connected: "geotop_broken_line_connected U\<^sub>S"
+    by (rule Theorem_GT_1_13[OF hU\<^sub>S_open hU\<^sub>S_conn_top])
+  obtain B\<^sub>Q where hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
+    and hB\<^sub>Q_sub_U\<^sub>Q: "B\<^sub>Q \<subseteq> U\<^sub>Q"
+    and hQ0_B\<^sub>Q: "Q0 \<in> B\<^sub>Q"
+    and hQ'_B\<^sub>Q: "Q' \<in> B\<^sub>Q"
+    using hU\<^sub>Q_broken_connected hQ0_U\<^sub>Q hQ'_U\<^sub>Q
+    unfolding geotop_broken_line_connected_def
+    by (by100 blast)
+  obtain B\<^sub>S where hB\<^sub>S_bl: "geotop_is_broken_line B\<^sub>S"
+    and hB\<^sub>S_sub_U\<^sub>S: "B\<^sub>S \<subseteq> U\<^sub>S"
+    and hS0_B\<^sub>S: "S0 \<in> B\<^sub>S"
+    and hS'_B\<^sub>S: "S' \<in> B\<^sub>S"
+    using hU\<^sub>S_broken_connected hS0_U\<^sub>S hS'_U\<^sub>S
+    unfolding geotop_broken_line_connected_def
+    by (by100 blast)
+  have hB\<^sub>Q_sub_cut: "B\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+    using hB\<^sub>Q_sub_U\<^sub>Q hU\<^sub>Q_sub by (by100 blast)
+  have hB\<^sub>S_sub_cut: "B\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+    using hB\<^sub>S_sub_U\<^sub>S hU\<^sub>S_sub by (by100 blast)
+  have hB\<^sub>Q_endpoint_access:
+      "Q0 = Q' \<or>
+       (\<exists>C\<^sub>Q. geotop_is_broken_line C\<^sub>Q
+          \<and> C\<^sub>Q \<subseteq> B\<^sub>Q
+          \<and> Q0 \<in> C\<^sub>Q
+          \<and> Q' \<in> C\<^sub>Q
+          \<and> geotop_arc_endpoints C\<^sub>Q {Q0, Q'})"
+  proof (cases "Q0 = Q'")
+    case True
+    then show ?thesis by (by100 blast)
+  next
+    case False
+    obtain C\<^sub>Q where hC\<^sub>Q_bl: "geotop_is_broken_line C\<^sub>Q"
+      and hC\<^sub>Q_sub: "C\<^sub>Q \<subseteq> B\<^sub>Q"
+      and hQ0_C\<^sub>Q: "Q0 \<in> C\<^sub>Q"
+      and hQ'_C\<^sub>Q: "Q' \<in> C\<^sub>Q"
+      and hC\<^sub>Q_endpoints: "geotop_arc_endpoints C\<^sub>Q {Q0, Q'}"
+      using geotop_broken_line_subarc_with_endpoints_prefix
+          [OF hB\<^sub>Q_bl hQ0_B\<^sub>Q hQ'_B\<^sub>Q False]
+      by (elim exE conjE)
+    show ?thesis
+      using hC\<^sub>Q_bl hC\<^sub>Q_sub hQ0_C\<^sub>Q hQ'_C\<^sub>Q hC\<^sub>Q_endpoints
+      by (by100 blast)
+  qed
+  have hB\<^sub>S_endpoint_access:
+      "S0 = S' \<or>
+       (\<exists>C\<^sub>S. geotop_is_broken_line C\<^sub>S
+          \<and> C\<^sub>S \<subseteq> B\<^sub>S
+          \<and> S0 \<in> C\<^sub>S
+          \<and> S' \<in> C\<^sub>S
+          \<and> geotop_arc_endpoints C\<^sub>S {S0, S'})"
+  proof (cases "S0 = S'")
+    case True
+    then show ?thesis by (by100 blast)
+  next
+    case False
+    obtain C\<^sub>S where hC\<^sub>S_bl: "geotop_is_broken_line C\<^sub>S"
+      and hC\<^sub>S_sub: "C\<^sub>S \<subseteq> B\<^sub>S"
+      and hS0_C\<^sub>S: "S0 \<in> C\<^sub>S"
+      and hS'_C\<^sub>S: "S' \<in> C\<^sub>S"
+      and hC\<^sub>S_endpoints: "geotop_arc_endpoints C\<^sub>S {S0, S'}"
+      using geotop_broken_line_subarc_with_endpoints_prefix
+          [OF hB\<^sub>S_bl hS0_B\<^sub>S hS'_B\<^sub>S False]
+      by (elim exE conjE)
+    show ?thesis
+      using hC\<^sub>S_bl hC\<^sub>S_sub hS0_C\<^sub>S hS'_C\<^sub>S hC\<^sub>S_endpoints
+      by (by100 blast)
+  qed
   have hD42_QS_splice_theta_contradiction:
       False
     (**
       Exact remaining Moise D42 splice/theta step.  From the broken line
-      \<open>B\<close> with endpoints \<open>{Q', S'}\<close> inside \<open>I - A\<close>, the connected side
-      witnesses at \<open>Q\<close> and \<open>S\<close> and their frontier data splice endpoint
-      access arcs onto \<open>B\<close>, producing a broken Q-S chord in \<open>closure I\<close>
+      \<open>B\<close> with endpoints \<open>{Q', S'}\<close> inside \<open>I - A\<close>, the chosen side
+      points \<open>Q0\<close> and \<open>S0\<close> near the boundary, and the access broken lines
+      \<open>B\<^sub>Q\<close> and \<open>B\<^sub>S\<close> (with endpoint-normalized subarcs when nontrivial)
+      inside the connected side witnesses, splice endpoint
+      access arcs onto \<open>B\<close>.  This produces a broken Q-S chord in \<open>closure I\<close>
       whose interior lies in \<open>I\<close> and misses \<open>A\<close>.  The cyclic order places
       \<open>P\<close> and \<open>R\<close> on opposite Q-S boundary arcs.  The boundary-arc/chord
       theta decomposition then separates \<open>P\<close> from \<open>R\<close>, contradicting
