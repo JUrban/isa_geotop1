@@ -18565,7 +18565,34 @@ proof -
         \<and> e1 \<subseteq> J
         \<and> e2 \<subseteq> J
         \<and> \<theta> \<inter> J = e1 \<union> e2)"
-    using h\<theta>selected_edge_cases h\<theta>boundary_contact_eq by (by100 auto)
+  proof (cases "?E\<theta> = {}")
+    case True
+    have hcontact_empty: "\<theta> \<inter> J = {}"
+      using h\<theta>boundary_contact_eq True by (by100 simp)
+    show ?thesis
+      by (rule disjI1[OF hcontact_empty])
+  next
+    case False
+    have hnonempty_cases:
+      "(\<exists>e. ?E\<theta> = {e}
+          \<and> geotop_is_edge e
+          \<and> geotop_is_face e \<theta>
+          \<and> e \<subseteq> J
+          \<and> \<theta> \<inter> J = e)
+        \<or> (\<exists>e1 e2. ?E\<theta> = {e1, e2}
+          \<and> e1 \<noteq> e2
+          \<and> geotop_is_edge e1
+          \<and> geotop_is_edge e2
+          \<and> geotop_is_face e1 \<theta>
+          \<and> geotop_is_face e2 \<theta>
+          \<and> e1 \<subseteq> J
+          \<and> e2 \<subseteq> J
+          \<and> \<theta> \<inter> J = e1 \<union> e2)"
+      by (rule geotop_free_2_simplex_nonempty_selected_edge_contact_cases_prefix
+          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1 h\<theta>free False])
+    show ?thesis
+      using hnonempty_cases by (by100 blast)
+  qed
   have hFigure33_cases_book:
     "\<exists>J' K' f g \<sigma>.
         geotop_is_polygon J'
