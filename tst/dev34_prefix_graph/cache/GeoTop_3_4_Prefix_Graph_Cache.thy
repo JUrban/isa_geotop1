@@ -10244,6 +10244,18 @@ proof -
           have hselected_germ_points_card:
               "card {s0, t0, u0} = 3"
             using hselected_germ_points_distinct by (by100 simp)
+          have hselected_germ_points_closure:
+              "s0 \<in> closure ((S - {w}) \<inter> ball w r)
+                \<and> t0 \<in> closure ((T - {w}) \<inter> ball w r)
+                \<and> u0 \<in> closure ((U - {w}) \<inter> ball w r)"
+          proof (intro conjI)
+            show "s0 \<in> closure ((S - {w}) \<inter> ball w r)"
+              using hs0_germ closure_subset by (by100 blast)
+            show "t0 \<in> closure ((T - {w}) \<inter> ball w r)"
+              using ht0_germ closure_subset by (by100 blast)
+            show "u0 \<in> closure ((U - {w}) \<inter> ball w r)"
+              using hu0_germ closure_subset by (by100 blast)
+          qed
           have hselected_germ_points_not_local:
               "s0 \<notin> ?Lcomp \<and> t0 \<notin> ?Lcomp \<and> u0 \<notin> ?Lcomp"
             using hs0_germ ht0_germ hu0_germ
