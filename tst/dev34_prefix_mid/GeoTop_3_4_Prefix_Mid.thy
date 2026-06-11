@@ -21508,6 +21508,46 @@ lemma geotop_polygon_cyclic_orderE_prefix:
   unfolding geotop_polygon_cyclic_order_def
   by (by100 blast)
 
+lemma geotop_polygon_arc_opposite_boundary_same_component_theta_contradiction_prefix:
+  fixes J A U\<^sub>Q U\<^sub>S :: "(real^2) set"
+    and P Q R S Q' S' :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hR: "R \<in> J"
+  assumes hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAsub:
+    "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  assumes hU\<^sub>Q_conn: "connected U\<^sub>Q"
+  assumes hU\<^sub>S_conn: "connected U\<^sub>S"
+  assumes hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+  assumes hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+  assumes hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+  assumes hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+  assumes hU\<^sub>Q_US\<^sub>disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+  assumes hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+  assumes hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+  assumes hQ'_U\<^sub>Q: "Q' \<in> U\<^sub>Q"
+  assumes hS'_U\<^sub>S: "S' \<in> U\<^sub>S"
+  assumes hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+  assumes hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+  assumes hS'_comp:
+    "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J - A) Q'"
+  shows False
+  (**
+    D42 Moise theta contradiction.  If the Q-side and S-side local witnesses
+    lie in the same component of \<open>geotop_polygon_interior J - A\<close>, extract a
+    broken interior line, splice it to a Q-S chord using the two side
+    witnesses, and combine that chord with the cyclic boundary arcs and the
+    P-R arc \<open>A\<close>.  The resulting theta graph is forbidden by the Section 2
+    theta contradiction. **)
+  sorry
+
 lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
   fixes J A :: "(real^2) set" and P Q R S :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -22782,11 +22822,11 @@ proof -
 	              hD42_F\<^sub>1E hBE hD42_F\<^sub>2E hF\<^sub>1B hF\<^sub>1F\<^sub>2 hBF\<^sub>2
 	              hB_inner hP_F\<^sub>2 hR_F\<^sub>1 hsame])
 	    qed
-	  qed
-	  have hD42_same_component_theta_contradiction:
-	      "\<And>Q' S' U\<^sub>Q0 U\<^sub>S0.
-	        connected U\<^sub>Q0 \<Longrightarrow>
-	        connected U\<^sub>S0 \<Longrightarrow>
+		  qed
+		  have hD42_same_component_theta_contradiction:
+		      "\<And>(Q'::real^2) (S'::real^2) (U\<^sub>Q0::(real^2) set) (U\<^sub>S0::(real^2) set).
+		        connected U\<^sub>Q0 \<Longrightarrow>
+		        connected U\<^sub>S0 \<Longrightarrow>
 	        U\<^sub>Q0 \<in> geotop_euclidean_topology \<Longrightarrow>
 	        U\<^sub>S0 \<in> geotop_euclidean_topology \<Longrightarrow>
 	        U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A \<Longrightarrow>
@@ -22801,505 +22841,39 @@ proof -
 	        S' \<in> geotop_component_at UNIV geotop_euclidean_topology
 	          (geotop_polygon_interior J - A) Q' \<Longrightarrow>
 	        False"
-		    (**
-		      Moise theta contradiction for the chosen opposite side witnesses. From
-		      a same-component assumption, extract a broken line from the Q-side
+			    (**
+			      Moise theta contradiction for the chosen opposite side witnesses. From
+			      a same-component assumption, extract a broken line from the Q-side
 		      witness to the S-side witness inside \<open>I - A\<close>, use the local side
 		      neighborhoods to extend it to a Q-S chord in \<open>\<bar>I\<close> missing \<open>A\<close>, then
-		      apply \<open>hD42_same_component_contradiction_from_QS_chord\<close> with the two
-		      boundary arcs from Q to S. **)
-		  proof -
-		    fix Q' S' U\<^sub>Q0 U\<^sub>S0
-		    assume hUQ0_conn: "connected U\<^sub>Q0"
-		    assume hUS0_conn: "connected U\<^sub>S0"
-		    assume hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
-		    assume hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
-		    assume hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
-		    assume hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
-		    assume hUQ0_US0_disj: "U\<^sub>Q0 \<inter> U\<^sub>S0 = {}"
-		    assume hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
-		    assume hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
-		    assume hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
-		    assume hS'_US0: "S' \<in> U\<^sub>S0"
-		    assume hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
-		    assume hS'_cut: "S' \<in> geotop_polygon_interior J - A"
-		    assume hS'_comp:
-		      "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
-		        (geotop_polygon_interior J - A) Q'"
-		    have hD42_same_component_QS_chord_bridge:
-		      "\<exists>B. geotop_is_broken_line B
-		        \<and> geotop_arc_endpoints B {Q, S}
-		        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-		            geotop_arc_interior B {Q, S} = {}
-		        \<and> geotop_arc_interior B {Q, S} \<inter>
-		            geotop_arc_interior F\<^sub>2 {Q, S} = {}
-		        \<and> geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J
-		        \<and> top1_in_same_component_on
-		          (closure_on UNIV geotop_euclidean_topology
-		            (geotop_polygon_interior J) - B)
-		          (subspace_topology UNIV geotop_euclidean_topology
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B))
-		          P R"
-		      (**
-		        Exact remaining chord-extension step.  Use the connected side
-		        witnesses at \<open>Q\<close> and \<open>S\<close>, their frontier facts, and the broken
-		        line from \<open>Q'\<close> to \<open>S'\<close> inside \<open>I - A\<close> to splice a broken line
-		        chord from \<open>Q\<close> to \<open>S\<close>.  Its interior lies in \<open>I\<close>, misses the two
-		        boundary arcs except at endpoints, and still leaves \<open>A\<close> as a
-		        connected witness placing \<open>P\<close> and \<open>R\<close> in the same component of
-		        the closed disk minus the chord. **)
-		    proof -
-		      obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
-		        and hB\<^sub>0_sub: "B\<^sub>0 \<subseteq> geotop_polygon_interior J - A"
-		        and hQ'_B\<^sub>0: "Q' \<in> B\<^sub>0"
-		        and hS'_B\<^sub>0: "S' \<in> B\<^sub>0"
-		        and hA_B\<^sub>0: "A \<inter> B\<^sub>0 = {}"
-		        and hPR_same_B\<^sub>0:
-		          "top1_in_same_component_on
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B\<^sub>0)
-		            (subspace_topology UNIV geotop_euclidean_topology
-		              (closure_on UNIV geotop_euclidean_topology
-		                (geotop_polygon_interior J) - B\<^sub>0))
-		            P R"
-		        by (rule hD42_same_component_to_PR_same[OF hQ'_cut hS'_comp])
-		      have hQ'_ne_S': "Q' \<noteq> S'"
-		        using hQ'_UQ0 hS'_US0 hUQ0_US0_disj by (by100 blast)
-		      obtain B\<^sub>1 where hB\<^sub>1_bl: "geotop_is_broken_line B\<^sub>1"
-		        and hB\<^sub>1_sub_B\<^sub>0: "B\<^sub>1 \<subseteq> B\<^sub>0"
-		        and hQ'_B\<^sub>1: "Q' \<in> B\<^sub>1"
-		        and hS'_B\<^sub>1: "S' \<in> B\<^sub>1"
-		        and hB\<^sub>1_oriented:
-		          "Q' = S' \<or> (\<exists>\<gamma>. arc \<gamma> \<and> path_image \<gamma> = B\<^sub>1
-		            \<and> pathstart \<gamma> = Q' \<and> pathfinish \<gamma> = S')"
-		        using geotop_broken_line_subarc[OF hB\<^sub>0_bl hQ'_B\<^sub>0 hS'_B\<^sub>0]
-		        by (elim exE conjE)
-		      obtain \<gamma>\<^sub>1 where h\<gamma>\<^sub>1_arc: "arc \<gamma>\<^sub>1"
-		        and h\<gamma>\<^sub>1_img: "path_image \<gamma>\<^sub>1 = B\<^sub>1"
-		        and h\<gamma>\<^sub>1_start: "pathstart \<gamma>\<^sub>1 = Q'"
-		        and h\<gamma>\<^sub>1_finish: "pathfinish \<gamma>\<^sub>1 = S'"
-		        using hB\<^sub>1_oriented hQ'_ne_S' by (by100 blast)
-		      have hB\<^sub>1E: "geotop_arc_endpoints B\<^sub>1 {Q', S'}"
-		      proof -
-		        have hE_raw:
-		          "geotop_arc_endpoints (path_image \<gamma>\<^sub>1)
-		            {pathstart \<gamma>\<^sub>1, pathfinish \<gamma>\<^sub>1}"
-		          by (rule geotop_HOL_arc_imp_geotop_arc_endpoints_prefix[OF h\<gamma>\<^sub>1_arc])
-		        show ?thesis
-		          using hE_raw h\<gamma>\<^sub>1_img h\<gamma>\<^sub>1_start h\<gamma>\<^sub>1_finish by (by100 simp)
-		      qed
-		      have hB\<^sub>1_sub_cut: "B\<^sub>1 \<subseteq> geotop_polygon_interior J - A"
-		        using hB\<^sub>1_sub_B\<^sub>0 hB\<^sub>0_sub by (by100 blast)
-		      have hB\<^sub>1_int_cut:
-		          "geotop_arc_interior B\<^sub>1 {Q', S'} \<subseteq>
-		            geotop_polygon_interior J - A"
-		        using hB\<^sub>1_sub_cut unfolding geotop_arc_interior_def by (by100 blast)
-		      have hB\<^sub>1_int_I:
-		          "geotop_arc_interior B\<^sub>1 {Q', S'} \<subseteq>
-		            geotop_polygon_interior J"
-		        using hB\<^sub>1_int_cut by (by100 blast)
-		      have hA_B\<^sub>1: "A \<inter> B\<^sub>1 = {}"
-		        using hA_B\<^sub>0 hB\<^sub>1_sub_B\<^sub>0 by (by100 blast)
-		      obtain Q\<^sub>0 where hQ\<^sub>0_UQ0: "Q\<^sub>0 \<in> U\<^sub>Q0"
-		        and hQ\<^sub>0_ball: "Q\<^sub>0 \<in> ball Q 1"
-		        using geotop_frontier_ball_meets_set_prefix[OF hQ_front zero_less_one]
-		        by (by100 blast)
-		      obtain S\<^sub>0 where hS\<^sub>0_US0: "S\<^sub>0 \<in> U\<^sub>S0"
-		        and hS\<^sub>0_ball: "S\<^sub>0 \<in> ball S 1"
-		        using geotop_frontier_ball_meets_set_prefix[OF hS_front zero_less_one]
-		        by (by100 blast)
-		      have hQ\<^sub>0_cut: "Q\<^sub>0 \<in> geotop_polygon_interior J - A"
-		        using hQ\<^sub>0_UQ0 hUQ0_sub by (by100 blast)
-		      have hS\<^sub>0_cut: "S\<^sub>0 \<in> geotop_polygon_interior J - A"
-		        using hS\<^sub>0_US0 hUS0_sub by (by100 blast)
-		      have hQ\<^sub>0_I: "Q\<^sub>0 \<in> geotop_polygon_interior J"
-		        using hQ\<^sub>0_cut by (by100 blast)
-		      have hS\<^sub>0_I: "S\<^sub>0 \<in> geotop_polygon_interior J"
-		        using hS\<^sub>0_cut by (by100 blast)
-		      have hQ\<^sub>0_not_J: "Q\<^sub>0 \<notin> J"
-		        using hQ\<^sub>0_I polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
-		      have hS\<^sub>0_not_J: "S\<^sub>0 \<notin> J"
-		        using hS\<^sub>0_I polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
-		      have hQ\<^sub>0_ne_Q: "Q\<^sub>0 \<noteq> Q"
-		        using hQ hQ\<^sub>0_not_J by (by100 blast)
-		      have hS\<^sub>0_ne_S: "S\<^sub>0 \<noteq> S"
-		        using hS hS\<^sub>0_not_J by (by100 blast)
-		      have hQ\<^sub>0_not_F\<^sub>1: "Q\<^sub>0 \<notin> F\<^sub>1"
-		        using hD42_F_J_split hQ\<^sub>0_not_J by (by100 blast)
-		      have hQ\<^sub>0_not_F\<^sub>2: "Q\<^sub>0 \<notin> F\<^sub>2"
-		        using hD42_F_J_split hQ\<^sub>0_not_J by (by100 blast)
-		      have hS\<^sub>0_not_F\<^sub>1: "S\<^sub>0 \<notin> F\<^sub>1"
-		        using hD42_F_J_split hS\<^sub>0_not_J by (by100 blast)
-		      have hS\<^sub>0_not_F\<^sub>2: "S\<^sub>0 \<notin> F\<^sub>2"
-		        using hD42_F_J_split hS\<^sub>0_not_J by (by100 blast)
-		      have hUQ0_conn_top:
-		          "top1_connected_on U\<^sub>Q0
-		            (subspace_topology UNIV geotop_euclidean_topology U\<^sub>Q0)"
-		        using hUQ0_conn top1_connected_on_geotop_iff_connected by (by100 blast)
-		      have hUS0_conn_top:
-		          "top1_connected_on U\<^sub>S0
-		            (subspace_topology UNIV geotop_euclidean_topology U\<^sub>S0)"
-		        using hUS0_conn top1_connected_on_geotop_iff_connected by (by100 blast)
-		      have hUQ0_bl_conn: "geotop_broken_line_connected U\<^sub>Q0"
-		        by (rule Theorem_GT_1_13[OF hUQ0_open hUQ0_conn_top])
-		      have hUS0_bl_conn: "geotop_broken_line_connected U\<^sub>S0"
-		        by (rule Theorem_GT_1_13[OF hUS0_open hUS0_conn_top])
-		      obtain B\<^sub>Q where hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
-		        and hB\<^sub>Q_sub: "B\<^sub>Q \<subseteq> U\<^sub>Q0"
-		        and hQ'_B\<^sub>Q: "Q' \<in> B\<^sub>Q"
-		        and hQ\<^sub>0_B\<^sub>Q: "Q\<^sub>0 \<in> B\<^sub>Q"
-		        using hUQ0_bl_conn hQ'_UQ0 hQ\<^sub>0_UQ0
-		        unfolding geotop_broken_line_connected_def
-		        by (by100 blast)
-		      obtain B\<^sub>S where hB\<^sub>S_bl: "geotop_is_broken_line B\<^sub>S"
-		        and hB\<^sub>S_sub: "B\<^sub>S \<subseteq> U\<^sub>S0"
-		        and hS'_B\<^sub>S: "S' \<in> B\<^sub>S"
-		        and hS\<^sub>0_B\<^sub>S: "S\<^sub>0 \<in> B\<^sub>S"
-		        using hUS0_bl_conn hS'_US0 hS\<^sub>0_US0
-		        unfolding geotop_broken_line_connected_def
-		        by (by100 blast)
-		      have hB\<^sub>Q_sub_cut: "B\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
-		        using hB\<^sub>Q_sub hUQ0_sub by (by100 blast)
-		      have hB\<^sub>S_sub_cut: "B\<^sub>S \<subseteq> geotop_polygon_interior J - A"
-		        using hB\<^sub>S_sub hUS0_sub by (by100 blast)
-		      have hB\<^sub>Q_B\<^sub>S_disj: "B\<^sub>Q \<inter> B\<^sub>S = {}"
-		        using hB\<^sub>Q_sub hB\<^sub>S_sub hUQ0_US0_disj by (by100 blast)
-		      have hD42_oriented_local_spurs:
-		        "\<exists>B\<^sub>Q1 B\<^sub>S1.
-		          geotop_is_broken_line B\<^sub>Q1
-		          \<and> B\<^sub>Q1 \<subseteq> U\<^sub>Q0
-		          \<and> Q\<^sub>0 \<in> B\<^sub>Q1
-		          \<and> Q' \<in> B\<^sub>Q1
-		          \<and> (Q\<^sub>0 = Q'
-		            \<or> (\<exists>\<gamma>\<^sub>Q. arc \<gamma>\<^sub>Q \<and> path_image \<gamma>\<^sub>Q = B\<^sub>Q1
-		              \<and> pathstart \<gamma>\<^sub>Q = Q\<^sub>0
-		              \<and> pathfinish \<gamma>\<^sub>Q = Q'))
-		          \<and> geotop_is_broken_line B\<^sub>S1
-		          \<and> B\<^sub>S1 \<subseteq> U\<^sub>S0
-		          \<and> S' \<in> B\<^sub>S1
-		          \<and> S\<^sub>0 \<in> B\<^sub>S1
-		          \<and> (S' = S\<^sub>0
-		            \<or> (\<exists>\<gamma>\<^sub>S. arc \<gamma>\<^sub>S \<and> path_image \<gamma>\<^sub>S = B\<^sub>S1
-		              \<and> pathstart \<gamma>\<^sub>S = S'
-		              \<and> pathfinish \<gamma>\<^sub>S = S\<^sub>0))"
-		        (**
-		          Moise splice bookkeeping: orient the already extracted
-		          side-witness broken lines so that they can later be glued to
-		          the interior line in the order \<open>Q\<^sub>0\<close>--\<open>Q'\<close>--\<open>S'\<close>--\<open>S\<^sub>0\<close>. **)
-		      proof -
-		        obtain B\<^sub>Q1 where hB\<^sub>Q1_bl: "geotop_is_broken_line B\<^sub>Q1"
-		          and hB\<^sub>Q1_sub_B\<^sub>Q: "B\<^sub>Q1 \<subseteq> B\<^sub>Q"
-		          and hQ\<^sub>0_B\<^sub>Q1: "Q\<^sub>0 \<in> B\<^sub>Q1"
-		          and hQ'_B\<^sub>Q1: "Q' \<in> B\<^sub>Q1"
-		          and hB\<^sub>Q1_oriented:
-		            "Q\<^sub>0 = Q'
-		              \<or> (\<exists>\<gamma>\<^sub>Q. arc \<gamma>\<^sub>Q \<and> path_image \<gamma>\<^sub>Q = B\<^sub>Q1
-		                \<and> pathstart \<gamma>\<^sub>Q = Q\<^sub>0
-		                \<and> pathfinish \<gamma>\<^sub>Q = Q')"
-		          using geotop_broken_line_subarc[OF hB\<^sub>Q_bl hQ\<^sub>0_B\<^sub>Q hQ'_B\<^sub>Q]
-		          by (elim exE conjE)
-		        have hB\<^sub>Q1_sub_UQ0: "B\<^sub>Q1 \<subseteq> U\<^sub>Q0"
-		          using hB\<^sub>Q1_sub_B\<^sub>Q hB\<^sub>Q_sub by (by100 blast)
-		        obtain B\<^sub>S1 where hB\<^sub>S1_bl: "geotop_is_broken_line B\<^sub>S1"
-		          and hB\<^sub>S1_sub_B\<^sub>S: "B\<^sub>S1 \<subseteq> B\<^sub>S"
-		          and hS'_B\<^sub>S1: "S' \<in> B\<^sub>S1"
-		          and hS\<^sub>0_B\<^sub>S1: "S\<^sub>0 \<in> B\<^sub>S1"
-		          and hB\<^sub>S1_oriented:
-		            "S' = S\<^sub>0
-		              \<or> (\<exists>\<gamma>\<^sub>S. arc \<gamma>\<^sub>S \<and> path_image \<gamma>\<^sub>S = B\<^sub>S1
-		                \<and> pathstart \<gamma>\<^sub>S = S'
-		                \<and> pathfinish \<gamma>\<^sub>S = S\<^sub>0)"
-		          using geotop_broken_line_subarc[OF hB\<^sub>S_bl hS'_B\<^sub>S hS\<^sub>0_B\<^sub>S]
-		          by (elim exE conjE)
-		        have hB\<^sub>S1_sub_US0: "B\<^sub>S1 \<subseteq> U\<^sub>S0"
-		          using hB\<^sub>S1_sub_B\<^sub>S hB\<^sub>S_sub by (by100 blast)
-		        show ?thesis
-		          using hB\<^sub>Q1_bl hB\<^sub>Q1_sub_UQ0 hQ\<^sub>0_B\<^sub>Q1 hQ'_B\<^sub>Q1
-		            hB\<^sub>Q1_oriented hB\<^sub>S1_bl hB\<^sub>S1_sub_US0 hS'_B\<^sub>S1
-		            hS\<^sub>0_B\<^sub>S1 hB\<^sub>S1_oriented
-		          by (intro exI conjI)
-		      qed
-		      obtain B\<^sub>Q1 B\<^sub>S1 where hB\<^sub>Q1_bl: "geotop_is_broken_line B\<^sub>Q1"
-		        and hB\<^sub>Q1_sub_UQ0: "B\<^sub>Q1 \<subseteq> U\<^sub>Q0"
-		        and hQ\<^sub>0_B\<^sub>Q1: "Q\<^sub>0 \<in> B\<^sub>Q1"
-		        and hQ'_B\<^sub>Q1: "Q' \<in> B\<^sub>Q1"
-		        and hB\<^sub>Q1_oriented:
-		          "Q\<^sub>0 = Q'
-		            \<or> (\<exists>\<gamma>\<^sub>Q. arc \<gamma>\<^sub>Q \<and> path_image \<gamma>\<^sub>Q = B\<^sub>Q1
-		              \<and> pathstart \<gamma>\<^sub>Q = Q\<^sub>0
-		              \<and> pathfinish \<gamma>\<^sub>Q = Q')"
-		        and hB\<^sub>S1_bl: "geotop_is_broken_line B\<^sub>S1"
-		        and hB\<^sub>S1_sub_US0: "B\<^sub>S1 \<subseteq> U\<^sub>S0"
-		        and hS'_B\<^sub>S1: "S' \<in> B\<^sub>S1"
-		        and hS\<^sub>0_B\<^sub>S1: "S\<^sub>0 \<in> B\<^sub>S1"
-		        and hB\<^sub>S1_oriented:
-		          "S' = S\<^sub>0
-		            \<or> (\<exists>\<gamma>\<^sub>S. arc \<gamma>\<^sub>S \<and> path_image \<gamma>\<^sub>S = B\<^sub>S1
-		              \<and> pathstart \<gamma>\<^sub>S = S'
-		              \<and> pathfinish \<gamma>\<^sub>S = S\<^sub>0)"
-		        using hD42_oriented_local_spurs by (elim exE conjE)
-		      have hB\<^sub>Q1_sub_cut: "B\<^sub>Q1 \<subseteq> geotop_polygon_interior J - A"
-		        using hB\<^sub>Q1_sub_UQ0 hUQ0_sub by (by100 blast)
-		      have hB\<^sub>S1_sub_cut: "B\<^sub>S1 \<subseteq> geotop_polygon_interior J - A"
-		        using hB\<^sub>S1_sub_US0 hUS0_sub by (by100 blast)
-		      have hB\<^sub>Q1_B\<^sub>S1_disj: "B\<^sub>Q1 \<inter> B\<^sub>S1 = {}"
-		        using hB\<^sub>Q1_sub_UQ0 hB\<^sub>S1_sub_US0 hUQ0_US0_disj by (by100 blast)
-		      have hD42_Q\<^sub>0_S\<^sub>0_interior_spliced_line:
-		        "\<exists>B\<^sub>I. geotop_is_broken_line B\<^sub>I
-		          \<and> B\<^sub>I \<subseteq> geotop_polygon_interior J - A
-		          \<and> Q\<^sub>0 \<in> B\<^sub>I
-		          \<and> S\<^sub>0 \<in> B\<^sub>I"
-		      (**
-		        Moise splice core inside the cut-open polygon: glue the
-		        oriented side spur \<open>B\<^sub>Q1\<close>, the interior line \<open>B\<^sub>1\<close>, and the
-		        oriented side spur \<open>B\<^sub>S1\<close> through the common points \<open>Q'\<close>
-		        and \<open>S'\<close>.  This gives the interior broken-line part of the
-		        later boundary chord. **)
-		      proof -
-		        have hcut_open_geo:
-		            "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
-		          by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
-		        have hcut_open_HOL: "open (geotop_polygon_interior J - A)"
-		          using hcut_open_geo
-		          unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
-		          by (by100 simp)
-		        obtain B\<^sub>Q1\<^sub>I where hB\<^sub>Q1\<^sub>I_bl:
-		            "geotop_is_broken_line B\<^sub>Q1\<^sub>I"
-		          and hB\<^sub>Q1\<^sub>I_sub:
-		            "B\<^sub>Q1\<^sub>I \<subseteq> geotop_polygon_interior J - A"
-		          and hQ\<^sub>0_B\<^sub>Q1\<^sub>I: "Q\<^sub>0 \<in> B\<^sub>Q1\<^sub>I"
-		          and hS'_B\<^sub>Q1\<^sub>I: "S' \<in> B\<^sub>Q1\<^sub>I"
-		          using geotop_broken_line_concat
-		            [OF hB\<^sub>Q1_bl hB\<^sub>Q1_sub_cut hB\<^sub>1_bl hB\<^sub>1_sub_cut
-		              hQ\<^sub>0_B\<^sub>Q1 hQ'_B\<^sub>Q1 hQ'_B\<^sub>1 hS'_B\<^sub>1 hcut_open_HOL]
-		          by (elim exE conjE)
-		        obtain B\<^sub>I where hB\<^sub>I_bl: "geotop_is_broken_line B\<^sub>I"
-		          and hB\<^sub>I_sub: "B\<^sub>I \<subseteq> geotop_polygon_interior J - A"
-		          and hQ\<^sub>0_B\<^sub>I: "Q\<^sub>0 \<in> B\<^sub>I"
-		          and hS\<^sub>0_B\<^sub>I: "S\<^sub>0 \<in> B\<^sub>I"
-		          using geotop_broken_line_concat
-		            [OF hB\<^sub>Q1\<^sub>I_bl hB\<^sub>Q1\<^sub>I_sub hB\<^sub>S1_bl hB\<^sub>S1_sub_cut
-		              hQ\<^sub>0_B\<^sub>Q1\<^sub>I hS'_B\<^sub>Q1\<^sub>I hS'_B\<^sub>S1 hS\<^sub>0_B\<^sub>S1 hcut_open_HOL]
-		          by (elim exE conjE)
-		        show ?thesis
-		          using hB\<^sub>I_bl hB\<^sub>I_sub hQ\<^sub>0_B\<^sub>I hS\<^sub>0_B\<^sub>I
-		          by (intro exI conjI)
-		      qed
-		      obtain B\<^sub>I where hB\<^sub>I_bl: "geotop_is_broken_line B\<^sub>I"
-		        and hB\<^sub>I_sub_cut: "B\<^sub>I \<subseteq> geotop_polygon_interior J - A"
-		        and hQ\<^sub>0_B\<^sub>I: "Q\<^sub>0 \<in> B\<^sub>I"
-		        and hS\<^sub>0_B\<^sub>I: "S\<^sub>0 \<in> B\<^sub>I"
-		        using hD42_Q\<^sub>0_S\<^sub>0_interior_spliced_line by (elim exE conjE)
-		      have hB\<^sub>I_sub_I: "B\<^sub>I \<subseteq> geotop_polygon_interior J"
-		        using hB\<^sub>I_sub_cut by (by100 blast)
-		      have hA_B\<^sub>I: "A \<inter> B\<^sub>I = {}"
-		        using hB\<^sub>I_sub_cut by (by100 blast)
-		      have hPR_same_B\<^sub>I:
-		        "top1_in_same_component_on
-		          (closure_on UNIV geotop_euclidean_topology
-		            (geotop_polygon_interior J) - B\<^sub>I)
-		          (subspace_topology UNIV geotop_euclidean_topology
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B\<^sub>I))
-		          P R"
-		        by (rule hD42_A_witness_PR_same_in_closed_disk_minus
-		            [OF hB\<^sub>I_sub_cut])
-		      have hQ\<^sub>0_ne_S\<^sub>0: "Q\<^sub>0 \<noteq> S\<^sub>0"
-		        using hQ\<^sub>0_UQ0 hS\<^sub>0_US0 hUQ0_US0_disj by (by100 blast)
-		      obtain B\<^sub>I0 where hB\<^sub>I0_bl: "geotop_is_broken_line B\<^sub>I0"
-		        and hB\<^sub>I0_sub_B\<^sub>I: "B\<^sub>I0 \<subseteq> B\<^sub>I"
-		        and hQ\<^sub>0_B\<^sub>I0: "Q\<^sub>0 \<in> B\<^sub>I0"
-		        and hS\<^sub>0_B\<^sub>I0: "S\<^sub>0 \<in> B\<^sub>I0"
-		        and hB\<^sub>I0E: "geotop_arc_endpoints B\<^sub>I0 {Q\<^sub>0, S\<^sub>0}"
-		        by (rule geotop_broken_line_subarc_with_endpoints_prefix
-		            [OF hB\<^sub>I_bl hQ\<^sub>0_B\<^sub>I hS\<^sub>0_B\<^sub>I hQ\<^sub>0_ne_S\<^sub>0])
-		      have hB\<^sub>I0_sub_cut:
-		          "B\<^sub>I0 \<subseteq> geotop_polygon_interior J - A"
-		        using hB\<^sub>I0_sub_B\<^sub>I hB\<^sub>I_sub_cut by (by100 blast)
-		      have hB\<^sub>I0_sub_I:
-		          "B\<^sub>I0 \<subseteq> geotop_polygon_interior J"
-		        using hB\<^sub>I0_sub_cut by (by100 blast)
-		      have hB\<^sub>I0_J_disj: "B\<^sub>I0 \<inter> J = {}"
-		        using hB\<^sub>I0_sub_I polygon_interior_disjoint_polygon[OF hJ]
-		        by (by100 blast)
-		      have hF\<^sub>1_B\<^sub>I0_disj: "F\<^sub>1 \<inter> B\<^sub>I0 = {}"
-		      proof -
-		        have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
-		          using hD42_F_J_split by (by100 blast)
-		        show ?thesis
-		          using hF\<^sub>1_sub_J hB\<^sub>I0_J_disj by (by100 blast)
-		      qed
-		      have hB\<^sub>I0_F\<^sub>2_disj: "B\<^sub>I0 \<inter> F\<^sub>2 = {}"
-		      proof -
-		        have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
-		          using hD42_F_J_split by (by100 blast)
-		        show ?thesis
-		          using hF\<^sub>2_sub_J hB\<^sub>I0_J_disj by (by100 blast)
-		      qed
-		      have hQ_not_B\<^sub>I0: "Q \<notin> B\<^sub>I0"
-		        using hQ hB\<^sub>I0_J_disj by (by100 blast)
-		      have hS_not_B\<^sub>I0: "S \<notin> B\<^sub>I0"
-		        using hS hB\<^sub>I0_J_disj by (by100 blast)
-		      have hA_B\<^sub>I0: "A \<inter> B\<^sub>I0 = {}"
-		        using hB\<^sub>I0_sub_cut by (by100 blast)
-		      have hPR_same_B\<^sub>I0:
-		        "top1_in_same_component_on
-		          (closure_on UNIV geotop_euclidean_topology
-		            (geotop_polygon_interior J) - B\<^sub>I0)
-		          (subspace_topology UNIV geotop_euclidean_topology
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B\<^sub>I0))
-		          P R"
-		        by (rule hD42_A_witness_PR_same_in_closed_disk_minus
-		            [OF hB\<^sub>I0_sub_cut])
-		      have hB\<^sub>I0_int_I:
-		          "geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<subseteq>
-		            geotop_polygon_interior J"
-		        using hB\<^sub>I0_sub_I unfolding geotop_arc_interior_def
-		        by (by100 blast)
-		      have hF\<^sub>1_B\<^sub>I0_int_disj:
-		          "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-		            geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} = {}"
-		      proof -
-		        have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
-		          using hD42_F_J_split by (by100 blast)
-		        have hF\<^sub>1_int_sub_J:
-		            "geotop_arc_interior F\<^sub>1 {Q, S} \<subseteq> J"
-		          using hF\<^sub>1_sub_J unfolding geotop_arc_interior_def
-		          by (by100 blast)
-		        show ?thesis
-		          using hF\<^sub>1_int_sub_J hB\<^sub>I0_int_I
-		            polygon_interior_disjoint_polygon[OF hJ]
-		          by (by100 blast)
-		      qed
-		      have hB\<^sub>I0_int_F\<^sub>2_disj:
-		          "geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<inter>
-		            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-		      proof -
-		        have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
-		          using hD42_F_J_split by (by100 blast)
-		        have hF\<^sub>2_int_sub_J:
-		            "geotop_arc_interior F\<^sub>2 {Q, S} \<subseteq> J"
-		          using hF\<^sub>2_sub_J unfolding geotop_arc_interior_def
-		          by (by100 blast)
-		        show ?thesis
-		          using hF\<^sub>2_int_sub_J hB\<^sub>I0_int_I
-		            polygon_interior_disjoint_polygon[OF hJ]
-		          by (by100 blast)
-		      qed
-		      have hB\<^sub>I0_core_chord_package:
-		        "geotop_is_broken_line B\<^sub>I0
-		          \<and> geotop_arc_endpoints B\<^sub>I0 {Q\<^sub>0, S\<^sub>0}
-		          \<and> Q\<^sub>0 \<in> B\<^sub>I0
-		          \<and> S\<^sub>0 \<in> B\<^sub>I0
-		          \<and> B\<^sub>I0 \<subseteq> geotop_polygon_interior J - A
-		          \<and> A \<inter> B\<^sub>I0 = {}
-		          \<and> B\<^sub>I0 \<inter> J = {}
-		          \<and> Q \<notin> B\<^sub>I0
-		          \<and> S \<notin> B\<^sub>I0"
-		        using hB\<^sub>I0_bl hB\<^sub>I0E hQ\<^sub>0_B\<^sub>I0 hS\<^sub>0_B\<^sub>I0
-		          hB\<^sub>I0_sub_cut hA_B\<^sub>I0 hB\<^sub>I0_J_disj hQ_not_B\<^sub>I0
-		          hS_not_B\<^sub>I0
-		        by (intro conjI)
-		      have hB\<^sub>I0_core_for_QS_splice:
-		        "geotop_is_broken_line B\<^sub>I0
-		          \<and> geotop_arc_endpoints B\<^sub>I0 {Q\<^sub>0, S\<^sub>0}
-		          \<and> geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<subseteq>
-		            geotop_polygon_interior J
-		          \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-		            geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} = {}
-		          \<and> geotop_arc_interior B\<^sub>I0 {Q\<^sub>0, S\<^sub>0} \<inter>
-		            geotop_arc_interior F\<^sub>2 {Q, S} = {}
-		          \<and> top1_in_same_component_on
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B\<^sub>I0)
-		            (subspace_topology UNIV geotop_euclidean_topology
-		              (closure_on UNIV geotop_euclidean_topology
-		                (geotop_polygon_interior J) - B\<^sub>I0))
-		            P R"
-		        using hB\<^sub>I0_bl hB\<^sub>I0E hB\<^sub>I0_int_I
-		          hF\<^sub>1_B\<^sub>I0_int_disj hB\<^sub>I0_int_F\<^sub>2_disj hPR_same_B\<^sub>I0
-		        by (intro conjI)
-		      have hB\<^sub>I_J_disj: "B\<^sub>I \<inter> J = {}"
-		        using hB\<^sub>I_sub_I polygon_interior_disjoint_polygon[OF hJ]
-		        by (by100 blast)
-		      have hF\<^sub>1_B\<^sub>I_disj:
-		        "geotop_arc_interior F\<^sub>1 {Q, S} \<inter> B\<^sub>I = {}"
-		      proof -
-		        have hF\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
-		          using hD42_F_J_split by (by100 blast)
-		        have hF\<^sub>1_int_sub_J: "geotop_arc_interior F\<^sub>1 {Q, S} \<subseteq> J"
-		          using hF\<^sub>1_sub_J unfolding geotop_arc_interior_def by (by100 blast)
-		        show ?thesis
-		          using hF\<^sub>1_int_sub_J hB\<^sub>I_J_disj by (by100 blast)
-		      qed
-		      have hB\<^sub>I_F\<^sub>2_disj:
-		        "B\<^sub>I \<inter> geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-		      proof -
-		        have hF\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
-		          using hD42_F_J_split by (by100 blast)
-		        have hF\<^sub>2_int_sub_J: "geotop_arc_interior F\<^sub>2 {Q, S} \<subseteq> J"
-		          using hF\<^sub>2_sub_J unfolding geotop_arc_interior_def by (by100 blast)
-		        show ?thesis
-		          using hF\<^sub>2_int_sub_J hB\<^sub>I_J_disj by (by100 blast)
-		      qed
-		      have hD42_QS_chord_splice_from_interior_line:
-		        "\<exists>B. geotop_is_broken_line B
-		          \<and> geotop_arc_endpoints B {Q, S}
-		          \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-		              geotop_arc_interior B {Q, S} = {}
-		          \<and> geotop_arc_interior B {Q, S} \<inter>
-		              geotop_arc_interior F\<^sub>2 {Q, S} = {}
-		          \<and> geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J
-		          \<and> top1_in_same_component_on
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B)
-		            (subspace_topology UNIV geotop_euclidean_topology
-		              (closure_on UNIV geotop_euclidean_topology
-		                (geotop_polygon_interior J) - B))
-		            P R"
-		      (**
-		        Remaining Moise splice step after the interior broken line has
-		        been extracted.  Extend \<open>B\<^sub>0\<close> from \<open>Q'\<close> to \<open>Q\<close> inside the
-		        connected local side witness \<open>U\<^sub>Q0\<close>, and from \<open>S'\<close> to \<open>S\<close>
-		        inside \<open>U\<^sub>S0\<close>.  The resulting broken line has endpoints
-		        \<open>{Q,S}\<close>, interior in \<open>I\<close>, no boundary-arc interior contact, and
-		        preserves the connected witness placing \<open>P\<close> and \<open>R\<close> in the
-		        closed disk minus the enlarged chord. **)
-		        sorry
-		      show ?thesis
-		        using hD42_QS_chord_splice_from_interior_line .
-		    qed
-		    obtain B where hB_bl: "geotop_is_broken_line B"
-		      and hBE: "geotop_arc_endpoints B {Q, S}"
-		      and hF\<^sub>1B:
-		        "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-		          geotop_arc_interior B {Q, S} = {}"
-		      and hBF\<^sub>2:
-		        "geotop_arc_interior B {Q, S} \<inter>
-		          geotop_arc_interior F\<^sub>2 {Q, S} = {}"
-		      and hB_inner:
-		        "geotop_arc_interior B {Q, S} \<subseteq> geotop_polygon_interior J"
-		      and hPR_same:
-		        "top1_in_same_component_on
-		          (closure_on UNIV geotop_euclidean_topology
-		            (geotop_polygon_interior J) - B)
-		          (subspace_topology UNIV geotop_euclidean_topology
-		            (closure_on UNIV geotop_euclidean_topology
-		              (geotop_polygon_interior J) - B))
-		          P R"
-		      using hD42_same_component_QS_chord_bridge by (elim exE conjE)
-		    have hopposite:
-		      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
-		          \<and> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})
-		        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
-		          \<and> R \<in> geotop_arc_interior F\<^sub>1 {Q, S})"
-		      using hD42_PR_unique_QS_boundary_arc_interiors by (by100 blast)
-		    show False
-		      by (rule hD42_same_component_contradiction_from_QS_chord
-		          [OF hB_bl hBE hF\<^sub>1B hBF\<^sub>2 hB_inner hPR_same hopposite])
-		  qed
+			      apply \<open>hD42_same_component_contradiction_from_QS_chord\<close> with the two
+			      boundary arcs from Q to S. **)
+			  proof -
+			    fix Q' S' :: "real^2"
+			    fix U\<^sub>Q0 U\<^sub>S0 :: "(real^2) set"
+			    assume hUQ0_conn: "connected U\<^sub>Q0"
+			    assume hUS0_conn: "connected U\<^sub>S0"
+          assume hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+          assume hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+          assume hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+          assume hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+          assume hUQ0_US0_disj: "U\<^sub>Q0 \<inter> U\<^sub>S0 = {}"
+          assume hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+          assume hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+          assume hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+          assume hS'_US0: "S' \<in> U\<^sub>S0"
+          assume hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+          assume hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+          assume hS'_comp:
+            "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'"
+          show False
+            by (rule geotop_polygon_arc_opposite_boundary_same_component_theta_contradiction_prefix
+                [OF hJ hP hQ hR hS hcyc hcard hA hAsub hAJ
+                  hUQ0_conn hUS0_conn hUQ0_open hUS0_open hUQ0_sub hUS0_sub
+                  hUQ0_US0_disj hQ_front hS_front hQ'_UQ0 hS'_US0
+                  hQ'_cut hS'_cut hS'_comp])
+        qed
 	  have hD42_different_component_open_split:
 	      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
 	        U\<^sub>Q0 \<in> geotop_euclidean_topology
@@ -23693,10 +23267,10 @@ proof -
       already provide endpoint hygiene and turn a same-component assumption
       into a broken line in \<open>I - A\<close>; the remaining content is the cyclic-order
       theta contradiction with the two P-R boundary arcs. **)
-  proof -
-	    have hD42_dichotomy_resolves_to_open_split_book:
-	      "\<And>Q' S' U\<^sub>Q0 U\<^sub>S0.
-	        connected U\<^sub>Q0 \<Longrightarrow>
+	  proof -
+		    have hD42_dichotomy_resolves_to_open_split_book:
+		      "\<And>(Q'::real^2) (S'::real^2) (U\<^sub>Q0::(real^2) set) (U\<^sub>S0::(real^2) set).
+		        connected U\<^sub>Q0 \<Longrightarrow>
 	        connected U\<^sub>S0 \<Longrightarrow>
 	        U\<^sub>Q0 \<in> geotop_euclidean_topology \<Longrightarrow>
 	        U\<^sub>S0 \<in> geotop_euclidean_topology \<Longrightarrow>
