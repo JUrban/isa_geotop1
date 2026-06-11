@@ -10148,6 +10148,12 @@ proof -
             using hselected_boundary_closure_data by (by100 blast)
           have hz_not_ball: "z \<notin> ball w r"
             using hselected_boundary_closure_data by (by100 blast)
+          have hp_not_local_complement: "p \<notin> ?Lcomp"
+            using hp_not_ball by (by100 blast)
+          have hy_not_local_complement: "y \<notin> ?Lcomp"
+            using hy_not_ball by (by100 blast)
+          have hz_not_local_complement: "z \<notin> ?Lcomp"
+            using hz_not_ball by (by100 blast)
           have hS_selected_germ_nonempty:
               "(S - {w}) \<inter> ball w r \<noteq> {}"
             using hselected_local_germs_nonempty by (by100 blast)
