@@ -21546,7 +21546,101 @@ lemma geotop_polygon_arc_opposite_boundary_same_component_theta_contradiction_pr
     witnesses, and combine that chord with the cyclic boundary arcs and the
     P-R arc \<open>A\<close>.  The resulting theta graph is forbidden by the Section 2
     theta contradiction. **)
-  sorry
+proof -
+  have hcut_open: "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
+    by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
+  have hP_A: "P \<in> A"
+    using hAJ hP by (by100 blast)
+  have hR_A: "R \<in> A"
+    using hAJ hR by (by100 blast)
+  have hA_connected:
+      "top1_connected_on A
+        (subspace_topology UNIV geotop_euclidean_topology A)"
+  proof -
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A"
+      using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+    have h\<gamma>_path: "path \<gamma>"
+      using h\<gamma>_arc unfolding arc_def by (by100 simp)
+    have hA_conn_HOL: "connected A"
+      using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
+    show ?thesis
+      using hA_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  qed
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+    and hQ'_B: "Q' \<in> B"
+    and hS'_B: "S' \<in> B"
+    using geotop_open_component_broken_line_between_prefix[OF hcut_open hQ'_cut hS'_comp]
+    by (elim exE conjE)
+  have hA_B: "A \<inter> B = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> A \<inter> B"
+    have hxA: "x \<in> A"
+      using hx by (by100 blast)
+    have hxB: "x \<in> B"
+      using hx by (by100 blast)
+    have "x \<in> geotop_polygon_interior J - A"
+      using hB_sub hxB by (by100 blast)
+    thus False
+      using hxA by (by100 blast)
+  qed
+  have hA_sub_closed_minus:
+      "A \<subseteq> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - B"
+  proof
+    fix x
+    assume hxA: "x \<in> A"
+    have hx_cl:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+      using hAsub hxA by (by100 blast)
+    have hx_not_B: "x \<notin> B"
+    proof
+      assume hxB: "x \<in> B"
+      have "x \<in> geotop_polygon_interior J - A"
+        using hB_sub hxB by (by100 blast)
+      thus False
+        using hxA by (by100 blast)
+    qed
+    show "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - B"
+      using hx_cl hx_not_B by (by100 blast)
+  qed
+  let ?X =
+    "closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J) - B"
+  have hsubspace:
+      "subspace_topology ?X
+        (subspace_topology UNIV geotop_euclidean_topology ?X) A =
+       subspace_topology UNIV geotop_euclidean_topology A"
+    by (rule subspace_topology_trans[OF hA_sub_closed_minus])
+  have hA_conn_X:
+      "top1_connected_on A
+        (subspace_topology ?X
+          (subspace_topology UNIV geotop_euclidean_topology ?X) A)"
+    using hA_connected hsubspace by (by100 simp)
+  have hPR_same:
+      "top1_in_same_component_on ?X
+        (subspace_topology UNIV geotop_euclidean_topology ?X) P R"
+    unfolding top1_in_same_component_on_def
+    using hA_sub_closed_minus hP_A hR_A hA_conn_X
+    by (intro exI conjI)
+  have hD42_QS_splice_theta_contradiction:
+      False
+    (**
+      Exact remaining Moise D42 splice/theta step.  From the broken line
+      \<open>B\<close> joining \<open>Q'\<close> to \<open>S'\<close> inside \<open>I - A\<close>, the connected side
+      witnesses at \<open>Q\<close> and \<open>S\<close> and their frontier data produce a broken
+      Q-S chord in \<open>closure I\<close> whose interior lies in \<open>I\<close> and misses \<open>A\<close>.
+      The cyclic order places \<open>P\<close> and \<open>R\<close> on opposite Q-S boundary arcs.
+      The boundary-arc/chord theta decomposition then separates \<open>P\<close> from
+      \<open>R\<close>, contradicting \<open>hPR_same\<close>. **)
+    sorry
+  show False
+    by (rule hD42_QS_splice_theta_contradiction)
+qed
 
 lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
   fixes J A :: "(real^2) set" and P Q R S :: "real^2"
