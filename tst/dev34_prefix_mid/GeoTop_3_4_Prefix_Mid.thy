@@ -19609,6 +19609,52 @@ proof -
           hchord_edge h\<beta>K h\<beta>2 hchord_face hchord_not_boundary])
 qed
 
+lemma geotop_selected_nonfree_triangle_chord_contact_endpoint_prefix:
+  fixes J \<beta> :: "(real^2) set" and a b c :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not: "c \<notin> {a, b}"
+  assumes hcontact_chord:
+    "\<exists>x. x \<in> \<beta> \<inter> J
+      \<and> x \<notin> closed_segment a b
+      \<and> x \<in> closed_segment a c - {a}"
+  assumes hchord_arc_disjoint:
+    "J \<inter> geotop_arc_interior (closed_segment a c) {a, c} = {}"
+  shows "c \<in> J"
+  (**
+    Endpoint extraction after the Figure 3.2 chord filter.  The selected
+    nonfree triangle contacts the parent boundary somewhere on \<open>a-c\<close> away
+    from \<open>a\<close>; because the parent boundary misses the open chord, the contact
+    point must be the other endpoint \<open>c\<close>. **)
+proof -
+  obtain x where hx\<beta>J: "x \<in> \<beta> \<inter> J"
+    and hx_not_base: "x \<notin> closed_segment a b"
+    and hxchord: "x \<in> closed_segment a c - {a}"
+    using hcontact_chord by (elim exE conjE)
+  have hxJ: "x \<in> J"
+    using hx\<beta>J by (by100 blast)
+  have hxa: "x \<noteq> a"
+    using hxchord by (by100 blast)
+  have hxseg: "x \<in> closed_segment a c"
+    using hxchord by (by100 blast)
+  show ?thesis
+  proof (cases "x = c")
+    case True
+    show ?thesis
+      using True hxJ by (by100 simp)
+  next
+    case False
+    have hx_not_endpoints: "x \<notin> {a, c}"
+      using hxa False by (by100 blast)
+    have hxarc: "x \<in> geotop_arc_interior (closed_segment a c) {a, c}"
+      using hxseg hx_not_endpoints unfolding geotop_arc_interior_def
+      by (by100 blast)
+    have "x \<in> J \<inter> geotop_arc_interior (closed_segment a c) {a, c}"
+      using hxJ hxarc by (by100 blast)
+    thus ?thesis
+      using hchord_arc_disjoint by (by100 blast)
+  qed
+qed
+
 lemma geotop_polygon_disk_selected_nonfree_replaces_empty_free_witness_prefix:
   fixes J \<theta> \<alpha> \<beta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -19713,6 +19759,9 @@ proof -
     by (rule geotop_selected_nonfree_triangle_chord_arc_interior_disjoint_parent_prefix
         [OF hJ hK hK_poly h\<beta>K h\<beta>2 h\<beta>_vertices_chord
           hab hc_not hchord_not_parent_boundary])
+  have hcJ: "c \<in> J"
+    by (rule geotop_selected_nonfree_triangle_chord_contact_endpoint_prefix
+        [OF hab hc_not hcontact_chord hchord_arc_interior_disjoint_parent])
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
