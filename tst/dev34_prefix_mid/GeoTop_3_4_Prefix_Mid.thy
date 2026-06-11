@@ -22898,6 +22898,85 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_unique_incident_edge_rel_interior_local_polyhedron_eq_simplex_prefix:
+  fixes K :: "(real^2) set set" and e \<sigma> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  assumes hp: "p \<in> rel_interior e"
+  shows "\<exists>s>0. ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  (**
+    One-sided edge-star local chart, factored from the frontier proof above:
+    near a relative-interior point of an edge with a unique incident
+    two-simplex, the complex carrier agrees with that unique two-simplex. **)
+proof -
+  let ?M = "geotop_polyhedron K"
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  obtain r F where hr: "0 < r"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and heF: "e \<in> F"
+    and hcover: "ball p r \<inter> ?M \<subseteq> \<Union>F"
+    using geotop_complex_edge_point_finite_local_cover_prefix[OF hK heK hp_e]
+    by (by100 blast)
+  have hp_unionF: "p \<in> \<Union>F"
+    using heF hp_e by (by100 blast)
+  obtain \<delta> where h\<delta>: "0 < \<delta>"
+    and hisolate: "ball p \<delta> \<inter> \<Union>F \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+    using geotop_complex_finite_subcomplex_local_point_carriers_prefix
+      [OF hK hFfin hFsub hp_unionF]
+    by (by100 blast)
+  define s where "s = min r \<delta>"
+  have hs: "0 < s"
+    using hr h\<delta> unfolding s_def by (by100 simp)
+  have hcover_s: "ball p s \<inter> ?M \<subseteq> \<Union>F"
+  proof -
+    have hball_sub: "ball p s \<subseteq> ball p r"
+      unfolding s_def by (by100 auto)
+    have "ball p s \<inter> ?M \<subseteq> ball p r \<inter> ?M"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hcover by (by100 blast)
+  qed
+  have hpoint_carriers_s: "ball p s \<inter> ?M \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+  proof
+    fix x
+    assume hx: "x \<in> ball p s \<inter> ?M"
+    have hxF: "x \<in> \<Union>F"
+      using hcover_s hx by (by100 blast)
+    have hball_sub: "ball p s \<subseteq> ball p \<delta>"
+      unfolding s_def by (by100 auto)
+    have hx\<delta>: "x \<in> ball p \<delta>"
+      using hx hball_sub by (by100 blast)
+    have "x \<in> ball p \<delta> \<inter> \<Union>F"
+      using hxF hx\<delta> by (by100 blast)
+    thus "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+      using hisolate by (by100 blast)
+  qed
+  have hpoint_carriers_subset_\<sigma>: "\<Union>{\<tau>\<in>F. p \<in> \<tau>} \<subseteq> \<sigma>"
+    by (rule geotop_complex_unique_edge_face_point_carrier_union_subset_unique_face_prefix
+        [OF hK heK hedge hp h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hFsub])
+  have hlocal_poly_\<sigma>: "ball p s \<inter> ?M \<subseteq> \<sigma>"
+    using hpoint_carriers_s hpoint_carriers_subset_\<sigma> by (by100 blast)
+  have h\<sigma>subM: "\<sigma> \<subseteq> ?M"
+    using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hlocal_eq: "ball p s \<inter> ?M = ball p s \<inter> \<sigma>"
+  proof
+    show "ball p s \<inter> ?M \<subseteq> ball p s \<inter> \<sigma>"
+      using hlocal_poly_\<sigma> by (by100 blast)
+  next
+    show "ball p s \<inter> \<sigma> \<subseteq> ball p s \<inter> ?M"
+      using h\<sigma>subM by (by100 blast)
+  qed
+  show ?thesis
+    using hs hlocal_eq by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_endpoint_radial_segment_interior_radius_prefix:
   fixes J :: "(real^2) set" and X :: "real^2"
   assumes hJ: "geotop_is_polygon J"
