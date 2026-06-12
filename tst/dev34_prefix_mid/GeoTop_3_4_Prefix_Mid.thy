@@ -34900,7 +34900,213 @@ lemma geotop_figure33_two_boundary_named_supported_inverse_fold_prefix:
     2-simplex vertex set.  The remaining proof should use the inverse of the
     Case 1 supported PL fold and the existing fixed-outside inverse support
     lemmas. **)
-  sorry
+proof -
+  let ?E\<^sub>1 = "closed_segment a b"
+  let ?E\<^sub>2 = "closed_segment p q"
+  have hfigure33_two_boundary_segment_support_package:
+      "e1 = ?E\<^sub>1
+      \<and> e2 = ?E\<^sub>2
+      \<and> \<theta> \<inter> J = ?E\<^sub>1 \<union> ?E\<^sub>2
+      \<and> ?E\<^sub>1 \<subseteq> J
+      \<and> ?E\<^sub>2 \<subseteq> J
+      \<and> \<theta> \<subseteq> geotop_polyhedron K
+      \<and> \<theta> \<subseteq> U
+      \<and> ?E\<^sub>1 \<union> ?E\<^sub>2 \<subseteq> frontier \<theta>"
+  proof -
+    have he1_segment: "e1 = ?E\<^sub>1"
+      using he1_named segment_convex_hull[of a b]
+        geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+    have he2_segment: "e2 = ?E\<^sub>2"
+      using he2_named segment_convex_hull[of p q]
+        geotop_convex_hull_eq_HOL[of "{p, q}"] by (by100 simp)
+    have h\<theta>J_segments: "\<theta> \<inter> J = ?E\<^sub>1 \<union> ?E\<^sub>2"
+      using hboundary_two_edge_package he1_segment he2_segment by (by100 blast)
+    have hE1_sub_J: "?E\<^sub>1 \<subseteq> J"
+      using hboundary_two_edge_package he1_segment by (by100 blast)
+    have hE2_sub_J: "?E\<^sub>2 \<subseteq> J"
+      using hboundary_two_edge_package he2_segment by (by100 blast)
+    have h\<theta>_sub_poly: "\<theta> \<subseteq> geotop_polyhedron K"
+      using h\<theta>K unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<theta>_sub_U: "\<theta> \<subseteq> U"
+      using h\<theta>_sub_poly hclosed_disk_in_support by (by100 blast)
+    have hE12_frontier_segments: "?E\<^sub>1 \<union> ?E\<^sub>2 \<subseteq> frontier \<theta>"
+      using he12_frontier he1_segment he2_segment by (by100 blast)
+    show ?thesis
+      using he1_segment he2_segment h\<theta>J_segments hE1_sub_J hE2_sub_J
+        h\<theta>_sub_poly h\<theta>_sub_U hE12_frontier_segments
+      by (by100 blast)
+  qed
+  have hfigure33_two_boundary_triangle_package:
+      "a \<noteq> c
+      \<and> b \<noteq> c
+      \<and> \<not> collinear {a, b, c}
+      \<and> geotop_is_polygon (frontier \<theta>)
+      \<and> frontier \<theta> =
+        geotop_convex_hull {a, b}
+        \<union> geotop_convex_hull {a, c}
+        \<union> geotop_convex_hull {b, c}"
+  proof -
+    have hac: "a \<noteq> c"
+      using hc_not by (by100 blast)
+    have hbc: "b \<noteq> c"
+      using hc_not by (by100 blast)
+    have hnot_col_acb: "\<not> collinear {a, c, b}"
+      by (rule geotop_2simplex_vertices_not_collinear_prefix
+          [OF h\<theta>vertices_e1 hab hc_not])
+    have hnot_col_abc: "\<not> collinear {a, b, c}"
+    proof -
+      have "{a, b, c} = {a, c, b}"
+        by (by100 blast)
+      thus ?thesis
+        using hnot_col_acb by (by100 simp)
+    qed
+    have hfrontier_polygon: "geotop_is_polygon (frontier \<theta>)"
+      by (rule geotop_triangle_frontier_is_polygon_from_vertices_prefix
+          [OF h\<theta>vertices_e1 hab hc_not hnot_col_acb])
+    have hfrontier_hulls:
+      "frontier \<theta> =
+        geotop_convex_hull {a, b}
+        \<union> geotop_convex_hull {a, c}
+        \<union> geotop_convex_hull {b, c}"
+      by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
+          [OF h\<theta>vertices_e1 hab hc_not])
+    show ?thesis
+      using hac hbc hnot_col_abc hfrontier_polygon hfrontier_hulls
+      by (by100 blast)
+  qed
+  have hfigure33_corner_edge_package:
+      "\<exists>x y z.
+        x \<noteq> y
+        \<and> x \<noteq> z
+        \<and> y \<noteq> z
+        \<and> e1 \<union> e2 = closed_segment x y \<union> closed_segment x z
+        \<and> frontier \<theta> =
+          closed_segment x y \<union>
+          (closed_segment x z \<union> closed_segment y z)
+        \<and> \<theta> \<inter> J = closed_segment x y \<union> closed_segment x z"
+  proof -
+    have he12_ne: "e1 \<noteq> e2"
+      using hboundary_two_edge_package by (by100 blast)
+    have hac: "a \<noteq> c"
+      using hc_not by (by100 blast)
+    have hbc: "b \<noteq> c"
+      using hc_not by (by100 blast)
+    have he1_segment: "e1 = closed_segment a b"
+      using he1_named segment_convex_hull[of a b]
+        geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+    have hAB_hull_segment:
+      "geotop_convex_hull {a, b} = closed_segment a b"
+      using segment_convex_hull[of a b]
+        geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+    have hAC_hull_segment:
+      "geotop_convex_hull {a, c} = closed_segment a c"
+      using segment_convex_hull[of a c]
+        geotop_convex_hull_eq_HOL[of "{a, c}"] by (by100 simp)
+    have hBC_hull_segment:
+      "geotop_convex_hull {b, c} = closed_segment b c"
+      using segment_convex_hull[of b c]
+        geotop_convex_hull_eq_HOL[of "{b, c}"] by (by100 simp)
+    have hfrontier_hulls:
+      "frontier \<theta> =
+        geotop_convex_hull {a, b}
+        \<union> geotop_convex_hull {a, c}
+        \<union> geotop_convex_hull {b, c}"
+      using hfigure33_two_boundary_triangle_package by (by100 blast)
+    have hfrontier_segments_abc:
+      "frontier \<theta> =
+        closed_segment a b \<union> (closed_segment a c \<union> closed_segment b c)"
+      using hfrontier_hulls hAB_hull_segment hAC_hull_segment hBC_hull_segment
+      by (by100 blast)
+    have h\<theta>J_e12: "\<theta> \<inter> J = e1 \<union> e2"
+      using hboundary_two_edge_package by (by100 blast)
+    have hpq_pair_cases:
+      "{p, q} = {a, b} \<or> {p, q} = {a, c} \<or> {p, q} = {b, c}"
+      using hsame_vertices hpq hr_not hab hc_not by (by100 blast)
+    have hpq_not_ab: "{p, q} \<noteq> {a, b}"
+    proof
+      assume hpq_ab: "{p, q} = {a, b}"
+      have "e2 = e1"
+        using he2_named he1_named hpq_ab by (by100 simp)
+      thus False
+        using he12_ne by (by100 simp)
+    qed
+    have hpq_ac_or_bc: "{p, q} = {a, c} \<or> {p, q} = {b, c}"
+      using hpq_pair_cases hpq_not_ab by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hpq_ac_or_bc])
+      assume hpq_ac: "{p, q} = {a, c}"
+      have he2_segment_ac: "e2 = closed_segment a c"
+        using he2_named hpq_ac hAC_hull_segment by (by100 simp)
+      have hboundary_segments:
+        "\<theta> \<inter> J = closed_segment a b \<union> closed_segment a c"
+        using h\<theta>J_e12 he1_segment he2_segment_ac by (by100 simp)
+      show ?thesis
+      proof (rule exI[where x = a], rule exI[where x = b],
+          rule exI[where x = c])
+        show "a \<noteq> b \<and>
+          a \<noteq> c \<and>
+          b \<noteq> c \<and>
+          e1 \<union> e2 = closed_segment a b \<union> closed_segment a c \<and>
+          frontier \<theta> =
+            closed_segment a b \<union> (closed_segment a c \<union> closed_segment b c) \<and>
+          \<theta> \<inter> J = closed_segment a b \<union> closed_segment a c"
+          using hab hac hbc he1_segment he2_segment_ac hfrontier_segments_abc
+            hboundary_segments
+          by (by100 blast)
+      qed
+    next
+      assume hpq_bc: "{p, q} = {b, c}"
+      have he2_segment_bc: "e2 = closed_segment b c"
+        using he2_named hpq_bc hBC_hull_segment by (by100 simp)
+      have hboundary_segments:
+        "\<theta> \<inter> J = closed_segment b a \<union> closed_segment b c"
+        using h\<theta>J_e12 he1_segment he2_segment_bc
+          closed_segment_commute[of a b] by (by100 simp)
+      have hfrontier_segments_bac:
+        "frontier \<theta> =
+          closed_segment b a \<union> (closed_segment b c \<union> closed_segment a c)"
+        using hfrontier_segments_abc closed_segment_commute[of a b]
+          closed_segment_commute[of a c] by (by100 blast)
+      have he1e2_segments:
+        "e1 \<union> e2 = closed_segment b a \<union> closed_segment b c"
+        using he1_segment he2_segment_bc closed_segment_commute[of a b]
+        by (by100 simp)
+      show ?thesis
+      proof (rule exI[where x = b], rule exI[where x = a],
+          rule exI[where x = c])
+        show "b \<noteq> a \<and>
+          b \<noteq> c \<and>
+          a \<noteq> c \<and>
+          e1 \<union> e2 = closed_segment b a \<union> closed_segment b c \<and>
+          frontier \<theta> =
+            closed_segment b a \<union> (closed_segment b c \<union> closed_segment a c) \<and>
+          \<theta> \<inter> J = closed_segment b a \<union> closed_segment b c"
+          using hab hac hbc he1e2_segments hfrontier_segments_bac
+            hboundary_segments
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hbook_supported_inverse_PL_fold:
+      "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+    sorry
+  show ?thesis
+    using hbook_supported_inverse_PL_fold by (by100 blast)
+qed
 
 lemma geotop_free_triangle_one_boundary_edge_supported_fold_prefix:
   fixes J U \<theta> e :: "(real^2) set" and K :: "(real^2) set set"
