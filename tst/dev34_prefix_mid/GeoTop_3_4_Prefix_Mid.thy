@@ -26273,7 +26273,159 @@ proof -
                 The book step left here is to rule out the latter alternative
                 using \<open>hempty_candidate\<close>, \<open>hbranch_empty\<close>, and the selected
                 nonfree boundary triangle data. **)
-              sorry
+            proof -
+              assume hempty_exists:
+                "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {})"
+              have hcandidate_parent_empty:
+                "\<exists>\<eta>.
+                  ((?G\<^sub>1 \<eta>
+                    \<and> \<eta> \<inter> J\<^sub>1 = {}
+                    \<and> \<eta> \<in> K
+                    \<and> geotop_free_2_simplex K J \<eta>
+                    \<and> geotop_simplex_dim \<eta> 2
+                    \<and> \<eta> \<inter> J = {}
+                    \<and> {e\<in>K. geotop_is_edge e
+                      \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                    \<and> \<eta> \<noteq> \<theta>
+                    \<and> \<eta> \<noteq> \<beta>)
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+                    \<and> \<eta> \<inter> J\<^sub>2 = {}
+                    \<and> \<eta> \<in> K
+                    \<and> geotop_free_2_simplex K J \<eta>
+                    \<and> geotop_simplex_dim \<eta> 2
+                    \<and> \<eta> \<inter> J = {}
+                    \<and> {e\<in>K. geotop_is_edge e
+                      \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                    \<and> \<eta> \<noteq> \<theta>
+                    \<and> \<eta> \<noteq> \<beta>\<^sub>c))"
+              proof -
+                obtain \<eta> where hempty:
+                  "(?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {})"
+                  using hempty_exists by (elim exE)
+                show ?thesis
+                proof (rule disjE[OF hempty])
+                  assume hleft: "?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {}"
+                  have hG1: "?G\<^sub>1 \<eta>"
+                    using hleft by (rule conjunct1)
+                  have hside_empty: "\<eta> \<inter> J\<^sub>1 = {}"
+                    using hleft by (rule conjunct2)
+                  have hparent:
+                    "\<eta> \<in> K
+                    \<and> geotop_free_2_simplex K J \<eta>
+                    \<and> geotop_simplex_dim \<eta> 2
+                    \<and> \<eta> \<inter> J = {}
+                    \<and> {e\<in>K. geotop_is_edge e
+                      \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                    \<and> \<eta> \<noteq> \<theta>
+                    \<and> \<eta> \<noteq> \<beta>"
+                    by (rule hG\<^sub>1_side_empty_parent_empty_selected_free
+                        [OF hG1 hside_empty])
+                  have hcase:
+                    "(?G\<^sub>1 \<eta>
+                      \<and> \<eta> \<inter> J\<^sub>1 = {}
+                      \<and> \<eta> \<in> K
+                      \<and> geotop_free_2_simplex K J \<eta>
+                      \<and> geotop_simplex_dim \<eta> 2
+                      \<and> \<eta> \<inter> J = {}
+                      \<and> {e\<in>K. geotop_is_edge e
+                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                      \<and> \<eta> \<noteq> \<theta>
+                      \<and> \<eta> \<noteq> \<beta>)
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+                      \<and> \<eta> \<inter> J\<^sub>2 = {}
+                      \<and> \<eta> \<in> K
+                      \<and> geotop_free_2_simplex K J \<eta>
+                      \<and> geotop_simplex_dim \<eta> 2
+                      \<and> \<eta> \<inter> J = {}
+                      \<and> {e\<in>K. geotop_is_edge e
+                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                      \<and> \<eta> \<noteq> \<theta>
+                      \<and> \<eta> \<noteq> \<beta>\<^sub>c)"
+                    using hG1 hside_empty hparent by (by100 blast)
+                  show ?thesis
+                    by (rule exI[where x = "\<eta>"], rule hcase)
+                next
+                  assume hright: "?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {}"
+                  have hG2: "?G\<^sub>2 \<beta>\<^sub>c \<eta>"
+                    using hright by (rule conjunct1)
+                  have hside_empty: "\<eta> \<inter> J\<^sub>2 = {}"
+                    using hright by (rule conjunct2)
+                  have hparent:
+                    "\<eta> \<in> K
+                    \<and> geotop_free_2_simplex K J \<eta>
+                    \<and> geotop_simplex_dim \<eta> 2
+                    \<and> \<eta> \<inter> J = {}
+                    \<and> {e\<in>K. geotop_is_edge e
+                      \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                    \<and> \<eta> \<noteq> \<theta>
+                    \<and> \<eta> \<noteq> \<beta>\<^sub>c"
+                    by (rule hG\<^sub>2_side_empty_parent_empty_selected_free
+                        [OF hG2 hside_empty])
+                  have hcase:
+                    "(?G\<^sub>1 \<eta>
+                      \<and> \<eta> \<inter> J\<^sub>1 = {}
+                      \<and> \<eta> \<in> K
+                      \<and> geotop_free_2_simplex K J \<eta>
+                      \<and> geotop_simplex_dim \<eta> 2
+                      \<and> \<eta> \<inter> J = {}
+                      \<and> {e\<in>K. geotop_is_edge e
+                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                      \<and> \<eta> \<noteq> \<theta>
+                      \<and> \<eta> \<noteq> \<beta>)
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+                      \<and> \<eta> \<inter> J\<^sub>2 = {}
+                      \<and> \<eta> \<in> K
+                      \<and> geotop_free_2_simplex K J \<eta>
+                      \<and> geotop_simplex_dim \<eta> 2
+                      \<and> \<eta> \<inter> J = {}
+                      \<and> {e\<in>K. geotop_is_edge e
+                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                      \<and> \<eta> \<noteq> \<theta>
+                      \<and> \<eta> \<noteq> \<beta>\<^sub>c)"
+                    using hG2 hside_empty hparent by (by100 blast)
+                  show ?thesis
+                    by (rule exI[where x = "\<eta>"], rule hcase)
+                qed
+              qed
+              have hlarge_parent_empty_candidate_contradiction_book:
+                "\<exists>\<eta>.
+                  ((?G\<^sub>1 \<eta>
+                    \<and> \<eta> \<inter> J\<^sub>1 = {}
+                    \<and> \<eta> \<in> K
+                    \<and> geotop_free_2_simplex K J \<eta>
+                    \<and> geotop_simplex_dim \<eta> 2
+                    \<and> \<eta> \<inter> J = {}
+                    \<and> {e\<in>K. geotop_is_edge e
+                      \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                    \<and> \<eta> \<noteq> \<theta>
+                    \<and> \<eta> \<noteq> \<beta>)
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+                    \<and> \<eta> \<inter> J\<^sub>2 = {}
+                    \<and> \<eta> \<in> K
+                    \<and> geotop_free_2_simplex K J \<eta>
+                    \<and> geotop_simplex_dim \<eta> 2
+                    \<and> \<eta> \<inter> J = {}
+                    \<and> {e\<in>K. geotop_is_edge e
+                      \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+                    \<and> \<eta> \<noteq> \<theta>
+                    \<and> \<eta> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+                \<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+                (**
+                  Final fixed-large-side Figure 3.2 obstruction.  At this
+                  point both \<open>hbranch_empty\<close> and the extra candidate above
+                  are empty parent-boundary selected-free triangles, while
+                  the named chord triangles \<open>\<beta>\<close> and \<open>\<beta>\<^sub>c\<close> are the only
+                  chord-spoiled side witnesses.  The remaining book counting
+                  step must force one side induction witness with real
+                  side-boundary contact. **)
+                sorry
+              show ?thesis
+                by (rule hlarge_parent_empty_candidate_contradiction_book
+                    [OF hcandidate_parent_empty])
+            qed
             (**
               The primary/spare case split is now separated from the final
               Moise book contradiction: if the split gives a nonempty side
