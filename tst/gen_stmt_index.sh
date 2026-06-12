@@ -1,8 +1,9 @@
 #!/bin/bash
 # Generate a searchable theorem statement index from active session theories and local imports.
 # Cache invalidation covers ROOT/ROOTS files, the generated theory list,
-# local advice/report notes, and bounded session transcript inputs
-# (`*.cast(.gz)`, `isa*.jsonl`, `session*.jsonl`, transcript/conversation JSONL).
+# local advice/report notes. Transcript inputs (`*.cast(.gz)`, `isa*.jsonl`,
+# `session*.jsonl`, transcript/conversation JSONL) are indexed only when
+# GEOTOP_INDEX_SESSION_LOGS=1 is set, because they otherwise swamp searches.
 # Each entry: file:line KIND name :: statement_fragment
 # Usage: cd /project/tst && bash gen_stmt_index.sh [--force]
 # Then search: grep "keyword" STMT_INDEX.txt
@@ -53,15 +54,20 @@ if [ "${#MISSING[@]}" -gt 0 ]; then
 fi
 
 SESSION_LOG_ARGS=(--session-logs "${SESSION_LOG_FILES[@]}")
+SESSION_LOG_CACHE_ARGS=(--session-log-cache "$SESSION_LOG_CACHE")
 SESSION_LOG_CACHE_STATUS=refreshed
-if [ "$FORCE" -eq 0 ] && [ -f "$SESSION_LOG_CACHE" ] && [ -f "$SESSION_LOG_CACHE_SIG" ] \
+if [ "${#SESSION_LOG_FILES[@]}" -eq 0 ]; then
+  SESSION_LOG_ARGS=()
+  SESSION_LOG_CACHE_ARGS=()
+  SESSION_LOG_CACHE_STATUS=off
+elif [ "$FORCE" -eq 0 ] && [ -f "$SESSION_LOG_CACHE" ] && [ -f "$SESSION_LOG_CACHE_SIG" ] \
   && [ "$(cat "$SESSION_LOG_CACHE_SIG")" = "$SESSION_LOG_SIG" ]; then
   SESSION_LOG_ARGS=()
   SESSION_LOG_CACHE_STATUS=hit
 fi
 
 python3 - "$OUT" --theories "${THEORIES[@]}" --advice "${ADVICE_FILES[@]}" \
-  "${SESSION_LOG_ARGS[@]}" --session-log-cache "$SESSION_LOG_CACHE" << 'PYEND'
+  "${SESSION_LOG_ARGS[@]}" "${SESSION_LOG_CACHE_ARGS[@]}" << 'PYEND'
 import gzip
 import json
 import re

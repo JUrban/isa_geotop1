@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import re
 import shlex
 import sys
@@ -60,9 +61,10 @@ ADVICE_FILE_PATTERNS = [
     "ANSWER*.md",
     "CLAUDE*.md",
     "instructions.md",
-    "timing*.txt",
-    "slow_lines*.txt",
 ]
+# Terminal transcripts and timing dumps are useful forensic material, but they
+# swamp normal declaration/advice searches. Keep them out of the default index;
+# opt in with GEOTOP_INDEX_SESSION_LOGS=1 for a focused transcript search.
 SESSION_LOG_FILE_PATTERNS = [
     "*.cast",
     "*.cast.gz",
@@ -155,6 +157,8 @@ def iter_advice_files(base: Path) -> list[Path]:
 
 
 def iter_session_log_files(base: Path) -> list[Path]:
+    if os.environ.get("GEOTOP_INDEX_SESSION_LOGS") != "1":
+        return []
     session_log_files: list[Path] = []
     for pattern in SESSION_LOG_FILE_PATTERNS:
         session_log_files.extend(
@@ -477,13 +481,19 @@ def main() -> int:
     parser.add_argument(
         "--session-log-files",
         action="store_true",
-        help="print bounded session transcript files included in the cache signature",
+        help=(
+            "print bounded session transcript files included in the cache "
+            "signature when GEOTOP_INDEX_SESSION_LOGS=1 is set"
+        ),
     )
     parser.add_argument("--signature", action="store_true", help="print input signature")
     parser.add_argument(
         "--session-log-signature",
         action="store_true",
-        help="print signature for bounded session transcript files only",
+        help=(
+            "print signature for bounded session transcript files only when "
+            "GEOTOP_INDEX_SESSION_LOGS=1 is set"
+        ),
     )
     parser.add_argument(
         "--write-list",

@@ -1,8 +1,9 @@
 #!/bin/bash
 # Generate theorem/definition index from active session theories and local imports.
 # Cache invalidation covers ROOT/ROOTS files, the generated theory list,
-# local advice/report notes, and bounded session transcript inputs
-# (`*.cast(.gz)`, `isa*.jsonl`, `session*.jsonl`, transcript/conversation JSONL).
+# local advice/report notes. Transcript inputs (`*.cast(.gz)`, `isa*.jsonl`,
+# `session*.jsonl`, transcript/conversation JSONL) are tracked only when
+# GEOTOP_INDEX_SESSION_LOGS=1 is set, because they otherwise swamp searches.
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh [--force]
 
