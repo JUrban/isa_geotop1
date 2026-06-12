@@ -25640,8 +25640,85 @@ proof -
     show ?thesis
     proof (cases "card ?T\<^sub>2 > 1")
       case True
-      show ?thesis
+      have hnamed_large_fixed_obstruction_finishes:
+        "\<And>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+          \<beta>\<^sub>c \<notin> ?T\<^sub>1 \<Longrightarrow>
+          \<beta>\<^sub>c \<noteq> \<beta> \<Longrightarrow>
+          \<beta>\<^sub>c \<noteq> \<theta> \<Longrightarrow>
+          \<beta>\<^sub>c \<noteq> \<alpha> \<Longrightarrow>
+          geotop_is_face (closed_segment a c) \<beta>\<^sub>c \<Longrightarrow>
+          \<beta> \<notin> ?T\<^sub>2 \<Longrightarrow>
+          ((?G\<^sub>1 \<rho>
+              \<and> \<rho> \<inter> J\<^sub>1 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>)
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+              \<and> \<rho> \<inter> J\<^sub>2 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+          \<exists>\<rho>. \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+            \<and> \<rho> \<noteq> \<theta>"
+        (**
+          Remaining large side-2 obstruction.  The singleton side is already
+          closed, so the side induction has at least two side-2 candidates.  The
+          book step must show that the fixed empty-parent-contact witness cannot
+          be the only usable side witness: at most one side witness can be
+          spoiled by the artificial chord, and a second side witness must carry a
+          selected edge on the original parent boundary. **)
         sorry
+      show ?thesis
+      proof -
+        obtain \<beta>\<^sub>c \<rho> where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+          and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+          and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+          and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+          and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+          and h\<beta>c_chord:
+            "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+          and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+          and hbranch:
+            "(?G\<^sub>1 \<rho>
+              \<and> \<rho> \<inter> J\<^sub>1 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>)
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+              \<and> \<rho> \<inter> J\<^sub>2 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>\<^sub>c)"
+          using hnamed_obstruction by (elim exE conjE)
+        show ?thesis
+          by (rule hnamed_large_fixed_obstruction_finishes
+              [OF h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+                h\<beta>c_ne_\<alpha> h\<beta>c_chord h\<beta>_not_T\<^sub>2 hbranch])
+      qed
     next
       case False
       show ?thesis
