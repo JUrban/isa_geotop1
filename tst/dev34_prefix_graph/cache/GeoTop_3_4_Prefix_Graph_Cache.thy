@@ -3914,6 +3914,39 @@ proof -
     using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
 qed
 
+lemma geotop_finite_closure_Union_subset_prefix:
+  fixes F :: "'a::topological_space set set"
+  assumes hF: "finite F"
+  shows "closure (\<Union>F) \<subseteq> \<Union>(closure ` F)"
+  using hF
+proof (induction F rule: finite_induct)
+  case empty
+  show ?case
+    by (by100 simp)
+next
+  case (insert A F)
+  have hstep: "closure (\<Union>(insert A F)) = closure A \<union> closure (\<Union>F)"
+    by (by100 simp add: closure_Un)
+  show ?case
+    using hstep insert.IH by (by100 blast)
+qed
+
+lemma geotop_finite_union_closure_touch_member_prefix:
+  fixes F :: "'a::topological_space set set" and G :: "'a set"
+  assumes hF: "finite F"
+  assumes htouch: "G \<inter> closure (\<Union>F) \<noteq> {}"
+  shows "\<exists>C\<in>F. G \<inter> closure C \<noteq> {}"
+proof -
+  obtain x where hxG: "x \<in> G" and hxcl: "x \<in> closure (\<Union>F)"
+    using htouch by (by100 blast)
+  have hxUnion: "x \<in> \<Union>(closure ` F)"
+    using geotop_finite_closure_Union_subset_prefix[OF hF] hxcl by (by100 blast)
+  obtain C where hC: "C \<in> F" and hxC: "x \<in> closure C"
+    using hxUnion by (by100 blast)
+  show ?thesis
+    using hC hxG hxC by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_first_entry_decomposition_prefix:
   fixes L :: "(real^2) set set"
     and S T U M N :: "(real^2) set"
@@ -11381,6 +11414,11 @@ proof -
             show "\<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
               by (rule hM_trace_components_disjoint_U)
           qed
+          have hM_trace_union_closure_touch_member:
+              "\<And>G. G \<inter> closure (\<Union>?Mtrace_components) \<noteq> {}
+                \<Longrightarrow> \<exists>C\<in>?Mtrace_components. G \<inter> closure C \<noteq> {}"
+            by (rule geotop_finite_union_closure_touch_member_prefix
+                [OF hM_trace_components_fin])
           let ?Nloc = "N \<inter> ?Lcomp"
           have hN_local_trace_sub:
               "?Nloc \<subseteq> ?Lcomp"
@@ -11635,6 +11673,11 @@ proof -
                 by (rule hN_trace_component_summary[OF hC])
             qed
           qed
+          have hN_trace_union_closure_touch_member:
+              "\<And>G. G \<inter> closure (\<Union>?Ntrace_components) \<noteq> {}
+                \<Longrightarrow> \<exists>C\<in>?Ntrace_components. G \<inter> closure C \<noteq> {}"
+            by (rule geotop_finite_union_closure_touch_member_prefix
+                [OF hN_trace_components_fin])
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
