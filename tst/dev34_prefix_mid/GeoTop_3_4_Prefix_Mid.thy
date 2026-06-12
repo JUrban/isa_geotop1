@@ -23365,6 +23365,133 @@ proof -
     show ?thesis
       using False hsingle_data by (by100 blast)
   qed
+  have hlarge_candidate_finishes_or_empty_obstruction:
+    "card ?T\<^sub>2 > 1 \<Longrightarrow>
+      ?thesis \<or>
+      (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})))"
+  proof -
+    assume hlarge: "card ?T\<^sub>2 > 1"
+    obtain \<beta>\<^sub>c \<rho> where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+      and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+      and h\<beta>c_chord_face:
+        "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      and hbranch: "?G\<^sub>1 \<rho> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+      using hside_no_chord_candidate_if_side2_large[OF hlarge]
+      by (elim exE conjE)
+    show ?thesis
+    proof (cases "?G\<^sub>1 \<rho>")
+      case True
+      show ?thesis
+      proof (cases "\<rho> \<inter> J\<^sub>1 = {}")
+        case True_empty: True
+        have hobstruction:
+          "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {}))"
+          apply (rule exI[where x = "\<beta>\<^sub>c"])
+          apply (rule exI[where x = "\<rho>"])
+          apply (intro conjI)
+          apply (rule h\<beta>cT\<^sub>2)
+          apply (rule h\<beta>c_not_T\<^sub>1)
+          apply (rule h\<beta>c_ne_\<beta>)
+          apply (rule h\<beta>c_ne_\<theta>)
+          apply (rule h\<beta>c_ne_\<alpha>)
+          apply (rule h\<beta>c_chord_face)
+          apply (rule h\<beta>_not_T\<^sub>2)
+          apply (rule disjI1)
+          using True True_empty
+          apply (by100 simp)
+          done
+        show ?thesis
+          by (rule disjI2[OF hobstruction])
+      next
+        case False
+        have hcontact: "\<rho> \<inter> J\<^sub>1 \<noteq> {}"
+          using False by (by100 simp)
+        have hfinished: ?thesis
+          apply (rule disjI1)
+          apply (rule hG\<^sub>1_side_contact_nonempty_finishes[OF True hcontact])
+          done
+        show ?thesis
+          using hfinished by (by100 blast)
+      qed
+    next
+      case False
+      have hG\<^sub>2: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+      proof -
+        from hbranch show ?thesis
+        proof
+          assume hG\<^sub>1: "?G\<^sub>1 \<rho>"
+          have False
+            using hG\<^sub>1 False by (by100 simp)
+          thus ?thesis
+            by (by100 simp)
+        next
+          assume hG\<^sub>2: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+          show ?thesis
+            by (rule hG\<^sub>2)
+        qed
+      qed
+      show ?thesis
+      proof (cases "\<rho> \<inter> J\<^sub>2 = {}")
+        case True_empty: True
+        have hobstruction:
+          "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {}))"
+          apply (rule exI[where x = "\<beta>\<^sub>c"])
+          apply (rule exI[where x = "\<rho>"])
+          apply (intro conjI)
+          apply (rule h\<beta>cT\<^sub>2)
+          apply (rule h\<beta>c_not_T\<^sub>1)
+          apply (rule h\<beta>c_ne_\<beta>)
+          apply (rule h\<beta>c_ne_\<theta>)
+          apply (rule h\<beta>c_ne_\<alpha>)
+          apply (rule h\<beta>c_chord_face)
+          apply (rule h\<beta>_not_T\<^sub>2)
+          apply (rule disjI2)
+          using hG\<^sub>2 True_empty
+          apply (by100 simp)
+          done
+        show ?thesis
+          by (rule disjI2[OF hobstruction])
+      next
+        case False
+        have hcontact: "\<rho> \<inter> J\<^sub>2 \<noteq> {}"
+          using False by (by100 simp)
+        have hfinished: ?thesis
+          apply (rule disjI1)
+          apply (rule hG\<^sub>2_side_contact_nonempty_finishes[OF hG\<^sub>2 hcontact])
+          done
+        show ?thesis
+          using hfinished by (by100 blast)
+      qed
+    qed
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
