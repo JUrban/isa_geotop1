@@ -11033,6 +11033,94 @@ proof -
               using hnonempty hsubset hconnected hpath hx_comp hcomp_E
               by (intro conjI)
           qed
+          let ?Mtrace_components =
+            "{C\<in>components ?Lcomp. C \<inter> ?Mloc \<noteq> {}}"
+          have hM_trace_components_fin:
+              "finite ?Mtrace_components"
+            by (rule finite_subset[OF _ hlocal_selected_components_fin],
+                by100 blast)
+          have hM_trace_component_summary:
+              "\<And>C. C \<in> ?Mtrace_components
+                \<Longrightarrow> C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Mloc \<noteq> {}"
+          proof -
+            fix C
+            assume hC: "C \<in> ?Mtrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hC by (by100 simp)
+            have hsummary:
+                "C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C"
+              by (rule hselected_component_summary[OF hC_comp])
+            have hC_meets: "C \<inter> ?Mloc \<noteq> {}"
+              using hC by (by100 simp)
+            show "C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?Mloc \<noteq> {}"
+              using hC_comp hsummary hC_meets by (by100 blast)
+          qed
+          have hM_trace_components_cover:
+              "?Mloc \<subseteq> \<Union>?Mtrace_components"
+            by (rule hM_local_trace_component_cover)
+          have hM_trace_components_union_sub:
+              "\<Union>?Mtrace_components \<subseteq> ?Lcomp"
+          proof
+            fix a
+            assume ha: "a \<in> \<Union>?Mtrace_components"
+            obtain C where hC: "C \<in> ?Mtrace_components"
+              and haC: "a \<in> C"
+              using ha by (by100 blast)
+            have hC_sub: "C \<subseteq> ?Lcomp"
+              using hM_trace_component_summary[OF hC] by (by100 blast)
+            show "a \<in> ?Lcomp"
+              using hC_sub haC by (by100 blast)
+          qed
+          have hM_trace_finite_component_package:
+              "finite ?Mtrace_components
+                \<and> ?Mloc \<subseteq> \<Union>?Mtrace_components
+                \<and> \<Union>?Mtrace_components \<subseteq> ?Lcomp
+                \<and> (\<forall>C\<in>?Mtrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Mloc \<noteq> {})"
+          proof (intro conjI)
+            show "finite ?Mtrace_components"
+              by (rule hM_trace_components_fin)
+            show "?Mloc \<subseteq> \<Union>?Mtrace_components"
+              by (rule hM_trace_components_cover)
+            show "\<Union>?Mtrace_components \<subseteq> ?Lcomp"
+              by (rule hM_trace_components_union_sub)
+            show "\<forall>C\<in>?Mtrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?Mloc \<noteq> {}"
+            proof
+              fix C
+              assume hC: "C \<in> ?Mtrace_components"
+              show "C \<in> components ?Lcomp
+                \<and> C \<noteq> {}
+                \<and> C \<subseteq> ?Lcomp
+                \<and> connected C
+                \<and> path_connected C
+                \<and> C \<inter> ?Mloc \<noteq> {}"
+                by (rule hM_trace_component_summary[OF hC])
+            qed
+          qed
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
