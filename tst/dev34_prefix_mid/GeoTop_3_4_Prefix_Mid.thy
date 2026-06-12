@@ -26611,8 +26611,32 @@ proof -
                       apply assumption+
                       done
                   qed
+                  have hside_free_pair_counting_data:
+                    "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+                      \<sigma>\<^sub>1 \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+                      \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+                      \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+                      \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+                      \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+                      \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+                    by (rule hside_free_distinct_pairs_if_side2_large[OF True])
                   have hprimary_spare_parent_empty_counting_book:
-                    "(\<exists>\<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s.
+                    "(\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+                      \<sigma>\<^sub>1 \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+                      \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+                      \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+                      \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+                      \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+                      \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2) \<Longrightarrow>
+                    (\<exists>\<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s.
                       \<sigma>\<^sub>p \<in> L\<^sub>1
                       \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
                       \<and> \<sigma>\<^sub>p \<noteq> \<theta>
@@ -26672,18 +26696,20 @@ proof -
                       \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
                     (**
                       Exact remaining Moise Figure 3.2 counting endpoint in
-                      primary/spare form.  The side induction supplies two
-                      distinct side witnesses on each side.  Side 1 may lose
-                      only the named chord triangle \<open>\<beta>\<close>; side 2 may lose
-                      only \<open>\<beta>\<^sub>c\<close>.  The fixed empty obstruction and the
-                      extra empty candidate are parent-free with no selected
-                      parent-boundary edge.  The book counting contradiction
-                      must force a surviving witness with real side-boundary
-                      contact. **)
+                      side-free plus primary/spare form.  The side induction
+                      supplies two distinct free witnesses on each side; the
+                      filtered primary/spare package records how those
+                      witnesses survive the named chord exclusions.  Side 1
+                      may lose only \<open>\<beta>\<close>; side 2 may lose only \<open>\<beta>\<^sub>c\<close>.
+                      The fixed empty obstruction and the extra empty
+                      candidate are parent-free with no selected parent edge.
+                      The book counting contradiction must force a surviving
+                      witness with real side-boundary contact. **)
                     sorry
                   show ?thesis
                     by (rule hprimary_spare_parent_empty_counting_book
-                        [OF hprimary_spare_counting_data hbranch_fixed_empty
+                        [OF hside_free_pair_counting_data
+                          hprimary_spare_counting_data hbranch_fixed_empty
                           hextra_fixed_empty])
                 qed
                 show ?thesis
