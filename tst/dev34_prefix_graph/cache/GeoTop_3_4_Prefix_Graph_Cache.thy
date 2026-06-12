@@ -3981,7 +3981,73 @@ lemma geotop_branch_vertex_local_side_witness_from_split_side_prefix:
     punctured small star whose closure touches all three incident germs.
     It is kept separate from the component-maximal wrapper below so future
     proof work targets the missing local-side construction directly. **)
-  sorry
+proof -
+  let ?G\<^sub>S = "(S - {w}) \<inter> ball w r"
+  let ?G\<^sub>T = "(T - {w}) \<inter> ball w r"
+  let ?G\<^sub>U = "(U - {w}) \<inter> ball w r"
+  let ?H = "ball w r - (S \<union> T \<union> U)"
+  have hG\<^sub>S_nonempty: "?G\<^sub>S \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hp_cl])
+  have hG\<^sub>T_nonempty: "?G\<^sub>T \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hy_cl])
+  have hG\<^sub>U_nonempty: "?G\<^sub>U \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hz_cl])
+  have hM_ball_cover_named:
+      "M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+    by (rule hM_ball_cover)
+  have hN_ball_cover_named:
+      "N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+    by (rule hN_ball_cover)
+  have hpN: "p \<in> N"
+    using hpSN by (by100 blast)
+  have hyN: "y \<in> N"
+    using hyTN by (by100 blast)
+  have hpS_germ: "p \<in> S - {w}"
+    using hpSN by (by100 blast)
+  have hyT_germ: "y \<in> T - {w}"
+    using hyTN by (by100 blast)
+  have hlocal_side_input_package:
+      "?G\<^sub>S \<noteq> {}
+        \<and> ?G\<^sub>T \<noteq> {}
+        \<and> ?G\<^sub>U \<noteq> {}
+        \<and> M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H
+        \<and> N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H
+        \<and> p \<in> N
+        \<and> y \<in> N
+        \<and> p \<in> S - {w}
+        \<and> y \<in> T - {w}"
+  proof (intro conjI)
+    show "?G\<^sub>S \<noteq> {}" by (rule hG\<^sub>S_nonempty)
+    show "?G\<^sub>T \<noteq> {}" by (rule hG\<^sub>T_nonempty)
+    show "?G\<^sub>U \<noteq> {}" by (rule hG\<^sub>U_nonempty)
+    show "M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+      by (rule hM_ball_cover_named)
+    show "N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+      by (rule hN_ball_cover_named)
+    show "p \<in> N" by (rule hpN)
+    show "y \<in> N" by (rule hyN)
+    show "p \<in> S - {w}" by (rule hpS_germ)
+    show "y \<in> T - {w}" by (rule hyT_germ)
+  qed
+  have hbook_first_entry_side:
+      "\<exists>A x. connected A
+        \<and> A \<subseteq> ?H
+        \<and> x \<in> A
+        \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
+        \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}
+        \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
+    (**
+      Remaining Moise first-entry step.  The connected set \<open>M\<close> carries
+      the three selected sphere germs through the punctured carrier, while
+      \<open>N\<close> is the split-side subarc through the selected S/T germs.  Using
+      the small-star sector covers above, the first entries of these
+      connected witnesses into the small ball must lie on one connected
+      local side of \<open>ball w r - (S \<union> T \<union> U)\<close>, and that side accumulates
+      on all three selected incident germs. **)
+    sorry
+  show ?thesis
+    by (rule hbook_first_entry_side)
+qed
 
 lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
   fixes L :: "(real^2) set set"
