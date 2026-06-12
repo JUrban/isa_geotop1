@@ -30954,6 +30954,73 @@ proof -
     show ?thesis
       using hs hsub_poly by (by100 blast)
   qed
+  have hlocal_point_carrier_contains_vertex_radius:
+    "\<exists>s>0. ball X s \<inter> geotop_polyhedron K
+      \<subseteq> {Y. X \<in> geotop_K_carrier K Y}"
+    (**
+      Stronger finite-star cleanup for the D42 vertex fan.  By shrinking the
+      ball away from every simplex of \<open>K\<close> not containing \<open>X\<close>, the actual
+      carrier of each nearby disk point contains \<open>X\<close>, not merely some
+      larger simplex containing \<open>X\<close>. **)
+  proof -
+    let ?Bad = "{\<tau>\<in>K. X \<notin> \<tau>}"
+    have hBad_fin: "finite ?Bad"
+      using hK_fin by (by100 simp)
+    have hBad_closed: "\<forall>\<tau>\<in>?Bad. closed \<tau>"
+    proof
+      fix \<tau>
+      assume h\<tau>Bad: "\<tau> \<in> ?Bad"
+      have h\<tau>K: "\<tau> \<in> K"
+        using h\<tau>Bad by (by100 simp)
+      show "closed \<tau>"
+        by (rule geotop_complex_simplex_closed[OF hK h\<tau>K])
+    qed
+    have hBad_union_closed: "closed (\<Union>?Bad)"
+      by (rule closed_Union[OF hBad_fin hBad_closed])
+    have hX_not_Bad: "X \<notin> \<Union>?Bad"
+      by (by100 simp)
+    have hopen_compl: "open (- \<Union>?Bad)"
+      by (rule open_Compl[OF hBad_union_closed])
+    have hX_compl: "X \<in> - \<Union>?Bad"
+      using hX_not_Bad by (by100 simp)
+    have hball_all: "\<forall>Y\<in>- \<Union>?Bad. \<exists>s>0. ball Y s \<subseteq> - \<Union>?Bad"
+      by (rule iffD1[OF open_contains_ball[of "- \<Union>?Bad"] hopen_compl])
+    have hball_X: "\<exists>s>0. ball X s \<subseteq> - \<Union>?Bad"
+      by (rule bspec[OF hball_all hX_compl])
+    obtain s where hs: "0 < s" and hball: "ball X s \<subseteq> - \<Union>?Bad"
+      using hball_X by (elim exE conjE)
+    have hsub:
+      "ball X s \<inter> geotop_polyhedron K
+        \<subseteq> {Y. X \<in> geotop_K_carrier K Y}"
+    proof
+      fix Y
+      assume hY: "Y \<in> ball X s \<inter> geotop_polyhedron K"
+      have hYball: "Y \<in> ball X s"
+        using hY by (by100 blast)
+      have hYM: "Y \<in> geotop_polyhedron K"
+        using hY by (by100 blast)
+      have hcarrierK: "geotop_K_carrier K Y \<in> K"
+        by (rule geotop_K_carrier_in[OF hK hK_fin hYM])
+      have hYcarrier: "Y \<in> geotop_K_carrier K Y"
+        by (rule geotop_K_carrier_contains_point[OF hK hK_fin hYM])
+      show "Y \<in> {Y. X \<in> geotop_K_carrier K Y}"
+      proof (rule ccontr)
+        assume hnot: "Y \<notin> {Y. X \<in> geotop_K_carrier K Y}"
+        have hX_not_carrier: "X \<notin> geotop_K_carrier K Y"
+          using hnot by (by100 simp)
+        have hcarrierBad: "geotop_K_carrier K Y \<in> ?Bad"
+          using hcarrierK hX_not_carrier by (by100 simp)
+        have hYBad: "Y \<in> \<Union>?Bad"
+          using hcarrierBad hYcarrier by (by100 blast)
+        have "Y \<notin> \<Union>?Bad"
+          using hball hYball by (by100 blast)
+        thus False
+          using hYBad by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      using hs hsub by (by100 blast)
+  qed
   have hincident_nonboundary_edge_radial_into_interior:
     "\<And>d \<tau> X1. d \<in> K \<Longrightarrow> geotop_is_edge d \<Longrightarrow> X \<in> d \<Longrightarrow>
       X1 \<in> rel_interior d \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow>
