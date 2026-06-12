@@ -4006,6 +4006,50 @@ proof -
     using hpSN by (by100 blast)
   have hyT_germ: "y \<in> T - {w}"
     using hyTN by (by100 blast)
+  have hS_closed: "closed S"
+    using hS_edge unfolding geotop_is_edge_def
+    by (rule geotop_simplex_dim_closed)
+  have hT_closed: "closed T"
+    using hT_edge unfolding geotop_is_edge_def
+    by (rule geotop_simplex_dim_closed)
+  have hU_closed: "closed U"
+    using hU_edge unfolding geotop_is_edge_def
+    by (rule geotop_simplex_dim_closed)
+  have hSTU_closed: "closed (S \<union> T \<union> U)"
+    by (intro closed_Un hS_closed hT_closed hU_closed)
+  have hH_open: "open ?H"
+    by (rule open_Diff[OF open_ball hSTU_closed])
+  have hG\<^sub>S_G\<^sub>T_disj: "?G\<^sub>S \<inter> ?G\<^sub>T = {}"
+    using hST_disj by (by100 blast)
+  have hG\<^sub>S_G\<^sub>U_disj: "?G\<^sub>S \<inter> ?G\<^sub>U = {}"
+    using hSU_disj by (by100 blast)
+  have hG\<^sub>T_G\<^sub>U_disj: "?G\<^sub>T \<inter> ?G\<^sub>U = {}"
+    using hTU_disj by (by100 blast)
+  have hG\<^sub>S_H_disj: "?G\<^sub>S \<inter> ?H = {}"
+    by (by100 blast)
+  have hG\<^sub>T_H_disj: "?G\<^sub>T \<inter> ?H = {}"
+    by (by100 blast)
+  have hG\<^sub>U_H_disj: "?G\<^sub>U \<inter> ?H = {}"
+    by (by100 blast)
+  have hfirst_entry_geometry_package:
+      "open ?H
+      \<and> ?G\<^sub>S \<inter> ?G\<^sub>T = {}
+      \<and> ?G\<^sub>S \<inter> ?G\<^sub>U = {}
+      \<and> ?G\<^sub>T \<inter> ?G\<^sub>U = {}
+      \<and> ?G\<^sub>S \<inter> ?H = {}
+      \<and> ?G\<^sub>T \<inter> ?H = {}
+      \<and> ?G\<^sub>U \<inter> ?H = {}
+      \<and> connected M
+      \<and> connected N
+      \<and> p \<in> M
+      \<and> y \<in> M
+      \<and> z \<in> M
+      \<and> p \<in> N
+      \<and> y \<in> N"
+    using hH_open hG\<^sub>S_G\<^sub>T_disj hG\<^sub>S_G\<^sub>U_disj hG\<^sub>T_G\<^sub>U_disj
+      hG\<^sub>S_H_disj hG\<^sub>T_H_disj hG\<^sub>U_H_disj hM_conn hN_conn
+      hpM hyM hzM hpN hyN
+    by (by100 blast)
   have hlocal_side_input_package:
       "?G\<^sub>S \<noteq> {}
         \<and> ?G\<^sub>T \<noteq> {}
