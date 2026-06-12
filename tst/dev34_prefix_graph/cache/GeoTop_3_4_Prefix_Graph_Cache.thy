@@ -12701,6 +12701,10 @@ proof -
                 using hW_sub_Np by (by100 blast)
               have hy_not_W_local: "y \<notin> W \<inter> ?Lcomp"
                 using hy_not_local_complement by (by100 blast)
+              have hq\<^sub>1_not_ball: "q\<^sub>1 \<notin> ball w r"
+                using hr_lt_q\<^sub>1 by (by100 simp)
+              have hq\<^sub>1_not_W_local: "q\<^sub>1 \<notin> W \<inter> ?Lcomp"
+                using hq\<^sub>1_not_ball by (by100 blast)
               have hW_ball_nonempty_if_w_endpoint:
                   "w \<in> closure W \<Longrightarrow> W \<inter> ball w r \<noteq> {}"
               proof -
@@ -13193,6 +13197,8 @@ proof -
                     \<and> y \<in> (T - {w}) \<inter> N
                     \<and> y \<notin> ball w r
                     \<and> y \<notin> W \<inter> ?Lcomp
+                    \<and> q\<^sub>1 \<notin> ball w r
+                    \<and> q\<^sub>1 \<notin> W \<inter> ?Lcomp
                     \<and> y \<in> closure ((T - {w}) \<inter> ball w r)
                     \<and> W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components
                     \<and> W \<inter> ball w r
@@ -13290,6 +13296,8 @@ proof -
                 show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
                 show "y \<notin> ball w r" by (rule hy_not_ball)
                 show "y \<notin> W \<inter> ?Lcomp" by (rule hy_not_W_local)
+                show "q\<^sub>1 \<notin> ball w r" by (rule hq\<^sub>1_not_ball)
+                show "q\<^sub>1 \<notin> W \<inter> ?Lcomp" by (rule hq\<^sub>1_not_W_local)
                 show "y \<in> closure ((T - {w}) \<inter> ball w r)"
                   by (rule hy_selected_germ_cl)
                 show "W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components"
