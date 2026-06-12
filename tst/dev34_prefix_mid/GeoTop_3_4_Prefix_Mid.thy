@@ -25583,7 +25583,71 @@ proof -
       argument: a side induction cannot use only the named chord triangle and
       one empty parent-contact triangle without contradicting the selected
       nonfree triangle setup. **)
-    sorry
+  proof -
+    assume hnamed_obstruction:
+      "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>)
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+            \<and> \<rho> \<inter> J\<^sub>2 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>\<^sub>c))"
+    have hnamed_singleton_side2_finishes:
+      "\<not> card ?T\<^sub>2 > 1 \<Longrightarrow>
+        \<exists>\<rho>. \<rho> \<in> K
+          \<and> geotop_free_2_simplex K J \<rho>
+          \<and> geotop_simplex_dim \<rho> 2
+          \<and> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+          \<and> \<rho> \<noteq> \<theta>"
+    proof -
+      assume hnot_large: "\<not> card ?T\<^sub>2 > 1"
+      obtain \<beta>\<^sub>c where hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+        and h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+        and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+        and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+        and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+        and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+        and h\<beta>c_chord:
+          "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+        and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+        using hside2_singleton_chord_data_if_not_large[OF hnot_large]
+        by (elim exE conjE)
+      show ?thesis
+        by (rule hsingleton_side2_parent_free_finishes
+            [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_ne_\<theta> h\<beta>c_chord])
+    qed
+    show ?thesis
+    proof (cases "card ?T\<^sub>2 > 1")
+      case True
+      show ?thesis
+        sorry
+    next
+      case False
+      show ?thesis
+        by (rule hnamed_singleton_side2_finishes[OF False])
+    qed
+  qed
   have hstandalone_empty_parent_obstruction_finishes:
     "\<exists>\<rho>. ?G\<^sub>1 \<rho>
         \<and> \<rho> \<inter> J\<^sub>1 = {}
@@ -25688,9 +25752,56 @@ proof -
       both side complexes, discard any artificial-chord-only witness, and
       transfer a surviving selected free witness to the parent disk. **)
     using hresidual_cases_parent_empty_selected
-      hnamed_empty_parent_obstruction_finishes
-      hstandalone_empty_parent_obstruction_finishes
-    by (by100 blast)
+    proof (elim disjE)
+      assume hdone: ?thesis
+      show ?thesis
+        by (rule hdone)
+    next
+      assume hnamed:
+        "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+          \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+          \<and> \<beta>\<^sub>c \<noteq> \<beta>
+          \<and> \<beta>\<^sub>c \<noteq> \<theta>
+          \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+          \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+          \<and> \<beta> \<notin> ?T\<^sub>2
+          \<and> ((?G\<^sub>1 \<rho>
+              \<and> \<rho> \<inter> J\<^sub>1 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>)
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+              \<and> \<rho> \<inter> J\<^sub>2 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>\<^sub>c))"
+      show ?thesis
+        by (rule hnamed_empty_parent_obstruction_finishes[OF hnamed])
+    next
+      assume hstandalone:
+        "\<exists>\<rho>. ?G\<^sub>1 \<rho>
+          \<and> \<rho> \<inter> J\<^sub>1 = {}
+          \<and> \<rho> \<in> K
+          \<and> geotop_free_2_simplex K J \<rho>
+          \<and> geotop_simplex_dim \<rho> 2
+          \<and> \<rho> \<inter> J = {}
+          \<and> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+          \<and> \<rho> \<noteq> \<theta>
+          \<and> \<rho> \<noteq> \<beta>"
+      show ?thesis
+        by (rule hstandalone_empty_parent_obstruction_finishes[OF hstandalone])
+    qed
 qed
 
 lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_from_side_transfer_prefix:
