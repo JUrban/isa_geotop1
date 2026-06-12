@@ -3991,7 +3991,124 @@ lemma geotop_branch_vertex_first_entry_decomposition_prefix:
     forces a side reached from that same local side to touch the selected
     \<open>U\<close>-germ as well.  This is intentionally tied to the finite linear graph
     carried by a simple closed curve, not to arbitrary finite graphs. **)
-  sorry
+proof -
+  let ?G\<^sub>S = "(S - {w}) \<inter> ball w r"
+  let ?G\<^sub>T = "(T - {w}) \<inter> ball w r"
+  let ?G\<^sub>U = "(U - {w}) \<inter> ball w r"
+  let ?H = "ball w r - (S \<union> T \<union> U)"
+  have hG\<^sub>S_nonempty: "?G\<^sub>S \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hp_cl])
+  have hG\<^sub>T_nonempty: "?G\<^sub>T \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hy_cl])
+  have hG\<^sub>U_nonempty: "?G\<^sub>U \<noteq> {}"
+    by (rule geotop_closure_member_imp_nonempty_prefix[OF hz_cl])
+  have hM_ball_cover_named:
+      "M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+    by (rule hM_ball_cover)
+  have hN_ball_cover_named:
+      "N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+    by (rule hN_ball_cover)
+  have hpN: "p \<in> N"
+    using hpSN by (by100 blast)
+  have hyN: "y \<in> N"
+    using hyTN by (by100 blast)
+  have hpS_germ: "p \<in> S - {w}"
+    using hpSN by (by100 blast)
+  have hyT_germ: "y \<in> T - {w}"
+    using hyTN by (by100 blast)
+  have hS_closed: "closed S"
+    using hS_edge unfolding geotop_is_edge_def
+    by (rule geotop_simplex_dim_closed)
+  have hT_closed: "closed T"
+    using hT_edge unfolding geotop_is_edge_def
+    by (rule geotop_simplex_dim_closed)
+  have hU_closed: "closed U"
+    using hU_edge unfolding geotop_is_edge_def
+    by (rule geotop_simplex_dim_closed)
+  have hSTU_closed: "closed (S \<union> T \<union> U)"
+    by (intro closed_Un hS_closed hT_closed hU_closed)
+  have hH_open: "open ?H"
+    by (rule open_Diff[OF open_ball hSTU_closed])
+  have hG\<^sub>S_G\<^sub>T_disj: "?G\<^sub>S \<inter> ?G\<^sub>T = {}"
+    using hST_disj by (by100 blast)
+  have hG\<^sub>S_G\<^sub>U_disj: "?G\<^sub>S \<inter> ?G\<^sub>U = {}"
+    using hSU_disj by (by100 blast)
+  have hG\<^sub>T_G\<^sub>U_disj: "?G\<^sub>T \<inter> ?G\<^sub>U = {}"
+    using hTU_disj by (by100 blast)
+  have hG\<^sub>S_H_disj: "?G\<^sub>S \<inter> ?H = {}"
+    by (by100 blast)
+  have hG\<^sub>T_H_disj: "?G\<^sub>T \<inter> ?H = {}"
+    by (by100 blast)
+  have hG\<^sub>U_H_disj: "?G\<^sub>U \<inter> ?H = {}"
+    by (by100 blast)
+  have hfirst_entry_geometry_package:
+      "open ?H
+      \<and> ?G\<^sub>S \<inter> ?G\<^sub>T = {}
+      \<and> ?G\<^sub>S \<inter> ?G\<^sub>U = {}
+      \<and> ?G\<^sub>T \<inter> ?G\<^sub>U = {}
+      \<and> ?G\<^sub>S \<inter> ?H = {}
+      \<and> ?G\<^sub>T \<inter> ?H = {}
+      \<and> ?G\<^sub>U \<inter> ?H = {}
+      \<and> connected M
+      \<and> connected N
+      \<and> p \<in> M
+      \<and> y \<in> M
+      \<and> z \<in> M
+      \<and> p \<in> N
+      \<and> y \<in> N"
+    using hH_open hG\<^sub>S_G\<^sub>T_disj hG\<^sub>S_G\<^sub>U_disj hG\<^sub>T_G\<^sub>U_disj
+      hG\<^sub>S_H_disj hG\<^sub>T_H_disj hG\<^sub>U_H_disj hM_conn hN_conn
+      hpM hyM hzM hpN hyN
+    by (by100 blast)
+  have hlocal_side_input_package:
+      "?G\<^sub>S \<noteq> {}
+        \<and> ?G\<^sub>T \<noteq> {}
+        \<and> ?G\<^sub>U \<noteq> {}
+        \<and> M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H
+        \<and> N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H
+        \<and> p \<in> N
+        \<and> y \<in> N
+        \<and> p \<in> S - {w}
+        \<and> y \<in> T - {w}"
+  proof (intro conjI)
+    show "?G\<^sub>S \<noteq> {}" by (rule hG\<^sub>S_nonempty)
+    show "?G\<^sub>T \<noteq> {}" by (rule hG\<^sub>T_nonempty)
+    show "?G\<^sub>U \<noteq> {}" by (rule hG\<^sub>U_nonempty)
+    show "M \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+      by (rule hM_ball_cover_named)
+    show "N \<inter> ball w r \<subseteq> ?G\<^sub>S \<union> ?G\<^sub>T \<union> ?G\<^sub>U \<union> ?H"
+      by (rule hN_ball_cover_named)
+    show "p \<in> N" by (rule hpN)
+    show "y \<in> N" by (rule hyN)
+    show "p \<in> S - {w}" by (rule hpS_germ)
+    show "y \<in> T - {w}" by (rule hyT_germ)
+  qed
+  have hbook_first_entry_core:
+      "(\<exists>A x. connected A
+          \<and> A \<subseteq> ?H
+          \<and> x \<in> A
+          \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
+          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {})
+       \<and> (\<forall>A x. connected A
+          \<longrightarrow> A \<subseteq> ?H
+          \<longrightarrow> x \<in> A
+          \<longrightarrow> ?G\<^sub>S \<inter> closure A \<noteq> {}
+          \<longrightarrow> ?G\<^sub>T \<inter> closure A \<noteq> {}
+          \<longrightarrow> (\<exists>B y. connected B
+              \<and> B \<subseteq> ?H
+              \<and> y \<in> B
+              \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
+              \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
+              \<and> ?G\<^sub>U \<inter> closure B \<noteq> {}))"
+    (**
+      Remaining first-entry book step, now with the local geometry and input
+      packages above in scope.  The proof should construct the S/T local side
+      from \<open>N\<close> and then use \<open>M\<close> to transfer to a side accumulating on
+      \<open>?G\<^sub>U\<close>. **)
+    sorry
+  show ?thesis
+    by (rule hbook_first_entry_core)
+qed
 
 lemma geotop_branch_vertex_local_side_witness_from_split_side_prefix:
   fixes L :: "(real^2) set set"
