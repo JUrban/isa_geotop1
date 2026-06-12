@@ -27060,7 +27060,83 @@ proof -
 	                            side-free pair data, the two fixed parent-empty
 	                            obstructions, and the spare witnesses must force
 	                            a side witness with nonempty boundary contact. **)
-	                          sorry
+	                        proof -
+	                          assume hparent_or_named_residual:
+	                            "(\<exists>\<zeta>.
+	                              ((?G\<^sub>1 \<zeta>
+	                                \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                \<and> \<zeta> \<in> K
+	                                \<and> geotop_free_2_simplex K J \<zeta>
+	                                \<and> geotop_simplex_dim \<zeta> 2
+	                                \<and> \<zeta> \<inter> J = {}
+	                                \<and> {e\<in>K. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                \<and> \<zeta> \<noteq> \<theta>
+	                                \<and> \<zeta> \<noteq> \<beta>)
+	                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                \<and> \<zeta> \<in> K
+	                                \<and> geotop_free_2_simplex K J \<zeta>
+	                                \<and> geotop_simplex_dim \<zeta> 2
+	                                \<and> \<zeta> \<inter> J = {}
+	                                \<and> {e\<in>K. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                \<and> \<zeta> \<noteq> \<theta>
+	                                \<and> \<zeta> \<noteq> \<beta>\<^sub>c)))
+	                              \<or> (\<sigma>\<^sub>p = \<beta> \<and> \<tau>\<^sub>p = \<beta>\<^sub>c)"
+	                          have hcanonical_primary_spare_counting_data:
+	                            "\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+	                              \<and> geotop_simplex_dim \<sigma> 2
+	                              \<and> \<sigma> \<noteq> \<theta>
+	                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                              \<and> \<sigma> \<inter> J\<^sub>1 =
+	                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+	                              \<and> \<sigma>' \<in> L\<^sub>1
+	                              \<and> geotop_simplex_dim \<sigma>' 2
+	                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                              \<and> \<sigma>' \<inter> J\<^sub>1 =
+	                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
+	                              \<and> \<sigma> \<noteq> \<sigma>'
+	                              \<and> \<tau> \<in> L\<^sub>2
+	                              \<and> geotop_simplex_dim \<tau> 2
+	                              \<and> \<tau> \<noteq> \<theta>
+	                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                              \<and> \<tau> \<inter> J\<^sub>2 =
+	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+	                              \<and> \<tau>' \<in> L\<^sub>2
+	                              \<and> geotop_simplex_dim \<tau>' 2
+	                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                              \<and> \<tau>' \<inter> J\<^sub>2 =
+	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}
+	                              \<and> \<tau> \<noteq> \<tau>'
+	                              \<and> \<sigma> \<noteq> \<tau>
+	                              \<and> (\<sigma> \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>)
+	                              \<and> (\<tau> \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>)"
+	                            using hlarge_fixed_oriented_primary_data .
+	                          have hparent_or_named_with_canonical_spares_book:
+	                            "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                            (**
+	                              Final local form of the Moise Figure 3.2
+	                              counting contradiction.  The residual
+	                              \<open>hparent_or_named_residual\<close> supplies either
+	                              another empty parent candidate or the named
+	                              primary pair; the canonical primary/spare
+	                              data above supplies the card/contact facts
+	                              needed to run the same spare-witness split as
+	                              the earlier large-side branch. **)
+	                            sorry
+	                          show ?thesis
+	                            by (rule hparent_or_named_with_canonical_spares_book)
+	                        qed
 	                        show ?thesis
 	                          by (rule hprimary_parent_or_named_counting_book
 	                              [OF hprimary_empty_parent_candidate_or_named])
