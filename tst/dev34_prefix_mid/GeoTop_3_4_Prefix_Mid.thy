@@ -25540,6 +25540,144 @@ proof -
       qed
     qed
   qed
+  have hnamed_empty_parent_obstruction_finishes:
+    "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>)
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+            \<and> \<rho> \<inter> J\<^sub>2 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+    (**
+      Remaining named artificial-chord obstruction from Moise Figure 3.2.
+      The side filters have already removed every nonempty side-contact
+      witness and every singleton side-2 boundary witness; this branch says
+      the only surviving candidates have empty parent-boundary contact.  The
+      next book step is to rule this out by the same two-side counting
+      argument: a side induction cannot use only the named chord triangle and
+      one empty parent-contact triangle without contradicting the selected
+      nonfree triangle setup. **)
+    sorry
+  have hstandalone_empty_parent_obstruction_finishes:
+    "\<exists>\<rho>. ?G\<^sub>1 \<rho>
+        \<and> \<rho> \<inter> J\<^sub>1 = {}
+        \<and> \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> \<rho> \<inter> J = {}
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+        \<and> \<rho> \<noteq> \<theta>
+        \<and> \<rho> \<noteq> \<beta> \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+    (**
+      Asymmetric residue after the named side-2 chord branch is eliminated.
+      This is the side-1 version of the same artificial-chord-only failure:
+      the canonical side witness has empty side contact, hence empty parent
+      contact, and must be replaced by a real parent-boundary side witness. **)
+  proof -
+    assume hstandalone:
+      "\<exists>\<rho>. ?G\<^sub>1 \<rho>
+        \<and> \<rho> \<inter> J\<^sub>1 = {}
+        \<and> \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> \<rho> \<inter> J = {}
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+        \<and> \<rho> \<noteq> \<theta>
+        \<and> \<rho> \<noteq> \<beta>"
+    obtain \<beta>\<^sub>c where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+      and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+      and h\<beta>c_chord: "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      using hside_chord_only_named_faces_avoid_\<theta>_\<alpha> by (elim exE conjE)
+    obtain \<rho> where h\<rho>branch:
+      "?G\<^sub>1 \<rho>
+        \<and> \<rho> \<inter> J\<^sub>1 = {}
+        \<and> \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> \<rho> \<inter> J = {}
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+        \<and> \<rho> \<noteq> \<theta>
+        \<and> \<rho> \<noteq> \<beta>"
+      using hstandalone by (elim exE)
+    have hnamed:
+      "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>)
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+            \<and> \<rho> \<inter> J\<^sub>2 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>\<^sub>c))"
+      apply (rule exI[where x = "\<beta>\<^sub>c"])
+      apply (rule exI[where x = "\<rho>"])
+      using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+        h\<beta>c_ne_\<alpha> h\<beta>c_chord h\<beta>_not_T\<^sub>2 h\<rho>branch
+      apply (intro conjI)
+      apply assumption+
+      apply (rule disjI1)
+      apply (rule h\<rho>branch)
+      done
+    show ?thesis
+      by (rule hnamed_empty_parent_obstruction_finishes[OF hnamed])
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
@@ -25549,7 +25687,10 @@ proof -
       chord-side polygonal disks along \<open>a-c\<close>, apply the strong induction to
       both side complexes, discard any artificial-chord-only witness, and
       transfer a surviving selected free witness to the parent disk. **)
-    sorry
+    using hresidual_cases_parent_empty_selected
+      hnamed_empty_parent_obstruction_finishes
+      hstandalone_empty_parent_obstruction_finishes
+    by (by100 blast)
 qed
 
 lemma geotop_polygon_disk_gt2_free_nonempty_selected_witness_from_side_transfer_prefix:
