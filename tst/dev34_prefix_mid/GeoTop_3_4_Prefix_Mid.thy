@@ -24562,6 +24562,66 @@ proof -
           \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
       using hcontact_sub hcontact_sup by (by100 blast)
   qed
+  have hsingleton_side2_parent_free_finishes:
+    "\<And>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c} \<Longrightarrow>
+      \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+      \<beta>\<^sub>c \<noteq> \<theta> \<Longrightarrow>
+      geotop_is_face (closed_segment a c) \<beta>\<^sub>c \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    fix \<beta>\<^sub>c
+    assume hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+    assume h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+    assume h\<beta>c_chord:
+      "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+    have h\<beta>cL\<^sub>2: "\<beta>\<^sub>c \<in> L\<^sub>2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have h\<beta>cK: "\<beta>\<^sub>c \<in> K"
+      using hL\<^sub>2_sub_K h\<beta>cL\<^sub>2 by (by100 blast)
+    have h\<beta>c2: "geotop_simplex_dim \<beta>\<^sub>c 2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    let ?E\<^sub>2 = "{e\<in>L\<^sub>2. geotop_is_edge e
+      \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+    have hE\<^sub>2_fin: "finite ?E\<^sub>2"
+      using hL\<^sub>2_fin by (by100 simp)
+    have hE\<^sub>2_card: "card ?E\<^sub>2 \<le> 2"
+      by (rule hsingleton_side2_parent_selected_edges_card_le2
+          [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_chord])
+    have hE\<^sub>2_contact:
+      "\<beta>\<^sub>c \<inter> J = \<Union>?E\<^sub>2"
+      by (rule hsingleton_side2_parent_contact
+          [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_chord])
+    have h\<beta>c_free: "geotop_free_2_simplex K J \<beta>\<^sub>c"
+      by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+          [OF hL\<^sub>2_sub_K h\<beta>cL\<^sub>2 h\<beta>c2 hE\<^sub>2_fin hE\<^sub>2_card hE\<^sub>2_contact])
+    obtain u e\<^sub>a e\<^sub>c where he\<^sub>a_L\<^sub>2: "e\<^sub>a \<in> L\<^sub>2"
+      and he\<^sub>a_edge: "geotop_is_edge e\<^sub>a"
+      and he\<^sub>a_face: "geotop_is_face e\<^sub>a \<beta>\<^sub>c"
+      and he\<^sub>a_sub_J: "e\<^sub>a \<subseteq> J"
+      by (rule exE[OF hsingleton_side2_two_nonchord_parent_edges
+          [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_chord]])
+        (by100 blast)
+    have he\<^sub>a_K: "e\<^sub>a \<in> K"
+      using hL\<^sub>2_sub_K he\<^sub>a_L\<^sub>2 by (by100 blast)
+    have hselected_nonempty:
+      "{e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<noteq> {}"
+      using he\<^sub>a_K he\<^sub>a_edge he\<^sub>a_face he\<^sub>a_sub_J by (by100 blast)
+    show "\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+      using h\<beta>cK h\<beta>c_free h\<beta>c2 hselected_nonempty h\<beta>c_ne_\<theta>
+      by (by100 blast)
+  qed
   have hresidual_cases_with_singleton_side2_parent_count:
     "(\<exists>\<rho>. \<rho> \<in> K
         \<and> geotop_free_2_simplex K J \<rho>
