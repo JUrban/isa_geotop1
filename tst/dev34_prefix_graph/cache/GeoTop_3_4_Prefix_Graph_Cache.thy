@@ -12367,7 +12367,15 @@ proof -
                         \<and> y \<in> D - {p})
                       \<or> (\<exists>D. N = D
                         \<and> W = D - {p, q\<^sub>1}
-                        \<and> y \<in> D - {p}))"
+                        \<and> y \<in> D - {p}))
+                    \<and> ((\<exists>D. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W)
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W))"
               proof -
                 obtain D\<^sub>w D\<^sub>q where hN_side:
                     "(N = D\<^sub>w - {w}
@@ -12413,6 +12421,21 @@ proof -
                         [OF geotop_euclidean_topology_UNIV_strict
                           geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
                           hD_arc hD_ep hwp])
+                  have hwW_cl: "w \<in> closure ?W"
+                  proof -
+                    have hw_cl_on:
+                        "w \<in> closure_on UNIV geotop_euclidean_topology ?W"
+                      by (rule arc_endpoint_in_closure_of_interior(1)
+                          [OF geotop_euclidean_topology_UNIV_strict
+                            geotop_euclidean_topology_UNIV_hausdorff
+                            subset_UNIV hD_arc hD_ep hwp])
+                    have hcl_eq:
+                        "closure_on UNIV geotop_euclidean_topology ?W
+                          = closure ?W"
+                      by (rule closure_on_geotop_UNIV_eq_closure)
+                    show ?thesis
+                      using hw_cl_on hcl_eq by (by100 simp)
+                  qed
                   have hbody:
                       "?W \<subseteq> N - {p}
                         \<and> ?W \<noteq> {}
@@ -12425,7 +12448,15 @@ proof -
                             \<and> y \<in> D - {p})
                           \<or> (\<exists>D. N = D
                             \<and> ?W = D - {p, q\<^sub>1}
-                            \<and> y \<in> D - {p}))"
+                            \<and> y \<in> D - {p}))
+                        \<and> ((\<exists>D. N = D - {w}
+                            \<and> ?W = D - {w, p}
+                            \<and> y \<in> D - {p}
+                            \<and> w \<in> closure ?W)
+                          \<or> (\<exists>D. N = D
+                            \<and> ?W = D - {p, q\<^sub>1}
+                            \<and> y \<in> D - {p}
+                            \<and> q\<^sub>1 \<in> closure ?W))"
                   proof (intro conjI)
                     show "?W \<subseteq> N - {p}" by (rule hW_sub)
                     show "?W \<noteq> {}" by (rule hW_nonempty)
@@ -12441,6 +12472,15 @@ proof -
                         \<and> ?W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p})"
                       using hN_eq hy_side by (by100 blast)
+                    show "(\<exists>D. N = D - {w}
+                        \<and> ?W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure ?W)
+                      \<or> (\<exists>D. N = D
+                        \<and> ?W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure ?W)"
+                      using hN_eq hy_side hwW_cl by (by100 blast)
                   qed
                   show ?thesis
                     by (rule exI[where x="?W"], rule hbody)
@@ -12471,6 +12511,21 @@ proof -
                         [OF geotop_euclidean_topology_UNIV_strict
                           geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
                           hD_arc hD_ep hpq])
+                  have hqW_cl: "q\<^sub>1 \<in> closure ?W"
+                  proof -
+                    have hq_cl_on:
+                        "q\<^sub>1 \<in> closure_on UNIV geotop_euclidean_topology ?W"
+                      by (rule arc_endpoint_in_closure_of_interior(2)
+                          [OF geotop_euclidean_topology_UNIV_strict
+                            geotop_euclidean_topology_UNIV_hausdorff
+                            subset_UNIV hD_arc hD_ep hpq])
+                    have hcl_eq:
+                        "closure_on UNIV geotop_euclidean_topology ?W
+                          = closure ?W"
+                      by (rule closure_on_geotop_UNIV_eq_closure)
+                    show ?thesis
+                      using hq_cl_on hcl_eq by (by100 simp)
+                  qed
                   have hbody:
                       "?W \<subseteq> N - {p}
                         \<and> ?W \<noteq> {}
@@ -12483,7 +12538,15 @@ proof -
                             \<and> y \<in> D - {p})
                           \<or> (\<exists>D. N = D
                             \<and> ?W = D - {p, q\<^sub>1}
-                            \<and> y \<in> D - {p}))"
+                            \<and> y \<in> D - {p}))
+                        \<and> ((\<exists>D. N = D - {w}
+                            \<and> ?W = D - {w, p}
+                            \<and> y \<in> D - {p}
+                            \<and> w \<in> closure ?W)
+                          \<or> (\<exists>D. N = D
+                            \<and> ?W = D - {p, q\<^sub>1}
+                            \<and> y \<in> D - {p}
+                            \<and> q\<^sub>1 \<in> closure ?W))"
                   proof (intro conjI)
                     show "?W \<subseteq> N - {p}" by (rule hW_sub)
                     show "?W \<noteq> {}" by (rule hW_nonempty)
@@ -12499,6 +12562,15 @@ proof -
                         \<and> ?W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p})"
                       using hN_eq hy_side by (by100 blast)
+                    show "(\<exists>D. N = D - {w}
+                        \<and> ?W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure ?W)
+                      \<or> (\<exists>D. N = D
+                        \<and> ?W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure ?W)"
+                      using hN_eq hy_side hqW_cl by (by100 blast)
                   qed
                   show ?thesis
                     by (rule exI[where x="?W"], rule hbody)
@@ -12517,6 +12589,15 @@ proof -
                     \<or> (\<exists>D. N = D
                       \<and> W = D - {p, q\<^sub>1}
                       \<and> y \<in> D - {p}))"
+                and hW_source_endpoint_closure_cases:
+                  "((\<exists>D. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W)
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W))"
                 using hN_source_punctured_arc_package by (elim exE conjE)
               have hW_sub_N: "W \<subseteq> N"
                 using hW_sub_Np by (by100 blast)
@@ -12573,7 +12654,15 @@ proof -
                         \<and> y \<in> D - {p})
                       \<or> (\<exists>D. N = D
                         \<and> W = D - {p, q\<^sub>1}
-                        \<and> y \<in> D - {p}))"
+                        \<and> y \<in> D - {p}))
+                    \<and> ((\<exists>D. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W)
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W))"
               proof (intro conjI)
                 show "W \<subseteq> N" by (rule hW_sub_N)
                 show "W \<subseteq> N - {p}" by (rule hW_sub_Np)
@@ -12598,6 +12687,15 @@ proof -
                     \<and> W = D - {p, q\<^sub>1}
                     \<and> y \<in> D - {p}))"
                   by (rule hW_source_cases)
+                show "((\<exists>D. N = D - {w}
+                    \<and> W = D - {w, p}
+                    \<and> y \<in> D - {p}
+                    \<and> w \<in> closure W)
+                  \<or> (\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W))"
+                  by (rule hW_source_endpoint_closure_cases)
               qed
               have hp_not_W: "p \<notin> W"
                 using hW_sub_Np by (by100 blast)
@@ -12622,7 +12720,15 @@ proof -
                       \<subseteq> ((S - {w}) \<inter> ball w r)
                         \<union> ((T - {w}) \<inter> ball w r)
                         \<union> ((U - {w}) \<inter> ball w r)
-                        \<union> \<Union>?Ntrace_components"
+                        \<union> \<Union>?Ntrace_components
+                    \<and> ((\<exists>D. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W)
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W))"
               proof (intro conjI)
                 show "top1_connected_on W
                   (subspace_topology UNIV geotop_euclidean_topology W)"
@@ -12648,6 +12754,15 @@ proof -
                     \<union> ((U - {w}) \<inter> ball w r)
                     \<union> \<Union>?Ntrace_components"
                   by (rule hW_ball_cover_by_selected_and_trace_components)
+                show "((\<exists>D. N = D - {w}
+                    \<and> W = D - {w, p}
+                    \<and> y \<in> D - {p}
+                    \<and> w \<in> closure W)
+                  \<or> (\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W))"
+                  by (rule hW_source_endpoint_closure_cases)
               qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
