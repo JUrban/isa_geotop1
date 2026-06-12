@@ -9257,7 +9257,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T U p y z N where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9286,6 +9287,7 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology N)"
       and hpSN: "p \<in> (S - {w}) \<inter> N"
       and hyTN: "y \<in> (T - {w}) \<inter> N"
+      and hpN_cl: "p \<in> closure (N - {p})"
       using hcanonical_pair_split_side_three_canonical_sphere_points
       by (elim exE conjE)
     have hSTU_eq: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9333,7 +9335,8 @@ proof -
       \<and> top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)
       \<and> p \<in> (S - {w}) \<inter> N
-      \<and> y \<in> (T - {w}) \<inter> N"
+      \<and> y \<in> (T - {w}) \<inter> N
+      \<and> p \<in> closure (N - {p})"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9364,6 +9367,7 @@ proof -
         by (rule hN_conn)
       show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
       show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+      show "p \<in> closure (N - {p})" by (rule hpN_cl)
     qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -9400,7 +9404,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T U p y z N where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9430,6 +9435,7 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology N)"
       and hpSN: "p \<in> (S - {w}) \<inter> N"
       and hyTN: "y \<in> (T - {w}) \<inter> N"
+      and hpN_cl: "p \<in> closure (N - {p})"
       using hcanonical_pair_split_side_selected_three_edges
       by (elim exE conjE)
     have hcard: "card {p, y, z} = 3"
@@ -9462,7 +9468,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9494,6 +9501,7 @@ proof -
         by (rule hN_conn)
       show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
       show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+      show "p \<in> closure (N - {p})" by (rule hpN_cl)
     qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -9907,6 +9915,7 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology N)
           \<and> p \<in> (S - {w}) \<inter> N
           \<and> y \<in> (T - {w}) \<inter> N
+          \<and> p \<in> closure (N - {p})
           \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
               (geotop_polyhedron L - {w})) p y"
@@ -9940,6 +9949,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)"
         and hpSN: "p \<in> (S - {w}) \<inter> N"
         and hyTN: "y \<in> (T - {w}) \<inter> N"
+        and hpN_cl: "p \<in> closure (N - {p})"
         using hcanonical_pair_split_side_selected_three_edges_card
         by (elim exE conjE)
       have hN_subtop:
@@ -10005,6 +10015,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})
         \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -10039,6 +10050,7 @@ proof -
           by (rule hN_conn)
         show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
         show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+        show "p \<in> closure (N - {p})" by (rule hpN_cl)
         show "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -10199,6 +10211,7 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology N)
           \<Longrightarrow> p \<in> (S - {w}) \<inter> N
           \<Longrightarrow> y \<in> (T - {w}) \<inter> N
+          \<Longrightarrow> p \<in> closure (N - {p})
           \<Longrightarrow> top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
               (geotop_polyhedron L - {w})) p y
@@ -10237,6 +10250,7 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology N)"
       assume hpSN: "p \<in> (S - {w}) \<inter> N"
       assume hyTN: "y \<in> (T - {w}) \<inter> N"
+      assume hpN_cl: "p \<in> closure (N - {p})"
       assume hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polyhedron L - {w})) p y"
@@ -11689,6 +11703,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)"
         and hpSN: "p \<in> (S - {w}) \<inter> N"
         and hyTN: "y \<in> (T - {w}) \<inter> N"
+        and hpN_cl: "p \<in> closure (N - {p})"
         and hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -11701,7 +11716,8 @@ proof -
         by (rule hcomponent_from_split_side
             [OF hS_E hT_E hU_E hS hT hU hSTU hST hSU hTU
               hST_disj hSU_disj hTU_disj hpS hyT hzU hp_can hy_can hz_can
-              hpyz_eq hcard hpy hpz hyz hN_sub hN_conn hpSN hyTN hsame])
+              hpyz_eq hcard hpy hpz hyz hN_sub hN_conn hpSN hyTN hpN_cl
+              hsame])
       obtain C where hC:
           "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
         and hS_touch: "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
