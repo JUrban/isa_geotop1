@@ -23317,6 +23317,54 @@ proof -
       apply assumption+
       done
   qed
+  have hside_large_or_singleton_branch_data:
+    "(card ?T\<^sub>2 > 1
+      \<and> (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> (?G\<^sub>1 \<rho> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<rho>)))
+    \<or> (\<not> card ?T\<^sub>2 > 1
+      \<and> (\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+        \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2))"
+  proof (cases "card ?T\<^sub>2 > 1")
+    case True
+    have hlarge_data:
+      "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> (?G\<^sub>1 \<rho> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<rho>)"
+      by (rule hside_no_chord_candidate_if_side2_large[OF True])
+    show ?thesis
+      using True hlarge_data by (by100 blast)
+  next
+    case False
+    have hsingle_data:
+      "\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+        \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2"
+      by (rule hside2_singleton_chord_data_if_not_large[OF False])
+    show ?thesis
+      using False hsingle_data by (by100 blast)
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
