@@ -15232,6 +15232,90 @@ proof -
                   qed
                 qed
               qed
+              have hW_source_local_component_or_germ_closure_cases:
+                  "(((S - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {})
+                    \<or> (((T - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {})
+                    \<or> (((U - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {})
+                    \<or> (\<exists>C. C \<in> components ?Lcomp
+                      \<and> W \<inter> closure C \<noteq> {})
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W)"
+              proof -
+                show ?thesis
+                  using hW_source_local_closure_contact_cases
+                proof (elim disjE)
+                  assume hS:
+                      "((S - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {}"
+                  show ?thesis
+                    by (rule disjI1, rule hS)
+                next
+                  assume hT:
+                      "((T - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {}"
+                  show ?thesis
+                    by (rule disjI2, rule disjI1, rule hT)
+                next
+                  assume hU:
+                      "((U - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {}"
+                  show ?thesis
+                    by (rule disjI2, rule disjI2, rule disjI1, rule hU)
+                next
+                  assume hCex: "\<exists>C\<in>?Ntrace_components.
+                    C \<in> components ?Lcomp
+                    \<and> C \<noteq> {}
+                    \<and> C \<subseteq> ?Lcomp
+                    \<and> connected C
+                    \<and> path_connected C
+                    \<and> C \<inter> ?Nloc \<noteq> {}
+                    \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                    \<and> W \<inter> closure C \<noteq> {}"
+                  then obtain C where hC_comp: "C \<in> components ?Lcomp"
+                    and hW_closure_C: "W \<inter> closure C \<noteq> {}"
+                    by (elim bexE conjE)
+                  show ?thesis
+                  proof (rule disjI2, rule disjI2, rule disjI2, rule disjI1)
+                    show "\<exists>C. C \<in> components ?Lcomp
+                      \<and> W \<inter> closure C \<noteq> {}"
+                      using hC_comp hW_closure_C by (by100 blast)
+                  qed
+                next
+                  assume hq: "\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W"
+                  show ?thesis
+                    by (rule disjI2, rule disjI2, rule disjI2, rule disjI2,
+                        rule hq)
+                qed
+              qed
+              have hW_source_component_or_q_if_no_germ_closure:
+                  "((S - {w}) \<inter> ball w r) \<inter> closure W = {}
+                    \<Longrightarrow> ((T - {w}) \<inter> ball w r) \<inter> closure W = {}
+                    \<Longrightarrow> ((U - {w}) \<inter> ball w r) \<inter> closure W = {}
+                    \<Longrightarrow> (\<exists>C. C \<in> components ?Lcomp
+                      \<and> W \<inter> closure C \<noteq> {})
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W)"
+              proof -
+                assume hS_empty:
+                  "((S - {w}) \<inter> ball w r) \<inter> closure W = {}"
+                assume hT_empty:
+                  "((T - {w}) \<inter> ball w r) \<inter> closure W = {}"
+                assume hU_empty:
+                  "((U - {w}) \<inter> ball w r) \<inter> closure W = {}"
+                show "(\<exists>C. C \<in> components ?Lcomp
+                    \<and> W \<inter> closure C \<noteq> {})
+                  \<or> (\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W)"
+                  using hW_source_local_component_or_germ_closure_cases
+                    hS_empty hT_empty hU_empty
+                  by (by100 blast)
+              qed
               have hlocal_connected_trace_component_upgrade:
                   "\<And>A C. C \<in> components ?Lcomp
                     \<Longrightarrow> connected A
