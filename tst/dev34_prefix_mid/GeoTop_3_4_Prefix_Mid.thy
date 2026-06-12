@@ -29512,7 +29512,240 @@ proof -
 		                                                    spare side-witness pair is
 		                                                    the one that must supply real
 		                                                    side-boundary contact. **)
-		                                                  sorry
+		                                                proof -
+		                                                  assume hnamed_pair:
+		                                                    "(((?H1 x \<and> ?H1 y)
+		                                                        \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                          \<or> (s1 = \<beta> \<and> s2 = \<theta>)))
+		                                                      \<or> ((?H2 x \<and> ?H2 y)
+		                                                        \<and> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                          \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))))"
+		                                                  have hside1_named_spare_book:
+		                                                    "(?H1 x \<and> ?H1 y) \<Longrightarrow>
+		                                                    ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                      \<or> (s1 = \<beta> \<and> s2 = \<theta>)) \<Longrightarrow>
+		                                                    \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                    (**
+		                                                      Side-1 named branch of the
+		                                                      Figure 3.2 count.  Once
+		                                                      the two side-1 free witnesses
+		                                                      are exactly \<open>\<theta>\<close> and \<open>\<beta>\<close>,
+		                                                      inspect the two side-2
+		                                                      witnesses.  A nonnamed
+		                                                      nonempty side-2 contact
+		                                                      finishes by
+		                                                      \<open>ht1_good_finishes\<close> or
+		                                                      \<open>ht2_good_finishes\<close>.  The
+		                                                      remaining book cases are
+		                                                      empty side-2 contact or the
+		                                                      named pair \<open>\<theta>,\<beta>\<^sub>c\<close>, both
+		                                                      resolved by the same fixed
+		                                                      Moise counting package. **)
+		                                                  proof -
+		                                                    assume hxy1: "?H1 x \<and> ?H1 y"
+		                                                    assume hs_named:
+		                                                      "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                    have hside1_named_bad_spares_book:
+		                                                      "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
+		                                                        \<or> t1 \<inter> J\<^sub>2 = {} \<Longrightarrow>
+		                                                      t2 = \<theta> \<or> t2 = \<beta>\<^sub>c
+		                                                        \<or> t2 \<inter> J\<^sub>2 = {} \<Longrightarrow>
+		                                                      \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                      (**
+		                                                        Residual side-1 named
+		                                                        branch after the direct
+		                                                        spare-witness finishers:
+		                                                        both side-2 witnesses are
+		                                                        still bad.  The book proof
+		                                                        now distinguishes named
+		                                                        side-2 use, which is
+		                                                        constrained by
+		                                                        \<open>?T\<^sub>1 \<inter> ?T\<^sub>2 = {}\<close>,
+		                                                        from empty side-2 contact,
+		                                                        which transfers through the
+		                                                        parent-empty count. **)
+		                                                      sorry
+		                                                    show ?thesis
+		                                                    proof (cases
+		                                                        "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
+		                                                          \<or> t1 \<inter> J\<^sub>2 = {}")
+		                                                      case False
+		                                                      have ht1_ne_\<theta>: "t1 \<noteq> \<theta>"
+		                                                        using False by (by100 blast)
+		                                                      have ht1_ne_\<beta>c:
+		                                                        "t1 \<noteq> \<beta>\<^sub>c"
+		                                                        using False by (by100 blast)
+		                                                      have ht1_contact:
+		                                                        "t1 \<inter> J\<^sub>2 \<noteq> {}"
+		                                                        using False by (by100 blast)
+		                                                      show ?thesis
+		                                                        by (rule ht1_good_finishes
+		                                                            [OF ht1_ne_\<theta>
+		                                                              ht1_ne_\<beta>c
+		                                                              ht1_contact])
+		                                                    next
+		                                                      case True
+		                                                      note ht1_bad = True
+		                                                      show ?thesis
+		                                                      proof (cases
+		                                                          "t2 = \<theta> \<or> t2 = \<beta>\<^sub>c
+		                                                            \<or> t2 \<inter> J\<^sub>2 = {}")
+		                                                        case False
+		                                                        have ht2_ne_\<theta>:
+		                                                          "t2 \<noteq> \<theta>"
+		                                                          using False
+		                                                          by (by100 blast)
+		                                                        have ht2_ne_\<beta>c:
+		                                                          "t2 \<noteq> \<beta>\<^sub>c"
+		                                                          using False
+		                                                          by (by100 blast)
+		                                                        have ht2_contact:
+		                                                          "t2 \<inter> J\<^sub>2 \<noteq> {}"
+		                                                          using False
+		                                                          by (by100 blast)
+		                                                        show ?thesis
+		                                                          by (rule ht2_good_finishes
+		                                                              [OF ht2_ne_\<theta>
+		                                                                ht2_ne_\<beta>c
+		                                                                ht2_contact])
+		                                                      next
+		                                                        case True
+		                                                        show ?thesis
+		                                                          by (rule hside1_named_bad_spares_book
+		                                                              [OF ht1_bad True])
+		                                                      qed
+		                                                    qed
+		                                                  qed
+		                                                  have hside2_named_spare_book:
+		                                                    "(?H2 x \<and> ?H2 y) \<Longrightarrow>
+		                                                    ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                      \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)) \<Longrightarrow>
+		                                                    \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                    (** 
+		                                                      Symmetric side-2 named
+		                                                      branch.  With \<open>t1,t2\<close>
+		                                                      exactly \<open>\<theta>,\<beta>\<^sub>c\<close>, the
+		                                                      side-1 witnesses \<open>s1,s2\<close>
+		                                                      must provide either a good
+		                                                      nonempty parent-boundary
+		                                                      contact or an empty/named
+		                                                      residue covered by the same
+		                                                      count. **)
+		                                                  proof -
+		                                                    assume hxy2: "?H2 x \<and> ?H2 y"
+		                                                    assume ht_named:
+		                                                      "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                    have hside2_named_bad_spares_book:
+		                                                      "s1 = \<theta> \<or> s1 = \<beta>
+		                                                        \<or> s1 \<inter> J\<^sub>1 = {} \<Longrightarrow>
+		                                                      s2 = \<theta> \<or> s2 = \<beta>
+		                                                        \<or> s2 \<inter> J\<^sub>1 = {} \<Longrightarrow>
+		                                                      \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                      (**
+		                                                        Symmetric residual:
+		                                                        both side-1 spare
+		                                                        witnesses are still bad
+		                                                        after the direct
+		                                                        finishers.  The remaining
+		                                                        book step is the same
+		                                                        named/empty dichotomy with
+		                                                        sides reversed. **)
+		                                                      sorry
+		                                                    show ?thesis
+		                                                    proof (cases
+		                                                        "s1 = \<theta> \<or> s1 = \<beta>
+		                                                          \<or> s1 \<inter> J\<^sub>1 = {}")
+		                                                      case False
+		                                                      have hs1_ne_\<theta>: "s1 \<noteq> \<theta>"
+		                                                        using False by (by100 blast)
+		                                                      have hs1_ne_\<beta>: "s1 \<noteq> \<beta>"
+		                                                        using False by (by100 blast)
+		                                                      have hs1_contact:
+		                                                        "s1 \<inter> J\<^sub>1 \<noteq> {}"
+		                                                        using False by (by100 blast)
+		                                                      show ?thesis
+		                                                        by (rule hs1_good_finishes
+		                                                            [OF hs1_ne_\<theta>
+		                                                              hs1_ne_\<beta>
+		                                                              hs1_contact])
+		                                                    next
+		                                                      case True
+		                                                      note hs1_bad = True
+		                                                      show ?thesis
+		                                                      proof (cases
+		                                                          "s2 = \<theta> \<or> s2 = \<beta>
+		                                                            \<or> s2 \<inter> J\<^sub>1 = {}")
+		                                                        case False
+		                                                        have hs2_ne_\<theta>:
+		                                                          "s2 \<noteq> \<theta>"
+		                                                          using False
+		                                                          by (by100 blast)
+		                                                        have hs2_ne_\<beta>:
+		                                                          "s2 \<noteq> \<beta>"
+		                                                          using False
+		                                                          by (by100 blast)
+		                                                        have hs2_contact:
+		                                                          "s2 \<inter> J\<^sub>1 \<noteq> {}"
+		                                                          using False
+		                                                          by (by100 blast)
+		                                                        show ?thesis
+		                                                          by (rule hs2_good_finishes
+		                                                              [OF hs2_ne_\<theta>
+		                                                                hs2_ne_\<beta>
+		                                                                hs2_contact])
+		                                                      next
+		                                                        case True
+		                                                        show ?thesis
+		                                                          by (rule hside2_named_bad_spares_book
+		                                                              [OF hs1_bad True])
+		                                                      qed
+		                                                    qed
+		                                                  qed
+		                                                  show ?thesis
+		                                                  proof (rule disjE[OF hnamed_pair])
+		                                                    assume hside1_named:
+		                                                      "(?H1 x \<and> ?H1 y)
+		                                                        \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                          \<or> (s1 = \<beta> \<and> s2 = \<theta>))"
+		                                                    have hxy1: "?H1 x \<and> ?H1 y"
+		                                                      by (rule conjunct1[OF hside1_named])
+		                                                    have hs_named:
+		                                                      "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                      by (rule conjunct2[OF hside1_named])
+		                                                    show ?thesis
+		                                                      by (rule hside1_named_spare_book
+		                                                          [OF hxy1 hs_named])
+		                                                  next
+		                                                    assume hside2_named:
+		                                                      "(?H2 x \<and> ?H2 y)
+		                                                        \<and> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                          \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))"
+		                                                    have hxy2: "?H2 x \<and> ?H2 y"
+		                                                      by (rule conjunct1[OF hside2_named])
+		                                                    have ht_named:
+		                                                      "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                      by (rule conjunct2[OF hside2_named])
+		                                                    show ?thesis
+		                                                      by (rule hside2_named_spare_book
+		                                                          [OF hxy2 ht_named])
+		                                                  qed
+		                                                qed
 		                                                show ?thesis
 		                                                proof (rule disjE
 		                                                    [OF hrefined_bad])
