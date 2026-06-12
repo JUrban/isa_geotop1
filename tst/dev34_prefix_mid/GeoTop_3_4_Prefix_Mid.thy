@@ -28088,7 +28088,98 @@ proof -
 	                                          into a parent-empty obstruction,
 	                                          the proof rejoins the same Moise
 	                                          all-empty book count. **)
-	                                        sorry
+	                                      proof -
+	                                        assume hnon_named_parent_empty:
+	                                          "\<exists>\<zeta>.
+	                                            ((?G\<^sub>1 \<zeta>
+	                                              \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                              \<and> \<zeta> \<in> K
+	                                              \<and> geotop_free_2_simplex K J \<zeta>
+	                                              \<and> geotop_simplex_dim \<zeta> 2
+	                                              \<and> \<zeta> \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e \<zeta>
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> \<zeta> \<noteq> \<theta>
+	                                              \<and> \<zeta> \<noteq> \<beta>)
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                              \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                              \<and> \<zeta> \<in> K
+	                                              \<and> geotop_free_2_simplex K J \<zeta>
+	                                              \<and> geotop_simplex_dim \<zeta> 2
+	                                              \<and> \<zeta> \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e \<zeta>
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> \<zeta> \<noteq> \<theta>
+	                                              \<and> \<zeta> \<noteq> \<beta>\<^sub>c))"
+	                                        obtain nu
+	                                          where hnu_parent_empty:
+	                                            "(?G\<^sub>1 nu
+	                                              \<and> nu \<inter> J\<^sub>1 = {}
+	                                              \<and> nu \<in> K
+	                                              \<and> geotop_free_2_simplex K J nu
+	                                              \<and> geotop_simplex_dim nu 2
+	                                              \<and> nu \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e nu
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> nu \<noteq> \<theta>
+	                                              \<and> nu \<noteq> \<beta>)
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c nu
+	                                              \<and> nu \<inter> J\<^sub>2 = {}
+	                                              \<and> nu \<in> K
+	                                              \<and> geotop_free_2_simplex K J nu
+	                                              \<and> geotop_simplex_dim nu 2
+	                                              \<and> nu \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e nu
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> nu \<noteq> \<theta>
+	                                              \<and> nu \<noteq> \<beta>\<^sub>c)"
+	                                          using hnon_named_parent_empty
+	                                          by (elim exE)
+	                                        have hnon_named_parent_empty_fixed_count_book:
+	                                          "((?G\<^sub>1 nu
+	                                              \<and> nu \<inter> J\<^sub>1 = {}
+	                                              \<and> nu \<in> K
+	                                              \<and> geotop_free_2_simplex K J nu
+	                                              \<and> geotop_simplex_dim nu 2
+	                                              \<and> nu \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e nu
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> nu \<noteq> \<theta>
+	                                              \<and> nu \<noteq> \<beta>)
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c nu
+	                                              \<and> nu \<inter> J\<^sub>2 = {}
+	                                              \<and> nu \<in> K
+	                                              \<and> geotop_free_2_simplex K J nu
+	                                              \<and> geotop_simplex_dim nu 2
+	                                              \<and> nu \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e nu
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> nu \<noteq> \<theta>
+	                                              \<and> nu \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                          \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                              \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                              \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                          (**
+	                                            Fixed-witness form of the
+	                                            non-named-primary parent-empty
+	                                            count.  The empty primary has
+	                                            been converted to the concrete
+	                                            parent obstruction \<open>nu\<close>; the
+	                                            remaining task is the same
+	                                            all-empty Moise count. **)
+	                                          sorry
+	                                        show ?thesis
+	                                          by (rule
+	                                              hnon_named_parent_empty_fixed_count_book
+	                                              [OF hnu_parent_empty])
+	                                      qed
 	                                      show ?thesis
 	                                        by (rule
 	                                            hcanonical_non_named_parent_empty_forces_nonempty
