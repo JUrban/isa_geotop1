@@ -11746,16 +11746,35 @@ proof -
                   \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
-              (**
-                Remaining Moise first-entry/local-star construction, now in
-                the context where the needed data is available:
-                finite components of \<open>?Lcomp\<close>, path-connected component
-                summaries, the local trace \<open>M \<inter> ?Lcomp\<close>, and the
-                selected sphere-germ boundary/closure data.  The next proof
-                step should use the finite component cover of the trace and
-                the connected witness \<open>M\<close> to choose one component whose
-                closure touches the three selected germs. **)
-              sorry
+            proof -
+              have hfirst_entry_component_witness:
+                  "\<exists>C. C \<in> components ?Lcomp
+                    \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                    \<and> ((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                    \<and> ((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                (**
+                  Exact remaining Moise first-entry/local-star construction.
+                  The component must be produced from the connected witness
+                  \<open>M\<close>, the split-side witness \<open>N\<close>, and the finite covers of
+                  their local traces by components of \<open>?Lcomp\<close>.  This is the
+                  point where the simple-closed-curve local model is used:
+                  the connected punctured carrier data must force one local
+                  component of
+                  \<open>ball w r - (S \<union> T \<union> U)\<close> to have all three selected
+                  punctured edge germs in its closure. **)
+                sorry
+              obtain C where hC: "C \<in> components ?Lcomp"
+                and hS_touch:
+                  "((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                and hT_touch:
+                  "((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                and hU_touch:
+                  "((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                using hfirst_entry_component_witness by (elim exE conjE)
+              show ?thesis
+                by (rule hbranch_local_side_witness_from_component
+                    [OF hC hS_touch hT_touch hU_touch])
+            qed
             show ?thesis
               by (rule geotop_branch_vertex_three_germs_same_side_component_prefix
                   [OF hL_linear hL_fin hwL hSCC hr_pos
