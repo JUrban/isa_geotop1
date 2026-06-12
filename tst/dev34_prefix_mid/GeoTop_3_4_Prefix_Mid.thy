@@ -25738,18 +25738,60 @@ proof -
         have hlarge_real_side_contact_candidate:
           "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
             \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
-          (**
-            Remaining large side-2 Moise witness-filtering step.  Since
-            \<open>card ?T\<^sub>2 > 1\<close>, the strong side induction supplies a second
-            side candidate besides the named chord triangle \<open>\<beta>\<^sub>c\<close>; this is
-            now recorded as \<open>hlarge_fixed_no_chord_candidate\<close>.  The
-            empty-parent-contact branch \<open>hbranch_empty\<close> accounts for one
-            artificial-chord-only candidate; the book's counting argument says
-            it cannot be the only usable side witness, so another side witness
-            has nonempty side-boundary contact.  Existing transfer lemmas below
-            then convert that nonempty side contact into selected
-            parent-boundary contact. **)
-          sorry
+        proof -
+          obtain \<gamma> where hcandidate: "?G\<^sub>1 \<gamma> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
+            using hlarge_fixed_no_chord_candidate by (elim exE)
+          show ?thesis
+          proof (rule disjE[OF hcandidate])
+            assume hG1: "?G\<^sub>1 \<gamma>"
+            show ?thesis
+            proof (cases "\<gamma> \<inter> J\<^sub>1 = {}")
+              case False
+              have hcase:
+                "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+                by (rule disjI1, rule conjI, rule hG1, rule False)
+              show ?thesis
+                by (rule exI[where x = "\<gamma>"], rule hcase)
+            next
+              case True
+              show ?thesis
+                (**
+                  Remaining side-1 empty-candidate replacement.  The fixed
+                  no-chord candidate \<open>\<gamma>\<close> has empty side-1 boundary contact,
+                  so \<open>hG\<^sub>1_side_empty_parent_empty_selected_free\<close> would put it
+                  in the same empty parent-contact class as \<open>hbranch_empty\<close>.
+                  Moise's two-side counting step must therefore replace it by
+                  another no-chord side witness with nonempty side-boundary
+                  contact. **)
+                sorry
+            qed
+          next
+            assume hG2: "?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
+            show ?thesis
+            proof (cases "\<gamma> \<inter> J\<^sub>2 = {}")
+              case False
+              have hcase:
+                "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+                by (rule disjI2, rule conjI, rule hG2, rule False)
+              show ?thesis
+                by (rule exI[where x = "\<gamma>"], rule hcase)
+            next
+              case True
+              show ?thesis
+                (**
+                  Remaining side-2 empty-candidate replacement.  The fixed
+                  no-chord candidate lies on side 2 but still has empty
+                  side-boundary contact.  The book proof must use the
+                  \<open>card ?T\<^sub>2 > 1\<close> side-induction strength and the named chord
+                  triangle \<open>\<beta>\<^sub>c\<close> to choose another side witness, rather than
+                  allowing both usable side-2 choices to be artificial-chord or
+                  empty-parent-contact witnesses. **)
+                sorry
+            qed
+          qed
+        qed
         from hlarge_real_side_contact_candidate obtain \<gamma> where h\<gamma>case:
           "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
             \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
