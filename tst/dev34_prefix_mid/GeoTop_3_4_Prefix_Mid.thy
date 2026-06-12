@@ -30863,6 +30863,76 @@ proof -
       hincident_twos_fin hselected_edge_incident hselected_two_incident
       hboundary_selected_edge_incident
     by (by100 blast)
+  have hselected_triangle_radial_into_interior:
+    "\<forall>X1. X1 \<in> interior \<sigma> \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+  proof
+    fix X1
+    show "X1 \<in> interior \<sigma> \<longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+    proof
+      assume hX1_int_\<sigma>: "X1 \<in> interior \<sigma>"
+      let ?I = "geotop_polygon_interior J"
+      let ?M = "geotop_polyhedron K"
+      have hclosure_on: "closure_on UNIV geotop_euclidean_topology ?I = closure ?I"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have hM_closure: "?M = closure ?I"
+        using hK_poly hclosure_on by (by100 simp)
+      have hM_int: "interior ?M = ?I"
+        using geotop_polygon_interior_regular_closed_prefix[OF hJ] hM_closure
+        by (by100 simp)
+      have h\<sigma>subM: "\<sigma> \<subseteq> ?M"
+        using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+      have hinterior_\<sigma>_sub_I: "interior \<sigma> \<subseteq> ?I"
+      proof -
+        have "interior \<sigma> \<subseteq> interior ?M"
+          by (rule interior_mono[OF h\<sigma>subM])
+        thus ?thesis
+          using hM_int by (by100 simp)
+      qed
+      have hseg_\<sigma>: "closed_segment X X1 - {X} \<subseteq> interior \<sigma>"
+        by (rule geotop_2simplex_interior_radial_segment_from_point_prefix
+            [OF h\<sigma>2 hX\<sigma> hX1_int_\<sigma>])
+      show "closed_segment X X1 - {X} \<subseteq> ?I"
+        using hseg_\<sigma> hinterior_\<sigma>_sub_I by (by100 blast)
+    qed
+  qed
+  have hincident_triangle_radial_into_interior:
+    "\<And>\<tau> X1. \<tau> \<in> K \<Longrightarrow>
+      geotop_simplex_dim \<tau> 2 \<Longrightarrow>
+      X \<in> \<tau> \<Longrightarrow>
+      X1 \<in> interior \<tau> \<Longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+  proof -
+    fix \<tau> X1
+    assume h\<tau>K: "\<tau> \<in> K"
+    assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    assume hX\<tau>: "X \<in> \<tau>"
+    assume hX1_int_\<tau>: "X1 \<in> interior \<tau>"
+    let ?I = "geotop_polygon_interior J"
+    let ?M = "geotop_polyhedron K"
+    have hclosure_on: "closure_on UNIV geotop_euclidean_topology ?I = closure ?I"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hM_closure: "?M = closure ?I"
+      using hK_poly hclosure_on by (by100 simp)
+    have hM_int: "interior ?M = ?I"
+      using geotop_polygon_interior_regular_closed_prefix[OF hJ] hM_closure
+      by (by100 simp)
+    have h\<tau>subM: "\<tau> \<subseteq> ?M"
+      using h\<tau>K unfolding geotop_polyhedron_def by (by100 blast)
+    have hinterior_\<tau>_sub_I: "interior \<tau> \<subseteq> ?I"
+    proof -
+      have "interior \<tau> \<subseteq> interior ?M"
+        by (rule interior_mono[OF h\<tau>subM])
+      thus ?thesis
+        using hM_int by (by100 simp)
+    qed
+    have hseg_\<tau>: "closed_segment X X1 - {X} \<subseteq> interior \<tau>"
+      by (rule geotop_2simplex_interior_radial_segment_from_point_prefix
+          [OF h\<tau>2 hX\<tau> hX1_int_\<tau>])
+    show "closed_segment X X1 - {X} \<subseteq> ?I"
+      using hseg_\<tau> hinterior_\<tau>_sub_I by (by100 blast)
+  qed
   have hlocal_finite_fan_wedge:
     "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
       X1 \<in> ball X r \<longrightarrow>
