@@ -102,38 +102,30 @@ proof -
     using polygon_interior_disjoint_polygon[OF hJ] hQ by (by100 blast)
   have hS_not_cut: "S \<notin> geotop_polygon_interior J - (A1 \<union> A2)"
     using polygon_interior_disjoint_polygon[OF hJ] hS by (by100 blast)
-  have hD44_book_steps:
-    "(\<exists>G. geotop_brick_decomposition G \<and>
-          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
-            = \<Union>{g\<in>G. g \<subseteq>
-                closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)} \<and>
-          (\<forall>g\<in>G. \<not> (g \<inter> A1 \<noteq> {} \<and> g \<inter> A2 \<noteq> {})))
-    \<and> (\<exists>G N'. geotop_brick_decomposition G \<and>
-       N' = \<Union>{g\<in>G. g \<inter> A1 \<noteq> {}} \<inter>
-          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<and>
-       geotop_n_manifold_with_boundary_on N' (\<lambda>x y. norm (x - y)) 2)
-    \<and> (\<exists>J' B V W. geotop_is_n_sphere J'
-          (subspace_topology UNIV geotop_euclidean_topology J') 1 \<and>
-        geotop_is_broken_line B \<and> B \<subseteq> J' \<and>
-        V \<in> J \<and> W \<in> J \<and> B \<inter> J = {V, W})
-    \<and> (\<exists>C V W. V \<in> J \<and> W \<in> J \<and>
-       V \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
-       W \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
-       (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology
-                 (geotop_polygon_interior J - (A1 \<union> A2)) P'))
-    \<and> (\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
+  have hD44_component_transfer:
+    "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology
-                  (geotop_polygon_interior J - (A1 \<union> A2)) P'))"
+                  (geotop_polygon_interior J - (A1 \<union> A2)) P')"
     (**
-      Remaining Moise Theorem 4.4 book package: fine brick decomposition,
-      regular neighborhood, frontier broken line, component-frontier step for
-      the broken-line endpoints, and cyclic-order transfer to \<open>Q,S\<close>. **)
+      Remaining Moise Theorem 4.4 regular-neighborhood component-transfer
+      package.  Following the book, choose a fine brick decomposition whose
+      bricks separate \<open>A1\<close> from \<open>A2\<close>, form the brick regular neighborhood
+      of \<open>A1\<close> inside the closed polygonal disk, read the relevant frontier
+      component as a 1-sphere with a broken-line subarc, obtain one component
+      of \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close> whose frontier contains the
+      subarc endpoints, and then use cyclic order to transfer that component
+      frontier statement to the prescribed opposite boundary points \<open>Q,S\<close>.
+
+      The previous placeholder bundled the intermediate brick decomposition,
+      regular-neighborhood manifold, frontier sphere, and endpoint-transfer
+      facts as separate conjuncts.  The surrounding theorem only needs this
+      final component-transfer conclusion, so the open obligation is kept as
+      one exact Moise book package rather than five unrelated local goals. **)
     sorry
   show ?thesis
-    using hD44_book_steps by (by100 blast)
+    using hD44_component_transfer by (by100 blast)
 qed
 
 (** from \<S>4 Theorem 4 (geotop.tex:931)
