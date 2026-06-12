@@ -34717,7 +34717,124 @@ lemma geotop_figure33_one_boundary_named_supported_fold_prefix:
     in a carrier contained in \<open>U\<close>, fix the outside, send \<open>v\<^sub>5\<close> to
     \<open>v\<^sub>1\<close>, extend simplicially over the four Figure 3.3 triangles, and read
     off the new polygon and smaller complex. **)
-  sorry
+proof -
+  let ?B\<^sub>0\<^sub>2 = "closed_segment v\<^sub>0 v\<^sub>2"
+  let ?B\<^sub>0\<^sub>1 = "closed_segment v\<^sub>0 v\<^sub>1"
+  let ?B\<^sub>2\<^sub>1 = "closed_segment v\<^sub>2 v\<^sub>1"
+  let ?B\<^sub>0\<^sub>1\<^sub>2 = "?B\<^sub>0\<^sub>1 \<union> ?B\<^sub>2\<^sub>1"
+  have hfigure33_local_triangle_package:
+      "v\<^sub>0 \<noteq> v\<^sub>1
+      \<and> v\<^sub>2 \<noteq> v\<^sub>1
+      \<and> \<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}
+      \<and> \<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}
+      \<and> frontier \<theta> = ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)
+      \<and> geotop_is_polygon (frontier \<theta>)
+      \<and> geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+  proof -
+    have hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+      using hv\<^sub>1_not by (by100 blast)
+    have hv\<^sub>2v\<^sub>1: "v\<^sub>2 \<noteq> v\<^sub>1"
+      using hv\<^sub>1_not by (by100 blast)
+    have hnot_col_012: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      by (rule geotop_2simplex_vertices_not_collinear_prefix
+          [OF h\<theta>vertices hv\<^sub>0v\<^sub>2 hv\<^sub>1_not])
+    have hnot_col_021: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    proof -
+      have "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+        by (by100 blast)
+      thus ?thesis
+        using hnot_col_012 by (by100 simp)
+    qed
+    have h02_seg: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = ?B\<^sub>0\<^sub>2"
+      using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+        geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"] by (by100 simp)
+    have h01_seg: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = ?B\<^sub>0\<^sub>1"
+      using segment_convex_hull[of v\<^sub>0 v\<^sub>1]
+        geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+    have h21_seg: "geotop_convex_hull {v\<^sub>2, v\<^sub>1} = ?B\<^sub>2\<^sub>1"
+      using segment_convex_hull[of v\<^sub>2 v\<^sub>1]
+        geotop_convex_hull_eq_HOL[of "{v\<^sub>2, v\<^sub>1}"] by (by100 simp)
+    have hfrontier_segments:
+      "frontier \<theta> = ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)"
+      using h\<theta>frontier_named h02_seg h01_seg h21_seg by (by100 blast)
+    have hfrontier_polygon: "geotop_is_polygon (frontier \<theta>)"
+      by (rule geotop_triangle_frontier_is_polygon_from_vertices_prefix
+          [OF h\<theta>vertices hv\<^sub>0v\<^sub>2 hv\<^sub>1_not hnot_col_012])
+    have hB02_arc:
+      "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_closed_segment_arc_endpoints_prefix[OF hv\<^sub>0v\<^sub>2])
+    have hB012_arc_raw:
+      "geotop_arc_endpoints
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_two_segment_join_arc_endpoints_prefix
+          [OF hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 hnot_col_012])
+    have hB012_arc:
+      "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hB012_arc_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2] by (by100 simp)
+    have harc_interiors_disjoint_raw:
+      "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<inter>
+        geotop_arc_interior
+          (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2} =
+        {}"
+      by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix
+          [OF hnot_col_012])
+    have harc_interiors_disjoint:
+      "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+        geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      using harc_interiors_disjoint_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2]
+      by (by100 simp)
+    show ?thesis
+      using hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 hnot_col_012 hnot_col_021 hfrontier_segments
+        hfrontier_polygon hB02_arc hB012_arc harc_interiors_disjoint
+      by (by100 blast)
+  qed
+  have hfigure33_boundary_support_package:
+      "e = ?B\<^sub>0\<^sub>2
+      \<and> \<theta> \<inter> J = ?B\<^sub>0\<^sub>2
+      \<and> ?B\<^sub>0\<^sub>2 \<subseteq> J
+      \<and> \<theta> \<subseteq> geotop_polyhedron K
+      \<and> \<theta> \<subseteq> U"
+  proof -
+    have h02_seg: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = ?B\<^sub>0\<^sub>2"
+      using segment_convex_hull[of v\<^sub>0 v\<^sub>2]
+        geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"] by (by100 simp)
+    have he_segment: "e = ?B\<^sub>0\<^sub>2"
+      using he_named h02_seg by (by100 simp)
+    have h\<theta>J_segment: "\<theta> \<inter> J = ?B\<^sub>0\<^sub>2"
+      using h\<theta>boundary_named h02_seg by (by100 simp)
+    have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
+      using hboundary_one_edge_package he_segment by (by100 blast)
+    have h\<theta>_sub_poly: "\<theta> \<subseteq> geotop_polyhedron K"
+      using h\<theta>K unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<theta>_sub_U: "\<theta> \<subseteq> U"
+      using h\<theta>_sub_poly hclosed_disk_in_support by (by100 blast)
+    show ?thesis
+      using he_segment h\<theta>J_segment hB02_sub_J h\<theta>_sub_poly h\<theta>_sub_U
+      by (by100 blast)
+  qed
+  have hbook_supported_PL_fold:
+      "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+    sorry
+  show ?thesis
+    using hbook_supported_PL_fold by (by100 blast)
+qed
 
 lemma geotop_figure33_two_boundary_named_supported_inverse_fold_prefix:
   fixes J U \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
