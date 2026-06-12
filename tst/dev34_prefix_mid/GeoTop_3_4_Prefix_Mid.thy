@@ -31089,6 +31089,144 @@ proof -
     show "closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
       using hseg_rel hrel_sub_I by (by100 blast)
   qed
+  have hlocal_carrier_fan_cases:
+    "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+      X1 \<in> ball X r \<longrightarrow>
+      ((\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+          \<and> X1 \<in> interior \<tau>)
+       \<or> (\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+          \<and> X1 \<in> rel_interior d
+          \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+          \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J))"
+    (**
+      Carrier-dimension split for the finite fan.  After the carrier-radius
+      shrink, the actual carrier of a nearby interior point contains the
+      boundary vertex \<open>X\<close>.  A 2-carrier gives the triangle-interior branch;
+      a 1-carrier is an incident edge, has a 2-simplex owner in the disk, and
+      cannot be a boundary edge because the point is in the polygon interior;
+      a 0-carrier would force the interior point to equal \<open>X\<close>. **)
+  proof -
+    obtain r where hr: "0 < r"
+      and hcarrier_radius:
+        "ball X r \<inter> geotop_polyhedron K
+          \<subseteq> {Y. X \<in> geotop_K_carrier K Y}"
+      using hlocal_point_carrier_contains_vertex_radius by (elim exE conjE)
+    have hcases:
+      "\<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+        X1 \<in> ball X r \<longrightarrow>
+        ((\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+            \<and> X1 \<in> interior \<tau>)
+         \<or> (\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+            \<and> X1 \<in> rel_interior d
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+            \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J))"
+    proof (intro allI impI)
+      fix X1
+      assume hX1I: "X1 \<in> geotop_polygon_interior J"
+      assume hX1ball: "X1 \<in> ball X r"
+      have hX1M: "X1 \<in> geotop_polyhedron K"
+      proof -
+        have "X1 \<in> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)"
+          using hX1I subset_closure_on[of "geotop_polygon_interior J"
+              "UNIV::(real^2) set" geotop_euclidean_topology]
+          by (by100 blast)
+        thus ?thesis
+          using hK_poly by (by100 simp)
+      qed
+      let ?c = "geotop_K_carrier K X1"
+      have hXc: "X \<in> ?c"
+        using hcarrier_radius hX1ball hX1M by (by100 blast)
+      have hcK: "?c \<in> K"
+        by (rule geotop_K_carrier_in[OF hK hK_fin hX1M])
+      have hX1relc: "X1 \<in> rel_interior ?c"
+        by (rule geotop_K_carrier_rel_interior[OF hK hK_fin hX1M])
+      have hcsimp: "geotop_is_simplex ?c"
+        using geotop_is_complex_simplex[OF hK] hcK by (by100 blast)
+      obtain n where hcdim: "geotop_simplex_dim ?c n"
+        using hcsimp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+        by (by100 blast)
+      have hn_le2: "n \<le> 2"
+        by (rule geotop_simplex_dim_le_2_R2_prefix[OF hcdim])
+      have hn_cases: "n = 0 \<or> n = 1 \<or> n = 2"
+        using hn_le2 by (by100 arith)
+      show "(\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+              \<and> X1 \<in> interior \<tau>)
+         \<or> (\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+            \<and> X1 \<in> rel_interior d
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+            \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J)"
+      proof (rule disjE[OF hn_cases])
+        assume hn0: "n = 0"
+        have hc0: "geotop_simplex_dim ?c 0"
+          using hcdim hn0 by (by100 simp)
+        have hc_single: "?c = {X}"
+          by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF hc0 hXc])
+        have hX1c: "X1 \<in> ?c"
+          using hX1relc rel_interior_subset by (by100 blast)
+        have hX1_eq_X: "X1 = X"
+          using hX1c hc_single by (by100 simp)
+        have "X1 \<in> geotop_polygon_interior J \<inter> J"
+          using hX1I hX1_eq_X hX by (by100 blast)
+        thus ?thesis
+          using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+      next
+        assume hn1_or_2: "n = 1 \<or> n = 2"
+        show ?thesis
+        proof (rule disjE[OF hn1_or_2])
+          assume hn1: "n = 1"
+          have hc1: "geotop_simplex_dim ?c 1"
+            using hcdim hn1 by (by100 simp)
+          have hcedge: "geotop_is_edge ?c"
+            using hc1 unfolding geotop_is_edge_def by (by100 simp)
+          obtain \<tau> where h\<tau>K: "\<tau> \<in> K"
+            and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+            and hcface: "geotop_is_face ?c \<tau>"
+            using geotop_polygon_disk_edge_owned_by_2simplex_prefix
+              [OF hJ hK hK_poly hcK hcedge]
+            by (elim bexE conjE)
+          have hc_not_boundary: "\<not> ?c \<subseteq> J"
+          proof
+            assume hcJ: "?c \<subseteq> J"
+            have hX1c: "X1 \<in> ?c"
+              using hX1relc rel_interior_subset by (by100 blast)
+            have hX1J: "X1 \<in> J"
+              using hcJ hX1c by (by100 blast)
+            have "X1 \<in> geotop_polygon_interior J \<inter> J"
+              using hX1I hX1J by (by100 blast)
+            thus False
+              using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+          qed
+          have hright:
+            "\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+              \<and> X1 \<in> rel_interior d
+              \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+              \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J"
+            using hcK hcedge hXc hX1relc h\<tau>K h\<tau>2 hcface hc_not_boundary
+            by (intro exI[where x = ?c] exI[where x = \<tau>]) (by100 blast)
+          show ?thesis
+            by (rule disjI2[OF hright])
+        next
+          assume hn2: "n = 2"
+          have hc2: "geotop_simplex_dim ?c 2"
+            using hcdim hn2 by (by100 simp)
+          have hint_eq: "interior ?c = rel_interior ?c"
+            by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF hc2])
+          have hX1int: "X1 \<in> interior ?c"
+            using hX1relc hint_eq by (by100 simp)
+          have hleft:
+            "\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+              \<and> X1 \<in> interior \<tau>"
+            using hcK hc2 hXc hX1int
+            by (intro exI[where x = ?c]) (by100 blast)
+          show ?thesis
+            by (rule disjI1[OF hleft])
+        qed
+      qed
+    qed
+    show ?thesis
+      using hr hcases by (by100 blast)
+  qed
   have hlocal_finite_fan_wedge:
     "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
       X1 \<in> ball X r \<longrightarrow>
@@ -31099,7 +31237,68 @@ proof -
       and selected incident boundary edge; the book step still has to turn that
       finite fan into a small Euclidean wedge whose punctured radial segments
       lie in the polygon interior. **)
-    sorry
+  proof -
+    obtain r where hr: "0 < r"
+      and hcases:
+        "\<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+          X1 \<in> ball X r \<longrightarrow>
+          ((\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+              \<and> X1 \<in> interior \<tau>)
+           \<or> (\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+              \<and> X1 \<in> rel_interior d
+              \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+              \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J))"
+      using hlocal_carrier_fan_cases by (elim exE conjE)
+    have hradial:
+      "\<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
+        X1 \<in> ball X r \<longrightarrow>
+        closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+    proof (intro allI impI)
+      fix X1
+      assume hX1I: "X1 \<in> geotop_polygon_interior J"
+      assume hX1ball: "X1 \<in> ball X r"
+      have hcase:
+        "(\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+            \<and> X1 \<in> interior \<tau>)
+         \<or> (\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+            \<and> X1 \<in> rel_interior d
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+            \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J)"
+        using hcases hX1I hX1ball by (by100 blast)
+      show "closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+      proof (rule disjE[OF hcase])
+        assume "\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> X \<in> \<tau>
+            \<and> X1 \<in> interior \<tau>"
+        then obtain \<tau> where h\<tau>K: "\<tau> \<in> K"
+          and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+          and hX\<tau>: "X \<in> \<tau>"
+          and hX1int: "X1 \<in> interior \<tau>"
+          by (elim exE conjE)
+        show ?thesis
+          by (rule hincident_triangle_radial_into_interior
+              [OF h\<tau>K h\<tau>2 hX\<tau> hX1int])
+      next
+        assume "\<exists>d \<tau>. d \<in> K \<and> geotop_is_edge d \<and> X \<in> d
+            \<and> X1 \<in> rel_interior d
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+            \<and> geotop_is_face d \<tau> \<and> \<not> d \<subseteq> J"
+        then obtain d \<tau> where hdK: "d \<in> K"
+          and hdedge: "geotop_is_edge d"
+          and hXd: "X \<in> d"
+          and hX1rel: "X1 \<in> rel_interior d"
+          and h\<tau>K: "\<tau> \<in> K"
+          and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+          and hdface: "geotop_is_face d \<tau>"
+          and hdnotJ: "\<not> d \<subseteq> J"
+          by (elim exE conjE)
+        show ?thesis
+          by (rule hincident_nonboundary_edge_radial_into_interior
+              [OF hdK hdedge hXd hX1rel h\<tau>K h\<tau>2 hdface hdnotJ])
+      qed
+    qed
+    show ?thesis
+      using hr hradial by (by100 blast)
+  qed
   show ?thesis
     by (rule hlocal_finite_fan_wedge)
 qed
