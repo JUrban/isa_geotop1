@@ -8330,6 +8330,8 @@ proof -
         \<and> q\<^sub>1 \<in> D\<^sub>q
         \<and> w \<notin> D\<^sub>q
         \<and> q\<^sub>1 \<notin> D\<^sub>w
+        \<and> p \<in> closure (D\<^sub>w - {w, p})
+        \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
         \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
           \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
   proof -
@@ -8380,19 +8382,55 @@ proof -
       thus False
         using hp_ne_w by (by100 blast)
     qed
-    have hq_not_Dw: "q\<^sub>1 \<notin> D\<^sub>w"
-    proof
-      assume hqDw: "q\<^sub>1 \<in> D\<^sub>w"
-      have "q\<^sub>1 \<in> D\<^sub>w \<inter> D\<^sub>q"
+	    have hq_not_Dw: "q\<^sub>1 \<notin> D\<^sub>w"
+	    proof
+	      assume hqDw: "q\<^sub>1 \<in> D\<^sub>w"
+	      have "q\<^sub>1 \<in> D\<^sub>w \<inter> D\<^sub>q"
         using hqDw hqDq by (by100 blast)
       hence "q\<^sub>1 = p"
         using hDwDq by (by100 blast)
-      thus False
-        using hp_ne_q\<^sub>1 by (by100 blast)
-    qed
-    have hbody: "C \<in> {A\<^sub>1, A\<^sub>2}
-      \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-      \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	      thus False
+	        using hp_ne_q\<^sub>1 by (by100 blast)
+	    qed
+	    have hw_ne_p: "w \<noteq> p"
+	      using hp_ne_w by (by100 blast)
+	    have hp_Dw_closure:
+	        "p \<in> closure (D\<^sub>w - {w, p})"
+	    proof -
+	      have hp_cl_on:
+	          "p \<in> closure_on UNIV geotop_euclidean_topology
+	            (D\<^sub>w - {w, p})"
+	        by (rule arc_endpoint_in_closure_of_interior(2)
+	            [OF geotop_euclidean_topology_UNIV_strict
+	              geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
+	              hDw_arc hDw_ep hw_ne_p])
+	      have hcl_eq:
+	          "closure_on UNIV geotop_euclidean_topology
+	            (D\<^sub>w - {w, p}) = closure (D\<^sub>w - {w, p})"
+	        by (rule closure_on_geotop_UNIV_eq_closure)
+	      show ?thesis
+	        using hp_cl_on hcl_eq by (by100 simp)
+	    qed
+	    have hp_Dq_closure:
+	        "p \<in> closure (D\<^sub>q - {p, q\<^sub>1})"
+	    proof -
+	      have hp_cl_on:
+	          "p \<in> closure_on UNIV geotop_euclidean_topology
+	            (D\<^sub>q - {p, q\<^sub>1})"
+	        by (rule arc_endpoint_in_closure_of_interior(1)
+	            [OF geotop_euclidean_topology_UNIV_strict
+	              geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
+	              hDq_arc hDq_ep hp_ne_q\<^sub>1])
+	      have hcl_eq:
+	          "closure_on UNIV geotop_euclidean_topology
+	            (D\<^sub>q - {p, q\<^sub>1}) = closure (D\<^sub>q - {p, q\<^sub>1})"
+	        by (rule closure_on_geotop_UNIV_eq_closure)
+	      show ?thesis
+	        using hp_cl_on hcl_eq by (by100 simp)
+	    qed
+	    have hbody: "C \<in> {A\<^sub>1, A\<^sub>2}
+	      \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	      \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
       \<and> S \<noteq> T
       \<and> (S - {w}) \<inter> (T - {w}) = {}
       \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
@@ -8415,11 +8453,13 @@ proof -
       \<and> w \<in> D\<^sub>w
       \<and> p \<in> D\<^sub>w
       \<and> p \<in> D\<^sub>q
-      \<and> q\<^sub>1 \<in> D\<^sub>q
-      \<and> w \<notin> D\<^sub>q
-      \<and> q\<^sub>1 \<notin> D\<^sub>w
-      \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
-        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
+	      \<and> q\<^sub>1 \<in> D\<^sub>q
+	      \<and> w \<notin> D\<^sub>q
+	      \<and> q\<^sub>1 \<notin> D\<^sub>w
+	      \<and> p \<in> closure (D\<^sub>w - {w, p})
+	      \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+	      \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+	        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
     proof (intro conjI)
       show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
       show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
@@ -8451,11 +8491,15 @@ proof -
       show "p \<in> D\<^sub>w" by (rule hpDw)
       show "p \<in> D\<^sub>q" by (rule hpDq)
       show "q\<^sub>1 \<in> D\<^sub>q" by (rule hqDq)
-      show "w \<notin> D\<^sub>q" by (rule hw_not_Dq)
-      show "q\<^sub>1 \<notin> D\<^sub>w" by (rule hq_not_Dw)
-      show "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
-          \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
-        by (rule hside)
+	      show "w \<notin> D\<^sub>q" by (rule hw_not_Dq)
+	      show "q\<^sub>1 \<notin> D\<^sub>w" by (rule hq_not_Dw)
+	      show "p \<in> closure (D\<^sub>w - {w, p})"
+	        by (rule hp_Dw_closure)
+	      show "p \<in> closure (D\<^sub>q - {p, q\<^sub>1})"
+	        by (rule hp_Dq_closure)
+	      show "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+	          \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
+	        by (rule hside)
     qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T], rule exI[where x=C],
@@ -8474,7 +8518,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> N
-        \<and> y \<in> N"
+        \<and> y \<in> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T C p y D\<^sub>w D\<^sub>q where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -8495,12 +8540,14 @@ proof -
       and hDq_ep: "top1_arc_endpoints_on D\<^sub>q
         (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}"
       and hpDw: "p \<in> D\<^sub>w"
-      and hpDq: "p \<in> D\<^sub>q"
-      and hw_not_Dq: "w \<notin> D\<^sub>q"
-      and hside: "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
-        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
-      using hcanonical_pair_arc_side_split_selected_germs_clean
-      by (elim exE conjE)
+	      and hpDq: "p \<in> D\<^sub>q"
+	      and hw_not_Dq: "w \<notin> D\<^sub>q"
+	      and hp_Dw_closure: "p \<in> closure (D\<^sub>w - {w, p})"
+	      and hp_Dq_closure: "p \<in> closure (D\<^sub>q - {p, q\<^sub>1})"
+	      and hside: "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+	        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
+	      using hcanonical_pair_arc_side_split_selected_germs_clean
+	      by (elim exE conjE)
     have hC_sub_poly: "C \<subseteq> geotop_polyhedron L"
       using hC hA_decomp by (by100 blast)
     have hDw_sub_poly: "D\<^sub>w \<subseteq> geotop_polyhedron L"
@@ -8513,71 +8560,77 @@ proof -
       using hyT by (by100 blast)
     have hpack:
         "\<And>N. N \<subseteq> geotop_polyhedron L - {w}
-          \<Longrightarrow> top1_connected_on N
-            (subspace_topology UNIV geotop_euclidean_topology N)
-          \<Longrightarrow> p \<in> N
-          \<Longrightarrow> y \<in> N
-          \<Longrightarrow> \<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-            \<and> S \<noteq> T
+	          \<Longrightarrow> top1_connected_on N
+	            (subspace_topology UNIV geotop_euclidean_topology N)
+	          \<Longrightarrow> p \<in> N
+	          \<Longrightarrow> y \<in> N
+	          \<Longrightarrow> p \<in> closure (N - {p})
+	          \<Longrightarrow> \<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	            \<and> S \<noteq> T
             \<and> (S - {w}) \<inter> (T - {w}) = {}
             \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
             \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
             \<and> p \<noteq> y
             \<and> N \<subseteq> geotop_polyhedron L - {w}
-            \<and> top1_connected_on N
-              (subspace_topology UNIV geotop_euclidean_topology N)
-            \<and> p \<in> N
-            \<and> y \<in> N"
+	            \<and> top1_connected_on N
+	              (subspace_topology UNIV geotop_euclidean_topology N)
+	            \<and> p \<in> N
+	            \<and> y \<in> N
+	            \<and> p \<in> closure (N - {p})"
     proof -
       fix N
-      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
-      assume hN_conn: "top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)"
-      assume hpN: "p \<in> N"
-      assume hyN: "y \<in> N"
-      have hbody: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-        \<and> S \<noteq> T
+	      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+	      assume hN_conn: "top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)"
+	      assume hpN: "p \<in> N"
+	      assume hyN: "y \<in> N"
+	      assume hpN_cl: "p \<in> closure (N - {p})"
+	      have hbody: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	        \<and> S \<noteq> T
         \<and> (S - {w}) \<inter> (T - {w}) = {}
         \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
         \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
         \<and> p \<noteq> y
         \<and> N \<subseteq> geotop_polyhedron L - {w}
-        \<and> top1_connected_on N
-          (subspace_topology UNIV geotop_euclidean_topology N)
-        \<and> p \<in> N
-        \<and> y \<in> N"
-      proof (intro conjI)
-        show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
-        show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+	        \<and> top1_connected_on N
+	          (subspace_topology UNIV geotop_euclidean_topology N)
+	        \<and> p \<in> N
+	        \<and> y \<in> N
+	        \<and> p \<in> closure (N - {p})"
+	      proof (intro conjI)
+	        show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+	        show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
         show "S \<noteq> T" by (rule hST)
         show "(S - {w}) \<inter> (T - {w}) = {}" by (rule hST_disj)
         show "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hpS)
         show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
         show "p \<noteq> y" by (rule hpy)
         show "N \<subseteq> geotop_polyhedron L - {w}" by (rule hN_sub)
-        show "top1_connected_on N
-          (subspace_topology UNIV geotop_euclidean_topology N)"
-          by (rule hN_conn)
-        show "p \<in> N" by (rule hpN)
-        show "y \<in> N" by (rule hyN)
-      qed
-      show "\<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
-        \<and> S \<noteq> T
+	        show "top1_connected_on N
+	          (subspace_topology UNIV geotop_euclidean_topology N)"
+	          by (rule hN_conn)
+	        show "p \<in> N" by (rule hpN)
+	        show "y \<in> N" by (rule hyN)
+	        show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	      qed
+	      show "\<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+	        \<and> S \<noteq> T
         \<and> (S - {w}) \<inter> (T - {w}) = {}
         \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
         \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
         \<and> p \<noteq> y
         \<and> N \<subseteq> geotop_polyhedron L - {w}
-        \<and> top1_connected_on N
-          (subspace_topology UNIV geotop_euclidean_topology N)
-        \<and> p \<in> N
-        \<and> y \<in> N"
-        by (rule exI[where x=S], rule exI[where x=T],
-            rule exI[where x=p], rule exI[where x=y],
-            rule exI[where x=N], rule hbody)
+	        \<and> top1_connected_on N
+	          (subspace_topology UNIV geotop_euclidean_topology N)
+	        \<and> p \<in> N
+	        \<and> y \<in> N
+	        \<and> p \<in> closure (N - {p})"
+	        by (rule exI[where x=S], rule exI[where x=T],
+	            rule exI[where x=p], rule exI[where x=y],
+	            rule exI[where x=N], rule hbody)
     qed
     show ?thesis
       using hside
@@ -8602,24 +8655,38 @@ proof -
         using hDw_minus_w_conn_sub unfolding hDw_minus_w_subtop .
       have hN_sub: "D\<^sub>w - {w} \<subseteq> geotop_polyhedron L - {w}"
         using hDw_sub_poly by (by100 blast)
-      have hpN: "p \<in> D\<^sub>w - {w}"
-        using hpDw hp_ne_w by (by100 blast)
-      have hyN: "y \<in> D\<^sub>w - {w}"
-        using hyDw hy_ne_w by (by100 blast)
-      show ?thesis
-        by (rule hpack[OF hN_sub hN_conn hpN hyN])
-    next
-      assume hyDq: "y \<in> D\<^sub>q - {p}"
-      have hN_conn: "top1_connected_on D\<^sub>q
-        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
+	      have hpN: "p \<in> D\<^sub>w - {w}"
+	        using hpDw hp_ne_w by (by100 blast)
+	      have hyN: "y \<in> D\<^sub>w - {w}"
+	        using hyDw hy_ne_w by (by100 blast)
+	      have hpN_cl: "p \<in> closure ((D\<^sub>w - {w}) - {p})"
+	      proof -
+	        have hsub: "D\<^sub>w - {w, p} \<subseteq> (D\<^sub>w - {w}) - {p}"
+	          by (by100 blast)
+	        show ?thesis
+	          using hp_Dw_closure closure_mono[OF hsub] by (by100 blast)
+	      qed
+	      show ?thesis
+	        by (rule hpack[OF hN_sub hN_conn hpN hyN hpN_cl])
+	    next
+	      assume hyDq: "y \<in> D\<^sub>q - {p}"
+	      have hN_conn: "top1_connected_on D\<^sub>q
+	        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
         by (rule arc_connected[OF hDq_arc])
-      have hN_sub: "D\<^sub>q \<subseteq> geotop_polyhedron L - {w}"
-        using hDq_sub_poly hw_not_Dq by (by100 blast)
-      have hyN: "y \<in> D\<^sub>q"
-        using hyDq by (by100 blast)
-      show ?thesis
-        by (rule hpack[OF hN_sub hN_conn hpDq hyN])
-    qed
+	      have hN_sub: "D\<^sub>q \<subseteq> geotop_polyhedron L - {w}"
+	        using hDq_sub_poly hw_not_Dq by (by100 blast)
+	      have hyN: "y \<in> D\<^sub>q"
+	        using hyDq by (by100 blast)
+	      have hpN_cl: "p \<in> closure (D\<^sub>q - {p})"
+	      proof -
+	        have hsub: "D\<^sub>q - {p, q\<^sub>1} \<subseteq> D\<^sub>q - {p}"
+	          by (by100 blast)
+	        show ?thesis
+	          using hp_Dq_closure closure_mono[OF hsub] by (by100 blast)
+	      qed
+	      show ?thesis
+	        by (rule hpack[OF hN_sub hN_conn hpDq hyN hpN_cl])
+	    qed
   qed
   have hcanonical_pair_split_side_connected_incident_germ_hits:
       "\<exists>S T p y N. S \<in> E
@@ -8635,7 +8702,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T p y N where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
       and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -8645,12 +8713,13 @@ proof -
       and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
       and hpy: "p \<noteq> y"
       and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
-      and hN_conn: "top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)"
-      and hpN: "p \<in> N"
-      and hyN: "y \<in> N"
-      using hcanonical_pair_split_side_connected_selected_germs
-      by (elim exE conjE)
+	      and hN_conn: "top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)"
+	      and hpN: "p \<in> N"
+	      and hyN: "y \<in> N"
+	      and hpN_cl: "p \<in> closure (N - {p})"
+	      using hcanonical_pair_split_side_connected_selected_germs
+	      by (elim exE conjE)
     have hS_E: "S \<in> E"
       using hS he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
     have hT_E: "T \<in> E"
@@ -8669,11 +8738,12 @@ proof -
       \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
       \<and> p \<noteq> y
       \<and> N \<subseteq> geotop_polyhedron L - {w}
-      \<and> top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)
-      \<and> p \<in> (S - {w}) \<inter> N
-      \<and> y \<in> (T - {w}) \<inter> N"
-    proof (intro conjI)
+	      \<and> top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)
+	      \<and> p \<in> (S - {w}) \<inter> N
+	      \<and> y \<in> (T - {w}) \<inter> N
+	      \<and> p \<in> closure (N - {p})"
+	    proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
       show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
@@ -8687,12 +8757,13 @@ proof -
       show "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
         by (rule hN_conn)
-      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
-      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
-    qed
-    show ?thesis
-      by (rule exI[where x=S], rule exI[where x=T],
-          rule exI[where x=p], rule exI[where x=y],
+	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	    qed
+	    show ?thesis
+	      by (rule exI[where x=S], rule exI[where x=T],
+	          rule exI[where x=p], rule exI[where x=y],
           rule exI[where x=N], rule hbody)
   qed
   have hcanonical_pair_split_side_three_incident_germs:
@@ -8715,7 +8786,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T p y N where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -8729,10 +8801,11 @@ proof -
       and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
       and hN_conn: "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
-      and hpSN: "p \<in> (S - {w}) \<inter> N"
-      and hyTN: "y \<in> (T - {w}) \<inter> N"
-      using hcanonical_pair_split_side_connected_incident_germ_hits
-      by (elim exE conjE)
+	      and hpSN: "p \<in> (S - {w}) \<inter> N"
+	      and hyTN: "y \<in> (T - {w}) \<inter> N"
+	      and hpN_cl: "p \<in> closure (N - {p})"
+	      using hcanonical_pair_split_side_connected_incident_germ_hits
+	      by (elim exE conjE)
     have hremaining:
         "\<exists>U. U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3} \<and> S \<noteq> U \<and> T \<noteq> U"
     proof -
@@ -8842,11 +8915,12 @@ proof -
       \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
       \<and> p \<noteq> y
       \<and> N \<subseteq> geotop_polyhedron L - {w}
-      \<and> top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)
-      \<and> p \<in> (S - {w}) \<inter> N
-      \<and> y \<in> (T - {w}) \<inter> N"
-    proof (intro conjI)
+	      \<and> top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)
+	      \<and> p \<in> (S - {w}) \<inter> N
+	      \<and> y \<in> (T - {w}) \<inter> N
+	      \<and> p \<in> closure (N - {p})"
+	    proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
       show "U \<in> E" by (rule hU_E)
@@ -8866,9 +8940,10 @@ proof -
       show "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
         by (rule hN_conn)
-      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
-      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
-    qed
+	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	    qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
           rule exI[where x=U], rule exI[where x=p],
@@ -8897,7 +8972,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T U p y N where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -8915,12 +8991,13 @@ proof -
       and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
       and hpy: "p \<noteq> y"
       and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
-      and hN_conn: "top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)"
-      and hpSN: "p \<in> (S - {w}) \<inter> N"
-      and hyTN: "y \<in> (T - {w}) \<inter> N"
-      using hcanonical_pair_split_side_three_incident_germs
-      by (elim exE conjE)
+	      and hN_conn: "top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)"
+	      and hpSN: "p \<in> (S - {w}) \<inter> N"
+	      and hyTN: "y \<in> (T - {w}) \<inter> N"
+	      and hpN_cl: "p \<in> closure (N - {p})"
+	      using hcanonical_pair_split_side_three_incident_germs
+	      by (elim exE conjE)
     have hU_sphere_hit: "\<exists>z. z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r"
     proof -
       have hU_cases: "U = e\<^sub>1 \<or> U = e\<^sub>2 \<or> U = e\<^sub>3"
@@ -8984,10 +9061,11 @@ proof -
       \<and> p \<noteq> z
       \<and> y \<noteq> z
       \<and> N \<subseteq> geotop_polyhedron L - {w}
-      \<and> top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)
-      \<and> p \<in> (S - {w}) \<inter> N
-      \<and> y \<in> (T - {w}) \<inter> N"
+	      \<and> top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)
+	      \<and> p \<in> (S - {w}) \<inter> N
+	      \<and> y \<in> (T - {w}) \<inter> N
+	      \<and> p \<in> closure (N - {p})"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9011,9 +9089,10 @@ proof -
       show "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
         by (rule hN_conn)
-      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
-      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
-    qed
+	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	    qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
           rule exI[where x=U], rule exI[where x=p],
@@ -9047,7 +9126,8 @@ proof -
         \<and> top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
-        \<and> y \<in> (T - {w}) \<inter> N"
+        \<and> y \<in> (T - {w}) \<inter> N
+        \<and> p \<in> closure (N - {p})"
   proof -
     obtain S T U p y z N where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9068,12 +9148,13 @@ proof -
       and hpz: "p \<noteq> z"
       and hyz: "y \<noteq> z"
       and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
-      and hN_conn: "top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)"
-      and hpSN: "p \<in> (S - {w}) \<inter> N"
-      and hyTN: "y \<in> (T - {w}) \<inter> N"
-      using hcanonical_pair_split_side_three_sphere_germ_points
-      by (elim exE conjE)
+	      and hN_conn: "top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)"
+	      and hpSN: "p \<in> (S - {w}) \<inter> N"
+	      and hyTN: "y \<in> (T - {w}) \<inter> N"
+	      and hpN_cl: "p \<in> closure (N - {p})"
+	      using hcanonical_pair_split_side_three_sphere_germ_points
+	      by (elim exE conjE)
     have hp_can: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
       by (rule hselected_sphere_germ_point_canonical[OF hS hpS])
     have hy_can: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
@@ -9106,10 +9187,11 @@ proof -
       \<and> p \<noteq> z
       \<and> y \<noteq> z
       \<and> N \<subseteq> geotop_polyhedron L - {w}
-      \<and> top1_connected_on N
-        (subspace_topology UNIV geotop_euclidean_topology N)
-      \<and> p \<in> (S - {w}) \<inter> N
-      \<and> y \<in> (T - {w}) \<inter> N"
+	      \<and> top1_connected_on N
+	        (subspace_topology UNIV geotop_euclidean_topology N)
+	      \<and> p \<in> (S - {w}) \<inter> N
+	      \<and> y \<in> (T - {w}) \<inter> N
+	      \<and> p \<in> closure (N - {p})"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9137,9 +9219,10 @@ proof -
       show "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
         by (rule hN_conn)
-      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
-      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
-    qed
+	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	    qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
           rule exI[where x=U], rule exI[where x=p],
@@ -11131,6 +11214,17 @@ proof -
             show "open C"
               using hlocal_selected_open hC_comp open_components by (by100 blast)
           qed
+          have hM_trace_components_open:
+              "open (\<Union>?Mtrace_components)"
+          proof (rule open_Union)
+            show "\<forall>C\<in>?Mtrace_components. open C"
+            proof
+              fix C
+              assume hC: "C \<in> ?Mtrace_components"
+              show "open C"
+                by (rule hM_trace_component_open[OF hC])
+            qed
+          qed
           have hM_ball_cover_by_selected_and_trace_components:
               "M \<inter> ball w r
                 \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -11313,6 +11407,27 @@ proof -
               \<and> path_connected C
               \<and> C \<inter> ?Nloc \<noteq> {}"
               using hC_comp hsummary hC_meets by (by100 blast)
+          qed
+          have hN_trace_component_open:
+              "\<And>C. C \<in> ?Ntrace_components \<Longrightarrow> open C"
+          proof -
+            fix C
+            assume hC: "C \<in> ?Ntrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hN_trace_component_summary[OF hC] by (by100 blast)
+            show "open C"
+              using hlocal_selected_open hC_comp open_components by (by100 blast)
+          qed
+          have hN_trace_components_open:
+              "open (\<Union>?Ntrace_components)"
+          proof (rule open_Union)
+            show "\<forall>C\<in>?Ntrace_components. open C"
+            proof
+              fix C
+              assume hC: "C \<in> ?Ntrace_components"
+              show "open C"
+                by (rule hN_trace_component_open[OF hC])
+            qed
           qed
           have hN_trace_components_union_sub:
               "\<Union>?Ntrace_components \<subseteq> ?Lcomp"
