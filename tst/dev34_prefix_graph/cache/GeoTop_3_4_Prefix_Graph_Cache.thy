@@ -12533,6 +12533,326 @@ proof -
               \<and> G \<inter> closure C \<noteq> {}"
               using hC hsummary htouch_C by (by100 blast)
           qed
+          obtain M\<^sub>p\<^sub>z M\<^sub>y\<^sub>z where hMpz_sub:
+              "M\<^sub>p\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
+            and hMpz_conn: "connected M\<^sub>p\<^sub>z"
+            and hpMpz: "p \<in> M\<^sub>p\<^sub>z"
+            and hzMpz: "z \<in> M\<^sub>p\<^sub>z"
+            and hMpz_ball_cover:
+              "M\<^sub>p\<^sub>z \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))"
+            and hMyz_sub:
+              "M\<^sub>y\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
+            and hMyz_conn: "connected M\<^sub>y\<^sub>z"
+            and hyMyz: "y \<in> M\<^sub>y\<^sub>z"
+            and hzMyz: "z \<in> M\<^sub>y\<^sub>z"
+            and hMyz_ball_cover:
+              "M\<^sub>y\<^sub>z \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))"
+            using hselected_pz_yz_connected_witness_package
+            by (elim exE conjE)
+          let ?PZloc = "M\<^sub>p\<^sub>z \<inter> ?Lcomp"
+          let ?PZtrace_components =
+            "{C\<in>components ?Lcomp. C \<inter> ?PZloc \<noteq> {}}"
+          have hPZ_local_trace_sub:
+              "?PZloc \<subseteq> ?Lcomp"
+            by (by100 blast)
+          have hPZ_ball_cover_by_selected_and_trace:
+              "M\<^sub>p\<^sub>z \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?PZloc"
+          proof
+            fix a
+            assume ha: "a \<in> M\<^sub>p\<^sub>z \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))"
+              using hMpz_ball_cover ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> ?PZloc"
+              using ha ha_cover by (by100 blast)
+          qed
+          have hPZ_trace_components_fin:
+              "finite ?PZtrace_components"
+            by (rule finite_subset[OF _ hlocal_selected_components_fin],
+                by100 blast)
+          have hPZ_local_trace_component_cover:
+              "?PZloc \<subseteq> \<Union>?PZtrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> ?PZloc"
+            have haL: "a \<in> ?Lcomp"
+              by (rule subsetD[OF hPZ_local_trace_sub ha])
+            let ?C = "connected_component_set ?Lcomp a"
+            have hC_comp: "?C \<in> components ?Lcomp"
+              by (rule componentsI[OF haL])
+            have haC: "a \<in> ?C"
+              using haL connected_component_refl by (by100 simp)
+            have hC_meets: "?C \<inter> ?PZloc \<noteq> {}"
+              using ha haC by (by100 blast)
+            show "a \<in> \<Union>?PZtrace_components"
+              using hC_comp hC_meets haC by (by100 blast)
+          qed
+          have hPZ_trace_component_summary:
+              "\<And>C. C \<in> ?PZtrace_components
+                \<Longrightarrow> C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?PZloc \<noteq> {}"
+          proof -
+            fix C
+            assume hC: "C \<in> ?PZtrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hC by (by100 simp)
+            have hsummary:
+                "C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C"
+              by (rule hselected_component_summary[OF hC_comp])
+            have hC_meets: "C \<inter> ?PZloc \<noteq> {}"
+              using hC by (by100 simp)
+            show "C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?PZloc \<noteq> {}"
+              using hC_comp hsummary hC_meets by (by100 blast)
+          qed
+          have hPZ_trace_components_union_sub:
+              "\<Union>?PZtrace_components \<subseteq> ?Lcomp"
+          proof
+            fix a
+            assume ha: "a \<in> \<Union>?PZtrace_components"
+            obtain C where hC: "C \<in> ?PZtrace_components"
+              and haC: "a \<in> C"
+              using ha by (by100 blast)
+            have hC_sub: "C \<subseteq> ?Lcomp"
+              using hPZ_trace_component_summary[OF hC] by (by100 blast)
+            show "a \<in> ?Lcomp"
+              using hC_sub haC by (by100 blast)
+          qed
+          have hPZ_ball_cover_by_selected_and_trace_components:
+              "M\<^sub>p\<^sub>z \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> \<Union>?PZtrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> M\<^sub>p\<^sub>z \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?PZloc"
+              using hPZ_ball_cover_by_selected_and_trace ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> \<Union>?PZtrace_components"
+              using ha_cover hPZ_local_trace_component_cover by (by100 blast)
+          qed
+          have hPZ_trace_union_closure_touch_summary:
+              "\<And>G. G \<inter> closure (\<Union>?PZtrace_components) \<noteq> {}
+                \<Longrightarrow> \<exists>C\<in>?PZtrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?PZloc \<noteq> {}
+                  \<and> G \<inter> closure C \<noteq> {}"
+          proof -
+            fix G
+            assume htouch_union:
+                "G \<inter> closure (\<Union>?PZtrace_components) \<noteq> {}"
+            obtain C where hC: "C \<in> ?PZtrace_components"
+              and htouch_C: "G \<inter> closure C \<noteq> {}"
+              using geotop_finite_union_closure_touch_member_prefix
+                [OF hPZ_trace_components_fin htouch_union]
+              by (elim bexE)
+            have hsummary:
+                "C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?PZloc \<noteq> {}"
+              by (rule hPZ_trace_component_summary[OF hC])
+            show "\<exists>C\<in>?PZtrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?PZloc \<noteq> {}
+              \<and> G \<inter> closure C \<noteq> {}"
+              using hC hsummary htouch_C by (by100 blast)
+          qed
+          let ?YZloc = "M\<^sub>y\<^sub>z \<inter> ?Lcomp"
+          let ?YZtrace_components =
+            "{C\<in>components ?Lcomp. C \<inter> ?YZloc \<noteq> {}}"
+          have hYZ_local_trace_sub:
+              "?YZloc \<subseteq> ?Lcomp"
+            by (by100 blast)
+          have hYZ_ball_cover_by_selected_and_trace:
+              "M\<^sub>y\<^sub>z \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?YZloc"
+          proof
+            fix a
+            assume ha: "a \<in> M\<^sub>y\<^sub>z \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))"
+              using hMyz_ball_cover ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> ?YZloc"
+              using ha ha_cover by (by100 blast)
+          qed
+          have hYZ_trace_components_fin:
+              "finite ?YZtrace_components"
+            by (rule finite_subset[OF _ hlocal_selected_components_fin],
+                by100 blast)
+          have hYZ_local_trace_component_cover:
+              "?YZloc \<subseteq> \<Union>?YZtrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> ?YZloc"
+            have haL: "a \<in> ?Lcomp"
+              by (rule subsetD[OF hYZ_local_trace_sub ha])
+            let ?C = "connected_component_set ?Lcomp a"
+            have hC_comp: "?C \<in> components ?Lcomp"
+              by (rule componentsI[OF haL])
+            have haC: "a \<in> ?C"
+              using haL connected_component_refl by (by100 simp)
+            have hC_meets: "?C \<inter> ?YZloc \<noteq> {}"
+              using ha haC by (by100 blast)
+            show "a \<in> \<Union>?YZtrace_components"
+              using hC_comp hC_meets haC by (by100 blast)
+          qed
+          have hYZ_trace_component_summary:
+              "\<And>C. C \<in> ?YZtrace_components
+                \<Longrightarrow> C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?YZloc \<noteq> {}"
+          proof -
+            fix C
+            assume hC: "C \<in> ?YZtrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hC by (by100 simp)
+            have hsummary:
+                "C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C"
+              by (rule hselected_component_summary[OF hC_comp])
+            have hC_meets: "C \<inter> ?YZloc \<noteq> {}"
+              using hC by (by100 simp)
+            show "C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?YZloc \<noteq> {}"
+              using hC_comp hsummary hC_meets by (by100 blast)
+          qed
+          have hYZ_trace_components_union_sub:
+              "\<Union>?YZtrace_components \<subseteq> ?Lcomp"
+          proof
+            fix a
+            assume ha: "a \<in> \<Union>?YZtrace_components"
+            obtain C where hC: "C \<in> ?YZtrace_components"
+              and haC: "a \<in> C"
+              using ha by (by100 blast)
+            have hC_sub: "C \<subseteq> ?Lcomp"
+              using hYZ_trace_component_summary[OF hC] by (by100 blast)
+            show "a \<in> ?Lcomp"
+              using hC_sub haC by (by100 blast)
+          qed
+          have hYZ_ball_cover_by_selected_and_trace_components:
+              "M\<^sub>y\<^sub>z \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> \<Union>?YZtrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> M\<^sub>y\<^sub>z \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?YZloc"
+              using hYZ_ball_cover_by_selected_and_trace ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> \<Union>?YZtrace_components"
+              using ha_cover hYZ_local_trace_component_cover by (by100 blast)
+          qed
+          have hYZ_trace_union_closure_touch_summary:
+              "\<And>G. G \<inter> closure (\<Union>?YZtrace_components) \<noteq> {}
+                \<Longrightarrow> \<exists>C\<in>?YZtrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?YZloc \<noteq> {}
+                  \<and> G \<inter> closure C \<noteq> {}"
+          proof -
+            fix G
+            assume htouch_union:
+                "G \<inter> closure (\<Union>?YZtrace_components) \<noteq> {}"
+            obtain C where hC: "C \<in> ?YZtrace_components"
+              and htouch_C: "G \<inter> closure C \<noteq> {}"
+              using geotop_finite_union_closure_touch_member_prefix
+                [OF hYZ_trace_components_fin htouch_union]
+              by (elim bexE)
+            have hsummary:
+                "C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?YZloc \<noteq> {}"
+              by (rule hYZ_trace_component_summary[OF hC])
+            show "\<exists>C\<in>?YZtrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?YZloc \<noteq> {}
+              \<and> G \<inter> closure C \<noteq> {}"
+              using hC hsummary htouch_C by (by100 blast)
+          qed
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
