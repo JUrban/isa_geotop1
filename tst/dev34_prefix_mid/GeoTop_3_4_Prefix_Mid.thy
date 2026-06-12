@@ -25679,14 +25679,71 @@ proof -
                 \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
               \<and> \<rho> \<noteq> \<theta>
               \<and> \<rho> \<noteq> \<beta>\<^sub>c)"
+        have hlarge_fixed_no_chord_candidate:
+          "\<exists>\<gamma>. ?G\<^sub>1 \<gamma> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
+        proof -
+          obtain \<beta>\<^sub>d \<gamma> where h\<beta>dT\<^sub>2: "\<beta>\<^sub>d \<in> ?T\<^sub>2"
+            and h\<beta>d_not_T\<^sub>1: "\<beta>\<^sub>d \<notin> ?T\<^sub>1"
+            and h\<beta>d_ne_\<beta>: "\<beta>\<^sub>d \<noteq> \<beta>"
+            and h\<beta>d_ne_\<theta>: "\<beta>\<^sub>d \<noteq> \<theta>"
+            and h\<beta>d_ne_\<alpha>: "\<beta>\<^sub>d \<noteq> \<alpha>"
+            and h\<beta>d_chord:
+              "geotop_is_face (closed_segment a c) \<beta>\<^sub>d"
+            and h\<beta>_not_T\<^sub>2_candidate: "\<beta> \<notin> ?T\<^sub>2"
+            and hcandidate: "?G\<^sub>1 \<gamma> \<or> ?G\<^sub>2 \<beta>\<^sub>d \<gamma>"
+            using hside_no_chord_candidate_if_side2_large[OF True]
+            by (elim exE conjE)
+          obtain \<delta> where h\<delta>T\<^sub>2: "\<delta> \<in> ?T\<^sub>2"
+            and h\<delta>_not_T\<^sub>1: "\<delta> \<notin> ?T\<^sub>1"
+            and h\<delta>_ne_\<beta>: "\<delta> \<noteq> \<beta>"
+            and h\<delta>_ne_\<theta>: "\<delta> \<noteq> \<theta>"
+            and h\<delta>_ne_\<alpha>: "\<delta> \<noteq> \<alpha>"
+            and h\<delta>_chord:
+              "geotop_is_face (closed_segment a c) \<delta>"
+            and h\<beta>_not_T\<^sub>2_unique: "\<beta> \<notin> ?T\<^sub>2"
+            and hT\<^sub>1_not_named_no_chord:
+              "\<forall>\<rho>\<in>?T\<^sub>1.
+                \<rho> \<noteq> \<beta> \<longrightarrow>
+                \<not> geotop_is_face (closed_segment a c) \<rho>"
+            and hT\<^sub>2_not_named_no_chord:
+              "\<forall>\<rho>\<in>?T\<^sub>2.
+                \<rho> \<noteq> \<delta> \<longrightarrow>
+                \<not> geotop_is_face (closed_segment a c) \<rho>"
+            using hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+            by (elim exE conjE)
+          have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
+          proof (rule ccontr)
+            assume hne: "\<not> \<beta>\<^sub>c = \<delta>"
+            have "\<not> geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+              using hT\<^sub>2_not_named_no_chord h\<beta>cT\<^sub>2 hne by (by100 blast)
+            thus False
+              using h\<beta>c_chord by (by100 blast)
+          qed
+          have h\<beta>d_eq_\<delta>: "\<beta>\<^sub>d = \<delta>"
+          proof (rule ccontr)
+            assume hne: "\<not> \<beta>\<^sub>d = \<delta>"
+            have "\<not> geotop_is_face (closed_segment a c) \<beta>\<^sub>d"
+              using hT\<^sub>2_not_named_no_chord h\<beta>dT\<^sub>2 hne by (by100 blast)
+            thus False
+              using h\<beta>d_chord by (by100 blast)
+          qed
+          have h\<beta>d_eq_\<beta>c: "\<beta>\<^sub>d = \<beta>\<^sub>c"
+            using h\<beta>d_eq_\<delta> h\<beta>c_eq_\<delta> by (by100 blast)
+          show ?thesis
+            apply (rule exI[where x = "\<gamma>"])
+            using hcandidate h\<beta>d_eq_\<beta>c
+            apply (by100 simp)
+            done
+        qed
         have hlarge_real_side_contact_candidate:
           "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
             \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
           (**
             Remaining large side-2 Moise witness-filtering step.  Since
             \<open>card ?T\<^sub>2 > 1\<close>, the strong side induction supplies a second
-            side candidate besides the named chord triangle \<open>\<beta>\<^sub>c\<close>.  The
-            empty-parent-contact branch \<open>hbranch_empty\<close> accounts for the
+            side candidate besides the named chord triangle \<open>\<beta>\<^sub>c\<close>; this is
+            now recorded as \<open>hlarge_fixed_no_chord_candidate\<close>.  The
+            empty-parent-contact branch \<open>hbranch_empty\<close> accounts for one
             artificial-chord-only candidate; the book's counting argument says
             it cannot be the only usable side witness, so another side witness
             has nonempty side-boundary contact.  Existing transfer lemmas below
