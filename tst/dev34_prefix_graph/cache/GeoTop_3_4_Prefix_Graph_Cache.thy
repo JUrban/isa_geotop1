@@ -12596,6 +12596,54 @@ proof -
                     \<and> y \<in> D - {p}))"
                   by (rule hW_source_cases)
               qed
+              have hp_not_W: "p \<notin> W"
+                using hW_sub_Np by (by100 blast)
+              have hy_not_W_local: "y \<notin> W \<inter> ?Lcomp"
+                using hy_not_local_complement by (by100 blast)
+              have hW_first_entry_boundary_package:
+                  "top1_connected_on W
+                    (subspace_topology UNIV geotop_euclidean_topology W)
+                    \<and> W \<subseteq> N - {p}
+                    \<and> W \<noteq> {}
+                    \<and> p \<notin> W
+                    \<and> p \<in> closure W
+                    \<and> p \<in> closure ((S - {w}) \<inter> ball w r)
+                    \<and> y \<in> W
+                    \<and> y \<in> (T - {w}) \<inter> N
+                    \<and> y \<notin> ball w r
+                    \<and> y \<notin> W \<inter> ?Lcomp
+                    \<and> y \<in> closure ((T - {w}) \<inter> ball w r)
+                    \<and> W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components
+                    \<and> W \<inter> ball w r
+                      \<subseteq> ((S - {w}) \<inter> ball w r)
+                        \<union> ((T - {w}) \<inter> ball w r)
+                        \<union> ((U - {w}) \<inter> ball w r)
+                        \<union> \<Union>?Ntrace_components"
+              proof (intro conjI)
+                show "top1_connected_on W
+                  (subspace_topology UNIV geotop_euclidean_topology W)"
+                  by (rule hW_conn)
+                show "W \<subseteq> N - {p}" by (rule hW_sub_Np)
+                show "W \<noteq> {}" by (rule hW_nonempty)
+                show "p \<notin> W" by (rule hp_not_W)
+                show "p \<in> closure W" by (rule hpW_cl)
+                show "p \<in> closure ((S - {w}) \<inter> ball w r)"
+                  by (rule hp_selected_germ_cl)
+                show "y \<in> W" by (rule hyW)
+                show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+                show "y \<notin> ball w r" by (rule hy_not_ball)
+                show "y \<notin> W \<inter> ?Lcomp" by (rule hy_not_W_local)
+                show "y \<in> closure ((T - {w}) \<inter> ball w r)"
+                  by (rule hy_selected_germ_cl)
+                show "W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components"
+                  by (rule hW_local_trace_component_cover)
+                show "W \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> \<Union>?Ntrace_components"
+                  by (rule hW_ball_cover_by_selected_and_trace_components)
+              qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
                     \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
