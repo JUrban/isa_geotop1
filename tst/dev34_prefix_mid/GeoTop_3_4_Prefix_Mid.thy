@@ -30954,6 +30954,74 @@ proof -
     show ?thesis
       using hs hsub_poly by (by100 blast)
   qed
+  have hincident_nonboundary_edge_radial_into_interior:
+    "\<And>d \<tau> X1. d \<in> K \<Longrightarrow> geotop_is_edge d \<Longrightarrow> X \<in> d \<Longrightarrow>
+      X1 \<in> rel_interior d \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow>
+      geotop_is_face d \<tau> \<Longrightarrow> \<not> d \<subseteq> J \<Longrightarrow>
+      closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+    (**
+      Internal incident-edge case in the finite fan.  A non-boundary edge of
+      the disk lies in the polygon interior along its relative interior; since
+      the endpoint \<open>X1\<close> is in that relative interior, the punctured segment
+      from the vertex \<open>X\<close> to \<open>X1\<close> remains in the same relative interior. **)
+  proof -
+    fix d \<tau> X1
+    assume hdK: "d \<in> K"
+    assume hdedge: "geotop_is_edge d"
+    assume hXd: "X \<in> d"
+    assume hX1rel: "X1 \<in> rel_interior d"
+    assume h\<tau>K: "\<tau> \<in> K"
+    assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    assume hdface: "geotop_is_face d \<tau>"
+    assume hd_not_boundary: "\<not> d \<subseteq> J"
+    have hd1: "geotop_simplex_dim d 1"
+      using hdedge unfolding geotop_is_edge_def by (by100 simp)
+    have hconvex_d: "convex d"
+      by (rule geotop_simplex_dim_convex_HOL_prefix[OF hd1])
+    have hX_closure_d: "X \<in> closure d"
+      using hXd closure_subset by (by100 blast)
+    have hopen_X1_X_rel: "open_segment X1 X \<subseteq> rel_interior d"
+      by (rule rel_interior_closure_convex_segment
+          [OF hconvex_d hX1rel hX_closure_d])
+    have hopen_X_X1_rel: "open_segment X X1 \<subseteq> rel_interior d"
+    proof
+      fix y
+      assume hy: "y \<in> open_segment X X1"
+      have "y \<in> open_segment X1 X"
+        using hy open_segment_commute[of X X1] by (by100 metis)
+      thus "y \<in> rel_interior d"
+        using hopen_X1_X_rel by (by100 blast)
+    qed
+    have hseg_rel:
+      "closed_segment X X1 - {X} \<subseteq> rel_interior d"
+    proof
+      fix y
+      assume hy: "y \<in> closed_segment X X1 - {X}"
+      have hy_closed: "y \<in> closed_segment X X1"
+        using hy by (by100 blast)
+      have hy_not_X: "y \<noteq> X"
+        using hy by (by100 blast)
+      have hy_open_or_X1: "y \<in> open_segment X X1 \<or> y = X1"
+        using hy_closed hy_not_X closed_segment_eq_open[of X X1]
+        by (by100 blast)
+      show "y \<in> rel_interior d"
+      proof (cases "y \<in> open_segment X X1")
+        case True
+        show ?thesis
+          using hopen_X_X1_rel True by (by100 blast)
+      next
+        case False
+        show ?thesis
+          using hy_open_or_X1 False hX1rel by (by100 blast)
+      qed
+    qed
+    have hrel_sub_I:
+      "rel_interior d \<subseteq> geotop_polygon_interior J"
+      by (rule geotop_polygon_disk_nonboundary_edge_rel_interior_subset_polygon_interior_prefix
+          [OF hJ hK hK_poly hdK hdedge h\<tau>K h\<tau>2 hdface hd_not_boundary])
+    show "closed_segment X X1 - {X} \<subseteq> geotop_polygon_interior J"
+      using hseg_rel hrel_sub_I by (by100 blast)
+  qed
   have hlocal_finite_fan_wedge:
     "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
       X1 \<in> ball X r \<longrightarrow>
