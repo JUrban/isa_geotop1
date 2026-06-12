@@ -12052,6 +12052,42 @@ proof -
                 \<Longrightarrow> \<exists>C\<in>?Mtrace_components. G \<inter> closure C \<noteq> {}"
             by (rule geotop_finite_union_closure_touch_member_prefix
                 [OF hM_trace_components_fin])
+          have hM_trace_union_closure_touch_summary:
+              "\<And>G. G \<inter> closure (\<Union>?Mtrace_components) \<noteq> {}
+                \<Longrightarrow> \<exists>C\<in>?Mtrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Mloc \<noteq> {}
+                  \<and> G \<inter> closure C \<noteq> {}"
+          proof -
+            fix G
+            assume htouch_union:
+                "G \<inter> closure (\<Union>?Mtrace_components) \<noteq> {}"
+            obtain C where hC: "C \<in> ?Mtrace_components"
+              and htouch_C: "G \<inter> closure C \<noteq> {}"
+              using hM_trace_union_closure_touch_member[OF htouch_union]
+              by (elim bexE)
+            have hsummary:
+                "C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Mloc \<noteq> {}"
+              by (rule hM_trace_component_summary[OF hC])
+            show "\<exists>C\<in>?Mtrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?Mloc \<noteq> {}
+              \<and> G \<inter> closure C \<noteq> {}"
+              using hC hsummary htouch_C by (by100 blast)
+          qed
           let ?Nloc = "N \<inter> ?Lcomp"
           have hN_local_trace_sub:
               "?Nloc \<subseteq> ?Lcomp"
@@ -12311,6 +12347,42 @@ proof -
                 \<Longrightarrow> \<exists>C\<in>?Ntrace_components. G \<inter> closure C \<noteq> {}"
             by (rule geotop_finite_union_closure_touch_member_prefix
                 [OF hN_trace_components_fin])
+          have hN_trace_union_closure_touch_summary:
+              "\<And>G. G \<inter> closure (\<Union>?Ntrace_components) \<noteq> {}
+                \<Longrightarrow> \<exists>C\<in>?Ntrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Nloc \<noteq> {}
+                  \<and> G \<inter> closure C \<noteq> {}"
+          proof -
+            fix G
+            assume htouch_union:
+                "G \<inter> closure (\<Union>?Ntrace_components) \<noteq> {}"
+            obtain C where hC: "C \<in> ?Ntrace_components"
+              and htouch_C: "G \<inter> closure C \<noteq> {}"
+              using hN_trace_union_closure_touch_member[OF htouch_union]
+              by (elim bexE)
+            have hsummary:
+                "C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Nloc \<noteq> {}"
+              by (rule hN_trace_component_summary[OF hC])
+            show "\<exists>C\<in>?Ntrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?Nloc \<noteq> {}
+              \<and> G \<inter> closure C \<noteq> {}"
+              using hC hsummary htouch_C by (by100 blast)
+          qed
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
