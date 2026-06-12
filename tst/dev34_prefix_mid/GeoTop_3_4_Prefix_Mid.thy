@@ -27691,6 +27691,60 @@ proof -
 	                                        \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
 	                                      \<and> \<zeta> \<noteq> \<theta>
 	                                      \<and> \<zeta> \<noteq> \<beta>\<^sub>c))"
+	                                have hcanonical_all_empty_parent_candidates_contradict_primary_spares_book:
+	                                  "(\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+	                                    \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
+	                                    \<and> geotop_simplex_dim \<sigma> 2
+	                                    \<and> \<sigma> \<noteq> \<theta>
+	                                    \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                    \<and> \<sigma> \<inter> J\<^sub>1 =
+	                                      \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+	                                    \<and> \<sigma>' \<in> L\<^sub>1
+	                                    \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
+	                                    \<and> geotop_simplex_dim \<sigma>' 2
+	                                    \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                    \<and> \<sigma>' \<inter> J\<^sub>1 =
+	                                      \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
+	                                    \<and> \<sigma> \<noteq> \<sigma>'
+	                                    \<and> \<tau> \<in> L\<^sub>2
+	                                    \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
+	                                    \<and> geotop_simplex_dim \<tau> 2
+	                                    \<and> \<tau> \<noteq> \<theta>
+	                                    \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                                    \<and> \<tau> \<inter> J\<^sub>2 =
+	                                      \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+	                                    \<and> \<tau>' \<in> L\<^sub>2
+	                                    \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
+	                                    \<and> geotop_simplex_dim \<tau>' 2
+	                                    \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                                    \<and> \<tau>' \<inter> J\<^sub>2 =
+	                                      \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}
+	                                    \<and> \<tau> \<noteq> \<tau>'
+	                                    \<and> \<sigma> \<noteq> \<tau>
+	                                    \<and> (\<sigma> \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>)
+	                                    \<and> (\<tau> \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>)) \<Longrightarrow>
+	                                  \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                  (**
+	                                    Fixed canonical-spare form of the
+	                                    remaining Moise Figure 3.2
+	                                    all-empty contradiction.  The two
+	                                    canonical side witnesses on each side
+	                                    are still side-free; the only remaining
+	                                    task is the book pigeonhole excluding
+	                                    simultaneous loss to the named chord
+	                                    pair and the parent-empty candidates. **)
+	                                  sorry
 	                                have hall_empty_parent_candidates_contradict_side_pairs_book:
 	                                  "(\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
 	                                    \<sigma>\<^sub>1 \<in> L\<^sub>1
@@ -27775,7 +27829,9 @@ proof -
 	                                    empty obstruction, the earlier extra
 	                                    empty obstruction, and the canonical
 	                                    empty obstruction. **)
-	                                  sorry
+	                                  by (rule
+	                                      hcanonical_all_empty_parent_candidates_contradict_primary_spares_book
+	                                      [OF hcanonical_primary_spare_counting_data])
 	                                show ?thesis
 	                                  by (rule
 	                                      hall_empty_parent_candidates_contradict_side_pairs_book
