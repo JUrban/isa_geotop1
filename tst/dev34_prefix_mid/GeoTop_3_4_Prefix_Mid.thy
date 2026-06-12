@@ -27896,10 +27896,136 @@ proof -
 	                                  proof -
 	                                    assume h\<sigma>_residual:
 	                                      "\<sigma> = \<beta> \<or> \<sigma> \<inter> J\<^sub>1 = {}"
-	                                    assume h\<tau>_residual:
-	                                      "\<tau> = \<beta>\<^sub>c \<or> \<tau> \<inter> J\<^sub>2 = {}"
-	                                    have htwo_parent_empty_fixed_count_book:
-	                                      "\<And>u v.
+		                                    assume h\<tau>_residual:
+		                                      "\<tau> = \<beta>\<^sub>c \<or> \<tau> \<inter> J\<^sub>2 = {}"
+		                                    have hresidual_named_spare_no_chord_candidate_book:
+		                                      "\<sigma> = \<beta> \<Longrightarrow>
+		                                      \<tau> = \<beta>\<^sub>c \<Longrightarrow>
+		                                      ?G\<^sub>1 \<sigma>' \<or>
+		                                        ?G\<^sub>2 \<beta>\<^sub>c \<tau>'"
+		                                      (**
+		                                        Named-primary spare extraction
+		                                        from the Moise Figure 3.2 count:
+		                                        once the two primary witnesses are
+		                                        exactly the named chord faces, the
+		                                        distinct spare pair cannot both be
+		                                        lost to the same artificial chord.
+		                                        Hence one spare is already a
+		                                        no-chord side candidate. **)
+		                                    proof -
+		                                      assume h\<sigma>_eq_\<beta>: "\<sigma> = \<beta>"
+		                                      assume h\<tau>_eq_\<beta>c: "\<tau> = \<beta>\<^sub>c"
+		                                      obtain \<delta> where h\<delta>T\<^sub>2: "\<delta> \<in> ?T\<^sub>2"
+		                                        and h\<delta>_not_T\<^sub>1: "\<delta> \<notin> ?T\<^sub>1"
+		                                        and h\<delta>_ne_\<beta>: "\<delta> \<noteq> \<beta>"
+		                                        and h\<delta>_ne_\<theta>: "\<delta> \<noteq> \<theta>"
+		                                        and h\<delta>_ne_\<alpha>: "\<delta> \<noteq> \<alpha>"
+		                                        and h\<delta>_chord:
+		                                          "geotop_is_face
+		                                            (closed_segment a c) \<delta>"
+		                                        and h\<beta>_not_T\<^sub>2_unique:
+		                                          "\<beta> \<notin> ?T\<^sub>2"
+		                                        and hT\<^sub>1_not_named_no_chord:
+		                                          "\<forall>\<rho>\<in>?T\<^sub>1.
+		                                            \<rho> \<noteq> \<beta> \<longrightarrow>
+		                                            \<not> geotop_is_face
+		                                              (closed_segment a c) \<rho>"
+		                                        and hT\<^sub>2_not_named_no_chord:
+		                                          "\<forall>\<rho>\<in>?T\<^sub>2.
+		                                            \<rho> \<noteq> \<delta> \<longrightarrow>
+		                                            \<not> geotop_is_face
+		                                              (closed_segment a c) \<rho>"
+		                                        using
+		                                          hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+		                                        by (elim exE conjE)
+		                                      have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
+		                                      proof (rule ccontr)
+		                                        assume hne:
+		                                          "\<not> \<beta>\<^sub>c = \<delta>"
+		                                        have "\<not> geotop_is_face
+		                                            (closed_segment a c) \<beta>\<^sub>c"
+		                                          using hT\<^sub>2_not_named_no_chord
+		                                            h\<beta>cT\<^sub>2 hne
+		                                          by (by100 blast)
+		                                        thus False
+		                                          using h\<beta>c_chord
+		                                          by (by100 blast)
+		                                      qed
+		                                      have h\<sigma>'T\<^sub>1: "\<sigma>' \<in> ?T\<^sub>1"
+		                                        using h\<sigma>'L\<^sub>1 h\<sigma>'2
+		                                        by (by100 simp)
+		                                      have h\<tau>'T\<^sub>2: "\<tau>' \<in> ?T\<^sub>2"
+		                                        using h\<tau>'L\<^sub>2 h\<tau>'2
+		                                        by (by100 simp)
+		                                      have h\<sigma>'_ne_\<beta>: "\<sigma>' \<noteq> \<beta>"
+		                                        using h\<sigma>_eq_\<beta> h\<sigma>_ne_\<sigma>'
+		                                        by (by100 blast)
+		                                      have h\<sigma>'_no_chord:
+		                                        "\<not> geotop_is_face
+		                                          (closed_segment a c) \<sigma>'"
+		                                        using hT\<^sub>1_not_named_no_chord
+		                                          h\<sigma>'T\<^sub>1 h\<sigma>'_ne_\<beta>
+		                                        by (by100 blast)
+		                                      show ?thesis
+		                                      proof (cases "\<sigma>' = \<theta>")
+		                                        case False
+		                                        have hG1: "?G\<^sub>1 \<sigma>'"
+		                                          using h\<sigma>'L\<^sub>1 h\<sigma>'2 False
+		                                            h\<sigma>'_ne_\<beta>
+		                                            h\<sigma>'_no_chord h\<sigma>'_card
+		                                            h\<sigma>'_contact
+		                                          by (by100 blast)
+		                                        show ?thesis
+		                                          by (rule disjI1[OF hG1])
+		                                      next
+		                                        case True
+		                                        have h\<tau>'_ne_\<beta>c:
+		                                          "\<tau>' \<noteq> \<beta>\<^sub>c"
+		                                          using h\<tau>_eq_\<beta>c
+		                                            h\<tau>_ne_\<tau>'
+		                                          by (by100 blast)
+		                                        have h\<tau>'_ne_\<delta>:
+		                                          "\<tau>' \<noteq> \<delta>"
+		                                          using h\<tau>'_ne_\<beta>c
+		                                            h\<beta>c_eq_\<delta>
+		                                          by (by100 blast)
+		                                        have h\<tau>'_no_chord:
+		                                          "\<not> geotop_is_face
+		                                            (closed_segment a c) \<tau>'"
+		                                          using hT\<^sub>2_not_named_no_chord
+		                                            h\<tau>'T\<^sub>2 h\<tau>'_ne_\<delta>
+		                                          by (by100 blast)
+		                                        have h\<tau>'_ne_\<theta>:
+		                                          "\<tau>' \<noteq> \<theta>"
+		                                        proof
+		                                          assume h\<tau>'_eq_\<theta>:
+		                                            "\<tau>' = \<theta>"
+		                                          have "\<theta> \<in> ?T\<^sub>1"
+		                                            using True h\<sigma>'T\<^sub>1
+		                                            by (by100 simp)
+		                                          moreover have "\<theta> \<in> ?T\<^sub>2"
+		                                            using h\<tau>'_eq_\<theta>
+		                                              h\<tau>'T\<^sub>2
+		                                            by (by100 simp)
+		                                          ultimately show False
+		                                            using
+		                                              hside_core_omitted_parent_faces_book
+		                                            by (by100 blast)
+		                                        qed
+		                                        have hG2:
+		                                          "?G\<^sub>2 \<beta>\<^sub>c \<tau>'"
+		                                          using h\<tau>'L\<^sub>2 h\<tau>'2
+		                                            h\<tau>'_ne_\<theta>
+		                                            h\<tau>'_ne_\<beta>c
+		                                            h\<tau>'_no_chord h\<tau>'_card
+		                                            h\<tau>'_contact
+		                                          by (by100 blast)
+		                                        show ?thesis
+		                                          by (rule disjI2[OF hG2])
+		                                      qed
+		                                    qed
+		                                    have htwo_parent_empty_fixed_count_book:
+		                                      "\<And>u v.
 	                                      ((?G\<^sub>1 u
 	                                          \<and> u \<inter> J\<^sub>1 = {}
 	                                          \<and> u \<in> K
@@ -28058,7 +28184,7 @@ proof -
 	                                          two side-free witness pairs to
 	                                          force one real side-boundary
 	                                          contact. **)
-	                                        sorry
+		                                        sorry
 	                                      show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
@@ -28426,116 +28552,9 @@ proof -
 	                                      assume h\<tau>_eq_\<beta>c: "\<tau> = \<beta>\<^sub>c"
 	                                      have hcanonical_spare_no_chord_candidate:
 	                                        "?G\<^sub>1 \<sigma>' \<or> ?G\<^sub>2 \<beta>\<^sub>c \<tau>'"
-	                                      proof -
-	                                        obtain \<delta> where h\<delta>T\<^sub>2: "\<delta> \<in> ?T\<^sub>2"
-	                                          and h\<delta>_not_T\<^sub>1: "\<delta> \<notin> ?T\<^sub>1"
-	                                          and h\<delta>_ne_\<beta>: "\<delta> \<noteq> \<beta>"
-	                                          and h\<delta>_ne_\<theta>: "\<delta> \<noteq> \<theta>"
-	                                          and h\<delta>_ne_\<alpha>: "\<delta> \<noteq> \<alpha>"
-	                                          and h\<delta>_chord:
-	                                            "geotop_is_face
-	                                              (closed_segment a c) \<delta>"
-	                                          and h\<beta>_not_T\<^sub>2_unique:
-	                                            "\<beta> \<notin> ?T\<^sub>2"
-	                                          and hT\<^sub>1_not_named_no_chord:
-	                                            "\<forall>\<rho>\<in>?T\<^sub>1.
-	                                              \<rho> \<noteq> \<beta> \<longrightarrow>
-	                                              \<not> geotop_is_face
-	                                                (closed_segment a c) \<rho>"
-	                                          and hT\<^sub>2_not_named_no_chord:
-	                                            "\<forall>\<rho>\<in>?T\<^sub>2.
-	                                              \<rho> \<noteq> \<delta> \<longrightarrow>
-	                                              \<not> geotop_is_face
-	                                                (closed_segment a c) \<rho>"
-	                                          using
-	                                            hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
-	                                          by (elim exE conjE)
-	                                        have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
-	                                        proof (rule ccontr)
-	                                          assume hne:
-	                                            "\<not> \<beta>\<^sub>c = \<delta>"
-	                                          have "\<not> geotop_is_face
-	                                              (closed_segment a c) \<beta>\<^sub>c"
-	                                            using hT\<^sub>2_not_named_no_chord
-	                                              h\<beta>cT\<^sub>2 hne
-	                                            by (by100 blast)
-	                                          thus False
-	                                            using h\<beta>c_chord
-	                                            by (by100 blast)
-	                                        qed
-	                                        have h\<sigma>'T\<^sub>1: "\<sigma>' \<in> ?T\<^sub>1"
-	                                          using h\<sigma>'L\<^sub>1 h\<sigma>'2
-	                                          by (by100 simp)
-	                                        have h\<tau>'T\<^sub>2: "\<tau>' \<in> ?T\<^sub>2"
-	                                          using h\<tau>'L\<^sub>2 h\<tau>'2
-	                                          by (by100 simp)
-	                                        have h\<sigma>'_ne_\<beta>: "\<sigma>' \<noteq> \<beta>"
-	                                          using h\<sigma>_eq_\<beta> h\<sigma>_ne_\<sigma>'
-	                                          by (by100 blast)
-	                                        have h\<sigma>'_no_chord:
-	                                          "\<not> geotop_is_face
-	                                            (closed_segment a c) \<sigma>'"
-	                                          using hT\<^sub>1_not_named_no_chord
-	                                            h\<sigma>'T\<^sub>1 h\<sigma>'_ne_\<beta>
-	                                          by (by100 blast)
-	                                        show ?thesis
-	                                        proof (cases "\<sigma>' = \<theta>")
-	                                          case False
-	                                          have hG1: "?G\<^sub>1 \<sigma>'"
-	                                            using h\<sigma>'L\<^sub>1 h\<sigma>'2 False
-	                                              h\<sigma>'_ne_\<beta>
-	                                              h\<sigma>'_no_chord h\<sigma>'_card
-	                                              h\<sigma>'_contact
-	                                            by (by100 blast)
-	                                          show ?thesis
-	                                            by (rule disjI1[OF hG1])
-	                                        next
-	                                          case True
-	                                          have h\<tau>'_ne_\<beta>c:
-	                                            "\<tau>' \<noteq> \<beta>\<^sub>c"
-	                                            using h\<tau>_eq_\<beta>c
-	                                              h\<tau>_ne_\<tau>'
-	                                            by (by100 blast)
-	                                          have h\<tau>'_ne_\<delta>:
-	                                            "\<tau>' \<noteq> \<delta>"
-	                                            using h\<tau>'_ne_\<beta>c
-	                                              h\<beta>c_eq_\<delta>
-	                                            by (by100 blast)
-	                                          have h\<tau>'_no_chord:
-	                                            "\<not> geotop_is_face
-	                                              (closed_segment a c) \<tau>'"
-	                                            using hT\<^sub>2_not_named_no_chord
-	                                              h\<tau>'T\<^sub>2 h\<tau>'_ne_\<delta>
-	                                            by (by100 blast)
-	                                          have h\<tau>'_ne_\<theta>:
-	                                            "\<tau>' \<noteq> \<theta>"
-	                                          proof
-	                                            assume h\<tau>'_eq_\<theta>:
-	                                              "\<tau>' = \<theta>"
-	                                            have "\<theta> \<in> ?T\<^sub>1"
-	                                              using True h\<sigma>'T\<^sub>1
-	                                              by (by100 simp)
-	                                            moreover have "\<theta> \<in> ?T\<^sub>2"
-	                                              using h\<tau>'_eq_\<theta>
-	                                                h\<tau>'T\<^sub>2
-	                                              by (by100 simp)
-	                                            ultimately show False
-	                                              using
-	                                                hside_core_omitted_parent_faces_book
-	                                              by (by100 blast)
-	                                          qed
-	                                          have hG2:
-	                                            "?G\<^sub>2 \<beta>\<^sub>c \<tau>'"
-	                                            using h\<tau>'L\<^sub>2 h\<tau>'2
-	                                              h\<tau>'_ne_\<theta>
-	                                              h\<tau>'_ne_\<beta>c
-	                                              h\<tau>'_no_chord h\<tau>'_card
-	                                              h\<tau>'_contact
-	                                            by (by100 blast)
-	                                          show ?thesis
-	                                            by (rule disjI2[OF hG2])
-	                                        qed
-	                                      qed
+	                                        by (rule
+	                                            hresidual_named_spare_no_chord_candidate_book
+	                                            [OF h\<sigma>_eq_\<beta> h\<tau>_eq_\<beta>c])
 	                                      have hcanonical_spare_empty_contradicts_book:
 	                                        "((?G\<^sub>1 \<sigma>'
 	                                            \<and> \<sigma>' \<inter> J\<^sub>1 = {})
