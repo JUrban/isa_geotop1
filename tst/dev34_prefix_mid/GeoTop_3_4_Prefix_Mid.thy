@@ -25886,6 +25886,24 @@ proof -
             apply (by100 simp)
             done
         qed
+        have hlarge_empty_side_candidate_replaced:
+          "\<And>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 = {})
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 = {}) \<Longrightarrow>
+            \<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+          (**
+            Unified remaining Moise Figure 3.2 empty-candidate replacement.
+            The fixed chord triangle \<open>\<beta>\<^sub>c\<close> is unique on side 2, and
+            \<open>hlarge_fixed_oriented_primary_data\<close> records the two primary
+            side witnesses relative to that fixed chord.  If a no-chord side
+            candidate has empty side-boundary contact, combine it with
+            \<open>hbranch_empty\<close> and the spare canonical side witnesses to rule
+            out the possibility that every usable side-induction witness is
+            either the named chord triangle or an empty parent-contact
+            triangle.  The surviving witness has nonempty side-boundary
+            contact, so the existing transfer lemmas finish the parent
+            selected-free witness. **)
+          sorry
         have hlarge_real_side_contact_candidate:
           "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
             \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
@@ -25917,18 +25935,12 @@ proof -
                 \<and> \<gamma> \<noteq> \<beta>"
                 by (rule hG\<^sub>1_side_empty_parent_empty_selected_free
                     [OF hG1 True])
-              have hside1_empty_candidate_replaced: ?thesis
-                (**
-                  Remaining side-1 empty-candidate replacement.  The fixed
-                  no-chord candidate \<open>\<gamma>\<close> has now been converted to a parent
-                  free triangle with empty parent-boundary contact and empty
-                  selected-edge set.  Together with \<open>hbranch_empty\<close>, Moise's
-                  two-side counting step must replace these empty candidates by
-                  another no-chord side witness with nonempty side-boundary
-                  contact. **)
-                sorry
+              have hempty_candidate:
+                "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 = {})"
+                by (rule disjI1, rule conjI, rule hG1, rule True)
               show ?thesis
-                by (rule hside1_empty_candidate_replaced)
+                by (rule hlarge_empty_side_candidate_replaced[OF hempty_candidate])
             qed
           next
             assume hG2: "?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
@@ -25954,19 +25966,12 @@ proof -
                 \<and> \<gamma> \<noteq> \<beta>\<^sub>c"
                 by (rule hG\<^sub>2_side_empty_parent_empty_selected_free
                     [OF hG2 True])
-              have hside2_empty_candidate_replaced: ?thesis
-                (**
-                  Remaining side-2 empty-candidate replacement.  The fixed
-                  no-chord candidate lies on side 2 and has now been converted
-                  to a parent free triangle with empty parent-boundary contact
-                  and empty selected-edge set.  The book proof must use the
-                  \<open>card ?T\<^sub>2 > 1\<close> side-induction strength and the named chord
-                  triangle \<open>\<beta>\<^sub>c\<close> to choose another side witness, rather than
-                  allowing both usable side-2 choices to be artificial-chord or
-                  empty-parent-contact witnesses. **)
-                sorry
+              have hempty_candidate:
+                "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 = {})"
+                by (rule disjI2, rule conjI, rule hG2, rule True)
               show ?thesis
-                by (rule hside2_empty_candidate_replaced)
+                by (rule hlarge_empty_side_candidate_replaced[OF hempty_candidate])
             qed
           qed
         qed
