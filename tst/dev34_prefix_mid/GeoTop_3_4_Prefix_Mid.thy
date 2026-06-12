@@ -27585,7 +27585,122 @@ proof -
 	                                  two free side witnesses on each side must
 	                                  leave a witness with real side-boundary
 	                                  contact. **)
-	                                sorry
+	                              proof -
+	                                assume hcanonical_parent_empty_candidate:
+	                                  "\<exists>\<zeta>.
+	                                    ((?G\<^sub>1 \<zeta>
+	                                      \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                      \<and> \<zeta> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<zeta>
+	                                      \<and> geotop_simplex_dim \<zeta> 2
+	                                      \<and> \<zeta> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<zeta> \<noteq> \<theta>
+	                                      \<and> \<zeta> \<noteq> \<beta>)
+	                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                      \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                      \<and> \<zeta> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<zeta>
+	                                      \<and> geotop_simplex_dim \<zeta> 2
+	                                      \<and> \<zeta> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<zeta> \<noteq> \<theta>
+	                                      \<and> \<zeta> \<noteq> \<beta>\<^sub>c))"
+	                                have hall_empty_parent_candidates_contradict_side_pairs_book:
+	                                  "(\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+	                                    \<sigma>\<^sub>1 \<in> L\<^sub>1
+	                                    \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+	                                    \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+	                                    \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+	                                    \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+	                                    \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+	                                    \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+	                                    \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+	                                    \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+	                                    \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2) \<Longrightarrow>
+	                                  ((?G\<^sub>1 \<rho>
+	                                      \<and> \<rho> \<inter> J\<^sub>1 = {}
+	                                      \<and> \<rho> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<rho>
+	                                      \<and> geotop_simplex_dim \<rho> 2
+	                                      \<and> \<rho> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<rho> \<noteq> \<theta>
+	                                      \<and> \<rho> \<noteq> \<beta>)
+	                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+	                                      \<and> \<rho> \<inter> J\<^sub>2 = {}
+	                                      \<and> \<rho> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<rho>
+	                                      \<and> geotop_simplex_dim \<rho> 2
+	                                      \<and> \<rho> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<rho> \<noteq> \<theta>
+	                                      \<and> \<rho> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                  ((?G\<^sub>1 \<eta>
+	                                      \<and> \<eta> \<inter> J\<^sub>1 = {}
+	                                      \<and> \<eta> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<eta>
+	                                      \<and> geotop_simplex_dim \<eta> 2
+	                                      \<and> \<eta> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<eta> \<noteq> \<theta>
+	                                      \<and> \<eta> \<noteq> \<beta>)
+	                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+	                                      \<and> \<eta> \<inter> J\<^sub>2 = {}
+	                                      \<and> \<eta> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<eta>
+	                                      \<and> geotop_simplex_dim \<eta> 2
+	                                      \<and> \<eta> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<eta> \<noteq> \<theta>
+	                                      \<and> \<eta> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                  (\<exists>\<zeta>.
+	                                    ((?G\<^sub>1 \<zeta>
+	                                      \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                      \<and> \<zeta> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<zeta>
+	                                      \<and> geotop_simplex_dim \<zeta> 2
+	                                      \<and> \<zeta> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<zeta> \<noteq> \<theta>
+	                                      \<and> \<zeta> \<noteq> \<beta>)
+	                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                      \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                      \<and> \<zeta> \<in> K
+	                                      \<and> geotop_free_2_simplex K J \<zeta>
+	                                      \<and> geotop_simplex_dim \<zeta> 2
+	                                      \<and> \<zeta> \<inter> J = {}
+	                                      \<and> {e\<in>K. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                      \<and> \<zeta> \<noteq> \<theta>
+	                                      \<and> \<zeta> \<noteq> \<beta>\<^sub>c))) \<Longrightarrow>
+	                                  \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                  (**
+	                                    The remaining book contradiction with
+	                                    all counting inputs explicit: two free
+	                                    side witnesses on each side, the fixed
+	                                    empty obstruction, the earlier extra
+	                                    empty obstruction, and the canonical
+	                                    empty obstruction. **)
+	                                  sorry
+	                                show ?thesis
+	                                  by (rule
+	                                      hall_empty_parent_candidates_contradict_side_pairs_book
+	                                      [OF hside_free_pair_counting_data
+	                                        hbranch_fixed_empty
+	                                        hextra_fixed_empty
+	                                        hcanonical_parent_empty_candidate])
+	                              qed
 	                              have hcanonical_primary_nonempty_finishes:
 	                                "(\<sigma>\<^sub>q \<noteq> \<beta>
 	                                    \<and> \<sigma>\<^sub>q \<inter> J\<^sub>1 \<noteq> {})
