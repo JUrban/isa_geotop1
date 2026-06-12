@@ -29490,7 +29490,98 @@ proof -
 		                                                    obstruction, after which the
 		                                                    same fixed empty-count
 		                                                    contradiction applies. **)
-		                                                  sorry
+			                                                proof -
+			                                                  assume hempty:
+			                                                    "(((?H1 x \<and> ?H1 y)
+			                                                        \<and> (s1 \<inter> J\<^sub>1 = {}
+			                                                          \<or> s2 \<inter> J\<^sub>1 = {}))
+			                                                      \<or> ((?H2 x \<and> ?H2 y)
+			                                                        \<and> (t1 \<inter> J\<^sub>2 = {}
+			                                                          \<or> t2 \<inter> J\<^sub>2 = {})))"
+			                                                  have hempty_side_candidate_count_book:
+			                                                    "(\<exists>\<eta>. (?G\<^sub>1 \<eta>
+			                                                        \<and> \<eta> \<inter> J\<^sub>1 = {})
+			                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+			                                                        \<and> \<eta> \<inter> J\<^sub>2 = {})) \<Longrightarrow>
+			                                                    \<exists>\<omega>. (?G\<^sub>1 \<omega>
+			                                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+			                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+			                                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+			                                                    (**
+			                                                      Reduced empty-contact book
+			                                                      count: once the same-side
+			                                                      parent-empty pair exposes
+			                                                      any empty side candidate,
+			                                                      Moise's fixed Figure 3.2
+			                                                      count must leave a witness
+			                                                      with real side-boundary
+			                                                      contact. **)
+			                                                    sorry
+			                                                  have hempty_candidate:
+			                                                    "\<exists>\<eta>. (?G\<^sub>1 \<eta>
+			                                                        \<and> \<eta> \<inter> J\<^sub>1 = {})
+			                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+			                                                        \<and> \<eta> \<inter> J\<^sub>2 = {})"
+			                                                  proof (rule disjE[OF hempty])
+			                                                    assume hside1:
+			                                                      "(?H1 x \<and> ?H1 y)
+			                                                        \<and> (s1 \<inter> J\<^sub>1 = {}
+			                                                          \<or> s2 \<inter> J\<^sub>1 = {})"
+			                                                    have hxy1: "?H1 x \<and> ?H1 y"
+			                                                      by (rule conjunct1[OF hside1])
+			                                                    have hx1: "?H1 x"
+			                                                      by (rule conjunct1[OF hxy1])
+			                                                    have hxG: "?G\<^sub>1 x"
+			                                                      by (rule conjunct1[OF hx1])
+			                                                    have hx_empty:
+			                                                      "x \<inter> J\<^sub>1 = {}"
+			                                                      by (rule conjunct1[
+			                                                          OF conjunct2[OF hx1]])
+			                                                    have hcase:
+			                                                      "(?G\<^sub>1 x
+			                                                        \<and> x \<inter> J\<^sub>1 = {})
+			                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c x
+			                                                        \<and> x \<inter> J\<^sub>2 = {})"
+			                                                      by (rule disjI1,
+			                                                          rule conjI,
+			                                                          rule hxG,
+			                                                          rule hx_empty)
+			                                                    show ?thesis
+			                                                      by (rule exI[where x = x],
+			                                                          rule hcase)
+			                                                  next
+			                                                    assume hside2:
+			                                                      "(?H2 x \<and> ?H2 y)
+			                                                        \<and> (t1 \<inter> J\<^sub>2 = {}
+			                                                          \<or> t2 \<inter> J\<^sub>2 = {})"
+			                                                    have hxy2: "?H2 x \<and> ?H2 y"
+			                                                      by (rule conjunct1[OF hside2])
+			                                                    have hx2: "?H2 x"
+			                                                      by (rule conjunct1[OF hxy2])
+			                                                    have hxG: "?G\<^sub>2 \<beta>\<^sub>c x"
+			                                                      by (rule conjunct1[OF hx2])
+			                                                    have hx_empty:
+			                                                      "x \<inter> J\<^sub>2 = {}"
+			                                                      by (rule conjunct1[
+			                                                          OF conjunct2[OF hx2]])
+			                                                    have hcase:
+			                                                      "(?G\<^sub>1 x
+			                                                        \<and> x \<inter> J\<^sub>1 = {})
+			                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c x
+			                                                        \<and> x \<inter> J\<^sub>2 = {})"
+			                                                      by (rule disjI2,
+			                                                          rule conjI,
+			                                                          rule hxG,
+			                                                          rule hx_empty)
+			                                                    show ?thesis
+			                                                      by (rule exI[where x = x],
+			                                                          rule hcase)
+			                                                  qed
+			                                                  show ?thesis
+			                                                    by (rule
+			                                                        hempty_side_candidate_count_book
+			                                                        [OF hempty_candidate])
+			                                                qed
 		                                                have hnamed_chord_pair_count_book:
 		                                                  "(((?H1 x \<and> ?H1 y)
 		                                                      \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
