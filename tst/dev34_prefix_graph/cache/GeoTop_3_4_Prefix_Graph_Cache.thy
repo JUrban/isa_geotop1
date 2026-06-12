@@ -8581,10 +8581,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T C p y D\<^sub>w D\<^sub>q where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -8633,10 +8641,18 @@ proof -
 	          \<Longrightarrow> (\<exists>D\<^sub>w D\<^sub>q.
               (N = D\<^sub>w - {w}
                 \<and> y \<in> D\<^sub>w - {p}
-                \<and> p \<in> closure (D\<^sub>w - {w, p}))
+                \<and> p \<in> closure (D\<^sub>w - {w, p})
+                \<and> top1_is_arc_on D\<^sub>w
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+                \<and> top1_arc_endpoints_on D\<^sub>w
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
               \<or> (N = D\<^sub>q
                 \<and> y \<in> D\<^sub>q - {p}
-                \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
+                \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+                \<and> top1_is_arc_on D\<^sub>q
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+                \<and> top1_arc_endpoints_on D\<^sub>q
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))
 	          \<Longrightarrow> \<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	            \<and> S \<noteq> T
@@ -8653,10 +8669,18 @@ proof -
               \<and> (\<exists>D\<^sub>w D\<^sub>q.
                 (N = D\<^sub>w - {w}
                   \<and> y \<in> D\<^sub>w - {p}
-                  \<and> p \<in> closure (D\<^sub>w - {w, p}))
+                  \<and> p \<in> closure (D\<^sub>w - {w, p})
+                  \<and> top1_is_arc_on D\<^sub>w
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+                  \<and> top1_arc_endpoints_on D\<^sub>w
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
                 \<or> (N = D\<^sub>q
                   \<and> y \<in> D\<^sub>q - {p}
-                  \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+                  \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+                  \<and> top1_is_arc_on D\<^sub>q
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+                  \<and> top1_arc_endpoints_on D\<^sub>q
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
     proof -
       fix N
 	      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
@@ -8668,10 +8692,18 @@ proof -
 	      assume hN_label: "\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	      have hbody: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	        \<and> S \<noteq> T
@@ -8688,10 +8720,18 @@ proof -
           \<and> (\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
 	      proof (intro conjI)
 	        show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
 	        show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
@@ -8710,10 +8750,18 @@ proof -
 	        show "\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	          by (rule hN_label)
 	      qed
 	      show "\<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
@@ -8732,10 +8780,18 @@ proof -
           \<and> (\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
 	        by (rule exI[where x=S], rule exI[where x=T],
 	            rule exI[where x=p], rule exI[where x=y],
 	            rule exI[where x=N], rule hbody)
@@ -8778,11 +8834,19 @@ proof -
             "\<exists>D\<^sub>w' D\<^sub>q'.
               ((D\<^sub>w - {w}) = D\<^sub>w' - {w}
                 \<and> y \<in> D\<^sub>w' - {p}
-                \<and> p \<in> closure (D\<^sub>w' - {w, p}))
+                \<and> p \<in> closure (D\<^sub>w' - {w, p})
+                \<and> top1_is_arc_on D\<^sub>w'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w')
+                \<and> top1_arc_endpoints_on D\<^sub>w'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w') = {w, p})
               \<or> ((D\<^sub>w - {w}) = D\<^sub>q'
                 \<and> y \<in> D\<^sub>q' - {p}
-                \<and> p \<in> closure (D\<^sub>q' - {p, q\<^sub>1}))"
-	        using hyDw hp_Dw_closure by (by100 blast)
+                \<and> p \<in> closure (D\<^sub>q' - {p, q\<^sub>1})
+                \<and> top1_is_arc_on D\<^sub>q'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q')
+                \<and> top1_arc_endpoints_on D\<^sub>q'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q') = {p, q\<^sub>1})"
+	        using hyDw hp_Dw_closure hDw_arc hDw_ep by (by100 blast)
 	      show ?thesis
 	        by (rule hpack[OF hN_sub hN_conn hpN hyN hpN_cl hN_label])
 	    next
@@ -8805,11 +8869,19 @@ proof -
             "\<exists>D\<^sub>w' D\<^sub>q'.
               (D\<^sub>q = D\<^sub>w' - {w}
                 \<and> y \<in> D\<^sub>w' - {p}
-                \<and> p \<in> closure (D\<^sub>w' - {w, p}))
+                \<and> p \<in> closure (D\<^sub>w' - {w, p})
+                \<and> top1_is_arc_on D\<^sub>w'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w')
+                \<and> top1_arc_endpoints_on D\<^sub>w'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w') = {w, p})
               \<or> (D\<^sub>q = D\<^sub>q'
                 \<and> y \<in> D\<^sub>q' - {p}
-                \<and> p \<in> closure (D\<^sub>q' - {p, q\<^sub>1}))"
-	        using hyDq hp_Dq_closure by (by100 blast)
+                \<and> p \<in> closure (D\<^sub>q' - {p, q\<^sub>1})
+                \<and> top1_is_arc_on D\<^sub>q'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q')
+                \<and> top1_arc_endpoints_on D\<^sub>q'
+                  (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q') = {p, q\<^sub>1})"
+	        using hyDq hp_Dq_closure hDq_arc hDq_ep by (by100 blast)
 	      show ?thesis
 	        by (rule hpack[OF hN_sub hN_conn hpDq hyN hpN_cl hN_label])
 	    qed
@@ -8833,10 +8905,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T p y N D\<^sub>w D\<^sub>q where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
       and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -8853,10 +8933,18 @@ proof -
 	      and hpN_cl: "p \<in> closure (N - {p})"
 	      and hN_label: "(N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	      using hcanonical_pair_split_side_connected_selected_germs
 	      by (elim exE conjE)
     have hS_E: "S \<in> E"
@@ -8885,10 +8973,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
 	    proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -8909,10 +9005,18 @@ proof -
 	      show "\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	        using hN_label by (by100 blast)
 	    qed
 	    show ?thesis
@@ -8945,10 +9049,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T p y N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -8967,10 +9079,18 @@ proof -
 	      and hpN_cl: "p \<in> closure (N - {p})"
 	      and hN_label: "(N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	      using hcanonical_pair_split_side_connected_incident_germ_hits
 	      by (elim exE conjE)
     have hremaining:
@@ -9090,10 +9210,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
 	    proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9120,10 +9248,18 @@ proof -
 	      show "\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	        using hN_label by (by100 blast)
 	    qed
     show ?thesis
@@ -9159,10 +9295,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T U p y N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9187,10 +9331,18 @@ proof -
 	      and hpN_cl: "p \<in> closure (N - {p})"
 	      and hN_label: "(N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	      using hcanonical_pair_split_side_three_incident_germs
 	      by (elim exE conjE)
     have hU_sphere_hit: "\<exists>z. z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r"
@@ -9264,10 +9416,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9297,10 +9457,18 @@ proof -
 	      show "\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	        using hN_label by (by100 blast)
 	    qed
     show ?thesis
@@ -9341,10 +9509,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9372,10 +9548,18 @@ proof -
 	      and hpN_cl: "p \<in> closure (N - {p})"
 	      and hN_label: "(N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	      using hcanonical_pair_split_side_three_sphere_germ_points
 	      by (elim exE conjE)
     have hp_can: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
@@ -9418,10 +9602,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9455,10 +9647,18 @@ proof -
 	      show "\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
 	        using hN_label by (by100 blast)
 	    qed
     show ?thesis
@@ -9500,10 +9700,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9535,10 +9743,18 @@ proof -
       and hpN_cl: "p \<in> closure (N - {p})"
       and hN_label: "(N = D\<^sub>w - {w}
           \<and> y \<in> D\<^sub>w - {p}
-          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<and> p \<in> closure (D\<^sub>w - {w, p})
+          \<and> top1_is_arc_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+          \<and> top1_arc_endpoints_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
         \<or> (N = D\<^sub>q
           \<and> y \<in> D\<^sub>q - {p}
-          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+          \<and> top1_is_arc_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+          \<and> top1_arc_endpoints_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
       using hcanonical_pair_split_side_three_canonical_sphere_points
       by (elim exE conjE)
     have hSTU_eq: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9591,10 +9807,18 @@ proof -
       \<and> (\<exists>D\<^sub>w D\<^sub>q.
         (N = D\<^sub>w - {w}
           \<and> y \<in> D\<^sub>w - {p}
-          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<and> p \<in> closure (D\<^sub>w - {w, p})
+          \<and> top1_is_arc_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+          \<and> top1_arc_endpoints_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
         \<or> (N = D\<^sub>q
           \<and> y \<in> D\<^sub>q - {p}
-          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+          \<and> top1_is_arc_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+          \<and> top1_arc_endpoints_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9629,10 +9853,18 @@ proof -
       show "\<exists>D\<^sub>w D\<^sub>q.
         (N = D\<^sub>w - {w}
           \<and> y \<in> D\<^sub>w - {p}
-          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<and> p \<in> closure (D\<^sub>w - {w, p})
+          \<and> top1_is_arc_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+          \<and> top1_arc_endpoints_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
         \<or> (N = D\<^sub>q
           \<and> y \<in> D\<^sub>q - {p}
-          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+          \<and> top1_is_arc_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+          \<and> top1_arc_endpoints_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
         using hN_label by (by100 blast)
     qed
     show ?thesis
@@ -9675,10 +9907,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
   proof -
     obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
@@ -9711,10 +9951,18 @@ proof -
       and hpN_cl: "p \<in> closure (N - {p})"
       and hN_label: "(N = D\<^sub>w - {w}
           \<and> y \<in> D\<^sub>w - {p}
-          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<and> p \<in> closure (D\<^sub>w - {w, p})
+          \<and> top1_is_arc_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+          \<and> top1_arc_endpoints_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
         \<or> (N = D\<^sub>q
           \<and> y \<in> D\<^sub>q - {p}
-          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+          \<and> top1_is_arc_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+          \<and> top1_arc_endpoints_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
       using hcanonical_pair_split_side_selected_three_edges
       by (elim exE conjE)
     have hcard: "card {p, y, z} = 3"
@@ -9752,10 +10000,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9791,10 +10047,18 @@ proof -
       show "\<exists>D\<^sub>w D\<^sub>q.
         (N = D\<^sub>w - {w}
           \<and> y \<in> D\<^sub>w - {p}
-          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<and> p \<in> closure (D\<^sub>w - {w, p})
+          \<and> top1_is_arc_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+          \<and> top1_arc_endpoints_on D\<^sub>w
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
         \<or> (N = D\<^sub>q
           \<and> y \<in> D\<^sub>q - {p}
-          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+          \<and> top1_is_arc_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+          \<and> top1_arc_endpoints_on D\<^sub>q
+            (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
         using hN_label by (by100 blast)
     qed
     show ?thesis
@@ -10213,10 +10477,18 @@ proof -
           \<and> (\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))
           \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
               (geotop_polyhedron L - {w})) p y"
@@ -10253,10 +10525,18 @@ proof -
         and hpN_cl: "p \<in> closure (N - {p})"
         and hN_label: "(N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
         using hcanonical_pair_split_side_selected_three_edges_card
         by (elim exE conjE)
       have hN_subtop:
@@ -10326,10 +10606,18 @@ proof -
         \<and> (\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))
         \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -10368,10 +10656,18 @@ proof -
         show "\<exists>D\<^sub>w D\<^sub>q.
           (N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
           using hN_label by (by100 blast)
         show "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
@@ -10537,10 +10833,18 @@ proof -
           \<Longrightarrow> (\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}))
           \<Longrightarrow> top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
               (geotop_polyhedron L - {w})) p y
@@ -10584,10 +10888,18 @@ proof -
           "\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
       assume hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polyhedron L - {w})) p y"
@@ -11061,10 +11373,18 @@ proof -
           "\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
         by (rule hN_split_label)
       have hsplit_side_endpoint_local_component_book_step:
           "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
@@ -12039,6 +12359,8 @@ proof -
                   "\<exists>W. W \<subseteq> N - {p}
                     \<and> W \<noteq> {}
                     \<and> p \<in> closure W
+                    \<and> top1_connected_on W
+                      (subspace_topology UNIV geotop_euclidean_topology W)
                     \<and> ((\<exists>D. N = D - {w}
                         \<and> W = D - {w, p}
                         \<and> y \<in> D - {p})
@@ -12049,10 +12371,18 @@ proof -
                 obtain D\<^sub>w D\<^sub>q where hN_side:
                     "(N = D\<^sub>w - {w}
                       \<and> y \<in> D\<^sub>w - {p}
-                      \<and> p \<in> closure (D\<^sub>w - {w, p}))
+                      \<and> p \<in> closure (D\<^sub>w - {w, p})
+                      \<and> top1_is_arc_on D\<^sub>w
+                        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+                      \<and> top1_arc_endpoints_on D\<^sub>w
+                        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
                     \<or> (N = D\<^sub>q
                       \<and> y \<in> D\<^sub>q - {p}
-                      \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+                      \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+                      \<and> top1_is_arc_on D\<^sub>q
+                        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+                      \<and> top1_arc_endpoints_on D\<^sub>q
+                        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
                   using hN_split_side_origin_package by (elim exE)
                 show ?thesis
                   using hN_side
@@ -12060,16 +12390,30 @@ proof -
                   assume hN_eq: "N = D\<^sub>w - {w}"
                   assume hy_side: "y \<in> D\<^sub>w - {p}"
                   assume hp_side_cl: "p \<in> closure (D\<^sub>w - {w, p})"
+                  assume hD_arc: "top1_is_arc_on D\<^sub>w
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)"
+                  assume hD_ep: "top1_arc_endpoints_on D\<^sub>w
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p}"
                   let ?W = "D\<^sub>w - {w, p}"
                   have hW_sub: "?W \<subseteq> N - {p}"
                     using hN_eq by (by100 blast)
                   have hW_nonempty: "?W \<noteq> {}"
                     by (rule geotop_closure_member_imp_nonempty_prefix
                         [OF hp_side_cl])
+                  have hwp: "w \<noteq> p"
+                    using hpSN by (by100 blast)
+                  have hW_conn: "top1_connected_on ?W
+                      (subspace_topology UNIV geotop_euclidean_topology ?W)"
+                    by (rule arc_minus_endpoints_connected
+                        [OF geotop_euclidean_topology_UNIV_strict
+                          geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
+                          hD_arc hD_ep hwp])
                   have hbody:
                       "?W \<subseteq> N - {p}
                         \<and> ?W \<noteq> {}
                         \<and> p \<in> closure ?W
+                        \<and> top1_connected_on ?W
+                          (subspace_topology UNIV geotop_euclidean_topology ?W)
                         \<and> ((\<exists>D. N = D - {w}
                             \<and> ?W = D - {w, p}
                             \<and> y \<in> D - {p})
@@ -12080,6 +12424,9 @@ proof -
                     show "?W \<subseteq> N - {p}" by (rule hW_sub)
                     show "?W \<noteq> {}" by (rule hW_nonempty)
                     show "p \<in> closure ?W" by (rule hp_side_cl)
+                    show "top1_connected_on ?W
+                      (subspace_topology UNIV geotop_euclidean_topology ?W)"
+                      by (rule hW_conn)
                     show "(\<exists>D. N = D - {w}
                         \<and> ?W = D - {w, p}
                         \<and> y \<in> D - {p})
@@ -12095,16 +12442,30 @@ proof -
                   assume hy_side: "y \<in> D\<^sub>q - {p}"
                   assume hp_side_cl:
                       "p \<in> closure (D\<^sub>q - {p, q\<^sub>1})"
+                  assume hD_arc: "top1_is_arc_on D\<^sub>q
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
+                  assume hD_ep: "top1_arc_endpoints_on D\<^sub>q
+                    (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}"
                   let ?W = "D\<^sub>q - {p, q\<^sub>1}"
                   have hW_sub: "?W \<subseteq> N - {p}"
                     using hN_eq by (by100 blast)
                   have hW_nonempty: "?W \<noteq> {}"
                     by (rule geotop_closure_member_imp_nonempty_prefix
                         [OF hp_side_cl])
+                  have hpq: "p \<noteq> q\<^sub>1"
+                    using hpS by (by100 blast)
+                  have hW_conn: "top1_connected_on ?W
+                      (subspace_topology UNIV geotop_euclidean_topology ?W)"
+                    by (rule arc_minus_endpoints_connected
+                        [OF geotop_euclidean_topology_UNIV_strict
+                          geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
+                          hD_arc hD_ep hpq])
                   have hbody:
                       "?W \<subseteq> N - {p}
                         \<and> ?W \<noteq> {}
                         \<and> p \<in> closure ?W
+                        \<and> top1_connected_on ?W
+                          (subspace_topology UNIV geotop_euclidean_topology ?W)
                         \<and> ((\<exists>D. N = D - {w}
                             \<and> ?W = D - {w, p}
                             \<and> y \<in> D - {p})
@@ -12115,6 +12476,9 @@ proof -
                     show "?W \<subseteq> N - {p}" by (rule hW_sub)
                     show "?W \<noteq> {}" by (rule hW_nonempty)
                     show "p \<in> closure ?W" by (rule hp_side_cl)
+                    show "top1_connected_on ?W
+                      (subspace_topology UNIV geotop_euclidean_topology ?W)"
+                      by (rule hW_conn)
                     show "(\<exists>D. N = D - {w}
                         \<and> ?W = D - {w, p}
                         \<and> y \<in> D - {p})
@@ -12130,6 +12494,8 @@ proof -
               obtain W where hW_sub_Np: "W \<subseteq> N - {p}"
                 and hW_nonempty: "W \<noteq> {}"
                 and hpW_cl: "p \<in> closure W"
+                and hW_conn: "top1_connected_on W
+                  (subspace_topology UNIV geotop_euclidean_topology W)"
                 and hW_source_cases:
                   "((\<exists>D. N = D - {w}
                       \<and> W = D - {w, p}
@@ -12176,6 +12542,8 @@ proof -
                     \<and> W \<subseteq> N - {p}
                     \<and> W \<noteq> {}
                     \<and> p \<in> closure W
+                    \<and> top1_connected_on W
+                      (subspace_topology UNIV geotop_euclidean_topology W)
                     \<and> W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components
                     \<and> W \<inter> ball w r
                       \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -12193,6 +12561,9 @@ proof -
                 show "W \<subseteq> N - {p}" by (rule hW_sub_Np)
                 show "W \<noteq> {}" by (rule hW_nonempty)
                 show "p \<in> closure W" by (rule hpW_cl)
+                show "top1_connected_on W
+                  (subspace_topology UNIV geotop_euclidean_topology W)"
+                  by (rule hW_conn)
                 show "W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components"
                   by (rule hW_local_trace_component_cover)
                 show "W \<inter> ball w r
@@ -12311,10 +12682,18 @@ proof -
         and hpN_cl: "p \<in> closure (N - {p})"
         and hN_split_label: "(N = D\<^sub>w - {w}
             \<and> y \<in> D\<^sub>w - {p}
-            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<and> p \<in> closure (D\<^sub>w - {w, p})
+            \<and> top1_is_arc_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+            \<and> top1_arc_endpoints_on D\<^sub>w
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
           \<or> (N = D\<^sub>q
             \<and> y \<in> D\<^sub>q - {p}
-            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+            \<and> top1_is_arc_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+            \<and> top1_arc_endpoints_on D\<^sub>q
+              (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
         and hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -12323,10 +12702,18 @@ proof -
           "\<exists>D\<^sub>w D\<^sub>q.
             (N = D\<^sub>w - {w}
               \<and> y \<in> D\<^sub>w - {p}
-              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<and> p \<in> closure (D\<^sub>w - {w, p})
+              \<and> top1_is_arc_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+              \<and> top1_arc_endpoints_on D\<^sub>w
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p})
             \<or> (N = D\<^sub>q
               \<and> y \<in> D\<^sub>q - {p}
-              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})
+              \<and> top1_is_arc_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+              \<and> top1_arc_endpoints_on D\<^sub>q
+                (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1})"
         using hN_split_label by (by100 blast)
       have hex_component:
           "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
