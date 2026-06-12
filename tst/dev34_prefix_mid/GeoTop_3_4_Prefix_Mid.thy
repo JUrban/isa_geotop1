@@ -25252,6 +25252,294 @@ proof -
       \<and> \<rho> \<noteq> \<beta>\<^sub>c"
       using hbase hselected_empty by (by100 blast)
   qed
+  have hresidual_cases_parent_empty_selected:
+    "(\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>)
+      \<or> (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>)
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+            \<and> \<rho> \<inter> J\<^sub>2 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>\<^sub>c)))
+      \<or> (\<exists>\<rho>. ?G\<^sub>1 \<rho>
+        \<and> \<rho> \<inter> J\<^sub>1 = {}
+        \<and> \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> \<rho> \<inter> J = {}
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+        \<and> \<rho> \<noteq> \<theta>
+        \<and> \<rho> \<noteq> \<beta>)"
+  proof -
+    from hresidual_cases_after_singleton_side2_finish show ?thesis
+    proof
+      assume hdone:
+        "\<exists>\<rho>. \<rho> \<in> K
+          \<and> geotop_free_2_simplex K J \<rho>
+          \<and> geotop_simplex_dim \<rho> 2
+          \<and> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+          \<and> \<rho> \<noteq> \<theta>"
+      show ?thesis
+        by (rule disjI1[OF hdone])
+    next
+      assume hrest:
+        "(\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+          \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+          \<and> \<beta>\<^sub>c \<noteq> \<beta>
+          \<and> \<beta>\<^sub>c \<noteq> \<theta>
+          \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+          \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+          \<and> \<beta> \<notin> ?T\<^sub>2
+          \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})))
+        \<or> (\<exists>\<rho>. ?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume hobstruction:
+          "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {}))"
+        obtain \<beta>\<^sub>c \<rho> where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+          and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+          and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+          and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+          and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+          and h\<beta>c_chord:
+            "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+          and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+          and hside:
+            "(?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})"
+          using hobstruction by (elim exE conjE)
+        show ?thesis
+        proof (rule disjE[OF hside])
+          assume hG1_empty: "?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {}"
+          have hG1: "?G\<^sub>1 \<rho>"
+            using hG1_empty by (by100 blast)
+          have hside_empty: "\<rho> \<inter> J\<^sub>1 = {}"
+            using hG1_empty by (by100 blast)
+          have hparent:
+            "\<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>"
+            by (rule hG\<^sub>1_side_empty_parent_empty_selected_free
+                [OF hG1 hside_empty])
+          have hbranch:
+            "?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>"
+            using hG1 hside_empty hparent by (by100 blast)
+          have hobstruction_parent:
+            "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+              \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+              \<and> \<beta>\<^sub>c \<noteq> \<beta>
+              \<and> \<beta>\<^sub>c \<noteq> \<theta>
+              \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+              \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+              \<and> \<beta> \<notin> ?T\<^sub>2
+              \<and> ((?G\<^sub>1 \<rho>
+                  \<and> \<rho> \<inter> J\<^sub>1 = {}
+                  \<and> \<rho> \<in> K
+                  \<and> geotop_free_2_simplex K J \<rho>
+                  \<and> geotop_simplex_dim \<rho> 2
+                  \<and> \<rho> \<inter> J = {}
+                  \<and> {e\<in>K. geotop_is_edge e
+                    \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+                  \<and> \<rho> \<noteq> \<theta>
+                  \<and> \<rho> \<noteq> \<beta>)
+                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+                  \<and> \<rho> \<inter> J\<^sub>2 = {}
+                  \<and> \<rho> \<in> K
+                  \<and> geotop_free_2_simplex K J \<rho>
+                  \<and> geotop_simplex_dim \<rho> 2
+                  \<and> \<rho> \<inter> J = {}
+                  \<and> {e\<in>K. geotop_is_edge e
+                    \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+                  \<and> \<rho> \<noteq> \<theta>
+                  \<and> \<rho> \<noteq> \<beta>\<^sub>c))"
+            apply (rule exI[where x = "\<beta>\<^sub>c"])
+            apply (rule exI[where x = "\<rho>"])
+            using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+              h\<beta>c_ne_\<alpha> h\<beta>c_chord h\<beta>_not_T\<^sub>2 hbranch
+            apply (intro conjI)
+            apply assumption+
+            apply (rule disjI1)
+            apply (rule hbranch)
+            done
+          show ?thesis
+            by (rule disjI2, rule disjI1, rule hobstruction_parent)
+        next
+          assume hG2_empty:
+            "?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {}"
+          have hG2: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+            using hG2_empty by (by100 blast)
+          have hside_empty: "\<rho> \<inter> J\<^sub>2 = {}"
+            using hG2_empty by (by100 blast)
+          have hparent:
+            "\<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>\<^sub>c"
+            by (rule hG\<^sub>2_side_empty_parent_empty_selected_free
+                [OF hG2 hside_empty])
+          have hbranch:
+            "?G\<^sub>2 \<beta>\<^sub>c \<rho>
+            \<and> \<rho> \<inter> J\<^sub>2 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>\<^sub>c"
+            using hG2 hside_empty hparent by (by100 blast)
+          have hobstruction_parent:
+            "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+              \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+              \<and> \<beta>\<^sub>c \<noteq> \<beta>
+              \<and> \<beta>\<^sub>c \<noteq> \<theta>
+              \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+              \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+              \<and> \<beta> \<notin> ?T\<^sub>2
+              \<and> ((?G\<^sub>1 \<rho>
+                  \<and> \<rho> \<inter> J\<^sub>1 = {}
+                  \<and> \<rho> \<in> K
+                  \<and> geotop_free_2_simplex K J \<rho>
+                  \<and> geotop_simplex_dim \<rho> 2
+                  \<and> \<rho> \<inter> J = {}
+                  \<and> {e\<in>K. geotop_is_edge e
+                    \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+                  \<and> \<rho> \<noteq> \<theta>
+                  \<and> \<rho> \<noteq> \<beta>)
+                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+                  \<and> \<rho> \<inter> J\<^sub>2 = {}
+                  \<and> \<rho> \<in> K
+                  \<and> geotop_free_2_simplex K J \<rho>
+                  \<and> geotop_simplex_dim \<rho> 2
+                  \<and> \<rho> \<inter> J = {}
+                  \<and> {e\<in>K. geotop_is_edge e
+                    \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+                  \<and> \<rho> \<noteq> \<theta>
+                  \<and> \<rho> \<noteq> \<beta>\<^sub>c))"
+            apply (rule exI[where x = "\<beta>\<^sub>c"])
+            apply (rule exI[where x = "\<rho>"])
+            using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+              h\<beta>c_ne_\<alpha> h\<beta>c_chord h\<beta>_not_T\<^sub>2 hbranch
+            apply (intro conjI)
+            apply assumption+
+            apply (rule disjI2)
+            apply (rule hbranch)
+            done
+          show ?thesis
+            by (rule disjI2, rule disjI1, rule hobstruction_parent)
+        qed
+      next
+        assume hside1_empty:
+          "\<exists>\<rho>. ?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {}"
+        obtain \<rho> where hG1_empty: "?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {}"
+        proof -
+          from hside1_empty show ?thesis
+          proof (rule exE)
+            fix \<rho>
+            assume hG1_empty: "?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {}"
+            show ?thesis
+              by (rule that[OF hG1_empty])
+          qed
+        qed
+        have hG1: "?G\<^sub>1 \<rho>"
+          using hG1_empty by (by100 blast)
+        have hside_empty: "\<rho> \<inter> J\<^sub>1 = {}"
+          using hG1_empty by (by100 blast)
+        have hparent:
+          "\<rho> \<in> K
+          \<and> geotop_free_2_simplex K J \<rho>
+          \<and> geotop_simplex_dim \<rho> 2
+          \<and> \<rho> \<inter> J = {}
+          \<and> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+          \<and> \<rho> \<noteq> \<theta>
+          \<and> \<rho> \<noteq> \<beta>"
+          by (rule hG\<^sub>1_side_empty_parent_empty_selected_free
+              [OF hG1 hside_empty])
+        have hstandalone_conj:
+          "?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>"
+          using hG1 hside_empty hparent by (by100 blast)
+        have hstandalone:
+          "\<exists>\<rho>. ?G\<^sub>1 \<rho>
+            \<and> \<rho> \<inter> J\<^sub>1 = {}
+            \<and> \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> \<rho> \<inter> J = {}
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+            \<and> \<rho> \<noteq> \<theta>
+            \<and> \<rho> \<noteq> \<beta>"
+          by (rule exI[where x = "\<rho>"], rule hstandalone_conj)
+        show ?thesis
+          by (rule disjI2, rule disjI2, rule hstandalone)
+      qed
+    qed
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
