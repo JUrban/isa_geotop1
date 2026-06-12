@@ -20367,6 +20367,140 @@ proof -
             hcarrier_side1 hcarrier_side2 h\<rho>\<^sub>1_T h\<rho>\<^sub>1_not_T\<^sub>1
             h\<rho>\<^sub>2_T h\<rho>\<^sub>2_not_T\<^sub>2 hT\<^sub>1_gt1 hT\<^sub>2_gt1])
   qed
+  have hL\<^sub>1_sub_K: "L\<^sub>1 \<subseteq> K"
+    unfolding L\<^sub>1_def by (by100 blast)
+  have hL\<^sub>2_sub_K: "L\<^sub>2 \<subseteq> K"
+    unfolding L\<^sub>2_def by (by100 blast)
+  have hL\<^sub>1_complex: "geotop_is_complex L\<^sub>1"
+    unfolding L\<^sub>1_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  have hL\<^sub>2_complex: "geotop_is_complex L\<^sub>2"
+    unfolding L\<^sub>2_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+  have hL\<^sub>1_fin: "finite L\<^sub>1"
+    unfolding L\<^sub>1_def using hK_fin by (by100 simp)
+  have hL\<^sub>2_fin: "finite L\<^sub>2"
+    unfolding L\<^sub>2_def using hK_fin by (by100 simp)
+  have hside_free_counts_if_side2_large:
+    "card ?T\<^sub>2 > 1 \<Longrightarrow>
+      card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2
+      \<and> card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+  proof -
+    assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+    have hside_smaller:
+      "geotop_polyhedron L\<^sub>1 =
+         closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior J\<^sub>1)
+      \<and> geotop_polyhedron L\<^sub>2 =
+         closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior J\<^sub>2)
+      \<and> card ?T\<^sub>1 < card ?T
+      \<and> card ?T\<^sub>2 < card ?T
+      \<and> card ?T\<^sub>1 > 1
+      \<and> card ?T\<^sub>2 > 1"
+      by (rule hside_complexes_smaller_if_side2_large[OF hT\<^sub>2_gt1])
+    have hL\<^sub>1_poly_eq:
+      "geotop_polyhedron L\<^sub>1 =
+         closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior J\<^sub>1)"
+      using hside_smaller by (by100 blast)
+    have hL\<^sub>2_poly_eq:
+      "geotop_polyhedron L\<^sub>2 =
+         closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior J\<^sub>2)"
+      using hside_smaller by (by100 blast)
+    have hT\<^sub>1_gt1: "card ?T\<^sub>1 > 1"
+      using hside_smaller by (by100 blast)
+    have hT\<^sub>2_gt1': "card ?T\<^sub>2 > 1"
+      using hside_smaller by (by100 blast)
+    have hJ\<^sub>1: "geotop_is_polygon J\<^sub>1"
+      using hsubdisk_book_facts by (by100 blast)
+    have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+      using hsubdisk_book_facts by (by100 blast)
+    have hL\<^sub>1_free_count:
+      "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+      by (rule geotop_polygon_disk_free_2simplex_count_ge2_prefix
+          [OF hJ\<^sub>1 hL\<^sub>1_complex hL\<^sub>1_poly_eq hT\<^sub>1_gt1])
+    have hL\<^sub>2_free_count:
+      "card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+      by (rule geotop_polygon_disk_free_2simplex_count_ge2_prefix
+          [OF hJ\<^sub>2 hL\<^sub>2_complex hL\<^sub>2_poly_eq hT\<^sub>2_gt1'])
+    show ?thesis
+      using hL\<^sub>1_free_count hL\<^sub>2_free_count by (by100 blast)
+  qed
+  have hside_free_distinct_pairs_if_side2_large:
+    "card ?T\<^sub>2 > 1 \<Longrightarrow>
+      \<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+        \<sigma>\<^sub>1 \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+        \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+        \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+        \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+        \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+        \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+  proof -
+    assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+    have hside_free_counts:
+      "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2
+      \<and> card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+      by (rule hside_free_counts_if_side2_large[OF hT\<^sub>2_gt1])
+    have hL\<^sub>1_free_count:
+      "card {\<rho>\<in>L\<^sub>1. geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<rho>} \<ge> 2"
+      using hside_free_counts by (by100 blast)
+    have hL\<^sub>2_free_count:
+      "card {\<rho>\<in>L\<^sub>2. geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<rho>} \<ge> 2"
+      using hside_free_counts by (by100 blast)
+    have hside1_two:
+      "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2.
+        \<sigma>\<^sub>1 \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+        \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+        \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
+      by (rule geotop_two_distinct_members_from_card_ge2_prefix
+          [OF hL\<^sub>1_fin hL\<^sub>1_free_count])
+    have hside2_two:
+      "\<exists>\<tau>\<^sub>1 \<tau>\<^sub>2.
+        \<tau>\<^sub>1 \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+        \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+        \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+      by (rule geotop_two_distinct_members_from_card_ge2_prefix
+          [OF hL\<^sub>2_fin hL\<^sub>2_free_count])
+    obtain \<sigma>\<^sub>1 \<sigma>\<^sub>2
+      where h\<sigma>\<^sub>1L\<^sub>1: "\<sigma>\<^sub>1 \<in> L\<^sub>1"
+        and h\<sigma>\<^sub>1free:
+          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1"
+        and h\<sigma>\<^sub>2L\<^sub>1: "\<sigma>\<^sub>2 \<in> L\<^sub>1"
+        and h\<sigma>\<^sub>2free:
+          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2"
+        and h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
+      using hside1_two by (elim exE conjE)
+    obtain \<tau>\<^sub>1 \<tau>\<^sub>2
+      where h\<tau>\<^sub>1L\<^sub>2: "\<tau>\<^sub>1 \<in> L\<^sub>2"
+        and h\<tau>\<^sub>1free:
+          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1"
+        and h\<tau>\<^sub>2L\<^sub>2: "\<tau>\<^sub>2 \<in> L\<^sub>2"
+        and h\<tau>\<^sub>2free:
+          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2"
+        and h\<tau>\<^sub>1_ne_\<tau>\<^sub>2: "\<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+      using hside2_two by (elim exE conjE)
+    show ?thesis
+      apply (rule exI[where x = "\<sigma>\<^sub>1"])
+      apply (rule exI[where x = "\<sigma>\<^sub>2"])
+      apply (rule exI[where x = "\<tau>\<^sub>1"])
+      apply (rule exI[where x = "\<tau>\<^sub>2"])
+      using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>1free h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>2free
+        h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2 h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>1free h\<tau>\<^sub>2L\<^sub>2
+        h\<tau>\<^sub>2free h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
+      apply (intro conjI)
+      apply assumption+
+      done
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
