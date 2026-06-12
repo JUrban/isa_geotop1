@@ -29511,7 +29511,7 @@ proof -
 			                                                    so the fixed count must
 			                                                    produce a real side-contact
 			                                                    witness. **)
-			                                                  sorry
+			                                                  by (rule hparent_empty_candidate_force_nonempty)
 			                                                have hempty_side_witness_count_book:
 			                                                  "(((?H1 x \<and> ?H1 y)
 			                                                      \<and> (s1 \<inter> J\<^sub>1 = {}
