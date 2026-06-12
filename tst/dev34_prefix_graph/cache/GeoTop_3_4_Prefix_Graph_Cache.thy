@@ -8577,7 +8577,14 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> N
         \<and> y \<in> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
     obtain S T C p y D\<^sub>w D\<^sub>q where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -8623,6 +8630,13 @@ proof -
 	          \<Longrightarrow> p \<in> N
 	          \<Longrightarrow> y \<in> N
 	          \<Longrightarrow> p \<in> closure (N - {p})
+	          \<Longrightarrow> (\<exists>D\<^sub>w D\<^sub>q.
+              (N = D\<^sub>w - {w}
+                \<and> y \<in> D\<^sub>w - {p}
+                \<and> p \<in> closure (D\<^sub>w - {w, p}))
+              \<or> (N = D\<^sub>q
+                \<and> y \<in> D\<^sub>q - {p}
+                \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
 	          \<Longrightarrow> \<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	            \<and> S \<noteq> T
@@ -8635,7 +8649,14 @@ proof -
 	              (subspace_topology UNIV geotop_euclidean_topology N)
 	            \<and> p \<in> N
 	            \<and> y \<in> N
-	            \<and> p \<in> closure (N - {p})"
+	            \<and> p \<in> closure (N - {p})
+              \<and> (\<exists>D\<^sub>w D\<^sub>q.
+                (N = D\<^sub>w - {w}
+                  \<and> y \<in> D\<^sub>w - {p}
+                  \<and> p \<in> closure (D\<^sub>w - {w, p}))
+                \<or> (N = D\<^sub>q
+                  \<and> y \<in> D\<^sub>q - {p}
+                  \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
     proof -
       fix N
 	      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
@@ -8644,6 +8665,13 @@ proof -
 	      assume hpN: "p \<in> N"
 	      assume hyN: "y \<in> N"
 	      assume hpN_cl: "p \<in> closure (N - {p})"
+	      assume hN_label: "\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
 	      have hbody: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	        \<and> S \<noteq> T
@@ -8656,7 +8684,14 @@ proof -
 	          (subspace_topology UNIV geotop_euclidean_topology N)
 	        \<and> p \<in> N
 	        \<and> y \<in> N
-	        \<and> p \<in> closure (N - {p})"
+	        \<and> p \<in> closure (N - {p})
+          \<and> (\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
 	      proof (intro conjI)
 	        show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
 	        show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
@@ -8672,6 +8707,14 @@ proof -
 	        show "p \<in> N" by (rule hpN)
 	        show "y \<in> N" by (rule hyN)
 	        show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	        show "\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+	          by (rule hN_label)
 	      qed
 	      show "\<exists>S T p y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
 	        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
@@ -8685,7 +8728,14 @@ proof -
 	          (subspace_topology UNIV geotop_euclidean_topology N)
 	        \<and> p \<in> N
 	        \<and> y \<in> N
-	        \<and> p \<in> closure (N - {p})"
+	        \<and> p \<in> closure (N - {p})
+          \<and> (\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
 	        by (rule exI[where x=S], rule exI[where x=T],
 	            rule exI[where x=p], rule exI[where x=y],
 	            rule exI[where x=N], rule hbody)
@@ -8724,8 +8774,17 @@ proof -
 	        show ?thesis
 	          using hp_Dw_closure closure_mono[OF hsub] by (by100 blast)
 	      qed
+	      have hN_label:
+            "\<exists>D\<^sub>w' D\<^sub>q'.
+              ((D\<^sub>w - {w}) = D\<^sub>w' - {w}
+                \<and> y \<in> D\<^sub>w' - {p}
+                \<and> p \<in> closure (D\<^sub>w' - {w, p}))
+              \<or> ((D\<^sub>w - {w}) = D\<^sub>q'
+                \<and> y \<in> D\<^sub>q' - {p}
+                \<and> p \<in> closure (D\<^sub>q' - {p, q\<^sub>1}))"
+	        using hyDw hp_Dw_closure by (by100 blast)
 	      show ?thesis
-	        by (rule hpack[OF hN_sub hN_conn hpN hyN hpN_cl])
+	        by (rule hpack[OF hN_sub hN_conn hpN hyN hpN_cl hN_label])
 	    next
 	      assume hyDq: "y \<in> D\<^sub>q - {p}"
 	      have hN_conn: "top1_connected_on D\<^sub>q
@@ -8742,8 +8801,17 @@ proof -
 	        show ?thesis
 	          using hp_Dq_closure closure_mono[OF hsub] by (by100 blast)
 	      qed
+	      have hN_label:
+            "\<exists>D\<^sub>w' D\<^sub>q'.
+              (D\<^sub>q = D\<^sub>w' - {w}
+                \<and> y \<in> D\<^sub>w' - {p}
+                \<and> p \<in> closure (D\<^sub>w' - {w, p}))
+              \<or> (D\<^sub>q = D\<^sub>q'
+                \<and> y \<in> D\<^sub>q' - {p}
+                \<and> p \<in> closure (D\<^sub>q' - {p, q\<^sub>1}))"
+	        using hyDq hp_Dq_closure by (by100 blast)
 	      show ?thesis
-	        by (rule hpack[OF hN_sub hN_conn hpDq hyN hpN_cl])
+	        by (rule hpack[OF hN_sub hN_conn hpDq hyN hpN_cl hN_label])
 	    qed
   qed
   have hcanonical_pair_split_side_connected_incident_germ_hits:
