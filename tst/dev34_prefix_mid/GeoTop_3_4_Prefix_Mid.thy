@@ -20644,6 +20644,7 @@ proof -
     "card ?T\<^sub>2 > 1 \<Longrightarrow>
       \<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
         \<sigma>\<^sub>1 \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
         \<and> geotop_simplex_dim \<sigma>\<^sub>1 2
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
           \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -20651,6 +20652,7 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
             \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
         \<and> geotop_simplex_dim \<sigma>\<^sub>2 2
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
           \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -20659,6 +20661,7 @@ proof -
             \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
         \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
         \<and> geotop_simplex_dim \<tau>\<^sub>1 2
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
           \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -20666,6 +20669,7 @@ proof -
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
             \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2}
         \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
         \<and> geotop_simplex_dim \<tau>\<^sub>2 2
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
           \<and> geotop_is_face e \<tau>\<^sub>2 \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -20819,11 +20823,12 @@ proof -
       apply (rule exI[where x = "\<sigma>\<^sub>2"])
       apply (rule exI[where x = "\<tau>\<^sub>1"])
       apply (rule exI[where x = "\<tau>\<^sub>2"])
-      using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>12 h\<sigma>\<^sub>1_card h\<sigma>\<^sub>1_contact
-        h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>22 h\<sigma>\<^sub>2_card h\<sigma>\<^sub>2_contact
-        h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2 h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>12 h\<tau>\<^sub>1_card
-        h\<tau>\<^sub>1_contact h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>22 h\<tau>\<^sub>2_card
-        h\<tau>\<^sub>2_contact h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
+      using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>1free h\<sigma>\<^sub>12 h\<sigma>\<^sub>1_card
+        h\<sigma>\<^sub>1_contact h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>2free h\<sigma>\<^sub>22
+        h\<sigma>\<^sub>2_card h\<sigma>\<^sub>2_contact h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2 h\<tau>\<^sub>1L\<^sub>2
+        h\<tau>\<^sub>1free h\<tau>\<^sub>12 h\<tau>\<^sub>1_card h\<tau>\<^sub>1_contact h\<tau>\<^sub>2L\<^sub>2
+        h\<tau>\<^sub>2free h\<tau>\<^sub>22 h\<tau>\<^sub>2_card h\<tau>\<^sub>2_contact
+        h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
       apply (intro conjI)
       apply assumption+
       done
@@ -20831,6 +20836,7 @@ proof -
   have hside_two_canonical_one_avoids_\<theta>_each_if_side2_large:
     "card ?T\<^sub>2 > 1 \<Longrightarrow>
       \<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> \<sigma> \<noteq> \<theta>
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -20839,6 +20845,7 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
             \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma>' \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
         \<and> geotop_simplex_dim \<sigma>' 2
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
           \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -20847,6 +20854,7 @@ proof -
             \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma> \<noteq> \<sigma>'
         \<and> \<tau> \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
         \<and> geotop_simplex_dim \<tau> 2
         \<and> \<tau> \<noteq> \<theta>
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -20855,6 +20863,7 @@ proof -
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
             \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
         \<and> \<tau>' \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
         \<and> geotop_simplex_dim \<tau>' 2
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
           \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -20866,6 +20875,8 @@ proof -
     assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
     obtain \<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2
       where h\<sigma>\<^sub>1L\<^sub>1: "\<sigma>\<^sub>1 \<in> L\<^sub>1"
+        and h\<sigma>\<^sub>1free:
+          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1"
         and h\<sigma>\<^sub>12: "geotop_simplex_dim \<sigma>\<^sub>1 2"
         and h\<sigma>\<^sub>1_card:
           "card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -20875,6 +20886,8 @@ proof -
             \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
               \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J\<^sub>1}"
         and h\<sigma>\<^sub>2L\<^sub>1: "\<sigma>\<^sub>2 \<in> L\<^sub>1"
+        and h\<sigma>\<^sub>2free:
+          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2"
         and h\<sigma>\<^sub>22: "geotop_simplex_dim \<sigma>\<^sub>2 2"
         and h\<sigma>\<^sub>2_card:
           "card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -20885,6 +20898,8 @@ proof -
               \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J\<^sub>1}"
         and h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
         and h\<tau>\<^sub>1L\<^sub>2: "\<tau>\<^sub>1 \<in> L\<^sub>2"
+        and h\<tau>\<^sub>1free:
+          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1"
         and h\<tau>\<^sub>12: "geotop_simplex_dim \<tau>\<^sub>1 2"
         and h\<tau>\<^sub>1_card:
           "card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -20894,6 +20909,8 @@ proof -
             \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
               \<and> geotop_is_face e \<tau>\<^sub>1 \<and> e \<subseteq> J\<^sub>2}"
         and h\<tau>\<^sub>2L\<^sub>2: "\<tau>\<^sub>2 \<in> L\<^sub>2"
+        and h\<tau>\<^sub>2free:
+          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2"
         and h\<tau>\<^sub>22: "geotop_simplex_dim \<tau>\<^sub>2 2"
         and h\<tau>\<^sub>2_card:
           "card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -20907,6 +20924,7 @@ proof -
       by (elim exE conjE)
     have hside1_oriented:
       "\<exists>\<sigma> \<sigma>'. \<sigma> \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> \<sigma> \<noteq> \<theta>
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -20915,6 +20933,7 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
             \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma>' \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
         \<and> geotop_simplex_dim \<sigma>' 2
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
           \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -20929,9 +20948,9 @@ proof -
       show ?thesis
         apply (rule exI[where x = "\<sigma>\<^sub>2"])
         apply (rule exI[where x = "\<sigma>\<^sub>1"])
-        using h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>22 h\<sigma>\<^sub>2_ne_\<theta> h\<sigma>\<^sub>2_card
-          h\<sigma>\<^sub>2_contact h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>12 h\<sigma>\<^sub>1_card
-          h\<sigma>\<^sub>1_contact h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2
+        using h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>2free h\<sigma>\<^sub>22 h\<sigma>\<^sub>2_ne_\<theta>
+          h\<sigma>\<^sub>2_card h\<sigma>\<^sub>2_contact h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>1free
+          h\<sigma>\<^sub>12 h\<sigma>\<^sub>1_card h\<sigma>\<^sub>1_contact h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2
         apply (intro conjI)
         apply assumption+
         apply (by100 blast)
@@ -20941,15 +20960,16 @@ proof -
       show ?thesis
         apply (rule exI[where x = "\<sigma>\<^sub>1"])
         apply (rule exI[where x = "\<sigma>\<^sub>2"])
-        using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>12 False h\<sigma>\<^sub>1_card h\<sigma>\<^sub>1_contact
-          h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>22 h\<sigma>\<^sub>2_card h\<sigma>\<^sub>2_contact
-          h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2
+        using h\<sigma>\<^sub>1L\<^sub>1 h\<sigma>\<^sub>1free h\<sigma>\<^sub>12 False h\<sigma>\<^sub>1_card
+          h\<sigma>\<^sub>1_contact h\<sigma>\<^sub>2L\<^sub>1 h\<sigma>\<^sub>2free h\<sigma>\<^sub>22 h\<sigma>\<^sub>2_card
+          h\<sigma>\<^sub>2_contact h\<sigma>\<^sub>1_ne_\<sigma>\<^sub>2
         apply (intro conjI)
         apply assumption+
         done
     qed
     have hside2_oriented:
       "\<exists>\<tau> \<tau>'. \<tau> \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
         \<and> geotop_simplex_dim \<tau> 2
         \<and> \<tau> \<noteq> \<theta>
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -20958,6 +20978,7 @@ proof -
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
             \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
         \<and> \<tau>' \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
         \<and> geotop_simplex_dim \<tau>' 2
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
           \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -20972,9 +20993,9 @@ proof -
       show ?thesis
         apply (rule exI[where x = "\<tau>\<^sub>2"])
         apply (rule exI[where x = "\<tau>\<^sub>1"])
-        using h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>22 h\<tau>\<^sub>2_ne_\<theta> h\<tau>\<^sub>2_card
-          h\<tau>\<^sub>2_contact h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>12 h\<tau>\<^sub>1_card
-          h\<tau>\<^sub>1_contact h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
+        using h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>2free h\<tau>\<^sub>22 h\<tau>\<^sub>2_ne_\<theta>
+          h\<tau>\<^sub>2_card h\<tau>\<^sub>2_contact h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>1free
+          h\<tau>\<^sub>12 h\<tau>\<^sub>1_card h\<tau>\<^sub>1_contact h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
         apply (intro conjI)
         apply assumption+
         apply (by100 blast)
@@ -20984,14 +21005,15 @@ proof -
       show ?thesis
         apply (rule exI[where x = "\<tau>\<^sub>1"])
         apply (rule exI[where x = "\<tau>\<^sub>2"])
-        using h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>12 False h\<tau>\<^sub>1_card h\<tau>\<^sub>1_contact
-          h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>22 h\<tau>\<^sub>2_card h\<tau>\<^sub>2_contact
-          h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
+        using h\<tau>\<^sub>1L\<^sub>2 h\<tau>\<^sub>1free h\<tau>\<^sub>12 False h\<tau>\<^sub>1_card
+          h\<tau>\<^sub>1_contact h\<tau>\<^sub>2L\<^sub>2 h\<tau>\<^sub>2free h\<tau>\<^sub>22 h\<tau>\<^sub>2_card
+          h\<tau>\<^sub>2_contact h\<tau>\<^sub>1_ne_\<tau>\<^sub>2
         apply (intro conjI)
         apply assumption+
         done
     qed
     obtain \<sigma> \<sigma>' where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+      and h\<sigma>free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
       and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
       and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
       and h\<sigma>_card:
@@ -21002,6 +21024,7 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
             \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
       and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+      and h\<sigma>'free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'"
       and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
       and h\<sigma>'_card:
         "card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -21013,6 +21036,7 @@ proof -
       and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
       using hside1_oriented by (elim exE conjE)
     obtain \<tau> \<tau>' where h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+      and h\<tau>free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>"
       and h\<tau>2: "geotop_simplex_dim \<tau> 2"
       and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
       and h\<tau>_card:
@@ -21023,6 +21047,7 @@ proof -
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
             \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
       and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+      and h\<tau>'free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'"
       and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
       and h\<tau>'_card:
         "card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -21038,10 +21063,11 @@ proof -
       apply (rule exI[where x = "\<sigma>'"])
       apply (rule exI[where x = \<tau>])
       apply (rule exI[where x = "\<tau>'"])
-      using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
-        h\<sigma>'L\<^sub>1 h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact h\<sigma>_ne_\<sigma>'
-        h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card h\<tau>_contact
-        h\<tau>'L\<^sub>2 h\<tau>'2 h\<tau>'_card h\<tau>'_contact h\<tau>_ne_\<tau>'
+      using h\<sigma>L\<^sub>1 h\<sigma>free h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
+        h\<sigma>'L\<^sub>1 h\<sigma>'free h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact
+        h\<sigma>_ne_\<sigma>' h\<tau>L\<^sub>2 h\<tau>free h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card
+        h\<tau>_contact h\<tau>'L\<^sub>2 h\<tau>'free h\<tau>'2 h\<tau>'_card h\<tau>'_contact
+        h\<tau>_ne_\<tau>'
       apply (intro conjI)
       apply assumption+
       done
@@ -21049,6 +21075,7 @@ proof -
   have hside_oriented_primary_witnesses_distinct_if_side2_large:
     "card ?T\<^sub>2 > 1 \<Longrightarrow>
       \<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> \<sigma> \<noteq> \<theta>
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -21057,6 +21084,7 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
             \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma>' \<in> L\<^sub>1
+        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
         \<and> geotop_simplex_dim \<sigma>' 2
         \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
           \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -21065,6 +21093,7 @@ proof -
             \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
         \<and> \<sigma> \<noteq> \<sigma>'
         \<and> \<tau> \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
         \<and> geotop_simplex_dim \<tau> 2
         \<and> \<tau> \<noteq> \<theta>
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -21073,6 +21102,7 @@ proof -
           \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
             \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
         \<and> \<tau>' \<in> L\<^sub>2
+        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
         \<and> geotop_simplex_dim \<tau>' 2
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
           \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -21087,6 +21117,7 @@ proof -
       using hside_core_omitted_parent_faces_book by (by100 blast)
     obtain \<sigma> \<sigma>' \<tau> \<tau>'
       where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+        and h\<sigma>free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
         and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
         and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
         and h\<sigma>_card:
@@ -21097,6 +21128,7 @@ proof -
             \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
               \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
         and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+        and h\<sigma>'free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'"
         and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
         and h\<sigma>'_card:
           "card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -21107,6 +21139,7 @@ proof -
               \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}"
         and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
         and h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+        and h\<tau>free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>"
         and h\<tau>2: "geotop_simplex_dim \<tau> 2"
         and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
         and h\<tau>_card:
@@ -21117,6 +21150,7 @@ proof -
             \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
               \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
         and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+        and h\<tau>'free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'"
         and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
         and h\<tau>'_card:
           "card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -21140,11 +21174,11 @@ proof -
       apply (rule exI[where x = "\<sigma>'"])
       apply (rule exI[where x = \<tau>])
       apply (rule exI[where x = "\<tau>'"])
-      using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
-        h\<sigma>'L\<^sub>1 h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact h\<sigma>_ne_\<sigma>'
-        h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card h\<tau>_contact
-        h\<tau>'L\<^sub>2 h\<tau>'2 h\<tau>'_card h\<tau>'_contact h\<tau>_ne_\<tau>'
-        h\<sigma>_ne_\<tau>
+      using h\<sigma>L\<^sub>1 h\<sigma>free h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
+        h\<sigma>'L\<^sub>1 h\<sigma>'free h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact
+        h\<sigma>_ne_\<sigma>' h\<tau>L\<^sub>2 h\<tau>free h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card
+        h\<tau>_contact h\<tau>'L\<^sub>2 h\<tau>'free h\<tau>'2 h\<tau>'_card h\<tau>'_contact
+        h\<tau>_ne_\<tau>' h\<sigma>_ne_\<tau>
       apply (intro conjI)
       apply assumption+
       done
@@ -25681,6 +25715,7 @@ proof -
               \<and> \<rho> \<noteq> \<beta>\<^sub>c)"
         have hlarge_fixed_oriented_primary_data:
           "\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+            \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
             \<and> geotop_simplex_dim \<sigma> 2
             \<and> \<sigma> \<noteq> \<theta>
             \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -25689,6 +25724,7 @@ proof -
               \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                 \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
             \<and> \<sigma>' \<in> L\<^sub>1
+            \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
             \<and> geotop_simplex_dim \<sigma>' 2
             \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
               \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -25697,6 +25733,7 @@ proof -
                 \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
             \<and> \<sigma> \<noteq> \<sigma>'
             \<and> \<tau> \<in> L\<^sub>2
+            \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
             \<and> geotop_simplex_dim \<tau> 2
             \<and> \<tau> \<noteq> \<theta>
             \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -25705,6 +25742,7 @@ proof -
               \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                 \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
             \<and> \<tau>' \<in> L\<^sub>2
+            \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
             \<and> geotop_simplex_dim \<tau>' 2
             \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
               \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -25718,6 +25756,7 @@ proof -
         proof -
           obtain \<sigma> \<sigma>' \<tau> \<tau>'
             where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+              and h\<sigma>free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
               and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
               and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
               and h\<sigma>_card:
@@ -25728,6 +25767,7 @@ proof -
                   \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
                     \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
               and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+              and h\<sigma>'free: "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'"
               and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
               and h\<sigma>'_card:
                 "card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -25738,6 +25778,7 @@ proof -
                     \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}"
               and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
               and h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+              and h\<tau>free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>"
               and h\<tau>2: "geotop_simplex_dim \<tau> 2"
               and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
               and h\<tau>_card:
@@ -25748,6 +25789,7 @@ proof -
                   \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
                     \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
               and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+              and h\<tau>'free: "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'"
               and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
               and h\<tau>'_card:
                 "card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -25823,11 +25865,12 @@ proof -
             apply (rule exI[where x = "\<sigma>'"])
             apply (rule exI[where x = \<tau>])
             apply (rule exI[where x = "\<tau>'"])
-            using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
-              h\<sigma>'L\<^sub>1 h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact h\<sigma>_ne_\<sigma>'
-              h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card h\<tau>_contact
-              h\<tau>'L\<^sub>2 h\<tau>'2 h\<tau>'_card h\<tau>'_contact h\<tau>_ne_\<tau>'
-              h\<sigma>_ne_\<tau> h\<sigma>_primary h\<tau>_primary
+            using h\<sigma>L\<^sub>1 h\<sigma>free h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card
+              h\<sigma>_contact h\<sigma>'L\<^sub>1 h\<sigma>'free h\<sigma>'2 h\<sigma>'_card
+              h\<sigma>'_contact h\<sigma>_ne_\<sigma>' h\<tau>L\<^sub>2 h\<tau>free h\<tau>2 h\<tau>_ne_\<theta>
+              h\<tau>_card h\<tau>_contact h\<tau>'L\<^sub>2 h\<tau>'free h\<tau>'2 h\<tau>'_card
+              h\<tau>'_contact h\<tau>_ne_\<tau>' h\<sigma>_ne_\<tau> h\<sigma>_primary
+              h\<tau>_primary
             by (by100 blast)
         qed
         have hlarge_fixed_no_chord_candidate:
@@ -27086,6 +27129,7 @@ proof -
 	                              \<or> (\<sigma>\<^sub>p = \<beta> \<and> \<tau>\<^sub>p = \<beta>\<^sub>c)"
 	                          have hcanonical_primary_spare_counting_data:
 	                            "\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+	                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
 	                              \<and> geotop_simplex_dim \<sigma> 2
 	                              \<and> \<sigma> \<noteq> \<theta>
 	                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -27094,6 +27138,7 @@ proof -
 	                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
 	                                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
 	                              \<and> \<sigma>' \<in> L\<^sub>1
+	                              \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
 	                              \<and> geotop_simplex_dim \<sigma>' 2
 	                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
 	                                \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
@@ -27102,6 +27147,7 @@ proof -
 	                                  \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
 	                              \<and> \<sigma> \<noteq> \<sigma>'
 	                              \<and> \<tau> \<in> L\<^sub>2
+	                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
 	                              \<and> geotop_simplex_dim \<tau> 2
 	                              \<and> \<tau> \<noteq> \<theta>
 	                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
@@ -27110,6 +27156,7 @@ proof -
 	                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
 	                                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
 	                              \<and> \<tau>' \<in> L\<^sub>2
+	                              \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
 	                              \<and> geotop_simplex_dim \<tau>' 2
 	                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
 	                                \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
@@ -27136,6 +27183,8 @@ proof -
 	                          proof -
 	                            obtain \<sigma>\<^sub>q \<sigma>\<^sub>r \<tau>\<^sub>q \<tau>\<^sub>r
 	                              where h\<sigma>qL\<^sub>1: "\<sigma>\<^sub>q \<in> L\<^sub>1"
+	                                and h\<sigma>qfree:
+	                                  "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>q"
 	                                and h\<sigma>q2: "geotop_simplex_dim \<sigma>\<^sub>q 2"
 	                                and h\<sigma>q_ne_\<theta>: "\<sigma>\<^sub>q \<noteq> \<theta>"
 	                                and h\<sigma>q_card:
@@ -27146,6 +27195,8 @@ proof -
 	                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
 	                                      \<and> geotop_is_face e \<sigma>\<^sub>q \<and> e \<subseteq> J\<^sub>1}"
 	                                and h\<sigma>rL\<^sub>1: "\<sigma>\<^sub>r \<in> L\<^sub>1"
+	                                and h\<sigma>rfree:
+	                                  "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>r"
 	                                and h\<sigma>r2: "geotop_simplex_dim \<sigma>\<^sub>r 2"
 	                                and h\<sigma>r_card:
 	                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
@@ -27156,6 +27207,8 @@ proof -
 	                                      \<and> geotop_is_face e \<sigma>\<^sub>r \<and> e \<subseteq> J\<^sub>1}"
 	                                and h\<sigma>q_ne_\<sigma>r: "\<sigma>\<^sub>q \<noteq> \<sigma>\<^sub>r"
 	                                and h\<tau>qL\<^sub>2: "\<tau>\<^sub>q \<in> L\<^sub>2"
+	                                and h\<tau>qfree:
+	                                  "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>q"
 	                                and h\<tau>q2: "geotop_simplex_dim \<tau>\<^sub>q 2"
 	                                and h\<tau>q_ne_\<theta>: "\<tau>\<^sub>q \<noteq> \<theta>"
 	                                and h\<tau>q_card:
@@ -27166,6 +27219,8 @@ proof -
 	                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
 	                                      \<and> geotop_is_face e \<tau>\<^sub>q \<and> e \<subseteq> J\<^sub>2}"
 	                                and h\<tau>rL\<^sub>2: "\<tau>\<^sub>r \<in> L\<^sub>2"
+	                                and h\<tau>rfree:
+	                                  "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>r"
 	                                and h\<tau>r2: "geotop_simplex_dim \<tau>\<^sub>r 2"
 	                                and h\<tau>r_card:
 	                                  "card {e\<in>L\<^sub>2. geotop_is_edge e
