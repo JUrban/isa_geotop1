@@ -3967,6 +3967,13 @@ lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
         \<union> ((T - {w}) \<inter> ball w r)
         \<union> ((U - {w}) \<inter> ball w r)
         \<union> (ball w r - (S \<union> T \<union> U))"
+  assumes hlocal_side_witness:
+    "\<exists>A x. connected A
+      \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+      \<and> x \<in> A
+      \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+      \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+      \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
   shows "\<exists>C. C \<in> components (ball w r - (S \<union> T \<union> U))
     \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
     \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
@@ -4041,7 +4048,7 @@ proof -
       cover.  Together these witnesses determine one connected local side
       subset of \<open>ball w r - (S \<union> T \<union> U)\<close> whose closure touches all three
       germs. **)
-    sorry
+    by (rule hlocal_side_witness)
   obtain A x where hA_conn: "connected A"
     and hA_sub: "A \<subseteq> ?H"
     and hxA: "x \<in> A"
@@ -10683,6 +10690,21 @@ proof -
               using hT_E unfolding E_def by (by100 blast)
             have hwU: "w \<in> U"
               using hU_E unfolding E_def by (by100 blast)
+            have hbranch_local_side_witness:
+                "\<exists>A x. connected A
+                  \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+                  \<and> x \<in> A
+                  \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                  \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                  \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+              (**
+                Exact first-entry/local-side witness still owed by the book
+                argument at the point where all upstream split-side data are
+                available: the selected sphere points, the connected
+                punctured-carrier witness through all three germs, the
+                connected split-side witness through the selected S/T germs,
+                and the small-star sector cover. **)
+              sorry
             show ?thesis
               by (rule geotop_branch_vertex_three_germs_same_side_component_prefix
                   [OF hL_linear hL_fin hwL hSCC hr_pos
@@ -10691,7 +10713,8 @@ proof -
                     hM_sub_arg hM_conn_arg hpM_arg hyM_arg hzM_arg
                     hp_selected_germ_cl hy_selected_germ_cl hz_selected_germ_cl
                     hp_not_ball hy_not_ball hz_not_ball hM_ball_cover_arg
-                    hN_sub hN_conn_HOL hpSN hyTN hN_ball_sector_cover])
+                    hN_sub hN_conn_HOL hpSN hyTN hN_ball_sector_cover
+                    hbranch_local_side_witness])
           qed
           show "\<exists>C. C \<in> components ?Ecomp
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
