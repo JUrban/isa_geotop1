@@ -25755,16 +25755,29 @@ proof -
                 by (rule exI[where x = "\<gamma>"], rule hcase)
             next
               case True
-              show ?thesis
+              have h\<gamma>_parent_empty_selected:
+                "\<gamma> \<in> K
+                \<and> geotop_free_2_simplex K J \<gamma>
+                \<and> geotop_simplex_dim \<gamma> 2
+                \<and> \<gamma> \<inter> J = {}
+                \<and> {e\<in>K. geotop_is_edge e
+                  \<and> geotop_is_face e \<gamma> \<and> e \<subseteq> J} = {}
+                \<and> \<gamma> \<noteq> \<theta>
+                \<and> \<gamma> \<noteq> \<beta>"
+                by (rule hG\<^sub>1_side_empty_parent_empty_selected_free
+                    [OF hG1 True])
+              have hside1_empty_candidate_replaced: ?thesis
                 (**
                   Remaining side-1 empty-candidate replacement.  The fixed
-                  no-chord candidate \<open>\<gamma>\<close> has empty side-1 boundary contact,
-                  so \<open>hG\<^sub>1_side_empty_parent_empty_selected_free\<close> would put it
-                  in the same empty parent-contact class as \<open>hbranch_empty\<close>.
-                  Moise's two-side counting step must therefore replace it by
+                  no-chord candidate \<open>\<gamma>\<close> has now been converted to a parent
+                  free triangle with empty parent-boundary contact and empty
+                  selected-edge set.  Together with \<open>hbranch_empty\<close>, Moise's
+                  two-side counting step must replace these empty candidates by
                   another no-chord side witness with nonempty side-boundary
                   contact. **)
                 sorry
+              show ?thesis
+                by (rule hside1_empty_candidate_replaced)
             qed
           next
             assume hG2: "?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
@@ -25779,16 +25792,30 @@ proof -
                 by (rule exI[where x = "\<gamma>"], rule hcase)
             next
               case True
-              show ?thesis
+              have h\<gamma>_parent_empty_selected:
+                "\<gamma> \<in> K
+                \<and> geotop_free_2_simplex K J \<gamma>
+                \<and> geotop_simplex_dim \<gamma> 2
+                \<and> \<gamma> \<inter> J = {}
+                \<and> {e\<in>K. geotop_is_edge e
+                  \<and> geotop_is_face e \<gamma> \<and> e \<subseteq> J} = {}
+                \<and> \<gamma> \<noteq> \<theta>
+                \<and> \<gamma> \<noteq> \<beta>\<^sub>c"
+                by (rule hG\<^sub>2_side_empty_parent_empty_selected_free
+                    [OF hG2 True])
+              have hside2_empty_candidate_replaced: ?thesis
                 (**
                   Remaining side-2 empty-candidate replacement.  The fixed
-                  no-chord candidate lies on side 2 but still has empty
-                  side-boundary contact.  The book proof must use the
+                  no-chord candidate lies on side 2 and has now been converted
+                  to a parent free triangle with empty parent-boundary contact
+                  and empty selected-edge set.  The book proof must use the
                   \<open>card ?T\<^sub>2 > 1\<close> side-induction strength and the named chord
                   triangle \<open>\<beta>\<^sub>c\<close> to choose another side witness, rather than
                   allowing both usable side-2 choices to be artificial-chord or
                   empty-parent-contact witnesses. **)
                 sorry
+              show ?thesis
+                by (rule hside2_empty_candidate_replaced)
             qed
           qed
         qed
