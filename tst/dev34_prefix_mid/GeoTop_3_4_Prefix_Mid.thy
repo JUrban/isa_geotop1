@@ -24008,6 +24008,275 @@ proof -
       qed
     qed
   qed
+  have hsingleton_side2_parent_selected_edges_card_le2:
+    "\<And>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c} \<Longrightarrow>
+      \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+      geotop_is_face (closed_segment a c) \<beta>\<^sub>c \<Longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2"
+  proof -
+    fix \<beta>\<^sub>c
+    assume hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+    assume h\<beta>c_chord:
+      "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+    let ?E = "{e\<in>L\<^sub>2. geotop_is_edge e
+      \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+    let ?A = "{e\<in>L\<^sub>2. geotop_is_edge e
+      \<and> geotop_is_face e \<beta>\<^sub>c}"
+    have h\<beta>cL\<^sub>2: "\<beta>\<^sub>c \<in> L\<^sub>2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have h\<beta>c2: "geotop_simplex_dim \<beta>\<^sub>c 2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have hA_data: "finite ?A \<and> card ?A \<le> 3"
+      by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix
+          [OF h\<beta>c2])
+    have hA_fin: "finite ?A"
+      using hA_data by (by100 blast)
+    have hA_card: "card ?A \<le> 3"
+      using hA_data by (by100 blast)
+    have hchord_L\<^sub>2: "closed_segment a c \<in> L\<^sub>2"
+      using hL\<^sub>2_complex h\<beta>cL\<^sub>2 h\<beta>c_chord
+      unfolding geotop_is_complex_def by (by100 blast)
+    have hchord_A: "closed_segment a c \<in> ?A"
+      using hchord_L\<^sub>2 hchord_segment_edge_book h\<beta>c_chord
+      by (by100 blast)
+    have hE_sub_A_minus:
+      "?E \<subseteq> ?A - {closed_segment a c}"
+    proof
+      fix e
+      assume heE: "e \<in> ?E"
+      have heA: "e \<in> ?A"
+        using heE by (by100 blast)
+      have he_not_chord: "e \<noteq> closed_segment a c"
+      proof
+        assume heq: "e = closed_segment a c"
+        have "closed_segment a c \<subseteq> J"
+          using heE heq by (by100 blast)
+        thus False
+          using hchord_not_parent_boundary by (by100 blast)
+      qed
+      show "e \<in> ?A - {closed_segment a c}"
+        using heA he_not_chord by (by100 blast)
+    qed
+    have hA_minus_fin: "finite (?A - {closed_segment a c})"
+      using hA_fin by (by100 simp)
+    have hE_card_le_A_minus:
+      "card ?E \<le> card (?A - {closed_segment a c})"
+      by (rule card_mono[OF hA_minus_fin hE_sub_A_minus])
+    have hA_minus_lt_A:
+      "card (?A - {closed_segment a c}) < card ?A"
+      by (rule geotop_finite_subset_card_lt_if_omits_member_prefix
+          [OF hA_fin Diff_subset hchord_A])
+        (by100 simp)
+    have hA_minus_card:
+      "card (?A - {closed_segment a c}) \<le> 2"
+      using hA_minus_lt_A hA_card by (by100 linarith)
+    show "card ?E \<le> 2"
+      using hE_card_le_A_minus hA_minus_card by (by100 linarith)
+  qed
+  have hresidual_cases_with_singleton_side2_parent_count:
+    "(\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>)
+      \<or> (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})))
+      \<or> (\<exists>\<rho>. ?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+      \<or> (\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+        \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> \<beta> \<in> L\<^sub>1
+        \<and> geotop_simplex_dim \<beta> 2
+        \<and> \<beta> \<noteq> \<theta>
+        \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+        \<and> \<beta> \<inter> J\<^sub>1 =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}
+        \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2)"
+  proof -
+    from hresidual_cases_after_side1_filter show ?thesis
+    proof
+      assume hdone:
+        "\<exists>\<rho>. \<rho> \<in> K
+          \<and> geotop_free_2_simplex K J \<rho>
+          \<and> geotop_simplex_dim \<rho> 2
+          \<and> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+          \<and> \<rho> \<noteq> \<theta>"
+      show ?thesis
+        by (rule disjI1[OF hdone])
+    next
+      assume hrest:
+        "(\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+          \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+          \<and> \<beta>\<^sub>c \<noteq> \<beta>
+          \<and> \<beta>\<^sub>c \<noteq> \<theta>
+          \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+          \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+          \<and> \<beta> \<notin> ?T\<^sub>2
+          \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})))
+        \<or> (\<exists>\<rho>. ?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+        \<or> (\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+          \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+          \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+          \<and> \<beta>\<^sub>c \<noteq> \<beta>
+          \<and> \<beta>\<^sub>c \<noteq> \<theta>
+          \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+          \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+          \<and> \<beta> \<notin> ?T\<^sub>2
+          \<and> \<beta> \<in> L\<^sub>1
+          \<and> geotop_simplex_dim \<beta> 2
+          \<and> \<beta> \<noteq> \<theta>
+          \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+          \<and> \<beta> \<inter> J\<^sub>1 =
+            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1})"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume hobstruction:
+          "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {}))"
+        show ?thesis
+          by (rule disjI2, rule disjI1, rule hobstruction)
+      next
+        assume hrest2:
+          "(\<exists>\<rho>. ?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+          \<or> (\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+            \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> \<beta> \<in> L\<^sub>1
+            \<and> geotop_simplex_dim \<beta> 2
+            \<and> \<beta> \<noteq> \<theta>
+            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+            \<and> \<beta> \<inter> J\<^sub>1 =
+              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1})"
+        show ?thesis
+        proof (rule disjE[OF hrest2])
+          assume hside1_empty: "\<exists>\<rho>. ?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {}"
+          show ?thesis
+            by (rule disjI2, rule disjI2, rule disjI1, rule hside1_empty)
+        next
+          assume hsingle:
+            "\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+              \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+              \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+              \<and> \<beta>\<^sub>c \<noteq> \<beta>
+              \<and> \<beta>\<^sub>c \<noteq> \<theta>
+              \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+              \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+              \<and> \<beta> \<notin> ?T\<^sub>2
+              \<and> \<beta> \<in> L\<^sub>1
+              \<and> geotop_simplex_dim \<beta> 2
+              \<and> \<beta> \<noteq> \<theta>
+              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+              \<and> \<beta> \<inter> J\<^sub>1 =
+                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}"
+          obtain \<beta>\<^sub>c where hsingle_data:
+            "?T\<^sub>2 = {\<beta>\<^sub>c}
+              \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+              \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+              \<and> \<beta>\<^sub>c \<noteq> \<beta>
+              \<and> \<beta>\<^sub>c \<noteq> \<theta>
+              \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+              \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+              \<and> \<beta> \<notin> ?T\<^sub>2
+              \<and> \<beta> \<in> L\<^sub>1
+              \<and> geotop_simplex_dim \<beta> 2
+              \<and> \<beta> \<noteq> \<theta>
+              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+              \<and> \<beta> \<inter> J\<^sub>1 =
+                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}"
+            using hsingle by (elim exE)
+          have h\<beta>c_card_parent:
+            "card {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2"
+            apply (rule hsingleton_side2_parent_selected_edges_card_le2)
+            using hsingle_data
+            apply (by100 simp)
+            using hsingle_data
+            apply (by100 simp)
+            using hsingle_data
+            apply (by100 simp)
+            done
+          have hsingle_plus:
+            "\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+              \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+              \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+              \<and> \<beta>\<^sub>c \<noteq> \<beta>
+              \<and> \<beta>\<^sub>c \<noteq> \<theta>
+              \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+              \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+              \<and> \<beta> \<notin> ?T\<^sub>2
+              \<and> \<beta> \<in> L\<^sub>1
+              \<and> geotop_simplex_dim \<beta> 2
+              \<and> \<beta> \<noteq> \<theta>
+              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+                \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+              \<and> \<beta> \<inter> J\<^sub>1 =
+                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}
+              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+                \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2"
+            apply (rule exI[where x = "\<beta>\<^sub>c"])
+            apply (intro conjI)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            using hsingle_data apply (by100 simp)
+            apply (rule h\<beta>c_card_parent)
+            done
+          show ?thesis
+            by (rule disjI2, rule disjI2, rule disjI2, rule hsingle_plus)
+        qed
+      qed
+    qed
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
