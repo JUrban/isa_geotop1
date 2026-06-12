@@ -26466,29 +26466,28 @@ proof -
                     \<and> \<eta> \<noteq> \<theta>
                     \<and> \<eta> \<noteq> \<beta>\<^sub>c)"
                   using hparent_candidate by (elim exE)
-                have htwo_parent_empty_candidates:
-                  "\<exists>\<xi> \<eta>.
-                    (((?G\<^sub>1 \<xi>
-                      \<and> \<xi> \<inter> J\<^sub>1 = {}
-                      \<and> \<xi> \<in> K
-                      \<and> geotop_free_2_simplex K J \<xi>
-                      \<and> geotop_simplex_dim \<xi> 2
-                      \<and> \<xi> \<inter> J = {}
+                have hbranch_and_extra_parent_empty_force_nonempty_side_book:
+                  "((?G\<^sub>1 \<rho>
+                      \<and> \<rho> \<inter> J\<^sub>1 = {}
+                      \<and> \<rho> \<in> K
+                      \<and> geotop_free_2_simplex K J \<rho>
+                      \<and> geotop_simplex_dim \<rho> 2
+                      \<and> \<rho> \<inter> J = {}
                       \<and> {e\<in>K. geotop_is_edge e
-                        \<and> geotop_is_face e \<xi> \<and> e \<subseteq> J} = {}
-                      \<and> \<xi> \<noteq> \<theta>
-                      \<and> \<xi> \<noteq> \<beta>)
-                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<xi>
-                      \<and> \<xi> \<inter> J\<^sub>2 = {}
-                      \<and> \<xi> \<in> K
-                      \<and> geotop_free_2_simplex K J \<xi>
-                      \<and> geotop_simplex_dim \<xi> 2
-                      \<and> \<xi> \<inter> J = {}
+                        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+                      \<and> \<rho> \<noteq> \<theta>
+                      \<and> \<rho> \<noteq> \<beta>)
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+                      \<and> \<rho> \<inter> J\<^sub>2 = {}
+                      \<and> \<rho> \<in> K
+                      \<and> geotop_free_2_simplex K J \<rho>
+                      \<and> geotop_simplex_dim \<rho> 2
+                      \<and> \<rho> \<inter> J = {}
                       \<and> {e\<in>K. geotop_is_edge e
-                        \<and> geotop_is_face e \<xi> \<and> e \<subseteq> J} = {}
-                      \<and> \<xi> \<noteq> \<theta>
-                      \<and> \<xi> \<noteq> \<beta>\<^sub>c))
-                    \<and> ((?G\<^sub>1 \<eta>
+                        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+                      \<and> \<rho> \<noteq> \<theta>
+                      \<and> \<rho> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+                  ((?G\<^sub>1 \<eta>
                       \<and> \<eta> \<inter> J\<^sub>1 = {}
                       \<and> \<eta> \<in> K
                       \<and> geotop_free_2_simplex K J \<eta>
@@ -26507,68 +26506,21 @@ proof -
                       \<and> {e\<in>K. geotop_is_edge e
                         \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
                       \<and> \<eta> \<noteq> \<theta>
-                      \<and> \<eta> \<noteq> \<beta>\<^sub>c)))"
-                  apply (rule exI[where x = "\<rho>"])
-                  apply (rule exI[where x = "\<eta>"])
-                  using hbranch_empty h\<eta>_parent_empty
-                  apply (intro conjI)
-                  apply assumption+
-                  done
-                have htwo_parent_empty_force_nonempty_side_book:
-                  "\<exists>\<xi> \<eta>.
-                    (((?G\<^sub>1 \<xi>
-                      \<and> \<xi> \<inter> J\<^sub>1 = {}
-                      \<and> \<xi> \<in> K
-                      \<and> geotop_free_2_simplex K J \<xi>
-                      \<and> geotop_simplex_dim \<xi> 2
-                      \<and> \<xi> \<inter> J = {}
-                      \<and> {e\<in>K. geotop_is_edge e
-                        \<and> geotop_is_face e \<xi> \<and> e \<subseteq> J} = {}
-                      \<and> \<xi> \<noteq> \<theta>
-                      \<and> \<xi> \<noteq> \<beta>)
-                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<xi>
-                      \<and> \<xi> \<inter> J\<^sub>2 = {}
-                      \<and> \<xi> \<in> K
-                      \<and> geotop_free_2_simplex K J \<xi>
-                      \<and> geotop_simplex_dim \<xi> 2
-                      \<and> \<xi> \<inter> J = {}
-                      \<and> {e\<in>K. geotop_is_edge e
-                        \<and> geotop_is_face e \<xi> \<and> e \<subseteq> J} = {}
-                      \<and> \<xi> \<noteq> \<theta>
-                      \<and> \<xi> \<noteq> \<beta>\<^sub>c))
-                    \<and> ((?G\<^sub>1 \<eta>
-                      \<and> \<eta> \<inter> J\<^sub>1 = {}
-                      \<and> \<eta> \<in> K
-                      \<and> geotop_free_2_simplex K J \<eta>
-                      \<and> geotop_simplex_dim \<eta> 2
-                      \<and> \<eta> \<inter> J = {}
-                      \<and> {e\<in>K. geotop_is_edge e
-                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
-                      \<and> \<eta> \<noteq> \<theta>
-                      \<and> \<eta> \<noteq> \<beta>)
-                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
-                      \<and> \<eta> \<inter> J\<^sub>2 = {}
-                      \<and> \<eta> \<in> K
-                      \<and> geotop_free_2_simplex K J \<eta>
-                      \<and> geotop_simplex_dim \<eta> 2
-                      \<and> \<eta> \<inter> J = {}
-                      \<and> {e\<in>K. geotop_is_edge e
-                        \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
-                      \<and> \<eta> \<noteq> \<theta>
-                      \<and> \<eta> \<noteq> \<beta>\<^sub>c))) \<Longrightarrow>
+                      \<and> \<eta> \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
                   \<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
                     \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
                   (**
-                    Book counting endpoint: two parent-empty side candidates
-                    together with the two named chord-spoiled triangles
-                    cannot exhaust the two free witnesses supplied on the
-                    side disks.  This is the remaining Moise Figure 3.2
-                    counting contradiction, now isolated from the transfer
-                    bookkeeping above. **)
+                    Book counting endpoint in its faithful fixed-branch form:
+                    the already selected empty obstruction \<open>\<rho>\<close> and the
+                    extra empty candidate \<open>\<eta>\<close>, together with the two named
+                    chord-spoiled triangles, cannot exhaust the two free
+                    witnesses supplied on the side disks.  This is the
+                    remaining Moise Figure 3.2 counting contradiction, now
+                    isolated from the transfer bookkeeping above. **)
                   sorry
                 show ?thesis
-                  by (rule htwo_parent_empty_force_nonempty_side_book
-                      [OF htwo_parent_empty_candidates])
+                  by (rule hbranch_and_extra_parent_empty_force_nonempty_side_book
+                      [OF hbranch_empty h\<eta>_parent_empty])
               qed
               show ?thesis
                 by (rule hlarge_parent_empty_candidate_contradiction_book
