@@ -26701,11 +26701,168 @@ proof -
                       filtered primary/spare package records how those
                       witnesses survive the named chord exclusions.  Side 1
                       may lose only \<open>\<beta>\<close>; side 2 may lose only \<open>\<beta>\<^sub>c\<close>.
-                      The fixed empty obstruction and the extra empty
-                      candidate are parent-free with no selected parent edge.
-                      The book counting contradiction must force a surviving
-                      witness with real side-boundary contact. **)
-                    sorry
+	                      The fixed empty obstruction and the extra empty
+	                      candidate are parent-free with no selected parent edge.
+	                      The book counting contradiction must force a surviving
+	                      witness with real side-boundary contact. **)
+	                  proof -
+	                    assume hside_free_pair_counting_data:
+	                      "\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
+	                        \<sigma>\<^sub>1 \<in> L\<^sub>1
+	                        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>1
+	                        \<and> \<sigma>\<^sub>2 \<in> L\<^sub>1
+	                        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>2
+	                        \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2
+	                        \<and> \<tau>\<^sub>1 \<in> L\<^sub>2
+	                        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>1
+	                        \<and> \<tau>\<^sub>2 \<in> L\<^sub>2
+	                        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>2
+	                        \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2"
+	                    assume hprimary_spare_counting_data:
+	                      "\<exists>\<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s.
+	                        \<sigma>\<^sub>p \<in> L\<^sub>1
+	                        \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
+	                        \<and> \<sigma>\<^sub>p \<noteq> \<theta>
+	                        \<and> \<sigma>\<^sub>s \<in> L\<^sub>1
+	                        \<and> geotop_simplex_dim \<sigma>\<^sub>s 2
+	                        \<and> \<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s
+	                        \<and> \<tau>\<^sub>p \<in> L\<^sub>2
+	                        \<and> geotop_simplex_dim \<tau>\<^sub>p 2
+	                        \<and> \<tau>\<^sub>p \<noteq> \<theta>
+	                        \<and> \<tau>\<^sub>s \<in> L\<^sub>2
+	                        \<and> geotop_simplex_dim \<tau>\<^sub>s 2
+	                        \<and> \<tau>\<^sub>p \<noteq> \<tau>\<^sub>s
+	                        \<and> \<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p
+	                        \<and> (\<sigma>\<^sub>p \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>\<^sub>p)
+	                        \<and> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p)"
+	                    assume hbranch_fixed_empty:
+	                      "(?G\<^sub>1 \<rho>
+	                          \<and> \<rho> \<inter> J\<^sub>1 = {}
+	                          \<and> \<rho> \<in> K
+	                          \<and> geotop_free_2_simplex K J \<rho>
+	                          \<and> geotop_simplex_dim \<rho> 2
+	                          \<and> \<rho> \<inter> J = {}
+	                          \<and> {e\<in>K. geotop_is_edge e
+	                            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+	                          \<and> \<rho> \<noteq> \<theta>
+	                          \<and> \<rho> \<noteq> \<beta>)
+	                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+	                          \<and> \<rho> \<inter> J\<^sub>2 = {}
+	                          \<and> \<rho> \<in> K
+	                          \<and> geotop_free_2_simplex K J \<rho>
+	                          \<and> geotop_simplex_dim \<rho> 2
+	                          \<and> \<rho> \<inter> J = {}
+	                          \<and> {e\<in>K. geotop_is_edge e
+	                            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+	                          \<and> \<rho> \<noteq> \<theta>
+	                          \<and> \<rho> \<noteq> \<beta>\<^sub>c)"
+	                    assume hextra_fixed_empty:
+	                      "(?G\<^sub>1 \<eta>
+	                          \<and> \<eta> \<inter> J\<^sub>1 = {}
+	                          \<and> \<eta> \<in> K
+	                          \<and> geotop_free_2_simplex K J \<eta>
+	                          \<and> geotop_simplex_dim \<eta> 2
+	                          \<and> \<eta> \<inter> J = {}
+	                          \<and> {e\<in>K. geotop_is_edge e
+	                            \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+	                          \<and> \<eta> \<noteq> \<theta>
+	                          \<and> \<eta> \<noteq> \<beta>)
+	                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+	                          \<and> \<eta> \<inter> J\<^sub>2 = {}
+	                          \<and> \<eta> \<in> K
+	                          \<and> geotop_free_2_simplex K J \<eta>
+	                          \<and> geotop_simplex_dim \<eta> 2
+	                          \<and> \<eta> \<inter> J = {}
+	                          \<and> {e\<in>K. geotop_is_edge e
+	                            \<and> geotop_is_face e \<eta> \<and> e \<subseteq> J} = {}
+	                          \<and> \<eta> \<noteq> \<theta>
+	                          \<and> \<eta> \<noteq> \<beta>\<^sub>c)"
+	                    obtain \<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s
+	                      where h\<sigma>pL\<^sub>1: "\<sigma>\<^sub>p \<in> L\<^sub>1"
+	                        and h\<sigma>p2: "geotop_simplex_dim \<sigma>\<^sub>p 2"
+	                        and h\<sigma>p_ne_\<theta>: "\<sigma>\<^sub>p \<noteq> \<theta>"
+	                        and h\<sigma>sL\<^sub>1: "\<sigma>\<^sub>s \<in> L\<^sub>1"
+	                        and h\<sigma>s2: "geotop_simplex_dim \<sigma>\<^sub>s 2"
+	                        and h\<sigma>p_ne_\<sigma>s: "\<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s"
+	                        and h\<tau>pL\<^sub>2: "\<tau>\<^sub>p \<in> L\<^sub>2"
+	                        and h\<tau>p2: "geotop_simplex_dim \<tau>\<^sub>p 2"
+	                        and h\<tau>p_ne_\<theta>: "\<tau>\<^sub>p \<noteq> \<theta>"
+	                        and h\<tau>sL\<^sub>2: "\<tau>\<^sub>s \<in> L\<^sub>2"
+	                        and h\<tau>s2: "geotop_simplex_dim \<tau>\<^sub>s 2"
+	                        and h\<tau>p_ne_\<tau>s: "\<tau>\<^sub>p \<noteq> \<tau>\<^sub>s"
+	                        and h\<sigma>p_ne_\<tau>p: "\<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p"
+	                        and h\<sigma>p_primary:
+	                          "\<sigma>\<^sub>p \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>\<^sub>p"
+	                        and h\<tau>p_primary:
+	                          "\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p"
+	                      using hprimary_spare_counting_data by (elim exE conjE)
+	                    have hprimary_nonempty_finishes:
+	                      "(\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+	                        \<or> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {}) \<Longrightarrow>
+	                        \<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                    proof -
+	                      assume hprimary:
+	                        "(\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+	                          \<or> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {})"
+	                      show ?thesis
+	                      proof (rule disjE[OF hprimary])
+	                        assume hleft:
+	                          "\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {}"
+	                        have hG: "?G\<^sub>1 \<sigma>\<^sub>p"
+	                          using h\<sigma>p_primary hleft by (by100 blast)
+	                        have hcontact: "\<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {}"
+	                          using hleft by (by100 blast)
+	                        show ?thesis
+	                          apply (rule exI[where x = "\<sigma>\<^sub>p"])
+	                          using hG hcontact
+	                          apply (by100 blast)
+	                          done
+	                      next
+	                        assume hright:
+	                          "\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {}"
+	                        have hG: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p"
+	                          using h\<tau>p_primary hright by (by100 blast)
+	                        have hcontact: "\<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {}"
+	                          using hright by (by100 blast)
+	                        show ?thesis
+	                          apply (rule exI[where x = "\<tau>\<^sub>p"])
+	                          using hG hcontact
+	                          apply (by100 blast)
+	                          done
+	                      qed
+	                    qed
+	                    show ?thesis
+	                    proof (cases
+	                        "(\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+	                          \<or> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {})")
+	                      case True
+	                      show ?thesis
+	                        by (rule hprimary_nonempty_finishes[OF True])
+	                    next
+	                      case False
+	                      have hprimary_residual:
+	                        "(\<sigma>\<^sub>p = \<beta> \<or> \<sigma>\<^sub>p \<inter> J\<^sub>1 = {})
+	                          \<and> (\<tau>\<^sub>p = \<beta>\<^sub>c \<or> \<tau>\<^sub>p \<inter> J\<^sub>2 = {})"
+	                        using False by (by100 blast)
+	                      have hprimary_residual_parent_empty_counting_book:
+	                        "(\<sigma>\<^sub>p = \<beta> \<or> \<sigma>\<^sub>p \<inter> J\<^sub>1 = {})
+	                          \<and> (\<tau>\<^sub>p = \<beta>\<^sub>c \<or> \<tau>\<^sub>p \<inter> J\<^sub>2 = {}) \<Longrightarrow>
+	                        \<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                        (**
+	                          Narrow residual of Moise Figure 3.2: both primary
+	                          side witnesses are either exactly the named
+	                          chord-spoiled triangles or have empty side contact.
+	                          The remaining count must use the side-free pair
+	                          data, the two empty parent candidates, and the spare
+	                          witnesses to force a real side-boundary contact. **)
+	                        sorry
+	                      show ?thesis
+	                        by (rule hprimary_residual_parent_empty_counting_book
+	                            [OF hprimary_residual])
+	                    qed
+	                  qed
                   show ?thesis
                     by (rule hprimary_spare_parent_empty_counting_book
                         [OF hside_free_pair_counting_data
