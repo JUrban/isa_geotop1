@@ -28232,7 +28232,148 @@ proof -
 	                                            spare parent obstruction cannot
 	                                            coexist with the two side-free
 	                                            witness pairs. **)
-	                                          sorry
+	                                        proof -
+	                                          assume hspare_parent_empty:
+	                                            "\<exists>\<zeta>.
+	                                              ((?G\<^sub>1 \<zeta>
+	                                                \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                                \<and> \<zeta> \<in> K
+	                                                \<and> geotop_free_2_simplex K J \<zeta>
+	                                                \<and> geotop_simplex_dim \<zeta> 2
+	                                                \<and> \<zeta> \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e \<zeta>
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> \<zeta> \<noteq> \<theta>
+	                                                \<and> \<zeta> \<noteq> \<beta>)
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                                \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                                \<and> \<zeta> \<in> K
+	                                                \<and> geotop_free_2_simplex K J \<zeta>
+	                                                \<and> geotop_simplex_dim \<zeta> 2
+	                                                \<and> \<zeta> \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e \<zeta>
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> \<zeta> \<noteq> \<theta>
+	                                                \<and> \<zeta> \<noteq> \<beta>\<^sub>c))"
+	                                          obtain chi
+	                                            where hchi_parent_empty:
+	                                              "(?G\<^sub>1 chi
+	                                                \<and> chi \<inter> J\<^sub>1 = {}
+	                                                \<and> chi \<in> K
+	                                                \<and> geotop_free_2_simplex K J chi
+	                                                \<and> geotop_simplex_dim chi 2
+	                                                \<and> chi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e chi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> chi \<noteq> \<theta>
+	                                                \<and> chi \<noteq> \<beta>)
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c chi
+	                                                \<and> chi \<inter> J\<^sub>2 = {}
+	                                                \<and> chi \<in> K
+	                                                \<and> geotop_free_2_simplex K J chi
+	                                                \<and> geotop_simplex_dim chi 2
+	                                                \<and> chi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e chi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> chi \<noteq> \<theta>
+	                                                \<and> chi \<noteq> \<beta>\<^sub>c)"
+	                                            using hcanonical_parent_empty_candidate
+	                                            by (elim exE)
+	                                          obtain psi
+	                                            where hpsi_parent_empty:
+	                                              "(?G\<^sub>1 psi
+	                                                \<and> psi \<inter> J\<^sub>1 = {}
+	                                                \<and> psi \<in> K
+	                                                \<and> geotop_free_2_simplex K J psi
+	                                                \<and> geotop_simplex_dim psi 2
+	                                                \<and> psi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e psi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> psi \<noteq> \<theta>
+	                                                \<and> psi \<noteq> \<beta>)
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c psi
+	                                                \<and> psi \<inter> J\<^sub>2 = {}
+	                                                \<and> psi \<in> K
+	                                                \<and> geotop_free_2_simplex K J psi
+	                                                \<and> geotop_simplex_dim psi 2
+	                                                \<and> psi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e psi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> psi \<noteq> \<theta>
+	                                                \<and> psi \<noteq> \<beta>\<^sub>c)"
+	                                            using hspare_parent_empty
+	                                            by (elim exE)
+	                                          have hfour_parent_empty_fixed_count_book:
+	                                            "((?G\<^sub>1 chi
+	                                                \<and> chi \<inter> J\<^sub>1 = {}
+	                                                \<and> chi \<in> K
+	                                                \<and> geotop_free_2_simplex K J chi
+	                                                \<and> geotop_simplex_dim chi 2
+	                                                \<and> chi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e chi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> chi \<noteq> \<theta>
+	                                                \<and> chi \<noteq> \<beta>)
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c chi
+	                                                \<and> chi \<inter> J\<^sub>2 = {}
+	                                                \<and> chi \<in> K
+	                                                \<and> geotop_free_2_simplex K J chi
+	                                                \<and> geotop_simplex_dim chi 2
+	                                                \<and> chi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e chi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> chi \<noteq> \<theta>
+	                                                \<and> chi \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                            ((?G\<^sub>1 psi
+	                                                \<and> psi \<inter> J\<^sub>1 = {}
+	                                                \<and> psi \<in> K
+	                                                \<and> geotop_free_2_simplex K J psi
+	                                                \<and> geotop_simplex_dim psi 2
+	                                                \<and> psi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e psi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> psi \<noteq> \<theta>
+	                                                \<and> psi \<noteq> \<beta>)
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c psi
+	                                                \<and> psi \<inter> J\<^sub>2 = {}
+	                                                \<and> psi \<in> K
+	                                                \<and> geotop_free_2_simplex K J psi
+	                                                \<and> geotop_simplex_dim psi 2
+	                                                \<and> psi \<inter> J = {}
+	                                                \<and> {e\<in>K. geotop_is_edge e
+	                                                  \<and> geotop_is_face e psi
+	                                                  \<and> e \<subseteq> J} = {}
+	                                                \<and> psi \<noteq> \<theta>
+	                                                \<and> psi \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                            \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            (**
+	                                              Fixed-witness form of the
+	                                              remaining book count.  The
+	                                              four parent-empty obstructions
+	                                              are the earlier fixed branch
+	                                              \<open>\<rho>\<close>, the extra branch
+	                                              \<open>\<eta>\<close>, the canonical branch
+	                                              \<open>chi\<close>, and the spare branch
+	                                              \<open>psi\<close>. **)
+	                                            sorry
+	                                          show ?thesis
+	                                            by (rule
+	                                                hfour_parent_empty_fixed_count_book
+	                                                [OF hchi_parent_empty
+	                                                  hpsi_parent_empty])
+	                                        qed
 	                                        show ?thesis
 	                                          by (rule
 	                                              hspare_parent_empty_forces_nonempty
