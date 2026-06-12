@@ -23195,6 +23195,128 @@ proof -
         \<and> \<rho> \<noteq> \<theta>"
       by (rule hG\<^sub>2_side_selected_nonempty_finishes[OF hG hside_selected])
   qed
+  have hside_contact_candidate_finishes:
+    "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 \<noteq> {})
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 \<noteq> {}))
+      \<Longrightarrow> \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    assume hcand:
+      "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 \<noteq> {})
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 \<noteq> {}))"
+    obtain \<beta>\<^sub>c \<rho> where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+      and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+      and h\<beta>c_chord_face:
+        "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      and hbranch:
+      "(?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 \<noteq> {})
+        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 \<noteq> {})"
+      using hcand by (elim exE conjE)
+    show ?thesis
+    proof (cases "?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 \<noteq> {}")
+      case True
+      have hG: "?G\<^sub>1 \<rho>"
+        using True by (by100 simp)
+      have hcontact: "\<rho> \<inter> J\<^sub>1 \<noteq> {}"
+        using True by (by100 simp)
+      show ?thesis
+        by (rule hG\<^sub>1_side_contact_nonempty_finishes[OF hG hcontact])
+    next
+      case False
+      have hright: "?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 \<noteq> {}"
+      proof -
+        from hbranch show ?thesis
+        proof
+          assume hleft: "?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 \<noteq> {}"
+          have False
+            using hleft False by (by100 simp)
+          thus ?thesis
+            by (by100 simp)
+        next
+          assume hright: "?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 \<noteq> {}"
+          show ?thesis
+            by (rule hright)
+        qed
+      qed
+      have hG: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+        using hright by (by100 simp)
+      have hcontact: "\<rho> \<inter> J\<^sub>2 \<noteq> {}"
+        using hright by (by100 simp)
+      show ?thesis
+        by (rule hG\<^sub>2_side_contact_nonempty_finishes[OF hG hcontact])
+    qed
+  qed
+  have hside2_singleton_chord_data_if_not_large:
+    "\<not> card ?T\<^sub>2 > 1 \<Longrightarrow>
+      \<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+        \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2"
+  proof -
+    assume hnot_large: "\<not> card ?T\<^sub>2 > 1"
+    have hT\<^sub>2_fin: "finite ?T\<^sub>2"
+      using hL\<^sub>2_fin by (by100 simp)
+    have hT\<^sub>2_ne: "?T\<^sub>2 \<noteq> {}"
+      using hside_core_counts_book by (by100 blast)
+    have hT\<^sub>2_le1: "card ?T\<^sub>2 \<le> 1"
+      using hnot_large by (by100 arith)
+    have hT\<^sub>2_pos: "card ?T\<^sub>2 > 0"
+      using hT\<^sub>2_fin hT\<^sub>2_ne card_gt_0_iff by (by100 blast)
+    have hT\<^sub>2_card_eq1: "card ?T\<^sub>2 = 1"
+      using hT\<^sub>2_pos hT\<^sub>2_le1 by (by100 arith)
+    obtain \<beta>\<^sub>c where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+      and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+      and h\<beta>c_chord_face:
+        "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      using hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+      by (elim exE conjE)
+    have hT\<^sub>2_singleton: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    proof -
+      obtain \<tau> where hT\<^sub>2_eq: "?T\<^sub>2 = {\<tau>}"
+        using hT\<^sub>2_card_eq1 by (rule card_1_singletonE)
+      have "\<beta>\<^sub>c = \<tau>"
+        using hT\<^sub>2_eq h\<beta>cT\<^sub>2 by (by100 simp)
+      thus ?thesis
+        using hT\<^sub>2_eq by (by100 simp)
+    qed
+    show ?thesis
+      apply (rule exI[where x = "\<beta>\<^sub>c"])
+      using hT\<^sub>2_singleton h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta>
+        h\<beta>c_ne_\<theta> h\<beta>c_ne_\<alpha> h\<beta>c_chord_face h\<beta>_not_T\<^sub>2
+      apply (intro conjI)
+      apply assumption+
+      done
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
