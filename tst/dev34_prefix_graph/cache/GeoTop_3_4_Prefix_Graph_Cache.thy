@@ -13382,6 +13382,48 @@ proof -
                     \<and> q\<^sub>1 \<in> closure W))"
                   by (rule hW_source_ball_entry_named_cases)
               qed
+              have hW_trace_component_entry_summary:
+                  "\<And>C. C \<in> ?Ntrace_components
+                    \<Longrightarrow> W \<inter> ball w r \<inter> C \<noteq> {}
+                    \<Longrightarrow> C \<in> components ?Lcomp
+                      \<and> C \<noteq> {}
+                      \<and> C \<subseteq> ?Lcomp
+                      \<and> connected C
+                      \<and> path_connected C
+                      \<and> C \<inter> ?Nloc \<noteq> {}
+                      \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                      \<and> W \<inter> closure C \<noteq> {}"
+              proof -
+                fix C
+                assume hC: "C \<in> ?Ntrace_components"
+                assume hW_meets_C: "W \<inter> ball w r \<inter> C \<noteq> {}"
+                have hsummary:
+                    "C \<in> components ?Lcomp
+                      \<and> C \<noteq> {}
+                      \<and> C \<subseteq> ?Lcomp
+                      \<and> connected C
+                      \<and> path_connected C
+                      \<and> C \<inter> ?Nloc \<noteq> {}"
+                  by (rule hN_trace_component_summary[OF hC])
+                have hW_closure_C: "W \<inter> closure C \<noteq> {}"
+                proof -
+                  obtain a where haW: "a \<in> W" and haC: "a \<in> C"
+                    using hW_meets_C by (by100 blast)
+                  have ha_cl: "a \<in> closure C"
+                    by (rule subsetD[OF closure_subset haC])
+                  show ?thesis
+                    using haW ha_cl by (by100 blast)
+                qed
+                show "C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Nloc \<noteq> {}
+                  \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                  \<and> W \<inter> closure C \<noteq> {}"
+                  using hsummary hW_meets_C hW_closure_C by (by100 blast)
+              qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
                     \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
