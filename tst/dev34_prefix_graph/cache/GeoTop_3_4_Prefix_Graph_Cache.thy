@@ -3914,6 +3914,75 @@ proof -
     using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
 qed
 
+lemma geotop_branch_vertex_local_side_witness_from_split_side_prefix:
+  fixes L :: "(real^2) set set"
+    and S T U M N :: "(real^2) set"
+    and w p y z :: "real^2"
+    and r :: real
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hwL: "{w} \<in> L"
+  assumes hSCC: "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+      (geotop_polyhedron L)"
+  assumes hr: "0 < r"
+  assumes hS_L: "S \<in> L"
+  assumes hT_L: "T \<in> L"
+  assumes hU_L: "U \<in> L"
+  assumes hS_edge: "geotop_is_edge S"
+  assumes hT_edge: "geotop_is_edge T"
+  assumes hU_edge: "geotop_is_edge U"
+  assumes hwS: "w \<in> S"
+  assumes hwT: "w \<in> T"
+  assumes hwU: "w \<in> U"
+  assumes hST: "S \<noteq> T"
+  assumes hSU: "S \<noteq> U"
+  assumes hTU: "T \<noteq> U"
+  assumes hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+  assumes hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+  assumes hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+  assumes hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+  assumes hM_conn: "connected M"
+  assumes hpM: "p \<in> M"
+  assumes hyM: "y \<in> M"
+  assumes hzM: "z \<in> M"
+  assumes hp_cl: "p \<in> closure ((S - {w}) \<inter> ball w r)"
+  assumes hy_cl: "y \<in> closure ((T - {w}) \<inter> ball w r)"
+  assumes hz_cl: "z \<in> closure ((U - {w}) \<inter> ball w r)"
+  assumes hp_not_ball: "p \<notin> ball w r"
+  assumes hy_not_ball: "y \<notin> ball w r"
+  assumes hz_not_ball: "z \<notin> ball w r"
+  assumes hM_ball_cover:
+    "M \<inter> ball w r
+      \<subseteq> ((S - {w}) \<inter> ball w r)
+        \<union> ((T - {w}) \<inter> ball w r)
+        \<union> ((U - {w}) \<inter> ball w r)
+        \<union> (ball w r - (S \<union> T \<union> U))"
+  assumes hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+  assumes hN_conn: "connected N"
+  assumes hpSN: "p \<in> (S - {w}) \<inter> N"
+  assumes hyTN: "y \<in> (T - {w}) \<inter> N"
+  assumes hN_ball_cover:
+    "N \<inter> ball w r
+      \<subseteq> ((S - {w}) \<inter> ball w r)
+        \<union> ((T - {w}) \<inter> ball w r)
+        \<union> ((U - {w}) \<inter> ball w r)
+        \<union> (ball w r - (S \<union> T \<union> U))"
+  shows "\<exists>A x. connected A
+      \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+      \<and> x \<in> A
+      \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+      \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+      \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+  (**
+    Exact Moise first-entry/local-side witness for the branch-point proof.
+    This is the named remaining book package: the connected witness through
+    all three selected sphere germs and the connected split-side witness
+    through the selected S/T germs must determine one connected side of the
+    punctured small star whose closure touches all three incident germs.
+    It is kept separate from the component-maximal wrapper below so future
+    proof work targets the missing local-side construction directly. **)
+  sorry
+
 lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
   fixes L :: "(real^2) set set"
     and S T U M N :: "(real^2) set"
@@ -10697,14 +10766,14 @@ proof -
                   \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
-              (**
-                Exact first-entry/local-side witness still owed by the book
-                argument at the point where all upstream split-side data are
-                available: the selected sphere points, the connected
-                punctured-carrier witness through all three germs, the
-                connected split-side witness through the selected S/T germs,
-                and the small-star sector cover. **)
-              sorry
+              by (rule geotop_branch_vertex_local_side_witness_from_split_side_prefix
+                  [OF hL_linear hL_fin hwL hSCC hr_pos
+                    hS_L hT_L hU_L hS_edge hT_edge hU_edge hwS hwT hwU
+                    hST hSU hTU hST_disj hSU_disj hTU_disj
+                    hM_sub_arg hM_conn_arg hpM_arg hyM_arg hzM_arg
+                    hp_selected_germ_cl hy_selected_germ_cl hz_selected_germ_cl
+                    hp_not_ball hy_not_ball hz_not_ball hM_ball_cover_arg
+                    hN_sub hN_conn_HOL hpSN hyTN hN_ball_sector_cover])
             show ?thesis
               by (rule geotop_branch_vertex_three_germs_same_side_component_prefix
                   [OF hL_linear hL_fin hwL hSCC hr_pos
