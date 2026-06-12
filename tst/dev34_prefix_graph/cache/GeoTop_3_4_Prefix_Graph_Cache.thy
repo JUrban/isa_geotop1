@@ -11241,6 +11241,132 @@ proof -
               \<union> (ball w r - (S \<union> T \<union> U))"
         using hlocal_punctured_carrier_sector_cover hSTU_eq hselected_union_eq
         by (by100 blast)
+      have hselected_pz_yz_connected_witness_package:
+          "\<exists>M\<^sub>p\<^sub>z M\<^sub>y\<^sub>z.
+            M\<^sub>p\<^sub>z \<subseteq> geotop_polyhedron L - {w}
+            \<and> connected M\<^sub>p\<^sub>z
+            \<and> p \<in> M\<^sub>p\<^sub>z
+            \<and> z \<in> M\<^sub>p\<^sub>z
+            \<and> M\<^sub>p\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))
+            \<and> M\<^sub>y\<^sub>z \<subseteq> geotop_polyhedron L - {w}
+            \<and> connected M\<^sub>y\<^sub>z
+            \<and> y \<in> M\<^sub>y\<^sub>z
+            \<and> z \<in> M\<^sub>y\<^sub>z
+            \<and> M\<^sub>y\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+      proof -
+        obtain M\<^sub>p\<^sub>z where hMpz_sub:
+            "M\<^sub>p\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
+          and hpMpz: "p \<in> M\<^sub>p\<^sub>z"
+          and hzMpz: "z \<in> M\<^sub>p\<^sub>z"
+          and hMpz_conn_top:
+            "top1_connected_on M\<^sub>p\<^sub>z
+              (subspace_topology (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) M\<^sub>p\<^sub>z)"
+          using hpz_same_component_from_three
+          unfolding top1_in_same_component_on_def
+          by (elim exE conjE)
+        have hMpz_subtop:
+            "subspace_topology (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) M\<^sub>p\<^sub>z
+              = subspace_topology UNIV geotop_euclidean_topology M\<^sub>p\<^sub>z"
+          by (rule subspace_topology_trans[OF hMpz_sub])
+        have hMpz_conn: "connected M\<^sub>p\<^sub>z"
+          using hMpz_conn_top top1_connected_on_geotop_iff_connected
+          unfolding hMpz_subtop by (by100 blast)
+        have hMpz_ball_cover:
+            "M\<^sub>p\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          using hMpz_sub hselected_punctured_carrier_sector_cover
+          by (by100 blast)
+        obtain M\<^sub>y\<^sub>z where hMyz_sub:
+            "M\<^sub>y\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
+          and hyMyz: "y \<in> M\<^sub>y\<^sub>z"
+          and hzMyz: "z \<in> M\<^sub>y\<^sub>z"
+          and hMyz_conn_top:
+            "top1_connected_on M\<^sub>y\<^sub>z
+              (subspace_topology (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) M\<^sub>y\<^sub>z)"
+          using hyz_same_component_from_three
+          unfolding top1_in_same_component_on_def
+          by (elim exE conjE)
+        have hMyz_subtop:
+            "subspace_topology (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) M\<^sub>y\<^sub>z
+              = subspace_topology UNIV geotop_euclidean_topology M\<^sub>y\<^sub>z"
+          by (rule subspace_topology_trans[OF hMyz_sub])
+        have hMyz_conn: "connected M\<^sub>y\<^sub>z"
+          using hMyz_conn_top top1_connected_on_geotop_iff_connected
+          unfolding hMyz_subtop by (by100 blast)
+        have hMyz_ball_cover:
+            "M\<^sub>y\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          using hMyz_sub hselected_punctured_carrier_sector_cover
+          by (by100 blast)
+        show ?thesis
+        proof (rule exI[where x=M\<^sub>p\<^sub>z],
+            rule exI[where x=M\<^sub>y\<^sub>z])
+          show "M\<^sub>p\<^sub>z \<subseteq> geotop_polyhedron L - {w}
+            \<and> connected M\<^sub>p\<^sub>z
+            \<and> p \<in> M\<^sub>p\<^sub>z
+            \<and> z \<in> M\<^sub>p\<^sub>z
+            \<and> M\<^sub>p\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))
+            \<and> M\<^sub>y\<^sub>z \<subseteq> geotop_polyhedron L - {w}
+            \<and> connected M\<^sub>y\<^sub>z
+            \<and> y \<in> M\<^sub>y\<^sub>z
+            \<and> z \<in> M\<^sub>y\<^sub>z
+            \<and> M\<^sub>y\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+          proof (intro conjI)
+            show "M\<^sub>p\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
+              by (rule hMpz_sub)
+            show "connected M\<^sub>p\<^sub>z" by (rule hMpz_conn)
+            show "p \<in> M\<^sub>p\<^sub>z" by (rule hpMpz)
+            show "z \<in> M\<^sub>p\<^sub>z" by (rule hzMpz)
+            show "M\<^sub>p\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+              by (rule hMpz_ball_cover)
+            show "M\<^sub>y\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
+              by (rule hMyz_sub)
+            show "connected M\<^sub>y\<^sub>z" by (rule hMyz_conn)
+            show "y \<in> M\<^sub>y\<^sub>z" by (rule hyMyz)
+            show "z \<in> M\<^sub>y\<^sub>z" by (rule hzMyz)
+            show "M\<^sub>y\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+              by (rule hMyz_ball_cover)
+          qed
+        qed
+      qed
       have hselected_three_ball_sector_cover:
           "\<exists>M. M \<subseteq> geotop_polyhedron L - {w}
             \<and> top1_connected_on M
