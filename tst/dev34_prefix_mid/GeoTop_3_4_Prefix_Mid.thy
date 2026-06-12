@@ -23492,6 +23492,119 @@ proof -
       qed
     qed
   qed
+  have hremaining_branch_cases:
+    "(\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>)
+      \<or> (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})))
+      \<or> (\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+        \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2)"
+  proof -
+    from hside_large_or_singleton_branch_data show ?thesis
+    proof
+      assume hlarge_branch:
+        "card ?T\<^sub>2 > 1
+          \<and> (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> (?G\<^sub>1 \<rho> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<rho>))"
+      have hlarge: "card ?T\<^sub>2 > 1"
+        using hlarge_branch by (by100 blast)
+      have hlarge_result:
+        "(\<exists>\<rho>. \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+            \<and> \<rho> \<noteq> \<theta>)
+          \<or>
+          (\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {})))"
+        by (rule hlarge_candidate_finishes_or_empty_obstruction[OF hlarge])
+      show ?thesis
+      proof (rule disjE[OF hlarge_result])
+        assume hdone:
+          "\<exists>\<rho>. \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+            \<and> \<rho> \<noteq> \<theta>"
+        show ?thesis
+          by (rule disjI1[OF hdone])
+      next
+        assume hobstruction:
+          "\<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2
+            \<and> ((?G\<^sub>1 \<rho> \<and> \<rho> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho> \<and> \<rho> \<inter> J\<^sub>2 = {}))"
+        show ?thesis
+          apply (rule disjI2)
+          apply (rule disjI1)
+          apply (rule hobstruction)
+          done
+      qed
+    next
+      assume hsingle_branch:
+        "\<not> card ?T\<^sub>2 > 1
+          \<and> (\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+            \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+            \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+            \<and> \<beta>\<^sub>c \<noteq> \<beta>
+            \<and> \<beta>\<^sub>c \<noteq> \<theta>
+            \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+            \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+            \<and> \<beta> \<notin> ?T\<^sub>2)"
+      have hsingle:
+        "\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
+          \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
+          \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+          \<and> \<beta>\<^sub>c \<noteq> \<beta>
+          \<and> \<beta>\<^sub>c \<noteq> \<theta>
+          \<and> \<beta>\<^sub>c \<noteq> \<alpha>
+          \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+          \<and> \<beta> \<notin> ?T\<^sub>2"
+        using hsingle_branch by (by100 blast)
+      show ?thesis
+        apply (rule disjI2)
+        apply (rule disjI2)
+        apply (rule hsingle)
+        done
+    qed
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
