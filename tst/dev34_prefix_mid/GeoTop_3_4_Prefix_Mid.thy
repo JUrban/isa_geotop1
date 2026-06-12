@@ -27744,7 +27744,180 @@ proof -
 	                                    task is the book pigeonhole excluding
 	                                    simultaneous loss to the named chord
 	                                    pair and the parent-empty candidates. **)
-	                                  sorry
+	                                proof -
+	                                  assume hcanonical_primary_spares:
+	                                    "\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+	                                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>
+	                                      \<and> geotop_simplex_dim \<sigma> 2
+	                                      \<and> \<sigma> \<noteq> \<theta>
+	                                      \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                      \<and> \<sigma> \<inter> J\<^sub>1 =
+	                                        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+	                                      \<and> \<sigma>' \<in> L\<^sub>1
+	                                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'
+	                                      \<and> geotop_simplex_dim \<sigma>' 2
+	                                      \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                      \<and> \<sigma>' \<inter> J\<^sub>1 =
+	                                        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
+	                                      \<and> \<sigma> \<noteq> \<sigma>'
+	                                      \<and> \<tau> \<in> L\<^sub>2
+	                                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>
+	                                      \<and> geotop_simplex_dim \<tau> 2
+	                                      \<and> \<tau> \<noteq> \<theta>
+	                                      \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                                      \<and> \<tau> \<inter> J\<^sub>2 =
+	                                        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+	                                      \<and> \<tau>' \<in> L\<^sub>2
+	                                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'
+	                                      \<and> geotop_simplex_dim \<tau>' 2
+	                                      \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                        \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                                      \<and> \<tau>' \<inter> J\<^sub>2 =
+	                                        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}
+	                                      \<and> \<tau> \<noteq> \<tau>'
+	                                      \<and> \<sigma> \<noteq> \<tau>
+	                                      \<and> (\<sigma> \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>)
+	                                      \<and> (\<tau> \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>)"
+	                                  obtain \<sigma> \<sigma>' \<tau> \<tau>'
+	                                    where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+	                                      and h\<sigma>free:
+	                                        "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>"
+	                                      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+	                                      and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
+	                                      and h\<sigma>_card:
+	                                        "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                      and h\<sigma>_contact:
+	                                        "\<sigma> \<inter> J\<^sub>1 =
+	                                          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+	                                      and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+	                                      and h\<sigma>'free:
+	                                        "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>'"
+	                                      and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
+	                                      and h\<sigma>'_card:
+	                                        "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                      and h\<sigma>'_contact:
+	                                        "\<sigma>' \<inter> J\<^sub>1 =
+	                                          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                            \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}"
+	                                      and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
+	                                      and h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+	                                      and h\<tau>free:
+	                                        "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>"
+	                                      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+	                                      and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+	                                      and h\<tau>_card:
+	                                        "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                      and h\<tau>_contact:
+	                                        "\<tau> \<inter> J\<^sub>2 =
+	                                          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+	                                      and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+	                                      and h\<tau>'free:
+	                                        "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>'"
+	                                      and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
+	                                      and h\<tau>'_card:
+	                                        "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                          \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                      and h\<tau>'_contact:
+	                                        "\<tau>' \<inter> J\<^sub>2 =
+	                                          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                            \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}"
+	                                      and h\<tau>_ne_\<tau>': "\<tau> \<noteq> \<tau>'"
+	                                      and h\<sigma>_ne_\<tau>: "\<sigma> \<noteq> \<tau>"
+	                                      and h\<sigma>_primary:
+	                                        "\<sigma> \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>"
+	                                      and h\<tau>_primary:
+	                                        "\<tau> \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>"
+	                                    using hcanonical_primary_spares
+	                                    by (elim exE conjE)
+	                                  have hcanonical_primary_nonempty_finishes:
+	                                    "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 \<noteq> {})
+	                                      \<or> (\<tau> \<noteq> \<beta>\<^sub>c
+	                                        \<and> \<tau> \<inter> J\<^sub>2 \<noteq> {}) \<Longrightarrow>
+	                                    \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                  proof -
+	                                    assume hprimary_nonempty:
+	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 \<noteq> {})
+	                                        \<or> (\<tau> \<noteq> \<beta>\<^sub>c
+	                                          \<and> \<tau> \<inter> J\<^sub>2 \<noteq> {})"
+	                                    show ?thesis
+	                                    proof (rule disjE[OF hprimary_nonempty])
+	                                      assume hleft:
+	                                        "\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 \<noteq> {}"
+	                                      have hG: "?G\<^sub>1 \<sigma>"
+	                                        using h\<sigma>_primary hleft by (by100 blast)
+	                                      show ?thesis
+	                                        apply (rule exI[where x = "\<sigma>"])
+	                                        using hG hleft
+	                                        apply (by100 blast)
+	                                        done
+	                                    next
+	                                      assume hright:
+	                                        "\<tau> \<noteq> \<beta>\<^sub>c
+	                                          \<and> \<tau> \<inter> J\<^sub>2 \<noteq> {}"
+	                                      have hG: "?G\<^sub>2 \<beta>\<^sub>c \<tau>"
+	                                        using h\<tau>_primary hright by (by100 blast)
+	                                      show ?thesis
+	                                        apply (rule exI[where x = "\<tau>"])
+	                                        using hG hright
+	                                        apply (by100 blast)
+	                                        done
+	                                    qed
+	                                  qed
+	                                  have hcanonical_residual_all_empty_book:
+	                                    "(\<sigma> = \<beta> \<or> \<sigma> \<inter> J\<^sub>1 = {}) \<Longrightarrow>
+	                                    (\<tau> = \<beta>\<^sub>c \<or> \<tau> \<inter> J\<^sub>2 = {}) \<Longrightarrow>
+	                                    \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                    (**
+	                                      Residual canonical form after the
+	                                      easy primary-contact cases: the
+	                                      canonical primary on each side is
+	                                      either the named chord face or has
+	                                      empty side contact.  The spare
+	                                      witnesses and parent-empty candidates
+	                                      must now carry the book count. **)
+	                                    sorry
+	                                  show ?thesis
+	                                  proof (cases
+	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 \<noteq> {})
+	                                        \<or> (\<tau> \<noteq> \<beta>\<^sub>c
+	                                          \<and> \<tau> \<inter> J\<^sub>2 \<noteq> {})")
+	                                    case True
+	                                    show ?thesis
+	                                      by (rule
+	                                          hcanonical_primary_nonempty_finishes
+	                                          [OF True])
+	                                  next
+	                                    case False
+	                                    have hleft:
+	                                      "\<sigma> = \<beta> \<or> \<sigma> \<inter> J\<^sub>1 = {}"
+	                                      using False by (by100 blast)
+	                                    have hright:
+	                                      "\<tau> = \<beta>\<^sub>c \<or> \<tau> \<inter> J\<^sub>2 = {}"
+	                                      using False by (by100 blast)
+	                                    show ?thesis
+	                                      by (rule
+	                                          hcanonical_residual_all_empty_book
+	                                          [OF hleft hright])
+	                                  qed
+	                                qed
 	                                have hall_empty_parent_candidates_contradict_side_pairs_book:
 	                                  "(\<exists>\<sigma>\<^sub>1 \<sigma>\<^sub>2 \<tau>\<^sub>1 \<tau>\<^sub>2.
 	                                    \<sigma>\<^sub>1 \<in> L\<^sub>1
