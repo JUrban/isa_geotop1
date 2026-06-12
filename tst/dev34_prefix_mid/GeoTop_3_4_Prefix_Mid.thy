@@ -30933,6 +30933,27 @@ proof -
     show "closed_segment X X1 - {X} \<subseteq> ?I"
       using hseg_\<tau> hinterior_\<tau>_sub_I by (by100 blast)
   qed
+  have hlocal_star_carrier_radius:
+    "\<exists>s>0. ball X s \<inter> geotop_polyhedron K
+      \<subseteq> \<Union>{\<tau>\<in>K. X \<in> \<tau>}"
+    (**
+      Finite-star localization for the D42 vertex case.  In a finite
+      triangulated disk, sufficiently near the vertex no simplex outside the
+      vertex star can meet the carrier. **)
+  proof -
+    have hX_unionK: "X \<in> \<Union>K"
+      using hX_singleton by (by100 blast)
+    obtain s where hs: "0 < s"
+      and hsub: "ball X s \<inter> \<Union>K \<subseteq> \<Union>{\<tau>\<in>K. X \<in> \<tau>}"
+      using geotop_complex_finite_subcomplex_local_point_carriers_prefix
+        [OF hK hK_fin subset_refl hX_unionK]
+      by (by100 blast)
+    have hsub_poly: "ball X s \<inter> geotop_polyhedron K
+        \<subseteq> \<Union>{\<tau>\<in>K. X \<in> \<tau>}"
+      using hsub unfolding geotop_polyhedron_def by (by100 simp)
+    show ?thesis
+      using hs hsub_poly by (by100 blast)
+  qed
   have hlocal_finite_fan_wedge:
     "\<exists>r>0. \<forall>X1. X1 \<in> geotop_polygon_interior J \<longrightarrow>
       X1 \<in> ball X r \<longrightarrow>
