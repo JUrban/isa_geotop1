@@ -3947,6 +3947,31 @@ proof -
     using hC hxG hxC by (by100 blast)
 qed
 
+lemma geotop_local_component_closure_touch_witness_prefix:
+  fixes U G\<^sub>1 G\<^sub>2 G\<^sub>3 C :: "'a::topological_space set"
+  assumes hC: "C \<in> components U"
+  assumes hG\<^sub>1: "G\<^sub>1 \<inter> closure C \<noteq> {}"
+  assumes hG\<^sub>2: "G\<^sub>2 \<inter> closure C \<noteq> {}"
+  assumes hG\<^sub>3: "G\<^sub>3 \<inter> closure C \<noteq> {}"
+  shows "\<exists>A x. connected A
+    \<and> A \<subseteq> U
+    \<and> x \<in> A
+    \<and> G\<^sub>1 \<inter> closure A \<noteq> {}
+    \<and> G\<^sub>2 \<inter> closure A \<noteq> {}
+    \<and> G\<^sub>3 \<inter> closure A \<noteq> {}"
+proof -
+  have hC_nonempty: "C \<noteq> {}"
+    by (rule in_components_nonempty[OF hC])
+  obtain x where hxC: "x \<in> C"
+    using hC_nonempty by (by100 blast)
+  have hC_conn: "connected C"
+    by (rule in_components_connected[OF hC])
+  have hC_sub: "C \<subseteq> U"
+    by (rule in_components_subset[OF hC])
+  show ?thesis
+    using hC_conn hC_sub hxC hG\<^sub>1 hG\<^sub>2 hG\<^sub>3 by (intro exI conjI)
+qed
+
 lemma geotop_branch_vertex_first_entry_decomposition_prefix:
   fixes L :: "(real^2) set set"
     and S T U M N :: "(real^2) set"
@@ -11702,6 +11727,18 @@ proof -
               using hT_E unfolding E_def by (by100 blast)
             have hwU: "w \<in> U"
               using hU_E unfolding E_def by (by100 blast)
+            have hbranch_local_side_witness_from_component:
+                "\<And>C. C \<in> components ?Lcomp
+                  \<Longrightarrow> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                  \<Longrightarrow> ((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                  \<Longrightarrow> ((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                  \<Longrightarrow> \<exists>A x. connected A
+                    \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+                    \<and> x \<in> A
+                    \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                    \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                    \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+              by (rule geotop_local_component_closure_touch_witness_prefix)
             have hbranch_local_side_witness:
                 "\<exists>A x. connected A
                   \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
