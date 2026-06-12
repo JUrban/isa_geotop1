@@ -24271,6 +24271,159 @@ proof -
       qed
     qed
   qed
+  have hsingleton_side2_two_nonchord_parent_edges:
+    "\<And>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c} \<Longrightarrow>
+      \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+      geotop_is_face (closed_segment a c) \<beta>\<^sub>c \<Longrightarrow>
+      \<exists>u e\<^sub>a e\<^sub>c.
+        u \<notin> {a, c}
+        \<and> geotop_simplex_vertices \<beta>\<^sub>c {a, c, u}
+        \<and> e\<^sub>a = geotop_convex_hull {a, u}
+        \<and> e\<^sub>c = geotop_convex_hull {c, u}
+        \<and> e\<^sub>a \<in> L\<^sub>2
+        \<and> geotop_is_edge e\<^sub>a
+        \<and> geotop_is_face e\<^sub>a \<beta>\<^sub>c
+        \<and> e\<^sub>a \<subseteq> J
+        \<and> e\<^sub>c \<in> L\<^sub>2
+        \<and> geotop_is_edge e\<^sub>c
+        \<and> geotop_is_face e\<^sub>c \<beta>\<^sub>c
+        \<and> e\<^sub>c \<subseteq> J
+        \<and> a \<in> e\<^sub>a
+        \<and> c \<in> e\<^sub>c
+        \<and> e\<^sub>a \<noteq> e\<^sub>c"
+  proof -
+    fix \<beta>\<^sub>c
+    assume hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+    assume h\<beta>c_chord:
+      "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+    have h\<beta>cL\<^sub>2: "\<beta>\<^sub>c \<in> L\<^sub>2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have h\<beta>c2: "geotop_simplex_dim \<beta>\<^sub>c 2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    obtain u where hu_not: "u \<notin> {a, c}"
+      and h\<beta>c_vertices:
+        "geotop_simplex_vertices \<beta>\<^sub>c {a, c, u}"
+    proof -
+      obtain p q u where hpq: "p \<noteq> q"
+        and hu_not_pq: "u \<notin> {p, q}"
+        and hchord_pq:
+          "closed_segment a c = geotop_convex_hull {p, q}"
+        and h\<beta>c_pqu:
+          "geotop_simplex_vertices \<beta>\<^sub>c {p, q, u}"
+        by (rule geotop_2simplex_edge_face_vertices_prefix
+            [OF h\<beta>c2 hchord_segment_edge_book h\<beta>c_chord])
+      have hpq_vertices:
+        "geotop_simplex_vertices (closed_segment a c) {p, q}"
+      proof -
+        have "geotop_simplex_vertices
+            (geotop_convex_hull {p, q}) {p, q}"
+          by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hpq])
+        thus ?thesis
+          using hchord_pq by (by100 simp)
+      qed
+      have hac_vertices:
+        "geotop_simplex_vertices (closed_segment a c) {a, c}"
+        by (rule geotop_closed_segment_simplex_vertices[OF hac])
+      have hpq_set: "{p, q} = {a, c}"
+        by (rule geotop_simplex_vertices_unique
+            [OF hpq_vertices hac_vertices])
+      have hu_not_ac: "u \<notin> {a, c}"
+        using hu_not_pq hpq_set by (by100 simp)
+      have hvertex_set: "{p, q, u} = {a, c, u}"
+        using hpq_set by (by100 blast)
+      have h\<beta>c_acu:
+        "geotop_simplex_vertices \<beta>\<^sub>c {a, c, u}"
+        using h\<beta>c_pqu hvertex_set by (by100 simp)
+      show ?thesis
+        by (rule that[OF hu_not_ac h\<beta>c_acu])
+    qed
+    let ?e\<^sub>au = "geotop_convex_hull {a, u}"
+    let ?e\<^sub>cu = "geotop_convex_hull {c, u}"
+    have hother_edge_faces:
+      "geotop_is_edge ?e\<^sub>au
+        \<and> geotop_is_face ?e\<^sub>au \<beta>\<^sub>c
+        \<and> geotop_is_edge ?e\<^sub>cu
+        \<and> geotop_is_face ?e\<^sub>cu \<beta>\<^sub>c"
+      by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+          [OF h\<beta>c_vertices hac hu_not])
+    have he\<^sub>au_edge: "geotop_is_edge ?e\<^sub>au"
+      using hother_edge_faces by (by100 blast)
+    have he\<^sub>au_face: "geotop_is_face ?e\<^sub>au \<beta>\<^sub>c"
+      using hother_edge_faces by (by100 blast)
+    have he\<^sub>cu_edge: "geotop_is_edge ?e\<^sub>cu"
+      using hother_edge_faces by (by100 blast)
+    have he\<^sub>cu_face: "geotop_is_face ?e\<^sub>cu \<beta>\<^sub>c"
+      using hother_edge_faces by (by100 blast)
+    have he\<^sub>au_L\<^sub>2: "?e\<^sub>au \<in> L\<^sub>2"
+      using hL\<^sub>2_complex h\<beta>cL\<^sub>2 he\<^sub>au_face
+      unfolding geotop_is_complex_def by (by100 blast)
+    have he\<^sub>cu_L\<^sub>2: "?e\<^sub>cu \<in> L\<^sub>2"
+      using hL\<^sub>2_complex h\<beta>cL\<^sub>2 he\<^sub>cu_face
+      unfolding geotop_is_complex_def by (by100 blast)
+    have htriangle_edge_hulls_distinct:
+      "geotop_convex_hull {a, c} \<noteq> ?e\<^sub>au
+        \<and> geotop_convex_hull {a, c} \<noteq> ?e\<^sub>cu
+        \<and> ?e\<^sub>au \<noteq> ?e\<^sub>cu"
+      by (rule geotop_2simplex_vertices_edge_hulls_distinct_prefix
+          [OF h\<beta>c_vertices hac hu_not])
+    have he\<^sub>au_ne_chord: "?e\<^sub>au \<noteq> closed_segment a c"
+      using htriangle_edge_hulls_distinct hchord_hull_segment_eq
+      by (by100 blast)
+    have he\<^sub>cu_ne_chord: "?e\<^sub>cu \<noteq> closed_segment a c"
+      using htriangle_edge_hulls_distinct hchord_hull_segment_eq
+      by (by100 blast)
+    have he\<^sub>au_sub_J\<^sub>2: "?e\<^sub>au \<subseteq> J\<^sub>2"
+      by (rule hsingleton_side2_edge_face_sub_side
+          [OF hsingle_eq h\<beta>cT\<^sub>2 he\<^sub>au_L\<^sub>2 he\<^sub>au_edge he\<^sub>au_face])
+    have he\<^sub>cu_sub_J\<^sub>2: "?e\<^sub>cu \<subseteq> J\<^sub>2"
+      by (rule hsingleton_side2_edge_face_sub_side
+          [OF hsingle_eq h\<beta>cT\<^sub>2 he\<^sub>cu_L\<^sub>2 he\<^sub>cu_edge he\<^sub>cu_face])
+    have he\<^sub>au_sub_J: "?e\<^sub>au \<subseteq> J"
+      by (rule hsingleton_side2_nonchord_edge_sub_parent
+          [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_chord he\<^sub>au_L\<^sub>2 he\<^sub>au_edge
+            he\<^sub>au_face he\<^sub>au_sub_J\<^sub>2 he\<^sub>au_ne_chord])
+    have he\<^sub>cu_sub_J: "?e\<^sub>cu \<subseteq> J"
+      by (rule hsingleton_side2_nonchord_edge_sub_parent
+          [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_chord he\<^sub>cu_L\<^sub>2 he\<^sub>cu_edge
+            he\<^sub>cu_face he\<^sub>cu_sub_J\<^sub>2 he\<^sub>cu_ne_chord])
+    have ha_e\<^sub>au: "a \<in> ?e\<^sub>au"
+    proof -
+      have "a \<in> convex hull {a, u}"
+        using hull_inc[of a "{a, u}"] by (by100 simp)
+      thus ?thesis
+        using geotop_convex_hull_eq_HOL[of "{a, u}"] by (by100 simp)
+    qed
+    have hc_e\<^sub>cu: "c \<in> ?e\<^sub>cu"
+    proof -
+      have "c \<in> convex hull {c, u}"
+        using hull_inc[of c "{c, u}"] by (by100 simp)
+      thus ?thesis
+        using geotop_convex_hull_eq_HOL[of "{c, u}"] by (by100 simp)
+    qed
+    have he_distinct: "?e\<^sub>au \<noteq> ?e\<^sub>cu"
+      using htriangle_edge_hulls_distinct by (by100 blast)
+    show "\<exists>u e\<^sub>a e\<^sub>c.
+        u \<notin> {a, c}
+        \<and> geotop_simplex_vertices \<beta>\<^sub>c {a, c, u}
+        \<and> e\<^sub>a = geotop_convex_hull {a, u}
+        \<and> e\<^sub>c = geotop_convex_hull {c, u}
+        \<and> e\<^sub>a \<in> L\<^sub>2
+        \<and> geotop_is_edge e\<^sub>a
+        \<and> geotop_is_face e\<^sub>a \<beta>\<^sub>c
+        \<and> e\<^sub>a \<subseteq> J
+        \<and> e\<^sub>c \<in> L\<^sub>2
+        \<and> geotop_is_edge e\<^sub>c
+        \<and> geotop_is_face e\<^sub>c \<beta>\<^sub>c
+        \<and> e\<^sub>c \<subseteq> J
+        \<and> a \<in> e\<^sub>a
+        \<and> c \<in> e\<^sub>c
+        \<and> e\<^sub>a \<noteq> e\<^sub>c"
+      using hu_not h\<beta>c_vertices he\<^sub>au_L\<^sub>2 he\<^sub>au_edge he\<^sub>au_face
+        he\<^sub>au_sub_J he\<^sub>cu_L\<^sub>2 he\<^sub>cu_edge he\<^sub>cu_face he\<^sub>cu_sub_J
+        ha_e\<^sub>au hc_e\<^sub>cu he_distinct
+      by (by100 blast)
+  qed
   have hresidual_cases_with_singleton_side2_parent_count:
     "(\<exists>\<rho>. \<rho> \<in> K
         \<and> geotop_free_2_simplex K J \<rho>
