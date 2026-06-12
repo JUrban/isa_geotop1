@@ -22473,6 +22473,202 @@ proof -
       using hinst h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_no_chord h\<tau>_card_can h\<tau>_contact_can
       by (by100 blast)
   qed
+  have hL\<^sub>1_parent_selected_nonempty_from_side:
+    "\<And>\<rho>. {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {} \<Longrightarrow>
+      {e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+  proof -
+    fix \<rho>
+    assume hnonempty:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    obtain e where he:
+      "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using hnonempty by (by100 blast)
+    have "e \<in> {e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using he hL\<^sub>1_sub_K by (by100 blast)
+    thus "{e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      by (by100 blast)
+  qed
+  have hL\<^sub>2_parent_selected_nonempty_from_side:
+    "\<And>\<rho>. {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {} \<Longrightarrow>
+      {e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+  proof -
+    fix \<rho>
+    assume hnonempty:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    obtain e where he:
+      "e \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using hnonempty by (by100 blast)
+    have "e \<in> {e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using he hL\<^sub>2_sub_K by (by100 blast)
+    thus "{e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      by (by100 blast)
+  qed
+  have hG\<^sub>1_parent_transfer:
+    "\<And>\<rho>. ?G\<^sub>1 \<rho> \<Longrightarrow>
+      geotop_free_2_simplex K J \<rho>
+      \<and> (\<rho> \<inter> J \<noteq> {} \<longrightarrow>
+        {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {})"
+  proof -
+    fix \<rho>
+    assume hG: "?G\<^sub>1 \<rho>"
+    have h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+      using hG by (by100 blast)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using hG by (by100 blast)
+    have h\<rho>_no_chord:
+      "\<not> geotop_is_face (closed_segment a c) \<rho>"
+      using hG by (by100 blast)
+    have h\<rho>card_can:
+      "card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+      using hG by (by100 blast)
+    have h\<rho>contact_can:
+      "\<rho> \<inter> J\<^sub>1 =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1}"
+      using hG by (by100 blast)
+    have hparent:
+      "card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<rho> \<inter> J =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      by (rule hL\<^sub>1_no_chord_canonical_contact_transfers_to_parent
+          [OF h\<rho>L\<^sub>1 h\<rho>2 h\<rho>_no_chord h\<rho>card_can h\<rho>contact_can])
+    have hparent_card:
+      "card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<le> 2"
+      using hparent by (by100 blast)
+    have hparent_contact:
+      "\<rho> \<inter> J =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using hparent by (by100 blast)
+    have hE_fin:
+      "finite {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using hL\<^sub>1_fin by (by100 simp)
+    have hfree: "geotop_free_2_simplex K J \<rho>"
+      by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+          [OF hL\<^sub>1_sub_K h\<rho>L\<^sub>1 h\<rho>2 hE_fin hparent_card
+            hparent_contact])
+    have hselected_if_contact:
+      "\<rho> \<inter> J \<noteq> {} \<Longrightarrow>
+        {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    proof -
+      assume hcontact_ne: "\<rho> \<inter> J \<noteq> {}"
+      have hside_selected_ne:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      proof
+        assume hempty:
+          "{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}"
+        have "\<rho> \<inter> J = {}"
+          using hparent_contact hempty by (by100 simp)
+        thus False
+          using hcontact_ne by (by100 blast)
+      qed
+      show ?thesis
+        by (rule hL\<^sub>1_parent_selected_nonempty_from_side[OF hside_selected_ne])
+    qed
+    show "geotop_free_2_simplex K J \<rho>
+      \<and> (\<rho> \<inter> J \<noteq> {} \<longrightarrow>
+        {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {})"
+      using hfree hselected_if_contact by (by100 blast)
+  qed
+  have hG\<^sub>2_parent_transfer:
+    "\<And>\<beta>\<^sub>c \<rho>. ?G\<^sub>2 \<beta>\<^sub>c \<rho> \<Longrightarrow>
+      geotop_free_2_simplex K J \<rho>
+      \<and> (\<rho> \<inter> J \<noteq> {} \<longrightarrow>
+        {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {})"
+  proof -
+    fix \<beta>\<^sub>c \<rho>
+    assume hG: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+    have h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+      using hG by (by100 blast)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using hG by (by100 blast)
+    have h\<rho>_no_chord:
+      "\<not> geotop_is_face (closed_segment a c) \<rho>"
+      using hG by (by100 blast)
+    have h\<rho>card_can:
+      "card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+      using hG by (by100 blast)
+    have h\<rho>contact_can:
+      "\<rho> \<inter> J\<^sub>2 =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2}"
+      using hG by (by100 blast)
+    have hparent:
+      "card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<rho> \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      by (rule hL\<^sub>2_no_chord_canonical_contact_transfers_to_parent
+          [OF h\<rho>L\<^sub>2 h\<rho>2 h\<rho>_no_chord h\<rho>card_can h\<rho>contact_can])
+    have hparent_card:
+      "card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<le> 2"
+      using hparent by (by100 blast)
+    have hparent_contact:
+      "\<rho> \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using hparent by (by100 blast)
+    have hE_fin:
+      "finite {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+      using hL\<^sub>2_fin by (by100 simp)
+    have hfree: "geotop_free_2_simplex K J \<rho>"
+      by (rule geotop_free_2_simplex_selected_edge_set_card_le2_transfer_prefix
+          [OF hL\<^sub>2_sub_K h\<rho>L\<^sub>2 h\<rho>2 hE_fin hparent_card
+            hparent_contact])
+    have hselected_if_contact:
+      "\<rho> \<inter> J \<noteq> {} \<Longrightarrow>
+        {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+    proof -
+      assume hcontact_ne: "\<rho> \<inter> J \<noteq> {}"
+      have hside_selected_ne:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      proof
+        assume hempty:
+          "{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}"
+        have "\<rho> \<inter> J = {}"
+          using hparent_contact hempty by (by100 simp)
+        thus False
+          using hcontact_ne by (by100 blast)
+      qed
+      show ?thesis
+        by (rule hL\<^sub>2_parent_selected_nonempty_from_side[OF hside_selected_ne])
+    qed
+    show "geotop_free_2_simplex K J \<rho>
+      \<and> (\<rho> \<inter> J \<noteq> {} \<longrightarrow>
+        {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {})"
+      using hfree hselected_if_contact by (by100 blast)
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
