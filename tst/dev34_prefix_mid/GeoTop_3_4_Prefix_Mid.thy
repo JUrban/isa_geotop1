@@ -27898,6 +27898,64 @@ proof -
 	                                      "\<sigma> = \<beta> \<or> \<sigma> \<inter> J\<^sub>1 = {}"
 	                                    assume h\<tau>_residual:
 	                                      "\<tau> = \<beta>\<^sub>c \<or> \<tau> \<inter> J\<^sub>2 = {}"
+	                                    have htwo_parent_empty_fixed_count_book:
+	                                      "\<And>u v.
+	                                      ((?G\<^sub>1 u
+	                                          \<and> u \<inter> J\<^sub>1 = {}
+	                                          \<and> u \<in> K
+	                                          \<and> geotop_free_2_simplex K J u
+	                                          \<and> geotop_simplex_dim u 2
+	                                          \<and> u \<inter> J = {}
+	                                          \<and> {e\<in>K. geotop_is_edge e
+	                                            \<and> geotop_is_face e u
+	                                            \<and> e \<subseteq> J} = {}
+	                                          \<and> u \<noteq> \<theta>
+	                                          \<and> u \<noteq> \<beta>)
+	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c u
+	                                          \<and> u \<inter> J\<^sub>2 = {}
+	                                          \<and> u \<in> K
+	                                          \<and> geotop_free_2_simplex K J u
+	                                          \<and> geotop_simplex_dim u 2
+	                                          \<and> u \<inter> J = {}
+	                                          \<and> {e\<in>K. geotop_is_edge e
+	                                            \<and> geotop_is_face e u
+	                                            \<and> e \<subseteq> J} = {}
+	                                          \<and> u \<noteq> \<theta>
+	                                          \<and> u \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                      ((?G\<^sub>1 v
+	                                          \<and> v \<inter> J\<^sub>1 = {}
+	                                          \<and> v \<in> K
+	                                          \<and> geotop_free_2_simplex K J v
+	                                          \<and> geotop_simplex_dim v 2
+	                                          \<and> v \<inter> J = {}
+	                                          \<and> {e\<in>K. geotop_is_edge e
+	                                            \<and> geotop_is_face e v
+	                                            \<and> e \<subseteq> J} = {}
+	                                          \<and> v \<noteq> \<theta>
+	                                          \<and> v \<noteq> \<beta>)
+	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c v
+	                                          \<and> v \<inter> J\<^sub>2 = {}
+	                                          \<and> v \<in> K
+	                                          \<and> geotop_free_2_simplex K J v
+	                                          \<and> geotop_simplex_dim v 2
+	                                          \<and> v \<inter> J = {}
+	                                          \<and> {e\<in>K. geotop_is_edge e
+	                                            \<and> geotop_is_face e v
+	                                            \<and> e \<subseteq> J} = {}
+	                                          \<and> v \<noteq> \<theta>
+	                                          \<and> v \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                      \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                      (**
+	                                        Shared fixed-witness form of the
+	                                        remaining all-empty Moise count:
+	                                        two concrete parent-empty selected
+	                                        free candidates cannot exhaust the
+	                                        side-free witness supply without
+	                                        producing a nonempty side witness. **)
+	                                      sorry
 	                                    have hcanonical_non_named_empty_primary_contradicts_book:
 	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 = {})
 	                                        \<or> (\<tau> \<noteq> \<beta>\<^sub>c
@@ -28224,7 +28282,8 @@ proof -
 	                                            concrete parent obstruction
 	                                            \<open>xi\<close>.  The remaining task is
 	                                            the same all-empty Moise count. **)
-	                                          sorry
+	                                          by (rule
+	                                              htwo_parent_empty_fixed_count_book)
 	                                        show ?thesis
 	                                          by (rule
 	                                              hnon_named_parent_empty_fixed_count_book
@@ -28689,7 +28748,8 @@ proof -
 	                                              \<open>\<eta>\<close>, the canonical branch
 	                                              \<open>chi\<close>, and the spare branch
 	                                              \<open>psi\<close>. **)
-	                                            sorry
+	                                            by (rule
+	                                                htwo_parent_empty_fixed_count_book)
 	                                          show ?thesis
 	                                            by (rule
 	                                                hfour_parent_empty_fixed_count_book
