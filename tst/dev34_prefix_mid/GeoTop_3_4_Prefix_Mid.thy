@@ -27893,7 +27893,79 @@ proof -
 	                                      empty side contact.  The spare
 	                                      witnesses and parent-empty candidates
 	                                      must now carry the book count. **)
-	                                    sorry
+	                                  proof -
+	                                    assume h\<sigma>_residual:
+	                                      "\<sigma> = \<beta> \<or> \<sigma> \<inter> J\<^sub>1 = {}"
+	                                    assume h\<tau>_residual:
+	                                      "\<tau> = \<beta>\<^sub>c \<or> \<tau> \<inter> J\<^sub>2 = {}"
+	                                    have hcanonical_non_named_empty_primary_contradicts_book:
+	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 = {})
+	                                        \<or> (\<tau> \<noteq> \<beta>\<^sub>c
+	                                          \<and> \<tau> \<inter> J\<^sub>2 = {}) \<Longrightarrow>
+	                                      \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                      (**
+	                                        Residual subcase where a canonical
+	                                        primary is not the named chord face
+	                                        but has empty side contact.  It
+	                                        converts to another parent-empty
+	                                        selected-free candidate, so the same
+	                                        Moise count must force a nonempty
+	                                        side witness. **)
+	                                      sorry
+	                                    have hcanonical_named_primary_spares_contradict_book:
+	                                      "\<sigma> = \<beta> \<Longrightarrow> \<tau> = \<beta>\<^sub>c \<Longrightarrow>
+	                                      \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                      (**
+	                                        Fully named canonical-primary
+	                                        residual.  The two spare side-free
+	                                        witnesses \<open>\<sigma>'\<close> and \<open>\<tau>'\<close>
+	                                        are the remaining Moise Figure 3.2
+	                                        witnesses after the chord-named pair
+	                                        has been consumed. **)
+	                                      sorry
+	                                    show ?thesis
+	                                    proof (cases "\<sigma> = \<beta>")
+	                                      case False
+	                                      have hcase:
+	                                        "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 = {})
+	                                          \<or> (\<tau> \<noteq> \<beta>\<^sub>c
+	                                            \<and> \<tau> \<inter> J\<^sub>2 = {})"
+	                                        using h\<sigma>_residual False by (by100 blast)
+	                                      show ?thesis
+	                                        by (rule
+	                                            hcanonical_non_named_empty_primary_contradicts_book
+	                                            [OF hcase])
+	                                    next
+	                                      case True
+	                                      note h\<sigma>_eq_\<beta> = True
+	                                      show ?thesis
+	                                      proof (cases "\<tau> = \<beta>\<^sub>c")
+	                                        case False
+	                                        have hcase:
+	                                          "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 = {})
+	                                            \<or> (\<tau> \<noteq> \<beta>\<^sub>c
+	                                              \<and> \<tau> \<inter> J\<^sub>2 = {})"
+	                                          using h\<tau>_residual False
+	                                          by (by100 blast)
+	                                        show ?thesis
+	                                          by (rule
+	                                              hcanonical_non_named_empty_primary_contradicts_book
+	                                              [OF hcase])
+	                                      next
+	                                        case True
+	                                        show ?thesis
+	                                          by (rule
+	                                              hcanonical_named_primary_spares_contradict_book
+	                                              [OF h\<sigma>_eq_\<beta> True])
+	                                      qed
+	                                    qed
+	                                  qed
 	                                  show ?thesis
 	                                  proof (cases
 	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 \<noteq> {})
