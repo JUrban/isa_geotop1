@@ -755,6 +755,7 @@ active_graph_pattern=geotop_finite_connected_degree_two_linear_graph_two_vertex_
 focus_target_names() {
   cat <<'EOF2'
 graph-branch
+graph-germs-bridge
 graph-branch-local
 graph-cycle-cut
 mid-split-free
@@ -776,6 +777,12 @@ focus_target() {
         dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy \
         geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix \
         'branch vertex deletion disconnects finite linear graph'
+      ;;
+    graph-germs-bridge)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy \
+        geotop_branch_vertex_three_germs_same_side_component_prefix \
+        'branch vertex three germs same side component local first entry'
       ;;
     graph-branch-local)
       printf '%s\t%s\t%s\n' \
