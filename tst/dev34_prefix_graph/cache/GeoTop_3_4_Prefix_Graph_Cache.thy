@@ -12520,6 +12520,9 @@ proof -
                 using hN_source_punctured_arc_package by (elim exE conjE)
               have hW_sub_N: "W \<subseteq> N"
                 using hW_sub_Np by (by100 blast)
+              have hW_conn_HOL: "connected W"
+                using hW_conn top1_connected_on_geotop_iff_connected
+                by (by100 blast)
               have hW_local_trace_sub:
                   "W \<inter> ?Lcomp \<subseteq> ?Nloc"
                 using hW_sub_N by (by100 blast)
@@ -12605,6 +12608,7 @@ proof -
                     (subspace_topology UNIV geotop_euclidean_topology W)
                     \<and> W \<subseteq> N - {p}
                     \<and> W \<noteq> {}
+                    \<and> connected W
                     \<and> p \<notin> W
                     \<and> p \<in> closure W
                     \<and> p \<in> closure ((S - {w}) \<inter> ball w r)
@@ -12625,6 +12629,7 @@ proof -
                   by (rule hW_conn)
                 show "W \<subseteq> N - {p}" by (rule hW_sub_Np)
                 show "W \<noteq> {}" by (rule hW_nonempty)
+                show "connected W" by (rule hW_conn_HOL)
                 show "p \<notin> W" by (rule hp_not_W)
                 show "p \<in> closure W" by (rule hpW_cl)
                 show "p \<in> closure ((S - {w}) \<inter> ball w r)"
