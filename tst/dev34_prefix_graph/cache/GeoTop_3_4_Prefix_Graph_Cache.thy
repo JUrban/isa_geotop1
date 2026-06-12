@@ -8829,9 +8829,16 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
-    obtain S T p y N where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+    obtain S T p y N D\<^sub>w D\<^sub>q where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
       and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
       and hST: "S \<noteq> T"
       and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
@@ -8844,6 +8851,12 @@ proof -
 	      and hpN: "p \<in> N"
 	      and hyN: "y \<in> N"
 	      and hpN_cl: "p \<in> closure (N - {p})"
+	      and hN_label: "(N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
 	      using hcanonical_pair_split_side_connected_selected_germs
 	      by (elim exE conjE)
     have hS_E: "S \<in> E"
@@ -8868,7 +8881,14 @@ proof -
 	        (subspace_topology UNIV geotop_euclidean_topology N)
 	      \<and> p \<in> (S - {w}) \<inter> N
 	      \<and> y \<in> (T - {w}) \<inter> N
-	      \<and> p \<in> closure (N - {p})"
+	      \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
 	    proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -8886,6 +8906,14 @@ proof -
 	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
 	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
 	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	      show "\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+	        using hN_label by (by100 blast)
 	    qed
 	    show ?thesis
 	      by (rule exI[where x=S], rule exI[where x=T],
@@ -8913,9 +8941,16 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
-    obtain S T p y N where hS_E: "S \<in> E"
+    obtain S T p y N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
       and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -8930,6 +8965,12 @@ proof -
 	      and hpSN: "p \<in> (S - {w}) \<inter> N"
 	      and hyTN: "y \<in> (T - {w}) \<inter> N"
 	      and hpN_cl: "p \<in> closure (N - {p})"
+	      and hN_label: "(N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
 	      using hcanonical_pair_split_side_connected_incident_germ_hits
 	      by (elim exE conjE)
     have hremaining:
@@ -9045,7 +9086,14 @@ proof -
 	        (subspace_topology UNIV geotop_euclidean_topology N)
 	      \<and> p \<in> (S - {w}) \<inter> N
 	      \<and> y \<in> (T - {w}) \<inter> N
-	      \<and> p \<in> closure (N - {p})"
+	      \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
 	    proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9069,6 +9117,14 @@ proof -
 	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
 	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
 	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	      show "\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+	        using hN_label by (by100 blast)
 	    qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -9099,9 +9155,16 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
-    obtain S T U p y N where hS_E: "S \<in> E"
+    obtain S T U p y N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
       and hU_E: "U \<in> E"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9122,6 +9185,12 @@ proof -
 	      and hpSN: "p \<in> (S - {w}) \<inter> N"
 	      and hyTN: "y \<in> (T - {w}) \<inter> N"
 	      and hpN_cl: "p \<in> closure (N - {p})"
+	      and hN_label: "(N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
 	      using hcanonical_pair_split_side_three_incident_germs
 	      by (elim exE conjE)
     have hU_sphere_hit: "\<exists>z. z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r"
@@ -9191,7 +9260,14 @@ proof -
 	        (subspace_topology UNIV geotop_euclidean_topology N)
 	      \<and> p \<in> (S - {w}) \<inter> N
 	      \<and> y \<in> (T - {w}) \<inter> N
-	      \<and> p \<in> closure (N - {p})"
+	      \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9218,6 +9294,14 @@ proof -
 	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
 	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
 	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	      show "\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+	        using hN_label by (by100 blast)
 	    qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -9253,9 +9337,16 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
-    obtain S T U p y z N where hS_E: "S \<in> E"
+    obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
       and hU_E: "U \<in> E"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9279,6 +9370,12 @@ proof -
 	      and hpSN: "p \<in> (S - {w}) \<inter> N"
 	      and hyTN: "y \<in> (T - {w}) \<inter> N"
 	      and hpN_cl: "p \<in> closure (N - {p})"
+	      and hN_label: "(N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
 	      using hcanonical_pair_split_side_three_sphere_germ_points
 	      by (elim exE conjE)
     have hp_can: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
@@ -9317,7 +9414,14 @@ proof -
 	        (subspace_topology UNIV geotop_euclidean_topology N)
 	      \<and> p \<in> (S - {w}) \<inter> N
 	      \<and> y \<in> (T - {w}) \<inter> N
-	      \<and> p \<in> closure (N - {p})"
+	      \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9348,6 +9452,14 @@ proof -
 	      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
 	      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
 	      show "p \<in> closure (N - {p})" by (rule hpN_cl)
+	      show "\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+	        using hN_label by (by100 blast)
 	    qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -9384,9 +9496,16 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
-    obtain S T U p y z N where hS_E: "S \<in> E"
+    obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
       and hU_E: "U \<in> E"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9414,6 +9533,12 @@ proof -
       and hpSN: "p \<in> (S - {w}) \<inter> N"
       and hyTN: "y \<in> (T - {w}) \<inter> N"
       and hpN_cl: "p \<in> closure (N - {p})"
+      and hN_label: "(N = D\<^sub>w - {w}
+          \<and> y \<in> D\<^sub>w - {p}
+          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+        \<or> (N = D\<^sub>q
+          \<and> y \<in> D\<^sub>q - {p}
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
       using hcanonical_pair_split_side_three_canonical_sphere_points
       by (elim exE conjE)
     have hSTU_eq: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9462,7 +9587,14 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology N)
       \<and> p \<in> (S - {w}) \<inter> N
       \<and> y \<in> (T - {w}) \<inter> N
-      \<and> p \<in> closure (N - {p})"
+      \<and> p \<in> closure (N - {p})
+      \<and> (\<exists>D\<^sub>w D\<^sub>q.
+        (N = D\<^sub>w - {w}
+          \<and> y \<in> D\<^sub>w - {p}
+          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+        \<or> (N = D\<^sub>q
+          \<and> y \<in> D\<^sub>q - {p}
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9494,6 +9626,14 @@ proof -
       show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
       show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
       show "p \<in> closure (N - {p})" by (rule hpN_cl)
+      show "\<exists>D\<^sub>w D\<^sub>q.
+        (N = D\<^sub>w - {w}
+          \<and> y \<in> D\<^sub>w - {p}
+          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+        \<or> (N = D\<^sub>q
+          \<and> y \<in> D\<^sub>q - {p}
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+        using hN_label by (by100 blast)
     qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -9531,9 +9671,16 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
   proof -
-    obtain S T U p y z N where hS_E: "S \<in> E"
+    obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
       and hT_E: "T \<in> E"
       and hU_E: "U \<in> E"
       and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -9562,6 +9709,12 @@ proof -
       and hpSN: "p \<in> (S - {w}) \<inter> N"
       and hyTN: "y \<in> (T - {w}) \<inter> N"
       and hpN_cl: "p \<in> closure (N - {p})"
+      and hN_label: "(N = D\<^sub>w - {w}
+          \<and> y \<in> D\<^sub>w - {p}
+          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+        \<or> (N = D\<^sub>q
+          \<and> y \<in> D\<^sub>q - {p}
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
       using hcanonical_pair_split_side_selected_three_edges
       by (elim exE conjE)
     have hcard: "card {p, y, z} = 3"
@@ -9595,7 +9748,14 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
-        \<and> p \<in> closure (N - {p})"
+        \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))"
     proof (intro conjI)
       show "S \<in> E" by (rule hS_E)
       show "T \<in> E" by (rule hT_E)
@@ -9628,6 +9788,14 @@ proof -
       show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
       show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
       show "p \<in> closure (N - {p})" by (rule hpN_cl)
+      show "\<exists>D\<^sub>w D\<^sub>q.
+        (N = D\<^sub>w - {w}
+          \<and> y \<in> D\<^sub>w - {p}
+          \<and> p \<in> closure (D\<^sub>w - {w, p}))
+        \<or> (N = D\<^sub>q
+          \<and> y \<in> D\<^sub>q - {p}
+          \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+        using hN_label by (by100 blast)
     qed
     show ?thesis
       by (rule exI[where x=S], rule exI[where x=T],
@@ -10042,11 +10210,18 @@ proof -
           \<and> p \<in> (S - {w}) \<inter> N
           \<and> y \<in> (T - {w}) \<inter> N
           \<and> p \<in> closure (N - {p})
+          \<and> (\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
           \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
               (geotop_polyhedron L - {w})) p y"
     proof -
-      obtain S T U p y z N where hS_E: "S \<in> E"
+      obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
         and hT_E: "T \<in> E"
         and hU_E: "U \<in> E"
         and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -10076,6 +10251,12 @@ proof -
         and hpSN: "p \<in> (S - {w}) \<inter> N"
         and hyTN: "y \<in> (T - {w}) \<inter> N"
         and hpN_cl: "p \<in> closure (N - {p})"
+        and hN_label: "(N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
         using hcanonical_pair_split_side_selected_three_edges_card
         by (elim exE conjE)
       have hN_subtop:
@@ -10142,6 +10323,13 @@ proof -
         \<and> p \<in> (S - {w}) \<inter> N
         \<and> y \<in> (T - {w}) \<inter> N
         \<and> p \<in> closure (N - {p})
+        \<and> (\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
         \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -10177,6 +10365,14 @@ proof -
         show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
         show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
         show "p \<in> closure (N - {p})" by (rule hpN_cl)
+        show "\<exists>D\<^sub>w D\<^sub>q.
+          (N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+          using hN_label by (by100 blast)
         show "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
@@ -10338,6 +10534,13 @@ proof -
           \<Longrightarrow> p \<in> (S - {w}) \<inter> N
           \<Longrightarrow> y \<in> (T - {w}) \<inter> N
           \<Longrightarrow> p \<in> closure (N - {p})
+          \<Longrightarrow> (\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1})))
           \<Longrightarrow> top1_in_same_component_on (geotop_polyhedron L - {w})
             (subspace_topology UNIV geotop_euclidean_topology
               (geotop_polyhedron L - {w})) p y
@@ -10377,6 +10580,14 @@ proof -
       assume hpSN: "p \<in> (S - {w}) \<inter> N"
       assume hyTN: "y \<in> (T - {w}) \<inter> N"
       assume hpN_cl: "p \<in> closure (N - {p})"
+      assume hN_split_label:
+          "\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
       assume hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polyhedron L - {w})) p y"
@@ -10846,6 +11057,15 @@ proof -
             \<union> (ball w r - (S \<union> T \<union> U))"
           by (rule hN_ball_sector_cover)
       qed
+      have hN_split_side_origin_package:
+          "\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+        by (rule hN_split_label)
       have hsplit_side_endpoint_local_component_book_step:
           "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
@@ -11885,7 +12105,7 @@ proof -
     qed
     show ?thesis
     proof -
-      obtain S T U p y z N where hS_E: "S \<in> E"
+      obtain S T U p y z N D\<^sub>w D\<^sub>q where hS_E: "S \<in> E"
         and hT_E: "T \<in> E"
         and hU_E: "U \<in> E"
         and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
@@ -11915,10 +12135,25 @@ proof -
         and hpSN: "p \<in> (S - {w}) \<inter> N"
         and hyTN: "y \<in> (T - {w}) \<inter> N"
         and hpN_cl: "p \<in> closure (N - {p})"
+        and hN_split_label: "(N = D\<^sub>w - {w}
+            \<and> y \<in> D\<^sub>w - {p}
+            \<and> p \<in> closure (D\<^sub>w - {w, p}))
+          \<or> (N = D\<^sub>q
+            \<and> y \<in> D\<^sub>q - {p}
+            \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
         and hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w})) p y"
         using hsplit_side_three_connected_card by (elim exE conjE)
+      have hN_split_label_ex:
+          "\<exists>D\<^sub>w D\<^sub>q.
+            (N = D\<^sub>w - {w}
+              \<and> y \<in> D\<^sub>w - {p}
+              \<and> p \<in> closure (D\<^sub>w - {w, p}))
+            \<or> (N = D\<^sub>q
+              \<and> y \<in> D\<^sub>q - {p}
+              \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+        using hN_split_label by (by100 blast)
       have hex_component:
           "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
@@ -11928,7 +12163,7 @@ proof -
             [OF hS_E hT_E hU_E hS hT hU hSTU hST hSU hTU
               hST_disj hSU_disj hTU_disj hpS hyT hzU hp_can hy_can hz_can
               hpyz_eq hcard hpy hpz hyz hN_sub hN_conn hpSN hyTN hpN_cl
-              hsame])
+              hN_split_label_ex hsame])
       obtain C where hC:
           "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
         and hS_touch: "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
