@@ -104,6 +104,26 @@ proof -
     using hsep by (by100 simp)
 qed
 
+lemma geotop_disjoint_arcs_uniform_distance_gap_prefix:
+  fixes A1 A2 :: "(real^2) set"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  shows "\<exists>\<delta>>0. \<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+proof -
+  have hsd_pos: "0 < setdist A1 A2"
+    by (rule geotop_disjoint_arcs_positive_setdist_prefix[OF hA1 hA2 hA12])
+  define \<delta> where "\<delta> = setdist A1 A2 / 2"
+  have h\<delta>_pos: "0 < \<delta>"
+    unfolding \<delta>_def using hsd_pos by (by100 simp)
+  have h\<delta>_le: "\<delta> \<le> setdist A1 A2"
+    unfolding \<delta>_def using hsd_pos by (by100 simp)
+  have hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+    using h\<delta>_le le_setdist_iff[of \<delta> A1 A2] by (by100 blast)
+  show ?thesis
+    using h\<delta>_pos hgap by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
@@ -276,14 +296,27 @@ proof -
   have hS_not_cut: "S \<notin> geotop_polygon_interior J - (A1 \<union> A2)"
     using polygon_interior_disjoint_polygon[OF hJ] hS by (by100 blast)
   have hA12_metric_separation:
-      "compact A1 \<and> compact A2
-      \<and> closed A1 \<and> closed A2
-      \<and> A1 \<noteq> {} \<and> A2 \<noteq> {}
-      \<and> compact (A1 \<union> A2) \<and> closed (A1 \<union> A2)
-      \<and> 0 < setdist A1 A2"
-    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2]
-      geotop_disjoint_arcs_positive_setdist_prefix[OF hA1 hA2 hA12]
-    by (by100 blast)
+      "\<exists>\<delta>>0. compact A1 \<and> compact A2
+        \<and> closed A1 \<and> closed A2
+        \<and> A1 \<noteq> {} \<and> A2 \<noteq> {}
+        \<and> compact (A1 \<union> A2) \<and> closed (A1 \<union> A2)
+        \<and> 0 < setdist A1 A2
+        \<and> (\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y)"
+  proof -
+    obtain \<delta> where h\<delta>_pos: "0 < \<delta>"
+      and h\<delta>_gap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+      using geotop_disjoint_arcs_uniform_distance_gap_prefix[OF hA1 hA2 hA12]
+      by (elim exE conjE)
+    have hpack: "compact A1 \<and> compact A2
+        \<and> closed A1 \<and> closed A2
+        \<and> A1 \<noteq> {} \<and> A2 \<noteq> {}
+        \<and> compact (A1 \<union> A2) \<and> closed (A1 \<union> A2)"
+      using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] .
+    have hsd: "0 < setdist A1 A2"
+      by (rule geotop_disjoint_arcs_positive_setdist_prefix[OF hA1 hA2 hA12])
+    show ?thesis
+      using h\<delta>_pos h\<delta>_gap hpack hsd by (by100 blast)
+  qed
   have hQ_S_two_arc_local_access:
       "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
         0 < r
