@@ -25648,14 +25648,79 @@ proof -
             \<and> {e\<in>K. geotop_is_edge e
               \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
             \<and> \<rho> \<noteq> \<theta>"
-        (**
-          Remaining large side-2 obstruction.  The singleton side is already
-          closed, so the side induction has at least two side-2 candidates.  The
-          book step must show that the fixed empty-parent-contact witness cannot
-          be the only usable side witness: at most one side witness can be
-          spoiled by the artificial chord, and a second side witness must carry a
-          selected edge on the original parent boundary. **)
-        sorry
+      proof -
+        fix \<beta>\<^sub>c \<rho>
+        assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+        assume h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+        assume h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+        assume h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+        assume h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
+        assume h\<beta>c_chord:
+          "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+        assume h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+        assume hbranch_empty:
+          "(?G\<^sub>1 \<rho>
+              \<and> \<rho> \<inter> J\<^sub>1 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>)
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<rho>
+              \<and> \<rho> \<inter> J\<^sub>2 = {}
+              \<and> \<rho> \<in> K
+              \<and> geotop_free_2_simplex K J \<rho>
+              \<and> geotop_simplex_dim \<rho> 2
+              \<and> \<rho> \<inter> J = {}
+              \<and> {e\<in>K. geotop_is_edge e
+                \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
+              \<and> \<rho> \<noteq> \<theta>
+              \<and> \<rho> \<noteq> \<beta>\<^sub>c)"
+        have hlarge_real_side_contact_candidate:
+          "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+          (**
+            Remaining large side-2 Moise witness-filtering step.  Since
+            \<open>card ?T\<^sub>2 > 1\<close>, the strong side induction supplies a second
+            side candidate besides the named chord triangle \<open>\<beta>\<^sub>c\<close>.  The
+            empty-parent-contact branch \<open>hbranch_empty\<close> accounts for the
+            artificial-chord-only candidate; the book's counting argument says
+            it cannot be the only usable side witness, so another side witness
+            has nonempty side-boundary contact.  Existing transfer lemmas below
+            then convert that nonempty side contact into selected
+            parent-boundary contact. **)
+          sorry
+        from hlarge_real_side_contact_candidate obtain \<gamma> where h\<gamma>case:
+          "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+          by (elim exE)
+        show "\<exists>\<rho>. \<rho> \<in> K
+            \<and> geotop_free_2_simplex K J \<rho>
+            \<and> geotop_simplex_dim \<rho> 2
+            \<and> {e\<in>K. geotop_is_edge e
+              \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+            \<and> \<rho> \<noteq> \<theta>"
+        proof (rule disjE[OF h\<gamma>case])
+          assume hleft: "?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {}"
+          have hG: "?G\<^sub>1 \<gamma>"
+            using hleft by (rule conjunct1)
+          have hcontact: "\<gamma> \<inter> J\<^sub>1 \<noteq> {}"
+            using hleft by (rule conjunct2)
+          show ?thesis
+            by (rule hG\<^sub>1_side_contact_nonempty_finishes[OF hG hcontact])
+        next
+          assume hright: "?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {}"
+          have hG: "?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
+            using hright by (rule conjunct1)
+          have hcontact: "\<gamma> \<inter> J\<^sub>2 \<noteq> {}"
+            using hright by (rule conjunct2)
+          show ?thesis
+            by (rule hG\<^sub>2_side_contact_nonempty_finishes[OF hG hcontact])
+        qed
+      qed
       show ?thesis
       proof -
         obtain \<beta>\<^sub>c \<rho> where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
