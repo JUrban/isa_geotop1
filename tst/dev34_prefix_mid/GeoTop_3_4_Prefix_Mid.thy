@@ -22291,6 +22291,170 @@ proof -
         using hcontact_eq hedge_eq by (by100 blast)
     qed
   qed
+  have h\<alpha>_L\<^sub>1_side_contact_empty:
+    "\<alpha> \<in> L\<^sub>1 \<Longrightarrow> \<alpha> \<inter> J\<^sub>1 = {}"
+  proof -
+    assume h\<alpha>L\<^sub>1: "\<alpha> \<in> L\<^sub>1"
+    have hleft:
+      "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+        \<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+          {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      using hno_chord_side_boundary_contact_eq_parent
+      by (rule conjunct1)
+    have hinst:
+      "\<alpha> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<alpha> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<alpha> \<longrightarrow>
+        \<alpha> \<inter> J\<^sub>1 = \<alpha> \<inter> J
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>1} =
+          {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+      using hleft by (rule spec)
+    have "\<alpha> \<inter> J\<^sub>1 = \<alpha> \<inter> J"
+      using hinst h\<alpha>L\<^sub>1 h\<alpha>2 h\<alpha>_not_chord_face by (by100 blast)
+    thus ?thesis
+      using h\<alpha>contact_empty by (by100 simp)
+  qed
+  have h\<alpha>_L\<^sub>2_side_contact_empty:
+    "\<alpha> \<in> L\<^sub>2 \<Longrightarrow> \<alpha> \<inter> J\<^sub>2 = {}"
+  proof -
+    assume h\<alpha>L\<^sub>2: "\<alpha> \<in> L\<^sub>2"
+    have hright:
+      "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+        \<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+          {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      using hno_chord_side_boundary_contact_eq_parent
+      by (rule conjunct2)
+    have hinst:
+      "\<alpha> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<alpha> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<alpha> \<longrightarrow>
+        \<alpha> \<inter> J\<^sub>2 = \<alpha> \<inter> J
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>2} =
+          {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+      using hright by (rule spec)
+    have "\<alpha> \<inter> J\<^sub>2 = \<alpha> \<inter> J"
+      using hinst h\<alpha>L\<^sub>2 h\<alpha>2 h\<alpha>_not_chord_face by (by100 blast)
+    thus ?thesis
+      using h\<alpha>contact_empty by (by100 simp)
+  qed
+  have h\<alpha>_L\<^sub>1_side_selected_empty:
+    "\<alpha> \<in> L\<^sub>1 \<Longrightarrow>
+      {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>1} = {}"
+  proof -
+    assume h\<alpha>L\<^sub>1: "\<alpha> \<in> L\<^sub>1"
+    have hparent_empty:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J} = {}"
+    proof
+      show "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}
+        \<subseteq> {}"
+      proof
+        fix e
+        assume he: "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+        have "e \<in> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+          using he hL\<^sub>1_sub_K by (by100 blast)
+        thus "e \<in> {}"
+          using h\<alpha>E_empty by (by100 simp)
+      qed
+      show "{} \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+        by (by100 simp)
+    qed
+    have hleft:
+      "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+        \<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+          {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      using hno_chord_side_boundary_contact_eq_parent
+      by (rule conjunct1)
+    have hinst:
+      "\<alpha> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<alpha> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<alpha> \<longrightarrow>
+        \<alpha> \<inter> J\<^sub>1 = \<alpha> \<inter> J
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>1} =
+          {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+      using hleft by (rule spec)
+    have "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>1} =
+      {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+      using hinst h\<alpha>L\<^sub>1 h\<alpha>2 h\<alpha>_not_chord_face by (by100 blast)
+    thus ?thesis
+      using hparent_empty by (by100 simp)
+  qed
+  have h\<alpha>_L\<^sub>2_side_selected_empty:
+    "\<alpha> \<in> L\<^sub>2 \<Longrightarrow>
+      {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>2} = {}"
+  proof -
+    assume h\<alpha>L\<^sub>2: "\<alpha> \<in> L\<^sub>2"
+    have hparent_empty:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J} = {}"
+    proof
+      show "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}
+        \<subseteq> {}"
+      proof
+        fix e
+        assume he: "e \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+        have "e \<in> {e\<in>K. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+          using he hL\<^sub>2_sub_K by (by100 blast)
+        thus "e \<in> {}"
+          using h\<alpha>E_empty by (by100 simp)
+      qed
+      show "{} \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+        by (by100 simp)
+    qed
+    have hright:
+      "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+        \<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+          {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      using hno_chord_side_boundary_contact_eq_parent
+      by (rule conjunct2)
+    have hinst:
+      "\<alpha> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<alpha> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<alpha> \<longrightarrow>
+        \<alpha> \<inter> J\<^sub>2 = \<alpha> \<inter> J
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>2} =
+          {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+      using hright by (rule spec)
+    have "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J\<^sub>2} =
+      {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<alpha> \<and> e \<subseteq> J}"
+      using hinst h\<alpha>L\<^sub>2 h\<alpha>2 h\<alpha>_not_chord_face by (by100 blast)
+    thus ?thesis
+      using hparent_empty by (by100 simp)
+  qed
   have hno_chord_canonical_contact_transfers_to_parent:
     "(\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
       \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
