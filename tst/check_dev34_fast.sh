@@ -761,6 +761,8 @@ graph-germs-bridge
 graph-branch-local
 graph-cycle-cut
 mid-split-free
+mid-figure33-one
+mid-figure33-two
 mid-fold-one
 mid-fold-two
 mid-fold
@@ -817,6 +819,18 @@ focus_target() {
         dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
         'theorem Theorem_GT_3_3' \
         'subdisk induction transfer nonfree boundary triangle split free count'
+      ;;
+    mid-figure33-one)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
+        geotop_figure33_one_boundary_named_supported_fold_prefix \
+        'Figure 3.3 named one boundary supported PL fold constructor'
+      ;;
+    mid-figure33-two)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
+        geotop_figure33_two_boundary_named_supported_inverse_fold_prefix \
+        'Figure 3.3 named two boundary inverse supported PL fold constructor'
       ;;
     mid-fold-one)
       printf '%s\t%s\t%s\n' \

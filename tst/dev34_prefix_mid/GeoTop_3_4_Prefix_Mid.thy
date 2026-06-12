@@ -34787,9 +34787,20 @@ proof -
       using harc_interiors_disjoint_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2]
       by (by100 simp)
     show ?thesis
-      using hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 hnot_col_012 hnot_col_021 hfrontier_segments
-        hfrontier_polygon hB02_arc hB012_arc harc_interiors_disjoint
-      by (by100 blast)
+    proof (intro conjI)
+      show "v\<^sub>0 \<noteq> v\<^sub>1" by (rule hv\<^sub>0v\<^sub>1)
+      show "v\<^sub>2 \<noteq> v\<^sub>1" by (rule hv\<^sub>2v\<^sub>1)
+      show "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}" by (rule hnot_col_012)
+      show "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}" by (rule hnot_col_021)
+      show "frontier \<theta> = ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)"
+        by (rule hfrontier_segments)
+      show "geotop_is_polygon (frontier \<theta>)" by (rule hfrontier_polygon)
+      show "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}" by (rule hB02_arc)
+      show "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}" by (rule hB012_arc)
+      show "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+        by (rule harc_interiors_disjoint)
+    qed
   qed
   have hfigure33_boundary_support_package:
       "e = ?B\<^sub>0\<^sub>2
@@ -34805,15 +34816,22 @@ proof -
       using he_named h02_seg by (by100 simp)
     have h\<theta>J_segment: "\<theta> \<inter> J = ?B\<^sub>0\<^sub>2"
       using h\<theta>boundary_named h02_seg by (by100 simp)
+    have he_sub_J: "e \<subseteq> J"
+      using hboundary_one_edge_package by (by100 simp)
     have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
-      using hboundary_one_edge_package he_segment by (by100 blast)
+      using he_sub_J he_segment by (by100 simp)
     have h\<theta>_sub_poly: "\<theta> \<subseteq> geotop_polyhedron K"
       using h\<theta>K unfolding geotop_polyhedron_def by (by100 blast)
     have h\<theta>_sub_U: "\<theta> \<subseteq> U"
       using h\<theta>_sub_poly hclosed_disk_in_support by (by100 blast)
     show ?thesis
-      using he_segment h\<theta>J_segment hB02_sub_J h\<theta>_sub_poly h\<theta>_sub_U
-      by (by100 blast)
+    proof (intro conjI)
+      show "e = ?B\<^sub>0\<^sub>2" by (rule he_segment)
+      show "\<theta> \<inter> J = ?B\<^sub>0\<^sub>2" by (rule h\<theta>J_segment)
+      show "?B\<^sub>0\<^sub>2 \<subseteq> J" by (rule hB02_sub_J)
+      show "\<theta> \<subseteq> geotop_polyhedron K" by (rule h\<theta>_sub_poly)
+      show "\<theta> \<subseteq> U" by (rule h\<theta>_sub_U)
+    qed
   qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
@@ -34932,9 +34950,17 @@ proof -
     have hE12_frontier_segments: "?E\<^sub>1 \<union> ?E\<^sub>2 \<subseteq> frontier \<theta>"
       using he12_frontier he1_segment he2_segment by (by100 blast)
     show ?thesis
-      using he1_segment he2_segment h\<theta>J_segments hE1_sub_J hE2_sub_J
-        h\<theta>_sub_poly h\<theta>_sub_U hE12_frontier_segments
-      by (by100 blast)
+    proof (intro conjI)
+      show "e1 = ?E\<^sub>1" by (rule he1_segment)
+      show "e2 = ?E\<^sub>2" by (rule he2_segment)
+      show "\<theta> \<inter> J = ?E\<^sub>1 \<union> ?E\<^sub>2" by (rule h\<theta>J_segments)
+      show "?E\<^sub>1 \<subseteq> J" by (rule hE1_sub_J)
+      show "?E\<^sub>2 \<subseteq> J" by (rule hE2_sub_J)
+      show "\<theta> \<subseteq> geotop_polyhedron K" by (rule h\<theta>_sub_poly)
+      show "\<theta> \<subseteq> U" by (rule h\<theta>_sub_U)
+      show "?E\<^sub>1 \<union> ?E\<^sub>2 \<subseteq> frontier \<theta>"
+        by (rule hE12_frontier_segments)
+    qed
   qed
   have hfigure33_two_boundary_triangle_package:
       "a \<noteq> c
@@ -34971,8 +34997,17 @@ proof -
       by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
           [OF h\<theta>vertices_e1 hab hc_not])
     show ?thesis
-      using hac hbc hnot_col_abc hfrontier_polygon hfrontier_hulls
-      by (by100 blast)
+    proof (intro conjI)
+      show "a \<noteq> c" by (rule hac)
+      show "b \<noteq> c" by (rule hbc)
+      show "\<not> collinear {a, b, c}" by (rule hnot_col_abc)
+      show "geotop_is_polygon (frontier \<theta>)" by (rule hfrontier_polygon)
+      show "frontier \<theta> =
+        geotop_convex_hull {a, b}
+        \<union> geotop_convex_hull {a, c}
+        \<union> geotop_convex_hull {b, c}"
+        by (rule hfrontier_hulls)
+    qed
   qed
   have hfigure33_corner_edge_package:
       "\<exists>x y z.
@@ -34996,16 +35031,13 @@ proof -
         geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
     have hAB_hull_segment:
       "geotop_convex_hull {a, b} = closed_segment a b"
-      using segment_convex_hull[of a b]
-        geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+      by (simp only: geotop_convex_hull_eq_HOL segment_convex_hull)
     have hAC_hull_segment:
       "geotop_convex_hull {a, c} = closed_segment a c"
-      using segment_convex_hull[of a c]
-        geotop_convex_hull_eq_HOL[of "{a, c}"] by (by100 simp)
+      by (simp only: geotop_convex_hull_eq_HOL segment_convex_hull)
     have hBC_hull_segment:
       "geotop_convex_hull {b, c} = closed_segment b c"
-      using segment_convex_hull[of b c]
-        geotop_convex_hull_eq_HOL[of "{b, c}"] by (by100 simp)
+      by (simp only: geotop_convex_hull_eq_HOL segment_convex_hull)
     have hfrontier_hulls:
       "frontier \<theta> =
         geotop_convex_hull {a, b}
@@ -35019,9 +35051,17 @@ proof -
       by (by100 blast)
     have h\<theta>J_e12: "\<theta> \<inter> J = e1 \<union> e2"
       using hboundary_two_edge_package by (by100 blast)
+    have hp_abc: "p \<in> {a, b, c}"
+      using hsame_vertices by (by100 blast)
+    have hq_abc: "q \<in> {a, b, c}"
+      using hsame_vertices by (by100 blast)
+    have hp_cases: "p = a \<or> p = b \<or> p = c"
+      using hp_abc by (by100 simp)
+    have hq_cases: "q = a \<or> q = b \<or> q = c"
+      using hq_abc by (by100 simp)
     have hpq_pair_cases:
       "{p, q} = {a, b} \<or> {p, q} = {a, c} \<or> {p, q} = {b, c}"
-      using hsame_vertices hpq hr_not hab hc_not by (by100 blast)
+      using hp_cases hq_cases hpq by (by100 blast)
     have hpq_not_ab: "{p, q} \<noteq> {a, b}"
     proof
       assume hpq_ab: "{p, q} = {a, b}"
@@ -35031,7 +35071,15 @@ proof -
         using he12_ne by (by100 simp)
     qed
     have hpq_ac_or_bc: "{p, q} = {a, c} \<or> {p, q} = {b, c}"
-      using hpq_pair_cases hpq_not_ab by (by100 blast)
+    proof (rule disjE[OF hpq_pair_cases])
+      assume hpq_ab: "{p, q} = {a, b}"
+      show ?thesis
+        using hpq_not_ab hpq_ab by (by100 simp)
+    next
+      assume hpq_ac_or_bc: "{p, q} = {a, c} \<or> {p, q} = {b, c}"
+      show ?thesis
+        by (rule hpq_ac_or_bc)
+    qed
     show ?thesis
     proof (rule disjE[OF hpq_ac_or_bc])
       assume hpq_ac: "{p, q} = {a, c}"
