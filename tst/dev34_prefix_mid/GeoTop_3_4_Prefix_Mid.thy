@@ -20189,6 +20189,61 @@ proof -
       hC\<^sub>2_endpoints hb_C\<^sub>1 hchord_closure_split hchord_closure_minus
       hside_separated
     by (by100 blast)
+  have h\<beta>_not_col_acb: "\<not> collinear {a, c, b}"
+    by (rule geotop_2simplex_vertices_not_collinear_prefix
+        [OF h\<beta>_vertices_chord hab hc_not])
+  have hbase_segment_sub_J: "closed_segment a b \<subseteq> J"
+    using hbase_ab_sub_J segment_convex_hull[of a b]
+      geotop_convex_hull_eq_HOL[of "{a, b}"]
+    by (by100 simp)
+  have haJ: "a \<in> J"
+  proof -
+    have ha_HOL: "a \<in> convex hull {a, b}"
+      using hull_inc[of a "{a, b}"] by (by100 simp)
+    have "a \<in> closed_segment a b"
+      using ha_HOL segment_convex_hull[of a b] by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hbJ: "b \<in> J"
+  proof -
+    have hb_HOL: "b \<in> convex hull {a, b}"
+      using hull_inc[of b "{a, b}"] by (by100 simp)
+    have "b \<in> closed_segment a b"
+      using hb_HOL segment_convex_hull[of a b] by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hbc: "b \<noteq> c"
+    using hc_not by (by100 blast)
+  have hchord_edge_broken_line:
+    "geotop_is_broken_line (closed_segment a c)"
+    by (rule geotop_closed_segment_is_broken_line[OF hac])
+  have hchord_edge_arc:
+    "geotop_arc_endpoints (closed_segment a c) {a, c}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hac])
+  have hbase_edge_broken_line:
+    "geotop_is_broken_line (closed_segment a b)"
+    by (rule geotop_closed_segment_is_broken_line[OF hab])
+  have hbase_edge_arc:
+    "geotop_arc_endpoints (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hab])
+  have hside_transfer_frontier_data:
+    "geotop_is_broken_line (closed_segment a b)
+      \<and> geotop_arc_endpoints (closed_segment a b) {a, b}
+      \<and> geotop_is_broken_line (closed_segment a c)
+      \<and> geotop_arc_endpoints (closed_segment a c) {a, c}
+      \<and> closed_segment a b \<subseteq> J
+      \<and> closed_segment a c \<inter> J = {a, c}
+      \<and> a \<in> J
+      \<and> b \<in> J
+      \<and> c \<in> J
+      \<and> b \<in> geotop_arc_interior C\<^sub>1 {a, c}
+      \<and> \<not> collinear {a, c, b}"
+    using hbase_edge_broken_line hbase_edge_arc hchord_edge_broken_line
+      hchord_edge_arc hbase_segment_sub_J hchord_parent_boundary_inter
+      haJ hbJ hcJ hb_C\<^sub>1 h\<beta>_not_col_acb
+    by (by100 blast)
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
