@@ -28711,24 +28711,393 @@ proof -
 	                                                by (rule exI[where x = w],
 	                                                    rule hcase)
 	                                            qed
+	                                            have hs1_good_finishes:
+	                                              "s1 \<noteq> \<theta> \<Longrightarrow>
+	                                              s1 \<noteq> \<beta> \<Longrightarrow>
+	                                              s1 \<inter> J\<^sub>1 \<noteq> {} \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            proof -
+	                                              assume hs1_ne_\<theta>: "s1 \<noteq> \<theta>"
+	                                              assume hs1_ne_\<beta>: "s1 \<noteq> \<beta>"
+	                                              assume hs1_contact_ne:
+	                                                "s1 \<inter> J\<^sub>1 \<noteq> {}"
+	                                              have hs1_card:
+	                                                "card {e\<in>L\<^sub>1.
+	                                                  geotop_is_edge e
+	                                                  \<and> geotop_is_face e s1
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                                using hs1_can
+	                                                by (by100 blast)
+	                                              have hs1_contact:
+	                                                "s1 \<inter> J\<^sub>1 =
+	                                                  \<Union>{e\<in>L\<^sub>1.
+	                                                    geotop_is_edge e
+	                                                    \<and> geotop_is_face e s1
+	                                                    \<and> e \<subseteq> J\<^sub>1}"
+	                                                using hs1_can
+	                                                by (by100 blast)
+	                                              show ?thesis
+	                                                by (rule
+	                                                    hL\<^sub>1_good_side_witness_finishes
+	                                                    [OF hs1L\<^sub>1' hs1_2
+	                                                      hs1_card
+	                                                      hs1_contact
+	                                                      hs1_ne_\<theta>
+	                                                      hs1_ne_\<beta>
+	                                                      hs1_contact_ne])
+	                                            qed
+	                                            have hs2_good_finishes:
+	                                              "s2 \<noteq> \<theta> \<Longrightarrow>
+	                                              s2 \<noteq> \<beta> \<Longrightarrow>
+	                                              s2 \<inter> J\<^sub>1 \<noteq> {} \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            proof -
+	                                              assume hs2_ne_\<theta>: "s2 \<noteq> \<theta>"
+	                                              assume hs2_ne_\<beta>: "s2 \<noteq> \<beta>"
+	                                              assume hs2_contact_ne:
+	                                                "s2 \<inter> J\<^sub>1 \<noteq> {}"
+	                                              have hs2_card:
+	                                                "card {e\<in>L\<^sub>1.
+	                                                  geotop_is_edge e
+	                                                  \<and> geotop_is_face e s2
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                                using hs2_can
+	                                                by (by100 blast)
+	                                              have hs2_contact:
+	                                                "s2 \<inter> J\<^sub>1 =
+	                                                  \<Union>{e\<in>L\<^sub>1.
+	                                                    geotop_is_edge e
+	                                                    \<and> geotop_is_face e s2
+	                                                    \<and> e \<subseteq> J\<^sub>1}"
+	                                                using hs2_can
+	                                                by (by100 blast)
+	                                              show ?thesis
+	                                                by (rule
+	                                                    hL\<^sub>1_good_side_witness_finishes
+	                                                    [OF hs2L\<^sub>1' hs2_2
+	                                                      hs2_card
+	                                                      hs2_contact
+	                                                      hs2_ne_\<theta>
+	                                                      hs2_ne_\<beta>
+	                                                      hs2_contact_ne])
+	                                            qed
+	                                            have ht1_good_finishes:
+	                                              "t1 \<noteq> \<theta> \<Longrightarrow>
+	                                              t1 \<noteq> \<beta>\<^sub>c \<Longrightarrow>
+	                                              t1 \<inter> J\<^sub>2 \<noteq> {} \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            proof -
+	                                              assume ht1_ne_\<theta>: "t1 \<noteq> \<theta>"
+	                                              assume ht1_ne_\<beta>c:
+	                                                "t1 \<noteq> \<beta>\<^sub>c"
+	                                              assume ht1_contact_ne:
+	                                                "t1 \<inter> J\<^sub>2 \<noteq> {}"
+	                                              have ht1_card:
+	                                                "card {e\<in>L\<^sub>2.
+	                                                  geotop_is_edge e
+	                                                  \<and> geotop_is_face e t1
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                                using ht1_can
+	                                                by (by100 blast)
+	                                              have ht1_contact:
+	                                                "t1 \<inter> J\<^sub>2 =
+	                                                  \<Union>{e\<in>L\<^sub>2.
+	                                                    geotop_is_edge e
+	                                                    \<and> geotop_is_face e t1
+	                                                    \<and> e \<subseteq> J\<^sub>2}"
+	                                                using ht1_can
+	                                                by (by100 blast)
+	                                              show ?thesis
+	                                                by (rule
+	                                                    hL\<^sub>2_good_side_witness_finishes
+	                                                    [OF ht1L\<^sub>2' ht1_2
+	                                                      ht1_card
+	                                                      ht1_contact
+	                                                      ht1_ne_\<theta>
+	                                                      ht1_ne_\<beta>c
+	                                                      ht1_contact_ne])
+	                                            qed
+	                                            have ht2_good_finishes:
+	                                              "t2 \<noteq> \<theta> \<Longrightarrow>
+	                                              t2 \<noteq> \<beta>\<^sub>c \<Longrightarrow>
+	                                              t2 \<inter> J\<^sub>2 \<noteq> {} \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            proof -
+	                                              assume ht2_ne_\<theta>: "t2 \<noteq> \<theta>"
+	                                              assume ht2_ne_\<beta>c:
+	                                                "t2 \<noteq> \<beta>\<^sub>c"
+	                                              assume ht2_contact_ne:
+	                                                "t2 \<inter> J\<^sub>2 \<noteq> {}"
+	                                              have ht2_card:
+	                                                "card {e\<in>L\<^sub>2.
+	                                                  geotop_is_edge e
+	                                                  \<and> geotop_is_face e t2
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                                using ht2_can
+	                                                by (by100 blast)
+	                                              have ht2_contact:
+	                                                "t2 \<inter> J\<^sub>2 =
+	                                                  \<Union>{e\<in>L\<^sub>2.
+	                                                    geotop_is_edge e
+	                                                    \<and> geotop_is_face e t2
+	                                                    \<and> e \<subseteq> J\<^sub>2}"
+	                                                using ht2_can
+	                                                by (by100 blast)
+	                                              show ?thesis
+	                                                by (rule
+	                                                    hL\<^sub>2_good_side_witness_finishes
+	                                                    [OF ht2L\<^sub>2' ht2_2
+	                                                      ht2_card
+	                                                      ht2_contact
+	                                                      ht2_ne_\<theta>
+	                                                      ht2_ne_\<beta>c
+	                                                      ht2_contact_ne])
+	                                            qed
+	                                            have hsame_side_bad_residue:
+	                                              "(\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {}))
+	                                              \<or> ((?H1 x \<and> ?H1 y)
+	                                                \<and> (s1 = \<theta> \<or> s1 = \<beta>
+	                                                  \<or> s1 \<inter> J\<^sub>1 = {})
+	                                                \<and> (s2 = \<theta> \<or> s2 = \<beta>
+	                                                  \<or> s2 \<inter> J\<^sub>1 = {}))
+	                                              \<or> ((?H2 x \<and> ?H2 y)
+	                                                \<and> (t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
+	                                                  \<or> t1 \<inter> J\<^sub>2 = {})
+	                                                \<and> (t2 = \<theta> \<or> t2 = \<beta>\<^sub>c
+	                                                  \<or> t2 \<inter> J\<^sub>2 = {}))"
+	                                            proof (rule disjE[OF hxy_same])
+	                                              assume hxy1: "?H1 x \<and> ?H1 y"
+	                                              show ?thesis
+	                                              proof (cases
+	                                                  "s1 = \<theta> \<or> s1 = \<beta>
+	                                                    \<or> s1 \<inter> J\<^sub>1 = {}")
+	                                                case False
+	                                                have hs1_ne_\<theta>: "s1 \<noteq> \<theta>"
+	                                                  using False by (by100 blast)
+	                                                have hs1_ne_\<beta>: "s1 \<noteq> \<beta>"
+	                                                  using False by (by100 blast)
+	                                                have hs1_contact:
+	                                                  "s1 \<inter> J\<^sub>1 \<noteq> {}"
+	                                                  using False by (by100 blast)
+	                                                have hdone:
+	                                                  "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                                  by (rule
+	                                                      hs1_good_finishes
+	                                                      [OF hs1_ne_\<theta>
+	                                                        hs1_ne_\<beta>
+	                                                        hs1_contact])
+	                                                show ?thesis
+	                                                  by (rule disjI1[OF hdone])
+	                                              next
+	                                                case True
+	                                                note hs1_bad = True
+	                                                show ?thesis
+	                                                proof (cases
+	                                                    "s2 = \<theta> \<or> s2 = \<beta>
+	                                                      \<or> s2 \<inter> J\<^sub>1 = {}")
+	                                                  case False
+	                                                  have hs2_ne_\<theta>:
+	                                                    "s2 \<noteq> \<theta>"
+	                                                    using False
+	                                                    by (by100 blast)
+	                                                  have hs2_ne_\<beta>:
+	                                                    "s2 \<noteq> \<beta>"
+	                                                    using False
+	                                                    by (by100 blast)
+	                                                  have hs2_contact:
+	                                                    "s2 \<inter> J\<^sub>1 \<noteq> {}"
+	                                                    using False
+	                                                    by (by100 blast)
+	                                                  have hdone:
+	                                                    "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                                    by (rule
+	                                                        hs2_good_finishes
+	                                                        [OF hs2_ne_\<theta>
+	                                                          hs2_ne_\<beta>
+	                                                          hs2_contact])
+	                                                  show ?thesis
+	                                                    by (rule disjI1[OF hdone])
+	                                                next
+	                                                  case True
+	                                                  have hres:
+	                                                    "(?H1 x \<and> ?H1 y)
+	                                                    \<and> (s1 = \<theta>
+	                                                      \<or> s1 = \<beta>
+	                                                      \<or> s1 \<inter> J\<^sub>1 = {})
+	                                                    \<and> (s2 = \<theta>
+	                                                      \<or> s2 = \<beta>
+	                                                      \<or> s2 \<inter> J\<^sub>1 = {})"
+	                                                    using hxy1 hs1_bad True
+	                                                    by (by100 blast)
+	                                                  show ?thesis
+	                                                    by (rule disjI2,
+	                                                        rule disjI1,
+	                                                        rule hres)
+	                                                qed
+	                                              qed
+	                                            next
+	                                              assume hxy2: "?H2 x \<and> ?H2 y"
+	                                              show ?thesis
+	                                              proof (cases
+	                                                  "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
+	                                                    \<or> t1 \<inter> J\<^sub>2 = {}")
+	                                                case False
+	                                                have ht1_ne_\<theta>: "t1 \<noteq> \<theta>"
+	                                                  using False by (by100 blast)
+	                                                have ht1_ne_\<beta>c:
+	                                                  "t1 \<noteq> \<beta>\<^sub>c"
+	                                                  using False by (by100 blast)
+	                                                have ht1_contact:
+	                                                  "t1 \<inter> J\<^sub>2 \<noteq> {}"
+	                                                  using False by (by100 blast)
+	                                                have hdone:
+	                                                  "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                                  by (rule
+	                                                      ht1_good_finishes
+	                                                      [OF ht1_ne_\<theta>
+	                                                        ht1_ne_\<beta>c
+	                                                        ht1_contact])
+	                                                show ?thesis
+	                                                  by (rule disjI1[OF hdone])
+	                                              next
+	                                                case True
+	                                                note ht1_bad = True
+	                                                show ?thesis
+	                                                proof (cases
+	                                                    "t2 = \<theta> \<or> t2 = \<beta>\<^sub>c
+	                                                      \<or> t2 \<inter> J\<^sub>2 = {}")
+	                                                  case False
+	                                                  have ht2_ne_\<theta>:
+	                                                    "t2 \<noteq> \<theta>"
+	                                                    using False
+	                                                    by (by100 blast)
+	                                                  have ht2_ne_\<beta>c:
+	                                                    "t2 \<noteq> \<beta>\<^sub>c"
+	                                                    using False
+	                                                    by (by100 blast)
+	                                                  have ht2_contact:
+	                                                    "t2 \<inter> J\<^sub>2 \<noteq> {}"
+	                                                    using False
+	                                                    by (by100 blast)
+	                                                  have hdone:
+	                                                    "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                        \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                        \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                                    by (rule
+	                                                        ht2_good_finishes
+	                                                        [OF ht2_ne_\<theta>
+	                                                          ht2_ne_\<beta>c
+	                                                          ht2_contact])
+	                                                  show ?thesis
+	                                                    by (rule disjI1[OF hdone])
+	                                                next
+	                                                  case True
+	                                                  have hres:
+	                                                    "(?H2 x \<and> ?H2 y)
+	                                                    \<and> (t1 = \<theta>
+	                                                      \<or> t1 = \<beta>\<^sub>c
+	                                                      \<or> t1 \<inter> J\<^sub>2 = {})
+	                                                    \<and> (t2 = \<theta>
+	                                                      \<or> t2 = \<beta>\<^sub>c
+	                                                      \<or> t2 \<inter> J\<^sub>2 = {})"
+	                                                    using hxy2 ht1_bad True
+	                                                    by (by100 blast)
+	                                                  show ?thesis
+	                                                    by (rule disjI2,
+	                                                        rule disjI2,
+	                                                        rule hres)
+	                                                qed
+	                                              qed
+	                                            qed
+	                                            have hbad_residue_contradicts_book:
+	                                              "((?H1 x \<and> ?H1 y)
+	                                                \<and> (s1 = \<theta> \<or> s1 = \<beta>
+	                                                  \<or> s1 \<inter> J\<^sub>1 = {})
+	                                                \<and> (s2 = \<theta> \<or> s2 = \<beta>
+	                                                  \<or> s2 \<inter> J\<^sub>1 = {}))
+	                                              \<or> ((?H2 x \<and> ?H2 y)
+	                                                \<and> (t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
+	                                                  \<or> t1 \<inter> J\<^sub>2 = {})
+	                                                \<and> (t2 = \<theta> \<or> t2 = \<beta>\<^sub>c
+	                                                  \<or> t2 \<inter> J\<^sub>2 = {}))
+	                                              \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                              (**
+	                                                Remaining filtered Moise
+	                                                count: after the immediate
+	                                                good-witness cases, the
+	                                                same-side pair would force
+	                                                both distinct free side
+	                                                witnesses on that side to
+	                                                be theta, the named chord
+	                                                triangle, or empty-contact.
+	                                                This is the exact
+	                                                artificial-chord exclusion
+	                                                still to formalize from the
+	                                                book. **)
+	                                              sorry
 	                                            show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                                \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
 	                                                \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
-	                                              (**
-	                                                The remaining proof now has
-	                                                both side-free pairs in
-	                                                canonical selected-edge
-	                                                form.  The next book step
-	                                                is to split on the same-side
-	                                                pair, use the named chord
-	                                                uniqueness facts to show
-	                                                that at most one of the two
-	                                                canonical witnesses on that
-	                                                side is chord-spoiled, and
-	                                                finish with the nonempty
-	                                                contact witness. **)
-	                                              sorry
+	                                            proof (rule disjE
+	                                                [OF hsame_side_bad_residue])
+	                                              assume hdone:
+	                                                "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                              show ?thesis
+	                                                by (rule hdone)
+	                                            next
+	                                              assume hbad:
+	                                                "((?H1 x \<and> ?H1 y)
+	                                                  \<and> (s1 = \<theta>
+	                                                    \<or> s1 = \<beta>
+	                                                    \<or> s1 \<inter> J\<^sub>1 = {})
+	                                                  \<and> (s2 = \<theta>
+	                                                    \<or> s2 = \<beta>
+	                                                    \<or> s2 \<inter> J\<^sub>1 = {}))
+	                                                \<or> ((?H2 x \<and> ?H2 y)
+	                                                  \<and> (t1 = \<theta>
+	                                                    \<or> t1 = \<beta>\<^sub>c
+	                                                    \<or> t1 \<inter> J\<^sub>2 = {})
+	                                                  \<and> (t2 = \<theta>
+	                                                    \<or> t2 = \<beta>\<^sub>c
+	                                                    \<or> t2 \<inter> J\<^sub>2 = {}))"
+	                                              show ?thesis
+	                                                by (rule
+	                                                    hbad_residue_contradicts_book
+	                                                    [OF hbad])
+	                                            qed
 	                                          qed
 	                                          show ?thesis
 	                                            by (rule
