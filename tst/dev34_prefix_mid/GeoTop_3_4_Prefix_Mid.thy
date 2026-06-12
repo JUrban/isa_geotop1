@@ -24186,6 +24186,91 @@ proof -
         using h\<rho>ne by (by100 blast)
     qed
   qed
+  have hsingleton_side2_nonchord_edge_sub_parent:
+    "\<And>\<beta>\<^sub>c e. ?T\<^sub>2 = {\<beta>\<^sub>c} \<Longrightarrow>
+      \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+      geotop_is_face (closed_segment a c) \<beta>\<^sub>c \<Longrightarrow>
+      e \<in> L\<^sub>2 \<Longrightarrow>
+      geotop_is_edge e \<Longrightarrow>
+      geotop_is_face e \<beta>\<^sub>c \<Longrightarrow>
+      e \<subseteq> J\<^sub>2 \<Longrightarrow>
+      e \<noteq> closed_segment a c \<Longrightarrow>
+      e \<subseteq> J"
+  proof
+    fix \<beta>\<^sub>c e x
+    assume hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+    assume h\<beta>c_chord:
+      "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+    assume heL\<^sub>2: "e \<in> L\<^sub>2"
+    assume hedge: "geotop_is_edge e"
+    assume heface: "geotop_is_face e \<beta>\<^sub>c"
+    assume heJ\<^sub>2: "e \<subseteq> J\<^sub>2"
+    assume hene_chord: "e \<noteq> closed_segment a c"
+    assume hxe: "x \<in> e"
+    have h\<beta>cL\<^sub>2: "\<beta>\<^sub>c \<in> L\<^sub>2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have hchord_L\<^sub>2: "closed_segment a c \<in> L\<^sub>2"
+      using hL\<^sub>2_complex h\<beta>cL\<^sub>2 h\<beta>c_chord
+      unfolding geotop_is_complex_def by (by100 blast)
+    show "x \<in> J"
+    proof (cases "x \<in> C\<^sub>2")
+      case True
+      show ?thesis
+        using True hJ_chord_split by (by100 blast)
+    next
+      case False
+      have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+        using hxe heJ\<^sub>2 by (by100 blast)
+      have hxchord: "x \<in> closed_segment a c"
+        using hxJ\<^sub>2 False unfolding J\<^sub>2_def by (by100 blast)
+      show ?thesis
+      proof (cases "x \<in> {a, c}")
+        case True
+        have hC\<^sub>2_end_data:
+          "a \<noteq> c \<and> a \<in> C\<^sub>2 \<and> c \<in> C\<^sub>2"
+          by (rule geotop_arc_endpoints_pair_data_prefix[OF hC\<^sub>2_endpoints])
+        show ?thesis
+          using True hC\<^sub>2_end_data hJ_chord_split by (by100 blast)
+      next
+        case hnot_end: False
+        have hx_inter:
+          "x \<in> closed_segment a c \<inter> e"
+          using hxchord hxe by (by100 blast)
+        have hcap_nonempty:
+          "closed_segment a c \<inter> e \<noteq> {}"
+          using hx_inter by (by100 blast)
+        have hfaces:
+          "geotop_is_face (closed_segment a c \<inter> e) (closed_segment a c)
+          \<and> geotop_is_face (closed_segment a c \<inter> e) e"
+          using geotop_is_complex_intersection[OF hL\<^sub>2_complex]
+            hchord_L\<^sub>2 heL\<^sub>2 hcap_nonempty
+          by (by100 blast)
+        have hface_chord:
+          "geotop_is_face (closed_segment a c \<inter> e) (closed_segment a c)"
+          using hfaces by (by100 blast)
+        have hface_e:
+          "geotop_is_face (closed_segment a c \<inter> e) e"
+          using hfaces by (by100 blast)
+        have hx_ne_a: "x \<noteq> a"
+          using hnot_end by (by100 blast)
+        have hx_ne_c: "x \<noteq> c"
+          using hnot_end by (by100 blast)
+        have hcap_eq:
+          "closed_segment a c \<inter> e = closed_segment a c"
+          by (rule geotop_segment_face_with_nonendpoint_eq_prefix
+              [OF hface_chord hac hx_inter hx_ne_a hx_ne_c])
+        have hchord_face_e:
+          "geotop_is_face (closed_segment a c) e"
+          using hface_e hcap_eq by (by100 simp)
+        have "closed_segment a c = e"
+          by (rule geotop_edge_face_of_edge_eq_prefix
+              [OF hchord_segment_edge_book hedge hchord_face_e])
+        thus ?thesis
+          using hene_chord by (by100 blast)
+      qed
+    qed
+  qed
   have hresidual_cases_with_singleton_side2_parent_count:
     "(\<exists>\<rho>. \<rho> \<in> K
         \<and> geotop_free_2_simplex K J \<rho>
