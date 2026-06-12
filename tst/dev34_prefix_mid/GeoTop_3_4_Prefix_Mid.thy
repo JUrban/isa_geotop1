@@ -29457,7 +29457,272 @@ proof -
 		                                                  parent-empty obstruction already
 		                                                  handled by the primary/spare
 		                                                  counting package above. **)
-		                                                sorry
+		                                              proof -
+		                                                assume hrefined_bad:
+		                                                  "((?H1 x \<and> ?H1 y)
+		                                                    \<and> (s1 \<inter> J\<^sub>1 = {}
+		                                                      \<or> s2 \<inter> J\<^sub>1 = {}
+		                                                      \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>))))
+		                                                  \<or> ((?H2 x \<and> ?H2 y)
+		                                                    \<and> (t1 \<inter> J\<^sub>2 = {}
+		                                                      \<or> t2 \<inter> J\<^sub>2 = {}
+		                                                      \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))))"
+		                                                have hempty_side_witness_count_book:
+		                                                  "(((?H1 x \<and> ?H1 y)
+		                                                      \<and> (s1 \<inter> J\<^sub>1 = {}
+		                                                        \<or> s2 \<inter> J\<^sub>1 = {}))
+		                                                    \<or> ((?H2 x \<and> ?H2 y)
+		                                                      \<and> (t1 \<inter> J\<^sub>2 = {}
+		                                                        \<or> t2 \<inter> J\<^sub>2 = {}))) \<Longrightarrow>
+		                                                  \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                  (**
+		                                                    Empty side-contact branch
+		                                                    of Moise Figure 3.2.  A
+		                                                    free side witness with empty
+		                                                    side-boundary contact must
+		                                                    transfer to another
+		                                                    parent-empty selected-free
+		                                                    obstruction, after which the
+		                                                    same fixed empty-count
+		                                                    contradiction applies. **)
+		                                                  sorry
+		                                                have hnamed_chord_pair_count_book:
+		                                                  "(((?H1 x \<and> ?H1 y)
+		                                                      \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>)))
+		                                                    \<or> ((?H2 x \<and> ?H2 y)
+		                                                      \<and> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)))) \<Longrightarrow>
+		                                                  \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                  (**
+		                                                    Named chord-pair branch of
+		                                                    Moise Figure 3.2.  If the
+		                                                    two bad same-side witnesses
+		                                                    are exactly the artificial
+		                                                    chord triangle and the named
+		                                                    chord-spoiled triangle, the
+		                                                    spare side-witness pair is
+		                                                    the one that must supply real
+		                                                    side-boundary contact. **)
+		                                                  sorry
+		                                                show ?thesis
+		                                                proof (rule disjE
+		                                                    [OF hrefined_bad])
+		                                                  assume hside1:
+		                                                    "(?H1 x \<and> ?H1 y)
+		                                                      \<and> (s1 \<inter> J\<^sub>1 = {}
+		                                                        \<or> s2 \<inter> J\<^sub>1 = {}
+		                                                        \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                          \<or> (s1 = \<beta> \<and> s2 = \<theta>)))"
+		                                                  have hside1_pair:
+		                                                    "?H1 x \<and> ?H1 y"
+		                                                    by (rule conjunct1[OF hside1])
+		                                                  have hside1_tail:
+		                                                    "s1 \<inter> J\<^sub>1 = {}
+		                                                      \<or> s2 \<inter> J\<^sub>1 = {}
+		                                                      \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>))"
+		                                                    by (rule conjunct2[OF hside1])
+		                                                  show ?thesis
+		                                                  proof (cases
+		                                                      "s1 \<inter> J\<^sub>1 = {}
+		                                                        \<or> s2 \<inter> J\<^sub>1 = {}")
+		                                                    case True
+		                                                    have hcase:
+		                                                      "(((?H1 x \<and> ?H1 y)
+		                                                          \<and> (s1 \<inter> J\<^sub>1 = {}
+		                                                            \<or> s2 \<inter> J\<^sub>1 = {}))
+		                                                        \<or> ((?H2 x \<and> ?H2 y)
+		                                                          \<and> (t1 \<inter> J\<^sub>2 = {}
+		                                                            \<or> t2 \<inter> J\<^sub>2 = {})))"
+		                                                    proof (rule disjI1)
+		                                                      show "(?H1 x \<and> ?H1 y)
+		                                                        \<and> (s1 \<inter> J\<^sub>1 = {}
+		                                                          \<or> s2 \<inter> J\<^sub>1 = {})"
+		                                                      proof (rule conjI)
+		                                                        show "?H1 x \<and> ?H1 y"
+		                                                          by (rule hside1_pair)
+		                                                        show "s1 \<inter> J\<^sub>1 = {}
+		                                                          \<or> s2 \<inter> J\<^sub>1 = {}"
+		                                                          by (rule True)
+		                                                      qed
+		                                                    qed
+		                                                    show ?thesis
+		                                                      by (rule
+		                                                          hempty_side_witness_count_book
+		                                                          [OF hcase])
+		                                                  next
+		                                                    case False
+		                                                    have hnamed:
+		                                                      "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                    proof (rule disjE[OF hside1_tail])
+		                                                      assume hs1_empty:
+		                                                        "s1 \<inter> J\<^sub>1 = {}"
+		                                                      have False
+		                                                        using False hs1_empty
+		                                                        by (by100 simp)
+		                                                      thus ?thesis
+		                                                        by (rule FalseE)
+		                                                    next
+		                                                      assume htail:
+		                                                        "s2 \<inter> J\<^sub>1 = {}
+		                                                          \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                            \<or> (s1 = \<beta> \<and> s2 = \<theta>))"
+		                                                      show ?thesis
+		                                                      proof (rule disjE[OF htail])
+		                                                        assume hs2_empty:
+		                                                          "s2 \<inter> J\<^sub>1 = {}"
+		                                                        have False
+		                                                          using False hs2_empty
+		                                                          by (by100 simp)
+		                                                        thus ?thesis
+		                                                          by (rule FalseE)
+		                                                      next
+		                                                        assume hnamed:
+		                                                          "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                            \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                        show ?thesis
+		                                                          by (rule hnamed)
+		                                                      qed
+		                                                    qed
+		                                                    have hcase:
+		                                                      "(((?H1 x \<and> ?H1 y)
+		                                                          \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                            \<or> (s1 = \<beta> \<and> s2 = \<theta>)))
+		                                                        \<or> ((?H2 x \<and> ?H2 y)
+		                                                          \<and> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                            \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))))"
+		                                                    proof (rule disjI1)
+		                                                      show "(?H1 x \<and> ?H1 y)
+		                                                        \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                          \<or> (s1 = \<beta> \<and> s2 = \<theta>))"
+		                                                      proof (rule conjI)
+		                                                        show "?H1 x \<and> ?H1 y"
+		                                                          by (rule hside1_pair)
+		                                                        show "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                          \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                          by (rule hnamed)
+		                                                      qed
+		                                                    qed
+		                                                    show ?thesis
+		                                                      by (rule
+		                                                          hnamed_chord_pair_count_book
+		                                                          [OF hcase])
+		                                                  qed
+		                                                next
+		                                                  assume hside2:
+		                                                    "(?H2 x \<and> ?H2 y)
+		                                                      \<and> (t1 \<inter> J\<^sub>2 = {}
+		                                                        \<or> t2 \<inter> J\<^sub>2 = {}
+		                                                        \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                          \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)))"
+		                                                  have hside2_pair:
+		                                                    "?H2 x \<and> ?H2 y"
+		                                                    by (rule conjunct1[OF hside2])
+		                                                  have hside2_tail:
+		                                                    "t1 \<inter> J\<^sub>2 = {}
+		                                                      \<or> t2 \<inter> J\<^sub>2 = {}
+		                                                      \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))"
+		                                                    by (rule conjunct2[OF hside2])
+		                                                  show ?thesis
+		                                                  proof (cases
+		                                                      "t1 \<inter> J\<^sub>2 = {}
+		                                                        \<or> t2 \<inter> J\<^sub>2 = {}")
+		                                                    case True
+		                                                    have hcase:
+		                                                      "(((?H1 x \<and> ?H1 y)
+		                                                          \<and> (s1 \<inter> J\<^sub>1 = {}
+		                                                            \<or> s2 \<inter> J\<^sub>1 = {}))
+		                                                        \<or> ((?H2 x \<and> ?H2 y)
+		                                                          \<and> (t1 \<inter> J\<^sub>2 = {}
+		                                                            \<or> t2 \<inter> J\<^sub>2 = {})))"
+		                                                    proof (rule disjI2)
+		                                                      show "(?H2 x \<and> ?H2 y)
+		                                                        \<and> (t1 \<inter> J\<^sub>2 = {}
+		                                                          \<or> t2 \<inter> J\<^sub>2 = {})"
+		                                                      proof (rule conjI)
+		                                                        show "?H2 x \<and> ?H2 y"
+		                                                          by (rule hside2_pair)
+		                                                        show "t1 \<inter> J\<^sub>2 = {}
+		                                                          \<or> t2 \<inter> J\<^sub>2 = {}"
+		                                                          by (rule True)
+		                                                      qed
+		                                                    qed
+		                                                    show ?thesis
+		                                                      by (rule
+		                                                          hempty_side_witness_count_book
+		                                                          [OF hcase])
+		                                                  next
+		                                                    case False
+		                                                    have hnamed:
+		                                                      "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                    proof (rule disjE[OF hside2_tail])
+		                                                      assume ht1_empty:
+		                                                        "t1 \<inter> J\<^sub>2 = {}"
+		                                                      have False
+		                                                        using False ht1_empty
+		                                                        by (by100 simp)
+		                                                      thus ?thesis
+		                                                        by (rule FalseE)
+		                                                    next
+		                                                      assume htail:
+		                                                        "t2 \<inter> J\<^sub>2 = {}
+		                                                          \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                            \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))"
+		                                                      show ?thesis
+		                                                      proof (rule disjE[OF htail])
+		                                                        assume ht2_empty:
+		                                                          "t2 \<inter> J\<^sub>2 = {}"
+		                                                        have False
+		                                                          using False ht2_empty
+		                                                          by (by100 simp)
+		                                                        thus ?thesis
+		                                                          by (rule FalseE)
+		                                                      next
+		                                                        assume hnamed:
+		                                                          "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                            \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                        show ?thesis
+		                                                          by (rule hnamed)
+		                                                      qed
+		                                                    qed
+		                                                    have hcase:
+		                                                      "(((?H1 x \<and> ?H1 y)
+		                                                          \<and> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                            \<or> (s1 = \<beta> \<and> s2 = \<theta>)))
+		                                                        \<or> ((?H2 x \<and> ?H2 y)
+		                                                          \<and> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                            \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))))"
+		                                                    proof (rule disjI2)
+		                                                      show "(?H2 x \<and> ?H2 y)
+		                                                        \<and> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                          \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))"
+		                                                      proof (rule conjI)
+		                                                        show "?H2 x \<and> ?H2 y"
+		                                                          by (rule hside2_pair)
+		                                                        show "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                          \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                          by (rule hnamed)
+		                                                      qed
+		                                                    qed
+		                                                    show ?thesis
+		                                                      by (rule
+		                                                          hnamed_chord_pair_count_book
+		                                                          [OF hcase])
+		                                                  qed
+		                                                qed
+		                                              qed
 		                                              show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
 		                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 		                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
