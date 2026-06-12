@@ -12701,6 +12701,55 @@ proof -
                 using hW_sub_Np by (by100 blast)
               have hy_not_W_local: "y \<notin> W \<inter> ?Lcomp"
                 using hy_not_local_complement by (by100 blast)
+              have hW_ball_nonempty_if_w_endpoint:
+                  "w \<in> closure W \<Longrightarrow> W \<inter> ball w r \<noteq> {}"
+              proof -
+                assume hwW_cl: "w \<in> closure W"
+                obtain a where haW: "a \<in> W" and hadist: "dist a w < r"
+                  using hwW_cl hr_pos unfolding closure_approachable
+                  by (by100 blast)
+                have hadist_eq: "dist w a = dist a w"
+                  by (rule dist_commute)
+                have hadist_sym: "dist w a < r"
+                  using hadist_eq hadist by (by100 simp)
+                have haball: "a \<in> ball w r"
+                  using hadist_sym by (by100 simp)
+                show "W \<inter> ball w r \<noteq> {}"
+                  using haW haball by (by100 blast)
+              qed
+              have hW_source_ball_entry_cases:
+                  "((\<exists>D. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> W \<inter> ball w r \<noteq> {})
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W))"
+              proof -
+                show ?thesis
+                  using hW_source_endpoint_closure_cases
+                proof (elim disjE exE conjE)
+                  fix D
+                  assume hN_eq: "N = D - {w}"
+                  assume hW_eq: "W = D - {w, p}"
+                  assume hyD: "y \<in> D - {p}"
+                  assume hwW_cl: "w \<in> closure W"
+                  have hW_ball: "W \<inter> ball w r \<noteq> {}"
+                    by (rule hW_ball_nonempty_if_w_endpoint[OF hwW_cl])
+                  show ?thesis
+                    using hN_eq hW_eq hyD hwW_cl hW_ball by (by100 blast)
+                next
+                  fix D
+                  assume hN_eq: "N = D"
+                  assume hW_eq: "W = D - {p, q\<^sub>1}"
+                  assume hyD: "y \<in> D - {p}"
+                  assume hqW_cl: "q\<^sub>1 \<in> closure W"
+                  show ?thesis
+                    using hN_eq hW_eq hyD hqW_cl by (by100 blast)
+                qed
+              qed
               have hW_first_entry_boundary_package:
                   "top1_connected_on W
                     (subspace_topology UNIV geotop_euclidean_topology W)
@@ -12725,6 +12774,15 @@ proof -
                         \<and> W = D - {w, p}
                         \<and> y \<in> D - {p}
                         \<and> w \<in> closure W)
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W))
+                    \<and> ((\<exists>D. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> W \<inter> ball w r \<noteq> {})
                       \<or> (\<exists>D. N = D
                         \<and> W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p}
@@ -12763,6 +12821,16 @@ proof -
                     \<and> y \<in> D - {p}
                     \<and> q\<^sub>1 \<in> closure W))"
                   by (rule hW_source_endpoint_closure_cases)
+                show "((\<exists>D. N = D - {w}
+                    \<and> W = D - {w, p}
+                    \<and> y \<in> D - {p}
+                    \<and> w \<in> closure W
+                    \<and> W \<inter> ball w r \<noteq> {})
+                  \<or> (\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W))"
+                  by (rule hW_source_ball_entry_cases)
               qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
