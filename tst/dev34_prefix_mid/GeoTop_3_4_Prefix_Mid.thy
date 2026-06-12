@@ -28139,6 +28139,32 @@ proof -
 	                                              \<and> nu \<noteq> \<beta>\<^sub>c)"
 	                                          using hnon_named_parent_empty
 	                                          by (elim exE)
+	                                        obtain xi
+	                                          where hxi_parent_empty:
+	                                            "(?G\<^sub>1 xi
+	                                              \<and> xi \<inter> J\<^sub>1 = {}
+	                                              \<and> xi \<in> K
+	                                              \<and> geotop_free_2_simplex K J xi
+	                                              \<and> geotop_simplex_dim xi 2
+	                                              \<and> xi \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e xi
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> xi \<noteq> \<theta>
+	                                              \<and> xi \<noteq> \<beta>)
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c xi
+	                                              \<and> xi \<inter> J\<^sub>2 = {}
+	                                              \<and> xi \<in> K
+	                                              \<and> geotop_free_2_simplex K J xi
+	                                              \<and> geotop_simplex_dim xi 2
+	                                              \<and> xi \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e xi
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> xi \<noteq> \<theta>
+	                                              \<and> xi \<noteq> \<beta>\<^sub>c)"
+	                                          using hcanonical_parent_empty_candidate
+	                                          by (elim exE)
 	                                        have hnon_named_parent_empty_fixed_count_book:
 	                                          "((?G\<^sub>1 nu
 	                                              \<and> nu \<inter> J\<^sub>1 = {}
@@ -28162,6 +28188,28 @@ proof -
 	                                                \<and> e \<subseteq> J} = {}
 	                                              \<and> nu \<noteq> \<theta>
 	                                              \<and> nu \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+	                                          ((?G\<^sub>1 xi
+	                                              \<and> xi \<inter> J\<^sub>1 = {}
+	                                              \<and> xi \<in> K
+	                                              \<and> geotop_free_2_simplex K J xi
+	                                              \<and> geotop_simplex_dim xi 2
+	                                              \<and> xi \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e xi
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> xi \<noteq> \<theta>
+	                                              \<and> xi \<noteq> \<beta>)
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c xi
+	                                              \<and> xi \<inter> J\<^sub>2 = {}
+	                                              \<and> xi \<in> K
+	                                              \<and> geotop_free_2_simplex K J xi
+	                                              \<and> geotop_simplex_dim xi 2
+	                                              \<and> xi \<inter> J = {}
+	                                              \<and> {e\<in>K. geotop_is_edge e
+	                                                \<and> geotop_is_face e xi
+	                                                \<and> e \<subseteq> J} = {}
+	                                              \<and> xi \<noteq> \<theta>
+	                                              \<and> xi \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
 	                                          \<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                              \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
@@ -28172,13 +28220,16 @@ proof -
 	                                            count.  The empty primary has
 	                                            been converted to the concrete
 	                                            parent obstruction \<open>nu\<close>; the
-	                                            remaining task is the same
-	                                            all-empty Moise count. **)
+	                                            canonical empty branch is the
+	                                            concrete parent obstruction
+	                                            \<open>xi\<close>.  The remaining task is
+	                                            the same all-empty Moise count. **)
 	                                          sorry
 	                                        show ?thesis
 	                                          by (rule
 	                                              hnon_named_parent_empty_fixed_count_book
-	                                              [OF hnu_parent_empty])
+	                                              [OF hnu_parent_empty
+	                                                hxi_parent_empty])
 	                                      qed
 	                                      show ?thesis
 	                                        by (rule
