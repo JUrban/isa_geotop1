@@ -23121,6 +23121,80 @@ proof -
       using h\<rho>K hfree h\<rho>2 hparent_selected h\<rho>_ne_\<theta>
       by (by100 blast)
   qed
+  have hG\<^sub>1_side_contact_nonempty_finishes:
+    "\<And>\<rho>. ?G\<^sub>1 \<rho> \<Longrightarrow> \<rho> \<inter> J\<^sub>1 \<noteq> {} \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    fix \<rho>
+    assume hG: "?G\<^sub>1 \<rho>"
+    assume hcontact_ne: "\<rho> \<inter> J\<^sub>1 \<noteq> {}"
+    have hcontact_can:
+      "\<rho> \<inter> J\<^sub>1 =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1}"
+      using hG by (by100 blast)
+    have hside_selected:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<noteq> {}"
+    proof
+      assume hempty:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} = {}"
+      have "\<rho> \<inter> J\<^sub>1 = {}"
+        using hcontact_can hempty by (by100 simp)
+      thus False
+        using hcontact_ne by (by100 blast)
+    qed
+    show "\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+      by (rule hG\<^sub>1_side_selected_nonempty_finishes[OF hG hside_selected])
+  qed
+  have hG\<^sub>2_side_contact_nonempty_finishes:
+    "\<And>\<beta>\<^sub>c \<rho>. ?G\<^sub>2 \<beta>\<^sub>c \<rho> \<Longrightarrow> \<rho> \<inter> J\<^sub>2 \<noteq> {} \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    fix \<beta>\<^sub>c \<rho>
+    assume hG: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+    assume hcontact_ne: "\<rho> \<inter> J\<^sub>2 \<noteq> {}"
+    have hcontact_can:
+      "\<rho> \<inter> J\<^sub>2 =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2}"
+      using hG by (by100 blast)
+    have hside_selected:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<noteq> {}"
+    proof
+      assume hempty:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} = {}"
+      have "\<rho> \<inter> J\<^sub>2 = {}"
+        using hcontact_can hempty by (by100 simp)
+      thus False
+        using hcontact_ne by (by100 blast)
+    qed
+    show "\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+      by (rule hG\<^sub>2_side_selected_nonempty_finishes[OF hG hside_selected])
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
