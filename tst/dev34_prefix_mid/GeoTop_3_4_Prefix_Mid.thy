@@ -27133,7 +27133,223 @@ proof -
 	                              data above supplies the card/contact facts
 	                              needed to run the same spare-witness split as
 	                              the earlier large-side branch. **)
-	                            sorry
+	                          proof -
+	                            obtain \<sigma>\<^sub>q \<sigma>\<^sub>r \<tau>\<^sub>q \<tau>\<^sub>r
+	                              where h\<sigma>qL\<^sub>1: "\<sigma>\<^sub>q \<in> L\<^sub>1"
+	                                and h\<sigma>q2: "geotop_simplex_dim \<sigma>\<^sub>q 2"
+	                                and h\<sigma>q_ne_\<theta>: "\<sigma>\<^sub>q \<noteq> \<theta>"
+	                                and h\<sigma>q_card:
+	                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma>\<^sub>q \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                and h\<sigma>q_contact:
+	                                  "\<sigma>\<^sub>q \<inter> J\<^sub>1 =
+	                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma>\<^sub>q \<and> e \<subseteq> J\<^sub>1}"
+	                                and h\<sigma>rL\<^sub>1: "\<sigma>\<^sub>r \<in> L\<^sub>1"
+	                                and h\<sigma>r2: "geotop_simplex_dim \<sigma>\<^sub>r 2"
+	                                and h\<sigma>r_card:
+	                                  "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<sigma>\<^sub>r \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                and h\<sigma>r_contact:
+	                                  "\<sigma>\<^sub>r \<inter> J\<^sub>1 =
+	                                    \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<sigma>\<^sub>r \<and> e \<subseteq> J\<^sub>1}"
+	                                and h\<sigma>q_ne_\<sigma>r: "\<sigma>\<^sub>q \<noteq> \<sigma>\<^sub>r"
+	                                and h\<tau>qL\<^sub>2: "\<tau>\<^sub>q \<in> L\<^sub>2"
+	                                and h\<tau>q2: "geotop_simplex_dim \<tau>\<^sub>q 2"
+	                                and h\<tau>q_ne_\<theta>: "\<tau>\<^sub>q \<noteq> \<theta>"
+	                                and h\<tau>q_card:
+	                                  "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<tau>\<^sub>q \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                and h\<tau>q_contact:
+	                                  "\<tau>\<^sub>q \<inter> J\<^sub>2 =
+	                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<tau>\<^sub>q \<and> e \<subseteq> J\<^sub>2}"
+	                                and h\<tau>rL\<^sub>2: "\<tau>\<^sub>r \<in> L\<^sub>2"
+	                                and h\<tau>r2: "geotop_simplex_dim \<tau>\<^sub>r 2"
+	                                and h\<tau>r_card:
+	                                  "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<tau>\<^sub>r \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                and h\<tau>r_contact:
+	                                  "\<tau>\<^sub>r \<inter> J\<^sub>2 =
+	                                    \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                      \<and> geotop_is_face e \<tau>\<^sub>r \<and> e \<subseteq> J\<^sub>2}"
+	                                and h\<tau>q_ne_\<tau>r: "\<tau>\<^sub>q \<noteq> \<tau>\<^sub>r"
+	                                and h\<sigma>q_ne_\<tau>q: "\<sigma>\<^sub>q \<noteq> \<tau>\<^sub>q"
+	                                and h\<sigma>q_primary:
+	                                  "\<sigma>\<^sub>q \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>\<^sub>q"
+	                                and h\<tau>q_primary:
+	                                  "\<tau>\<^sub>q \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>q"
+	                              using hcanonical_primary_spare_counting_data
+	                              by (elim exE conjE)
+	                            have hcanonical_spare_no_chord_candidate_if_named_primaries:
+	                              "\<sigma>\<^sub>q = \<beta> \<Longrightarrow> \<tau>\<^sub>q = \<beta>\<^sub>c \<Longrightarrow>
+	                                ?G\<^sub>1 \<sigma>\<^sub>r \<or> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r"
+	                            proof -
+	                              assume h\<sigma>q_eq_\<beta>: "\<sigma>\<^sub>q = \<beta>"
+	                              assume h\<tau>q_eq_\<beta>c: "\<tau>\<^sub>q = \<beta>\<^sub>c"
+	                              obtain \<delta> where h\<delta>T\<^sub>2: "\<delta> \<in> ?T\<^sub>2"
+	                                and h\<delta>_not_T\<^sub>1: "\<delta> \<notin> ?T\<^sub>1"
+	                                and h\<delta>_ne_\<beta>: "\<delta> \<noteq> \<beta>"
+	                                and h\<delta>_ne_\<theta>: "\<delta> \<noteq> \<theta>"
+	                                and h\<delta>_ne_\<alpha>: "\<delta> \<noteq> \<alpha>"
+	                                and h\<delta>_chord:
+	                                  "geotop_is_face (closed_segment a c) \<delta>"
+	                                and h\<beta>_not_T\<^sub>2_unique: "\<beta> \<notin> ?T\<^sub>2"
+	                                and hT\<^sub>1_not_named_no_chord:
+	                                  "\<forall>\<rho>\<in>?T\<^sub>1.
+	                                    \<rho> \<noteq> \<beta> \<longrightarrow>
+	                                    \<not> geotop_is_face (closed_segment a c) \<rho>"
+	                                and hT\<^sub>2_not_named_no_chord:
+	                                  "\<forall>\<rho>\<in>?T\<^sub>2.
+	                                    \<rho> \<noteq> \<delta> \<longrightarrow>
+	                                    \<not> geotop_is_face (closed_segment a c) \<rho>"
+	                                using hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+	                                by (elim exE conjE)
+	                              have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
+	                              proof (rule ccontr)
+	                                assume hne: "\<not> \<beta>\<^sub>c = \<delta>"
+	                                have "\<not> geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+	                                  using hT\<^sub>2_not_named_no_chord h\<beta>cT\<^sub>2 hne
+	                                  by (by100 blast)
+	                                thus False
+	                                  using h\<beta>c_chord by (by100 blast)
+	                              qed
+	                              have h\<sigma>rT\<^sub>1: "\<sigma>\<^sub>r \<in> ?T\<^sub>1"
+	                                using h\<sigma>rL\<^sub>1 h\<sigma>r2 by (by100 simp)
+	                              have h\<tau>rT\<^sub>2: "\<tau>\<^sub>r \<in> ?T\<^sub>2"
+	                                using h\<tau>rL\<^sub>2 h\<tau>r2 by (by100 simp)
+	                              have h\<sigma>r_ne_\<beta>: "\<sigma>\<^sub>r \<noteq> \<beta>"
+	                                using h\<sigma>q_eq_\<beta> h\<sigma>q_ne_\<sigma>r by (by100 blast)
+	                              have h\<sigma>r_no_chord:
+	                                "\<not> geotop_is_face (closed_segment a c) \<sigma>\<^sub>r"
+	                                using hT\<^sub>1_not_named_no_chord h\<sigma>rT\<^sub>1 h\<sigma>r_ne_\<beta>
+	                                by (by100 blast)
+	                              show ?thesis
+	                              proof (cases "\<sigma>\<^sub>r = \<theta>")
+	                                case False
+	                                have hG1: "?G\<^sub>1 \<sigma>\<^sub>r"
+	                                  using h\<sigma>rL\<^sub>1 h\<sigma>r2 False h\<sigma>r_ne_\<beta>
+	                                    h\<sigma>r_no_chord h\<sigma>r_card h\<sigma>r_contact
+	                                  by (by100 blast)
+	                                show ?thesis
+	                                  by (rule disjI1[OF hG1])
+	                              next
+	                                case True
+	                                have h\<tau>r_ne_\<beta>c: "\<tau>\<^sub>r \<noteq> \<beta>\<^sub>c"
+	                                  using h\<tau>q_eq_\<beta>c h\<tau>q_ne_\<tau>r by (by100 blast)
+	                                have h\<tau>r_ne_\<delta>: "\<tau>\<^sub>r \<noteq> \<delta>"
+	                                  using h\<tau>r_ne_\<beta>c h\<beta>c_eq_\<delta> by (by100 blast)
+	                                have h\<tau>r_no_chord:
+	                                  "\<not> geotop_is_face (closed_segment a c) \<tau>\<^sub>r"
+	                                  using hT\<^sub>2_not_named_no_chord h\<tau>rT\<^sub>2 h\<tau>r_ne_\<delta>
+	                                  by (by100 blast)
+	                                have h\<tau>r_ne_\<theta>: "\<tau>\<^sub>r \<noteq> \<theta>"
+	                                proof
+	                                  assume h\<tau>r_eq_\<theta>: "\<tau>\<^sub>r = \<theta>"
+	                                  have "\<theta> \<in> ?T\<^sub>1"
+	                                    using True h\<sigma>rT\<^sub>1 by (by100 simp)
+	                                  moreover have "\<theta> \<in> ?T\<^sub>2"
+	                                    using h\<tau>r_eq_\<theta> h\<tau>rT\<^sub>2 by (by100 simp)
+	                                  ultimately show False
+	                                    using hside_core_omitted_parent_faces_book
+	                                    by (by100 blast)
+	                                qed
+	                                have hG2: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r"
+	                                  using h\<tau>rL\<^sub>2 h\<tau>r2 h\<tau>r_ne_\<theta>
+	                                    h\<tau>r_ne_\<beta>c h\<tau>r_no_chord h\<tau>r_card
+	                                    h\<tau>r_contact
+	                                  by (by100 blast)
+	                                show ?thesis
+	                                  by (rule disjI2[OF hG2])
+	                              qed
+	                            qed
+	                            have hcanonical_named_primaries_finishes_or_spare_empty:
+	                              "\<sigma>\<^sub>q = \<beta> \<Longrightarrow> \<tau>\<^sub>q = \<beta>\<^sub>c \<Longrightarrow>
+	                                ?thesis \<or>
+	                                ((?G\<^sub>1 \<sigma>\<^sub>r \<and> \<sigma>\<^sub>r \<inter> J\<^sub>1 = {})
+	                                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r
+	                                    \<and> \<tau>\<^sub>r \<inter> J\<^sub>2 = {}))"
+	                            proof -
+	                              assume h\<sigma>q_eq_\<beta>: "\<sigma>\<^sub>q = \<beta>"
+	                              assume h\<tau>q_eq_\<beta>c: "\<tau>\<^sub>q = \<beta>\<^sub>c"
+	                              have hspare:
+	                                "?G\<^sub>1 \<sigma>\<^sub>r \<or> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r"
+	                                by (rule
+	                                    hcanonical_spare_no_chord_candidate_if_named_primaries
+	                                    [OF h\<sigma>q_eq_\<beta> h\<tau>q_eq_\<beta>c])
+	                              show ?thesis
+	                              proof (rule disjE[OF hspare])
+	                                assume hG1: "?G\<^sub>1 \<sigma>\<^sub>r"
+	                                show ?thesis
+	                                proof (cases "\<sigma>\<^sub>r \<inter> J\<^sub>1 = {}")
+	                                  case False
+	                                  have hdone:
+	                                    "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+	                                        \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                                    apply (rule exI[where x = "\<sigma>\<^sub>r"])
+	                                    using hG1 False
+	                                    apply (by100 blast)
+	                                    done
+	                                  show ?thesis
+	                                    by (rule disjI1[OF hdone])
+	                                next
+	                                  case True
+	                                  have hspare_empty:
+	                                    "(?G\<^sub>1 \<sigma>\<^sub>r \<and> \<sigma>\<^sub>r \<inter> J\<^sub>1 = {})
+	                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r
+	                                        \<and> \<tau>\<^sub>r \<inter> J\<^sub>2 = {})"
+	                                    by (rule disjI1, rule conjI, rule hG1,
+	                                        rule True)
+	                                  show ?thesis
+	                                    by (rule disjI2[OF hspare_empty])
+	                                qed
+	                              next
+	                                assume hG2: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r"
+	                                show ?thesis
+	                                proof (cases "\<tau>\<^sub>r \<inter> J\<^sub>2 = {}")
+	                                  case False
+	                                  have hdone:
+	                                    "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+	                                        \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                                    apply (rule exI[where x = "\<tau>\<^sub>r"])
+	                                    using hG2 False
+	                                    apply (by100 blast)
+	                                    done
+	                                  show ?thesis
+	                                    by (rule disjI1[OF hdone])
+	                                next
+	                                  case True
+	                                  have hspare_empty:
+	                                    "(?G\<^sub>1 \<sigma>\<^sub>r \<and> \<sigma>\<^sub>r \<inter> J\<^sub>1 = {})
+	                                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>r
+	                                        \<and> \<tau>\<^sub>r \<inter> J\<^sub>2 = {})"
+	                                    by (rule disjI2, rule conjI, rule hG2,
+	                                        rule True)
+	                                  show ?thesis
+	                                    by (rule disjI2[OF hspare_empty])
+	                                qed
+	                              qed
+	                            qed
+	                            have hparent_or_named_with_spare_split_book:
+	                              "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+	                                  \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                              (**
+	                                Remaining Moise Figure 3.2 counting endpoint
+	                                after the named canonical primary pair has
+	                                been split through the spare witnesses.  The
+	                                only unclosed case is now the all-empty
+	                                counting contradiction: the parent residual,
+	                                the fixed empty obstruction, and any empty
+	                                canonical spare cannot exhaust the two side
+	                                free-witness supplies. **)
+	                              sorry
+	                            show ?thesis
+	                              by (rule hparent_or_named_with_spare_split_book)
+	                          qed
 	                          show ?thesis
 	                            by (rule hparent_or_named_with_canonical_spares_book)
 	                        qed
