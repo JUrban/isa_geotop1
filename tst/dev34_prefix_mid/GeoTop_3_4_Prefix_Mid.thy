@@ -20381,6 +20381,32 @@ proof -
     unfolding L\<^sub>1_def using hK_fin by (by100 simp)
   have hL\<^sub>2_fin: "finite L\<^sub>2"
     unfolding L\<^sub>2_def using hK_fin by (by100 simp)
+  have hside2_complex_exact_from_core:
+    "geotop_polyhedron L\<^sub>2 =
+      closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2)"
+  proof -
+    let ?B\<^sub>2 =
+      "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2)"
+    have hcarrier_side2:
+      "\<forall>x\<in>?B\<^sub>2.
+          geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+      using hside_core_carriers_book by (by100 simp)
+    have hB\<^sub>2_sub_K: "?B\<^sub>2 \<subseteq> geotop_polyhedron K"
+      using hsubdisk_closure_split hK_poly by (by100 blast)
+    have hcarrier_side2_point:
+      "\<And>x. x \<in> ?B\<^sub>2 \<Longrightarrow> geotop_K_carrier K x \<subseteq> ?B\<^sub>2"
+      using hcarrier_side2 by (by100 blast)
+    have hL\<^sub>2_poly_sub: "geotop_polyhedron L\<^sub>2 \<subseteq> ?B\<^sub>2"
+      unfolding L\<^sub>2_def geotop_polyhedron_def by (by100 blast)
+    have hL\<^sub>2_poly_rev: "?B\<^sub>2 \<subseteq> geotop_polyhedron L\<^sub>2"
+      unfolding L\<^sub>2_def
+      by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+          [OF hK hK_fin hB\<^sub>2_sub_K hcarrier_side2_point])
+    show ?thesis
+      using hL\<^sub>2_poly_sub hL\<^sub>2_poly_rev by (by100 blast)
+  qed
   have hside1_complex_exact_and_strict_from_core:
     "geotop_polyhedron L\<^sub>1 =
        closure_on UNIV geotop_euclidean_topology
@@ -24074,6 +24100,91 @@ proof -
       using hA_minus_lt_A hA_card by (by100 linarith)
     show "card ?E \<le> 2"
       using hE_card_le_A_minus hA_minus_card by (by100 linarith)
+  qed
+  have hL\<^sub>2_parent_contact_sub_side_all:
+    "\<And>\<tau>. \<tau> \<in> L\<^sub>2 \<Longrightarrow> \<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2"
+  proof
+    fix \<tau> x
+    assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+    assume hx: "x \<in> \<tau> \<inter> J"
+    have hC\<^sub>1_opposite:
+      "C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2) \<subseteq> {a, c}"
+      using hside_closure_opposite_arc_sub_endpoints by (rule conjunct2)
+    have h\<tau>_closure:
+      "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2)"
+      using h\<tau>L\<^sub>2 unfolding L\<^sub>2_def by (by100 blast)
+    have hx\<tau>: "x \<in> \<tau>"
+      using hx by (by100 blast)
+    have hxJ: "x \<in> J"
+      using hx by (by100 blast)
+    have hxside: "x \<in> C\<^sub>1 \<or> x \<in> C\<^sub>2"
+      using hJ_chord_split hxJ by (by100 blast)
+    have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+    proof (rule disjE[OF hxside])
+      assume hxC\<^sub>1: "x \<in> C\<^sub>1"
+      have hxcl:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>2)"
+        using hx\<tau> h\<tau>_closure by (by100 blast)
+      have hxend: "x \<in> {a, c}"
+        using hC\<^sub>1_opposite hxC\<^sub>1 hxcl by (by100 blast)
+      have ha_chord: "a \<in> closed_segment a c"
+        by (rule ends_in_segment(1))
+      have hc_chord: "c \<in> closed_segment a c"
+        by (rule ends_in_segment(2))
+      have hxchord: "x \<in> closed_segment a c"
+        using hxend ha_chord hc_chord by (by100 blast)
+      show ?thesis
+        using hxchord unfolding J\<^sub>2_def by (by100 blast)
+    next
+      assume hxC\<^sub>2: "x \<in> C\<^sub>2"
+      show ?thesis
+        using hxC\<^sub>2 unfolding J\<^sub>2_def by (by100 blast)
+    qed
+    show "x \<in> \<tau> \<inter> J\<^sub>2"
+      using hx\<tau> hxJ\<^sub>2 by (by100 blast)
+  qed
+  have hsingleton_side2_edge_face_sub_side:
+    "\<And>\<beta>\<^sub>c e. ?T\<^sub>2 = {\<beta>\<^sub>c} \<Longrightarrow>
+      \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+      e \<in> L\<^sub>2 \<Longrightarrow>
+      geotop_is_edge e \<Longrightarrow>
+      geotop_is_face e \<beta>\<^sub>c \<Longrightarrow>
+      e \<subseteq> J\<^sub>2"
+  proof -
+    fix \<beta>\<^sub>c e
+    assume hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+    assume heL\<^sub>2: "e \<in> L\<^sub>2"
+    assume hedge: "geotop_is_edge e"
+    assume heface: "geotop_is_face e \<beta>\<^sub>c"
+    have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+      using hsubdisk_book_facts by (by100 blast)
+    have h\<beta>cL\<^sub>2: "\<beta>\<^sub>c \<in> L\<^sub>2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have h\<beta>c2: "geotop_simplex_dim \<beta>\<^sub>c 2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    show "e \<subseteq> J\<^sub>2"
+    proof (rule ccontr)
+      assume hnot: "\<not> e \<subseteq> J\<^sub>2"
+      obtain \<rho> where h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+        and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+        and he\<rho>: "geotop_is_face e \<rho>"
+        and h\<rho>ne: "\<rho> \<noteq> \<beta>\<^sub>c"
+        by (rule exE[OF
+            geotop_polygon_disk_nonboundary_edge_has_other_2simplex_prefix
+              [OF hJ\<^sub>2 hL\<^sub>2_complex hside2_complex_exact_from_core
+                heL\<^sub>2 hedge h\<beta>cL\<^sub>2 h\<beta>c2 heface hnot]])
+          (by100 blast)
+      have h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
+        using h\<rho>L\<^sub>2 h\<rho>2 by (by100 simp)
+      have "\<rho> = \<beta>\<^sub>c"
+        using hsingle_eq h\<rho>T\<^sub>2 by (by100 simp)
+      thus False
+        using h\<rho>ne by (by100 blast)
+    qed
   qed
   have hresidual_cases_with_singleton_side2_parent_count:
     "(\<exists>\<rho>. \<rho> \<in> K
