@@ -4073,6 +4073,32 @@ proof -
     show "p \<in> S - {w}" by (rule hpS_germ)
     show "y \<in> T - {w}" by (rule hyT_germ)
   qed
+  have hbook_first_entry_decomposition:
+      "(\<exists>A x. connected A
+          \<and> A \<subseteq> ?H
+          \<and> x \<in> A
+          \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
+          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {})
+       \<and> (\<forall>A x. connected A
+          \<longrightarrow> A \<subseteq> ?H
+          \<longrightarrow> x \<in> A
+          \<longrightarrow> ?G\<^sub>S \<inter> closure A \<noteq> {}
+          \<longrightarrow> ?G\<^sub>T \<inter> closure A \<noteq> {}
+          \<longrightarrow> (\<exists>B y. connected B
+              \<and> B \<subseteq> ?H
+              \<and> y \<in> B
+              \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
+              \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
+              \<and> ?G\<^sub>U \<inter> closure B \<noteq> {}))"
+    (**
+      Moise first-entry decomposition.  The connected split-side witness \<open>N\<close>
+      gives a connected local side of \<open>?H\<close> whose closure touches the selected
+      \<open>S\<close>- and \<open>T\<close>-germs.  The connected three-germ witness \<open>M\<close> then forces
+      that same local side, or a connected side reached from it, to accumulate
+      on the selected \<open>U\<close>-germ as well; otherwise the first entries of \<open>M\<close>
+      into the small ball would separate the punctured simple-closed-curve
+      carrier into incompatible local sides. **)
+    sorry
   have hbook_first_entry_side:
       "\<exists>A x. connected A
         \<and> A \<subseteq> ?H
@@ -4080,15 +4106,52 @@ proof -
         \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
         \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}
         \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
-    (**
-      Remaining Moise first-entry step.  The connected set \<open>M\<close> carries
-      the three selected sphere germs through the punctured carrier, while
-      \<open>N\<close> is the split-side subarc through the selected S/T germs.  Using
-      the small-star sector covers above, the first entries of these
-      connected witnesses into the small ball must lie on one connected
-      local side of \<open>ball w r - (S \<union> T \<union> U)\<close>, and that side accumulates
-      on all three selected incident germs. **)
-    sorry
+  proof -
+    have hST_side_exists:
+        "\<exists>A x. connected A
+          \<and> A \<subseteq> ?H
+          \<and> x \<in> A
+          \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
+          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}"
+      using hbook_first_entry_decomposition by (rule conjunct1)
+    have hST_to_three:
+        "\<forall>A x. connected A
+          \<longrightarrow> A \<subseteq> ?H
+          \<longrightarrow> x \<in> A
+          \<longrightarrow> ?G\<^sub>S \<inter> closure A \<noteq> {}
+          \<longrightarrow> ?G\<^sub>T \<inter> closure A \<noteq> {}
+          \<longrightarrow> (\<exists>B y. connected B
+              \<and> B \<subseteq> ?H
+              \<and> y \<in> B
+              \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
+              \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
+              \<and> ?G\<^sub>U \<inter> closure B \<noteq> {})"
+      using hbook_first_entry_decomposition by (rule conjunct2)
+    obtain A x where hA_conn: "connected A"
+      and hA_sub: "A \<subseteq> ?H"
+      and hxA: "x \<in> A"
+      and hS_touch_A: "?G\<^sub>S \<inter> closure A \<noteq> {}"
+      and hT_touch_A: "?G\<^sub>T \<inter> closure A \<noteq> {}"
+      using hST_side_exists by (by100 blast)
+    have hthree_exists:
+        "\<exists>B y. connected B
+          \<and> B \<subseteq> ?H
+          \<and> y \<in> B
+          \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
+          \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
+          \<and> ?G\<^sub>U \<inter> closure B \<noteq> {}"
+      by (rule hST_to_three[rule_format, OF hA_conn hA_sub hxA
+            hS_touch_A hT_touch_A])
+    obtain B y where hB_conn: "connected B"
+      and hB_sub: "B \<subseteq> ?H"
+      and hyB: "y \<in> B"
+      and hS_touch_B: "?G\<^sub>S \<inter> closure B \<noteq> {}"
+      and hT_touch_B: "?G\<^sub>T \<inter> closure B \<noteq> {}"
+      and hU_touch_B: "?G\<^sub>U \<inter> closure B \<noteq> {}"
+      using hthree_exists by (by100 blast)
+    show ?thesis
+      using hB_conn hB_sub hyB hS_touch_B hT_touch_B hU_touch_B by (by100 blast)
+  qed
   show ?thesis
     by (rule hbook_first_entry_side)
 qed
