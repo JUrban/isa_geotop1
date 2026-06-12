@@ -34713,6 +34713,47 @@ proof -
   have hclosed_disk_in_support:
       "geotop_polyhedron K \<subseteq> U"
     using hK_poly hI_sub_U by (by100 simp)
+  obtain v\<^sub>0 v\<^sub>2 v\<^sub>1 where hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    and hv\<^sub>1_not: "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2}"
+    and he_named: "e = geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+    and h\<theta>vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix
+        [OF h\<theta>2 hedge heface])
+  have h\<theta>boundary_named:
+      "\<theta> \<inter> J = geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+    using hcontact he_named by (by100 simp)
+  have h\<theta>other_edge_faces:
+      "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1})
+      \<and> geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta>
+      \<and> geotop_is_edge (geotop_convex_hull {v\<^sub>2, v\<^sub>1})
+      \<and> geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<theta>"
+    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+        [OF h\<theta>vertices hv\<^sub>0v\<^sub>2 hv\<^sub>1_not])
+  have h\<theta>frontier_named:
+      "frontier \<theta> =
+        geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+        \<union> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+        \<union> geotop_convex_hull {v\<^sub>2, v\<^sub>1}"
+    by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
+        [OF h\<theta>vertices hv\<^sub>0v\<^sub>2 hv\<^sub>1_not])
+  have hfigure33_one_boundary_named_input:
+      "\<exists>v\<^sub>0 v\<^sub>1 v\<^sub>2.
+        v\<^sub>0 \<noteq> v\<^sub>2
+        \<and> v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2}
+        \<and> e = geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>2, v\<^sub>1}
+        \<and> \<theta> \<inter> J = geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1})
+        \<and> geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta>
+        \<and> geotop_is_edge (geotop_convex_hull {v\<^sub>2, v\<^sub>1})
+        \<and> geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<theta>
+        \<and> frontier \<theta> =
+          geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+          \<union> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+          \<union> geotop_convex_hull {v\<^sub>2, v\<^sub>1}"
+    using hv\<^sub>0v\<^sub>2 hv\<^sub>1_not he_named h\<theta>vertices h\<theta>boundary_named
+      h\<theta>other_edge_faces h\<theta>frontier_named
+    by (by100 blast)
   have hbook_figure33_one_boundary_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
@@ -34813,6 +34854,63 @@ proof -
   have hclosed_disk_in_support:
       "geotop_polyhedron K \<subseteq> U"
     using hK_poly hI_sub_U by (by100 simp)
+  have h\<theta>frontier_edge_faces:
+      "frontier \<theta> =
+        \<Union>{d. geotop_is_edge d \<and> geotop_is_face d \<theta>}"
+    by (rule geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<theta>2])
+  have he1_frontier: "e1 \<subseteq> frontier \<theta>"
+    using h\<theta>frontier_edge_faces he1edge he1face by (by100 blast)
+  have he2_frontier: "e2 \<subseteq> frontier \<theta>"
+    using h\<theta>frontier_edge_faces he2edge he2face by (by100 blast)
+  have hcontact_frontier_sub: "\<theta> \<inter> J \<subseteq> frontier \<theta>"
+    using hcontact he1_frontier he2_frontier by (by100 blast)
+  obtain a b c where hab: "a \<noteq> b"
+    and hc_not: "c \<notin> {a, b}"
+    and he1_named: "e1 = geotop_convex_hull {a, b}"
+    and h\<theta>vertices_e1: "geotop_simplex_vertices \<theta> {a, b, c}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix
+        [OF h\<theta>2 he1edge he1face])
+  obtain p q r where hpq: "p \<noteq> q"
+    and hr_not: "r \<notin> {p, q}"
+    and he2_named: "e2 = geotop_convex_hull {p, q}"
+    and h\<theta>vertices_e2: "geotop_simplex_vertices \<theta> {p, q, r}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix
+        [OF h\<theta>2 he2edge he2face])
+  have hsame_vertices: "{a, b, c} = {p, q, r}"
+    by (rule geotop_simplex_vertices_unique
+        [OF h\<theta>vertices_e1 h\<theta>vertices_e2])
+  have he12_frontier: "e1 \<union> e2 \<subseteq> frontier \<theta>"
+    using he1_frontier he2_frontier by (by100 blast)
+  have hfigure33_two_boundary_named_input:
+      "\<exists>a b c p q r.
+        a \<noteq> b
+        \<and> c \<notin> {a, b}
+        \<and> e1 = geotop_convex_hull {a, b}
+        \<and> geotop_simplex_vertices \<theta> {a, b, c}
+        \<and> p \<noteq> q
+        \<and> r \<notin> {p, q}
+        \<and> e2 = geotop_convex_hull {p, q}
+        \<and> geotop_simplex_vertices \<theta> {p, q, r}
+        \<and> {a, b, c} = {p, q, r}
+        \<and> \<theta> \<inter> J = e1 \<union> e2
+        \<and> e1 \<union> e2 \<subseteq> frontier \<theta>"
+  proof (rule exI[where x = a], rule exI[where x = b],
+      rule exI[where x = c], rule exI[where x = p],
+      rule exI[where x = q], rule exI[where x = r])
+    show "a \<noteq> b \<and>
+        c \<notin> {a, b} \<and>
+        e1 = geotop_convex_hull {a, b} \<and>
+        geotop_simplex_vertices \<theta> {a, b, c} \<and>
+        p \<noteq> q \<and>
+        r \<notin> {p, q} \<and>
+        e2 = geotop_convex_hull {p, q} \<and>
+        geotop_simplex_vertices \<theta> {p, q, r} \<and>
+        {a, b, c} = {p, q, r} \<and>
+        \<theta> \<inter> J = e1 \<union> e2 \<and> e1 \<union> e2 \<subseteq> frontier \<theta>"
+      using hab hc_not he1_named h\<theta>vertices_e1 hpq hr_not he2_named
+        h\<theta>vertices_e2 hsame_vertices hcontact he12_frontier
+      by (by100 blast)
+  qed
   have hbook_figure33_two_boundary_inverse_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
