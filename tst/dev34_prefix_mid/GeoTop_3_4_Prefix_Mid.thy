@@ -22977,6 +22977,150 @@ proof -
         using hselected by (by100 blast)
     qed
   qed
+  have hG\<^sub>1_side_selected_nonempty_finishes:
+    "\<And>\<rho>. ?G\<^sub>1 \<rho> \<Longrightarrow>
+      {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<noteq> {} \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    fix \<rho>
+    assume hG: "?G\<^sub>1 \<rho>"
+    assume hside_selected:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<noteq> {}"
+    have h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+      using hG by (by100 blast)
+    have h\<rho>K: "\<rho> \<in> K"
+      using hL\<^sub>1_sub_K h\<rho>L\<^sub>1 by (by100 blast)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using hG by (by100 blast)
+    have h\<rho>_ne_\<theta>: "\<rho> \<noteq> \<theta>"
+      using hG by (by100 blast)
+    have h\<rho>_no_chord:
+      "\<not> geotop_is_face (closed_segment a c) \<rho>"
+      using hG by (by100 blast)
+    have hside_sub_parent:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1}
+      \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+    proof -
+      have hleft:
+        "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+          {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+          \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        using hno_chord_side_selected_edges_sub_parent by (rule conjunct1)
+      have hinst:
+        "\<rho> \<in> L\<^sub>1 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho> \<longrightarrow>
+          {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1}
+          \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+        using hleft by (rule spec)
+      show ?thesis
+        using hinst h\<rho>L\<^sub>1 h\<rho>_no_chord by (by100 blast)
+    qed
+    have hside_parent_selected:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      using hside_selected hside_sub_parent by (by100 blast)
+    have hparent_selected:
+      "{e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      by (rule hL\<^sub>1_parent_selected_nonempty_from_side
+          [OF hside_parent_selected])
+    have hfree: "geotop_free_2_simplex K J \<rho>"
+      using hG\<^sub>1_parent_transfer[OF hG] by (by100 blast)
+    show "\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+      using h\<rho>K hfree h\<rho>2 hparent_selected h\<rho>_ne_\<theta>
+      by (by100 blast)
+  qed
+  have hG\<^sub>2_side_selected_nonempty_finishes:
+    "\<And>\<beta>\<^sub>c \<rho>. ?G\<^sub>2 \<beta>\<^sub>c \<rho> \<Longrightarrow>
+      {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<noteq> {} \<Longrightarrow>
+      \<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+  proof -
+    fix \<beta>\<^sub>c \<rho>
+    assume hG: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+    assume hside_selected:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<noteq> {}"
+    have h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+      using hG by (by100 blast)
+    have h\<rho>K: "\<rho> \<in> K"
+      using hL\<^sub>2_sub_K h\<rho>L\<^sub>2 by (by100 blast)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using hG by (by100 blast)
+    have h\<rho>_ne_\<theta>: "\<rho> \<noteq> \<theta>"
+      using hG by (by100 blast)
+    have h\<rho>_no_chord:
+      "\<not> geotop_is_face (closed_segment a c) \<rho>"
+      using hG by (by100 blast)
+    have hside_sub_parent:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2}
+      \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+    proof -
+      have hright:
+        "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+          {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+          \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        using hno_chord_side_selected_edges_sub_parent by (rule conjunct2)
+      have hinst:
+        "\<rho> \<in> L\<^sub>2 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho> \<longrightarrow>
+          {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2}
+          \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
+        using hright by (rule spec)
+      show ?thesis
+        using hinst h\<rho>L\<^sub>2 h\<rho>_no_chord by (by100 blast)
+    qed
+    have hside_parent_selected:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      using hside_selected hside_sub_parent by (by100 blast)
+    have hparent_selected:
+      "{e\<in>K. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
+      by (rule hL\<^sub>2_parent_selected_nonempty_from_side
+          [OF hside_parent_selected])
+    have hfree: "geotop_free_2_simplex K J \<rho>"
+      using hG\<^sub>2_parent_transfer[OF hG] by (by100 blast)
+    show "\<exists>\<rho>. \<rho> \<in> K
+        \<and> geotop_free_2_simplex K J \<rho>
+        \<and> geotop_simplex_dim \<rho> 2
+        \<and> {e\<in>K. geotop_is_edge e
+          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}
+        \<and> \<rho> \<noteq> \<theta>"
+      using h\<rho>K hfree h\<rho>2 hparent_selected h\<rho>_ne_\<theta>
+      by (by100 blast)
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
