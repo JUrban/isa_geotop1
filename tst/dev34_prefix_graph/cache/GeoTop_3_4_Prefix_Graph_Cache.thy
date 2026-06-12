@@ -13610,6 +13610,288 @@ proof -
                     by (by100 blast)
                 qed
               qed
+              have hW_source_ball_entry_flat_summary_cases:
+                  "(\<exists>D a. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> a \<in> W \<inter> ball w r
+                      \<and> a \<in> ((S - {w}) \<inter> ball w r))
+                    \<or> (\<exists>D a. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> a \<in> W \<inter> ball w r
+                      \<and> a \<in> ((T - {w}) \<inter> ball w r))
+                    \<or> (\<exists>D a. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> a \<in> W \<inter> ball w r
+                      \<and> a \<in> ((U - {w}) \<inter> ball w r))
+                    \<or> (\<exists>D C. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> C \<in> ?Ntrace_components
+                      \<and> C \<in> components ?Lcomp
+                      \<and> C \<noteq> {}
+                      \<and> C \<subseteq> ?Lcomp
+                      \<and> connected C
+                      \<and> path_connected C
+                      \<and> C \<inter> ?Nloc \<noteq> {}
+                      \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                      \<and> W \<inter> closure C \<noteq> {})
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W)"
+              proof -
+                show ?thesis
+                  using hW_source_ball_entry_named_summary_cases
+                proof (elim disjE)
+                  assume hleft: "\<exists>D. N = D - {w}
+                    \<and> W = D - {w, p}
+                    \<and> y \<in> D - {p}
+                    \<and> w \<in> closure W
+                    \<and> ((\<exists>a. a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((S - {w}) \<inter> ball w r))
+                      \<or> (\<exists>a. a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((T - {w}) \<inter> ball w r))
+                      \<or> (\<exists>a. a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((U - {w}) \<inter> ball w r))
+                      \<or> (\<exists>C\<in>?Ntrace_components.
+                        C \<in> components ?Lcomp
+                        \<and> C \<noteq> {}
+                        \<and> C \<subseteq> ?Lcomp
+                        \<and> connected C
+                        \<and> path_connected C
+                        \<and> C \<inter> ?Nloc \<noteq> {}
+                        \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                        \<and> W \<inter> closure C \<noteq> {}))"
+                  then obtain D where hN_eq: "N = D - {w}"
+                    and hW_eq: "W = D - {w, p}"
+                    and hyD: "y \<in> D - {p}"
+                    and hwW_cl: "w \<in> closure W"
+                    and hentry:
+                      "((\<exists>a. a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((S - {w}) \<inter> ball w r))
+                        \<or> (\<exists>a. a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((T - {w}) \<inter> ball w r))
+                        \<or> (\<exists>a. a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((U - {w}) \<inter> ball w r))
+                        \<or> (\<exists>C\<in>?Ntrace_components.
+                          C \<in> components ?Lcomp
+                          \<and> C \<noteq> {}
+                          \<and> C \<subseteq> ?Lcomp
+                          \<and> connected C
+                          \<and> path_connected C
+                          \<and> C \<inter> ?Nloc \<noteq> {}
+                          \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                          \<and> W \<inter> closure C \<noteq> {}))"
+                    by (elim exE conjE)
+                  show ?thesis
+                    using hentry
+                  proof (elim disjE)
+                    assume hS_entry:
+                        "\<exists>a. a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((S - {w}) \<inter> ball w r)"
+                    then obtain a where haW: "a \<in> W \<inter> ball w r"
+                      and haS: "a \<in> ((S - {w}) \<inter> ball w r)"
+                      by (elim exE conjE)
+                    show ?thesis
+                    proof (rule disjI1)
+                      show "\<exists>D a. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((S - {w}) \<inter> ball w r)"
+                      proof (rule exI[where x=D], rule exI[where x=a])
+                        show "N = D - {w}
+                          \<and> W = D - {w, p}
+                          \<and> y \<in> D - {p}
+                          \<and> w \<in> closure W
+                          \<and> a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((S - {w}) \<inter> ball w r)"
+                        proof (intro conjI)
+                          show "N = D - {w}" by (rule hN_eq)
+                          show "W = D - {w, p}" by (rule hW_eq)
+                          show "y \<in> D - {p}" by (rule hyD)
+                          show "w \<in> closure W" by (rule hwW_cl)
+                          show "a \<in> W \<inter> ball w r" by (rule haW)
+                          show "a \<in> ((S - {w}) \<inter> ball w r)"
+                            by (rule haS)
+                        qed
+                      qed
+                    qed
+                  next
+                    assume hT_entry:
+                        "\<exists>a. a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((T - {w}) \<inter> ball w r)"
+                    then obtain a where haW: "a \<in> W \<inter> ball w r"
+                      and haT: "a \<in> ((T - {w}) \<inter> ball w r)"
+                      by (elim exE conjE)
+                    show ?thesis
+                    proof (rule disjI2, rule disjI1)
+                      show "\<exists>D a. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((T - {w}) \<inter> ball w r)"
+                      proof (rule exI[where x=D], rule exI[where x=a])
+                        show "N = D - {w}
+                          \<and> W = D - {w, p}
+                          \<and> y \<in> D - {p}
+                          \<and> w \<in> closure W
+                          \<and> a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((T - {w}) \<inter> ball w r)"
+                        proof (intro conjI)
+                          show "N = D - {w}" by (rule hN_eq)
+                          show "W = D - {w, p}" by (rule hW_eq)
+                          show "y \<in> D - {p}" by (rule hyD)
+                          show "w \<in> closure W" by (rule hwW_cl)
+                          show "a \<in> W \<inter> ball w r" by (rule haW)
+                          show "a \<in> ((T - {w}) \<inter> ball w r)"
+                            by (rule haT)
+                        qed
+                      qed
+                    qed
+                  next
+                    assume hU_entry:
+                        "\<exists>a. a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((U - {w}) \<inter> ball w r)"
+                    then obtain a where haW: "a \<in> W \<inter> ball w r"
+                      and haU: "a \<in> ((U - {w}) \<inter> ball w r)"
+                      by (elim exE conjE)
+                    show ?thesis
+                    proof (rule disjI2, rule disjI2, rule disjI1)
+                      show "\<exists>D a. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((U - {w}) \<inter> ball w r)"
+                      proof (rule exI[where x=D], rule exI[where x=a])
+                        show "N = D - {w}
+                          \<and> W = D - {w, p}
+                          \<and> y \<in> D - {p}
+                          \<and> w \<in> closure W
+                          \<and> a \<in> W \<inter> ball w r
+                          \<and> a \<in> ((U - {w}) \<inter> ball w r)"
+                        proof (intro conjI)
+                          show "N = D - {w}" by (rule hN_eq)
+                          show "W = D - {w, p}" by (rule hW_eq)
+                          show "y \<in> D - {p}" by (rule hyD)
+                          show "w \<in> closure W" by (rule hwW_cl)
+                          show "a \<in> W \<inter> ball w r" by (rule haW)
+                          show "a \<in> ((U - {w}) \<inter> ball w r)"
+                            by (rule haU)
+                        qed
+                      qed
+                    qed
+                  next
+                    assume hC_entry:
+                        "\<exists>C\<in>?Ntrace_components.
+                          C \<in> components ?Lcomp
+                          \<and> C \<noteq> {}
+                          \<and> C \<subseteq> ?Lcomp
+                          \<and> connected C
+                          \<and> path_connected C
+                          \<and> C \<inter> ?Nloc \<noteq> {}
+                          \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                          \<and> W \<inter> closure C \<noteq> {}"
+                    then obtain C where hC: "C \<in> ?Ntrace_components"
+                      and hC_comp: "C \<in> components ?Lcomp"
+                      and hC_nonempty: "C \<noteq> {}"
+                      and hC_sub: "C \<subseteq> ?Lcomp"
+                      and hC_conn: "connected C"
+                      and hC_path: "path_connected C"
+                      and hC_Nloc: "C \<inter> ?Nloc \<noteq> {}"
+                      and hW_ball_C: "W \<inter> ball w r \<inter> C \<noteq> {}"
+                      and hW_closure_C: "W \<inter> closure C \<noteq> {}"
+                      by (elim bexE conjE)
+                    show ?thesis
+                    proof (rule disjI2, rule disjI2, rule disjI2, rule disjI1)
+                      show "\<exists>D C. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> C \<in> ?Ntrace_components
+                        \<and> C \<in> components ?Lcomp
+                        \<and> C \<noteq> {}
+                        \<and> C \<subseteq> ?Lcomp
+                        \<and> connected C
+                        \<and> path_connected C
+                        \<and> C \<inter> ?Nloc \<noteq> {}
+                        \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                        \<and> W \<inter> closure C \<noteq> {}"
+                      proof (rule exI[where x=D], rule exI[where x=C])
+                        show "N = D - {w}
+                          \<and> W = D - {w, p}
+                          \<and> y \<in> D - {p}
+                          \<and> w \<in> closure W
+                          \<and> C \<in> ?Ntrace_components
+                          \<and> C \<in> components ?Lcomp
+                          \<and> C \<noteq> {}
+                          \<and> C \<subseteq> ?Lcomp
+                          \<and> connected C
+                          \<and> path_connected C
+                          \<and> C \<inter> ?Nloc \<noteq> {}
+                          \<and> W \<inter> ball w r \<inter> C \<noteq> {}
+                          \<and> W \<inter> closure C \<noteq> {}"
+                        proof (intro conjI)
+                          show "N = D - {w}" by (rule hN_eq)
+                          show "W = D - {w, p}" by (rule hW_eq)
+                          show "y \<in> D - {p}" by (rule hyD)
+                          show "w \<in> closure W" by (rule hwW_cl)
+                          show "C \<in> ?Ntrace_components" by (rule hC)
+                          show "C \<in> components ?Lcomp" by (rule hC_comp)
+                          show "C \<noteq> {}" by (rule hC_nonempty)
+                          show "C \<subseteq> ?Lcomp" by (rule hC_sub)
+                          show "connected C" by (rule hC_conn)
+                          show "path_connected C" by (rule hC_path)
+                          show "C \<inter> ?Nloc \<noteq> {}" by (rule hC_Nloc)
+                          show "W \<inter> ball w r \<inter> C \<noteq> {}"
+                            by (rule hW_ball_C)
+                          show "W \<inter> closure C \<noteq> {}"
+                            by (rule hW_closure_C)
+                        qed
+                      qed
+                    qed
+                  qed
+                next
+                  assume hright: "\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W"
+                  then obtain D where hN_eq: "N = D"
+                    and hW_eq: "W = D - {p, q\<^sub>1}"
+                    and hyD: "y \<in> D - {p}"
+                    and hqW_cl: "q\<^sub>1 \<in> closure W"
+                    by (elim exE conjE)
+                  show ?thesis
+                  proof (rule disjI2, rule disjI2, rule disjI2, rule disjI2)
+                    show "\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W"
+                    proof (rule exI[where x=D])
+                      show "N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W"
+                      proof (intro conjI)
+                        show "N = D" by (rule hN_eq)
+                        show "W = D - {p, q\<^sub>1}" by (rule hW_eq)
+                        show "y \<in> D - {p}" by (rule hyD)
+                        show "q\<^sub>1 \<in> closure W" by (rule hqW_cl)
+                      qed
+                    qed
+                  qed
+                qed
+              qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
                     \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
