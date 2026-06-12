@@ -21628,6 +21628,851 @@ proof -
       qed
     qed
   qed
+  have hside_separated_J:
+    "geotop_separated UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J\<^sub>1 \<union>
+       geotop_arc_interior C\<^sub>1 {a, c})
+      (geotop_polygon_interior J\<^sub>2 \<union>
+       geotop_arc_interior C\<^sub>2 {a, c})"
+    using hsubdisk_book_facts by (by100 blast)
+  have hside_closure_opposite_arc_sub_endpoints:
+    "C\<^sub>2 \<inter> closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J\<^sub>1) \<subseteq> {a, c}
+    \<and> C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J\<^sub>2) \<subseteq> {a, c}"
+  proof
+    have hB\<^sub>1_sub_closure_R\<^sub>1:
+      "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>1)
+      \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>1 \<union>
+          geotop_arc_interior C\<^sub>1 {a, c})"
+    proof -
+      have hI_sub_R:
+        "geotop_polygon_interior J\<^sub>1 \<subseteq>
+          geotop_polygon_interior J\<^sub>1 \<union>
+          geotop_arc_interior C\<^sub>1 {a, c}"
+        by (by100 blast)
+      show ?thesis
+        by (rule closure_on_mono[OF hI_sub_R])
+    qed
+    show "C\<^sub>2 \<inter> closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J\<^sub>1) \<subseteq> {a, c}"
+    proof
+      fix x
+      assume hx:
+        "x \<in> C\<^sub>2 \<inter> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>1)"
+      have hxC\<^sub>2: "x \<in> C\<^sub>2"
+        using hx by (by100 blast)
+      have hxclB\<^sub>1:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>1)"
+        using hx by (by100 blast)
+      show "x \<in> {a, c}"
+      proof (rule ccontr)
+        assume hxnot: "x \<notin> {a, c}"
+        have hxarc\<^sub>2:
+          "x \<in> geotop_arc_interior C\<^sub>2 {a, c}"
+          using hxC\<^sub>2 hxnot unfolding geotop_arc_interior_def
+          by (by100 blast)
+        have hxR\<^sub>2:
+          "x \<in> geotop_polygon_interior J\<^sub>2 \<union>
+            geotop_arc_interior C\<^sub>2 {a, c}"
+          using hxarc\<^sub>2 by (by100 blast)
+        have hxclR\<^sub>1:
+          "x \<in> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {a, c})"
+          using hB\<^sub>1_sub_closure_R\<^sub>1 hxclB\<^sub>1 by (by100 blast)
+        have "x \<in> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {a, c})
+          \<inter> (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {a, c})"
+          using hxclR\<^sub>1 hxR\<^sub>2 by (by100 blast)
+        thus False
+          using hside_separated_J unfolding geotop_separated_def
+          by (by100 blast)
+      qed
+    qed
+  next
+    have hB\<^sub>2_sub_closure_R\<^sub>2:
+      "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2)
+      \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2 \<union>
+          geotop_arc_interior C\<^sub>2 {a, c})"
+    proof -
+      have hI_sub_R:
+        "geotop_polygon_interior J\<^sub>2 \<subseteq>
+          geotop_polygon_interior J\<^sub>2 \<union>
+          geotop_arc_interior C\<^sub>2 {a, c}"
+        by (by100 blast)
+      show ?thesis
+        by (rule closure_on_mono[OF hI_sub_R])
+    qed
+    show "C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J\<^sub>2) \<subseteq> {a, c}"
+    proof
+      fix x
+      assume hx:
+        "x \<in> C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>2)"
+      have hxC\<^sub>1: "x \<in> C\<^sub>1"
+        using hx by (by100 blast)
+      have hxclB\<^sub>2:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>2)"
+        using hx by (by100 blast)
+      show "x \<in> {a, c}"
+      proof (rule ccontr)
+        assume hxnot: "x \<notin> {a, c}"
+        have hxarc\<^sub>1:
+          "x \<in> geotop_arc_interior C\<^sub>1 {a, c}"
+          using hxC\<^sub>1 hxnot unfolding geotop_arc_interior_def
+          by (by100 blast)
+        have hxR\<^sub>1:
+          "x \<in> geotop_polygon_interior J\<^sub>1 \<union>
+            geotop_arc_interior C\<^sub>1 {a, c}"
+          using hxarc\<^sub>1 by (by100 blast)
+        have hxclR\<^sub>2:
+          "x \<in> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {a, c})"
+          using hB\<^sub>2_sub_closure_R\<^sub>2 hxclB\<^sub>2 by (by100 blast)
+        have "x \<in> (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {a, c})
+          \<inter> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {a, c})"
+          using hxR\<^sub>1 hxclR\<^sub>2 by (by100 blast)
+        thus False
+          using hside_separated_J unfolding geotop_separated_def
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hno_chord_parent_contact_sub_side:
+    "(\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+      \<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1
+      \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1})
+    \<and> (\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+      \<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2
+      \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2})"
+  proof
+    have hC\<^sub>2_opposite:
+      "C\<^sub>2 \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>1) \<subseteq> {a, c}"
+      using hside_closure_opposite_arc_sub_endpoints
+      by (rule conjunct1)
+    show "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+      \<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1
+      \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+    proof (intro allI impI)
+      fix \<sigma>
+      assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+      assume "\<not> geotop_is_face (closed_segment a c) \<sigma>"
+      have h\<sigma>_closure:
+        "\<sigma> \<subseteq> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>1)"
+        using h\<sigma>L\<^sub>1 unfolding L\<^sub>1_def by (by100 blast)
+      have hcontact_sub:
+        "\<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1"
+      proof
+        fix x
+        assume hx: "x \<in> \<sigma> \<inter> J"
+        have hx\<sigma>: "x \<in> \<sigma>"
+          using hx by (by100 blast)
+        have hxJ: "x \<in> J"
+          using hx by (by100 blast)
+        have hxside: "x \<in> C\<^sub>1 \<or> x \<in> C\<^sub>2"
+          using hJ_chord_split hxJ by (by100 blast)
+        have hxJ\<^sub>1: "x \<in> J\<^sub>1"
+        proof (rule disjE[OF hxside])
+          assume hxC\<^sub>1: "x \<in> C\<^sub>1"
+          show ?thesis
+            using hxC\<^sub>1 unfolding J\<^sub>1_def by (by100 blast)
+        next
+          assume hxC\<^sub>2: "x \<in> C\<^sub>2"
+          have hxcl:
+            "x \<in> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J\<^sub>1)"
+            using hx\<sigma> h\<sigma>_closure by (by100 blast)
+          have hxend: "x \<in> {a, c}"
+            using hC\<^sub>2_opposite hxC\<^sub>2 hxcl by (by100 blast)
+          have ha_chord: "a \<in> closed_segment a c"
+            by (rule ends_in_segment(1))
+          have hc_chord: "c \<in> closed_segment a c"
+            by (rule ends_in_segment(2))
+          have hxchord: "x \<in> closed_segment a c"
+            using hxend ha_chord hc_chord by (by100 blast)
+          show ?thesis
+            using hxchord unfolding J\<^sub>1_def by (by100 blast)
+        qed
+        show "x \<in> \<sigma> \<inter> J\<^sub>1"
+          using hx\<sigma> hxJ\<^sub>1 by (by100 blast)
+      qed
+      have hedge_sub:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+      proof
+        fix e
+        assume he:
+          "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        have heL\<^sub>1: "e \<in> L\<^sub>1"
+          using he by (by100 blast)
+        have hedge: "geotop_is_edge e"
+          using he by (by100 blast)
+        have hface: "geotop_is_face e \<sigma>"
+          using he by (by100 blast)
+        have heJ: "e \<subseteq> J"
+          using he by (by100 blast)
+        have he\<sigma>: "e \<subseteq> \<sigma>"
+          by (rule geotop_is_face_imp_subset_prefix[OF hface])
+        have heJ\<^sub>1: "e \<subseteq> J\<^sub>1"
+        proof
+          fix x
+          assume hxe: "x \<in> e"
+          have "x \<in> \<sigma> \<inter> J"
+            using hxe he\<sigma> heJ by (by100 blast)
+          hence "x \<in> \<sigma> \<inter> J\<^sub>1"
+            using hcontact_sub by (by100 blast)
+          thus "x \<in> J\<^sub>1"
+            by (by100 blast)
+        qed
+        show "e \<in> {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+          using heL\<^sub>1 hedge hface heJ\<^sub>1 by (by100 blast)
+      qed
+      show "\<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+        using hcontact_sub hedge_sub by (by100 blast)
+    qed
+  next
+    have hC\<^sub>1_opposite:
+      "C\<^sub>1 \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J\<^sub>2) \<subseteq> {a, c}"
+      using hside_closure_opposite_arc_sub_endpoints
+      by (rule conjunct2)
+    show "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+      \<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2
+      \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+    proof (intro allI impI)
+      fix \<tau>
+      assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+      assume "\<not> geotop_is_face (closed_segment a c) \<tau>"
+      have h\<tau>_closure:
+        "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J\<^sub>2)"
+        using h\<tau>L\<^sub>2 unfolding L\<^sub>2_def by (by100 blast)
+      have hcontact_sub:
+        "\<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2"
+      proof
+        fix x
+        assume hx: "x \<in> \<tau> \<inter> J"
+        have hx\<tau>: "x \<in> \<tau>"
+          using hx by (by100 blast)
+        have hxJ: "x \<in> J"
+          using hx by (by100 blast)
+        have hxside: "x \<in> C\<^sub>1 \<or> x \<in> C\<^sub>2"
+          using hJ_chord_split hxJ by (by100 blast)
+        have hxJ\<^sub>2: "x \<in> J\<^sub>2"
+        proof (rule disjE[OF hxside])
+          assume hxC\<^sub>1: "x \<in> C\<^sub>1"
+          have hxcl:
+            "x \<in> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J\<^sub>2)"
+            using hx\<tau> h\<tau>_closure by (by100 blast)
+          have hxend: "x \<in> {a, c}"
+            using hC\<^sub>1_opposite hxC\<^sub>1 hxcl by (by100 blast)
+          have ha_chord: "a \<in> closed_segment a c"
+            by (rule ends_in_segment(1))
+          have hc_chord: "c \<in> closed_segment a c"
+            by (rule ends_in_segment(2))
+          have hxchord: "x \<in> closed_segment a c"
+            using hxend ha_chord hc_chord by (by100 blast)
+          show ?thesis
+            using hxchord unfolding J\<^sub>2_def by (by100 blast)
+        next
+          assume hxC\<^sub>2: "x \<in> C\<^sub>2"
+          show ?thesis
+            using hxC\<^sub>2 unfolding J\<^sub>2_def by (by100 blast)
+        qed
+        show "x \<in> \<tau> \<inter> J\<^sub>2"
+          using hx\<tau> hxJ\<^sub>2 by (by100 blast)
+      qed
+      have hedge_sub:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+      proof
+        fix e
+        assume he:
+          "e \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        have heL\<^sub>2: "e \<in> L\<^sub>2"
+          using he by (by100 blast)
+        have hedge: "geotop_is_edge e"
+          using he by (by100 blast)
+        have hface: "geotop_is_face e \<tau>"
+          using he by (by100 blast)
+        have heJ: "e \<subseteq> J"
+          using he by (by100 blast)
+        have he\<tau>: "e \<subseteq> \<tau>"
+          by (rule geotop_is_face_imp_subset_prefix[OF hface])
+        have heJ\<^sub>2: "e \<subseteq> J\<^sub>2"
+        proof
+          fix x
+          assume hxe: "x \<in> e"
+          have "x \<in> \<tau> \<inter> J"
+            using hxe he\<tau> heJ by (by100 blast)
+          hence "x \<in> \<tau> \<inter> J\<^sub>2"
+            using hcontact_sub by (by100 blast)
+          thus "x \<in> J\<^sub>2"
+            by (by100 blast)
+        qed
+        show "e \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+          using heL\<^sub>2 hedge hface heJ\<^sub>2 by (by100 blast)
+      qed
+      show "\<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+        using hcontact_sub hedge_sub by (by100 blast)
+    qed
+  qed
+  have hno_chord_side_boundary_contact_eq_parent:
+    "(\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+      \<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+      \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+        {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J})
+    \<and> (\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+      \<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+      \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+        {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J})"
+  proof
+    show "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+      \<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+      \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+        {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+    proof (intro allI impI)
+      fix \<sigma>
+      assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+      assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      assume h\<sigma>_no_chord:
+        "\<not> geotop_is_face (closed_segment a c) \<sigma>"
+      have hcontact_fwd:
+        "\<sigma> \<inter> J\<^sub>1 \<subseteq> \<sigma> \<inter> J"
+      proof -
+        have hleft:
+          "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+            \<sigma> \<inter> J\<^sub>1 \<subseteq> \<sigma> \<inter> J"
+          using hno_chord_side_contact_sub_parent
+          by (rule conjunct1)
+        have hinst:
+          "\<sigma> \<in> L\<^sub>1 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+            \<sigma> \<inter> J\<^sub>1 \<subseteq> \<sigma> \<inter> J"
+          using hleft by (rule spec)
+        show ?thesis
+          using hinst h\<sigma>L\<^sub>1 h\<sigma>_no_chord by (by100 blast)
+      qed
+      have hedge_fwd:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+        \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      proof -
+        have hleft:
+          "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+            {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+            \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+          using hno_chord_side_selected_edges_sub_parent
+          by (rule conjunct1)
+        have hinst:
+          "\<sigma> \<in> L\<^sub>1 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+            {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+            \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+          using hleft by (rule spec)
+        show ?thesis
+          using hinst h\<sigma>L\<^sub>1 h\<sigma>_no_chord by (by100 blast)
+      qed
+      have hreverse:
+        "\<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+          \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+      proof -
+        have hleft:
+          "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+            \<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1
+            \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+              \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+          using hno_chord_parent_contact_sub_side
+          by (rule conjunct1)
+        have hinst:
+          "\<sigma> \<in> L\<^sub>1 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+            \<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1
+            \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+              \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+          using hleft by (rule spec)
+        show ?thesis
+          using hinst h\<sigma>L\<^sub>1 h\<sigma>_no_chord by (by100 blast)
+      qed
+      have hcontact_rev: "\<sigma> \<inter> J \<subseteq> \<sigma> \<inter> J\<^sub>1"
+        using hreverse by (by100 blast)
+      have hedge_rev:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+        using hreverse by (by100 blast)
+      have hcontact_eq: "\<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J"
+        by (rule subset_antisym[OF hcontact_fwd hcontact_rev])
+      have hedge_eq:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+        {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        by (rule subset_antisym[OF hedge_fwd hedge_rev])
+      show "\<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+        \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+        {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        using hcontact_eq hedge_eq by (by100 blast)
+    qed
+  next
+    show "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+      \<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+      \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+        {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+    proof (intro allI impI)
+      fix \<tau>
+      assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+      assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      assume h\<tau>_no_chord:
+        "\<not> geotop_is_face (closed_segment a c) \<tau>"
+      have hcontact_fwd:
+        "\<tau> \<inter> J\<^sub>2 \<subseteq> \<tau> \<inter> J"
+      proof -
+        have hright:
+          "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+            \<tau> \<inter> J\<^sub>2 \<subseteq> \<tau> \<inter> J"
+          using hno_chord_side_contact_sub_parent
+          by (rule conjunct2)
+        have hinst:
+          "\<tau> \<in> L\<^sub>2 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+            \<tau> \<inter> J\<^sub>2 \<subseteq> \<tau> \<inter> J"
+          using hright by (rule spec)
+        show ?thesis
+          using hinst h\<tau>L\<^sub>2 h\<tau>_no_chord by (by100 blast)
+      qed
+      have hedge_fwd:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+        \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      proof -
+        have hright:
+          "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+            {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+            \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+          using hno_chord_side_selected_edges_sub_parent
+          by (rule conjunct2)
+        have hinst:
+          "\<tau> \<in> L\<^sub>2 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+            {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+            \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+          using hright by (rule spec)
+        show ?thesis
+          using hinst h\<tau>L\<^sub>2 h\<tau>_no_chord by (by100 blast)
+      qed
+      have hreverse:
+        "\<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+          \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+      proof -
+        have hright:
+          "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+            \<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2
+            \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+              \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+          using hno_chord_parent_contact_sub_side
+          by (rule conjunct2)
+        have hinst:
+          "\<tau> \<in> L\<^sub>2 \<longrightarrow>
+            \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+            \<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2
+            \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+              \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+          using hright by (rule spec)
+        show ?thesis
+          using hinst h\<tau>L\<^sub>2 h\<tau>_no_chord by (by100 blast)
+      qed
+      have hcontact_rev: "\<tau> \<inter> J \<subseteq> \<tau> \<inter> J\<^sub>2"
+        using hreverse by (by100 blast)
+      have hedge_rev:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}
+        \<subseteq> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+        using hreverse by (by100 blast)
+      have hcontact_eq: "\<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J"
+        by (rule subset_antisym[OF hcontact_fwd hcontact_rev])
+      have hedge_eq:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+        {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        by (rule subset_antisym[OF hedge_fwd hedge_rev])
+      show "\<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+        \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+        {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        using hcontact_eq hedge_eq by (by100 blast)
+    qed
+  qed
+  have hno_chord_canonical_contact_transfers_to_parent:
+    "(\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+      card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<longrightarrow>
+      \<sigma> \<inter> J\<^sub>1 =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<longrightarrow>
+      card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<sigma> \<inter> J =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J})
+    \<and> (\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<longrightarrow>
+      \<tau> \<inter> J\<^sub>2 =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<tau> \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J})"
+  proof
+    show "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+      card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<longrightarrow>
+      \<sigma> \<inter> J\<^sub>1 =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<longrightarrow>
+      card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<sigma> \<inter> J =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+    proof (intro allI impI)
+      fix \<sigma>
+      assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+      assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      assume h\<sigma>_no_chord:
+        "\<not> geotop_is_face (closed_segment a c) \<sigma>"
+      assume hcard:
+        "card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+      assume hcontact:
+        "\<sigma> \<inter> J\<^sub>1 =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+      have hleft:
+        "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+          \<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+          \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+            {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        using hno_chord_side_boundary_contact_eq_parent
+        by (rule conjunct1)
+      have hinst:
+        "\<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+          \<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J
+          \<and> {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+            {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        using hleft by (rule spec)
+      have hcontact_eq: "\<sigma> \<inter> J\<^sub>1 = \<sigma> \<inter> J"
+        using hinst h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_no_chord by (by100 blast)
+      have hE_eq:
+        "{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} =
+         {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        using hinst h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_no_chord by (by100 blast)
+      show "card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+        \<and> \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+        using hcard hcontact hcontact_eq hE_eq by (by100 simp)
+    qed
+  next
+    show "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<longrightarrow>
+      \<tau> \<inter> J\<^sub>2 =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<tau> \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+    proof (intro allI impI)
+      fix \<tau>
+      assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+      assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      assume h\<tau>_no_chord:
+        "\<not> geotop_is_face (closed_segment a c) \<tau>"
+      assume hcard:
+        "card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+      assume hcontact:
+        "\<tau> \<inter> J\<^sub>2 =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+      have hright:
+        "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+          \<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+          \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+            {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        using hno_chord_side_boundary_contact_eq_parent
+        by (rule conjunct2)
+      have hinst:
+        "\<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+          \<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J
+          \<and> {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+            {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        using hright by (rule spec)
+      have hcontact_eq: "\<tau> \<inter> J\<^sub>2 = \<tau> \<inter> J"
+        using hinst h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_no_chord by (by100 blast)
+      have hE_eq:
+        "{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} =
+         {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        using hinst h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_no_chord by (by100 blast)
+      show "card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+        \<and> \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+        using hcard hcontact hcontact_eq hE_eq by (by100 simp)
+    qed
+  qed
+  have hL\<^sub>1_no_chord_canonical_contact_transfers_to_parent:
+    "\<And>\<sigma>. \<sigma> \<in> L\<^sub>1 \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<sigma> \<Longrightarrow>
+      card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<Longrightarrow>
+      \<sigma> \<inter> J\<^sub>1 =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<Longrightarrow>
+      card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<sigma> \<inter> J =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  proof -
+    fix \<sigma>
+    assume h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+    assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    assume h\<sigma>_no_chord:
+      "\<not> geotop_is_face (closed_segment a c) \<sigma>"
+    assume h\<sigma>_card_can:
+      "card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+    assume h\<sigma>_contact_can:
+      "\<sigma> \<inter> J\<^sub>1 =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+    have hleft:
+      "\<forall>\<sigma>. \<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+        card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<longrightarrow>
+        \<sigma> \<inter> J\<^sub>1 =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<longrightarrow>
+        card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+        \<and> \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      using hno_chord_canonical_contact_transfers_to_parent
+      by (rule conjunct1)
+    have hinst:
+      "\<sigma> \<in> L\<^sub>1 \<longrightarrow> geotop_simplex_dim \<sigma> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<sigma> \<longrightarrow>
+        card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<longrightarrow>
+        \<sigma> \<inter> J\<^sub>1 =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<longrightarrow>
+        card {e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+        \<and> \<sigma> \<inter> J =
+          \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      using hleft by (rule spec)
+    show "card {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<sigma> \<inter> J =
+        \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+          \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+      using hinst h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_no_chord h\<sigma>_card_can h\<sigma>_contact_can
+      by (by100 blast)
+  qed
+  have hL\<^sub>2_no_chord_canonical_contact_transfers_to_parent:
+    "\<And>\<tau>. \<tau> \<in> L\<^sub>2 \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow>
+      \<not> geotop_is_face (closed_segment a c) \<tau> \<Longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<Longrightarrow>
+      \<tau> \<inter> J\<^sub>2 =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<Longrightarrow>
+      card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<tau> \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+  proof -
+    fix \<tau>
+    assume h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+    assume h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    assume h\<tau>_no_chord:
+      "\<not> geotop_is_face (closed_segment a c) \<tau>"
+    assume h\<tau>_card_can:
+      "card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+    assume h\<tau>_contact_can:
+      "\<tau> \<inter> J\<^sub>2 =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+    have hright:
+      "\<forall>\<tau>. \<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+        card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<longrightarrow>
+        \<tau> \<inter> J\<^sub>2 =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<longrightarrow>
+        card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+        \<and> \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      using hno_chord_canonical_contact_transfers_to_parent
+      by (rule conjunct2)
+    have hinst:
+      "\<tau> \<in> L\<^sub>2 \<longrightarrow> geotop_simplex_dim \<tau> 2 \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<tau> \<longrightarrow>
+        card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<longrightarrow>
+        \<tau> \<inter> J\<^sub>2 =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<longrightarrow>
+        card {e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+        \<and> \<tau> \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      using hright by (rule spec)
+    show "card {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J} \<le> 2
+      \<and> \<tau> \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J}"
+      using hinst h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_no_chord h\<tau>_card_can h\<tau>_contact_can
+      by (by100 blast)
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
