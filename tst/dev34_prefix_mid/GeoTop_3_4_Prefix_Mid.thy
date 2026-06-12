@@ -28533,6 +28533,184 @@ proof -
 	                                                    hL\<^sub>2_poly_eq' ht2L\<^sub>2'
 	                                                    ht2_2 hT\<^sub>2_gt1'
 	                                                    ht2free'])
+	                                            obtain \<delta> where h\<delta>T\<^sub>2:
+	                                              "\<delta> \<in> ?T\<^sub>2"
+	                                              and h\<delta>_not_T\<^sub>1:
+	                                                "\<delta> \<notin> ?T\<^sub>1"
+	                                              and h\<delta>_ne_\<beta>:
+	                                                "\<delta> \<noteq> \<beta>"
+	                                              and h\<delta>_ne_\<theta>:
+	                                                "\<delta> \<noteq> \<theta>"
+	                                              and h\<delta>_ne_\<alpha>:
+	                                                "\<delta> \<noteq> \<alpha>"
+	                                              and h\<delta>_chord:
+	                                                "geotop_is_face
+	                                                  (closed_segment a c) \<delta>"
+	                                              and h\<beta>_not_T\<^sub>2_unique:
+	                                                "\<beta> \<notin> ?T\<^sub>2"
+	                                              and hT\<^sub>1_not_named_no_chord:
+	                                                "\<forall>\<rho>\<in>?T\<^sub>1.
+	                                                  \<rho> \<noteq> \<beta> \<longrightarrow>
+	                                                  \<not> geotop_is_face
+	                                                    (closed_segment a c) \<rho>"
+	                                              and hT\<^sub>2_not_named_no_chord:
+	                                                "\<forall>\<rho>\<in>?T\<^sub>2.
+	                                                  \<rho> \<noteq> \<delta> \<longrightarrow>
+	                                                  \<not> geotop_is_face
+	                                                    (closed_segment a c) \<rho>"
+	                                              using
+	                                                hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+	                                              by (elim exE conjE)
+	                                            have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
+	                                            proof (rule ccontr)
+	                                              assume hne:
+	                                                "\<not> \<beta>\<^sub>c = \<delta>"
+	                                              have "\<not> geotop_is_face
+	                                                  (closed_segment a c) \<beta>\<^sub>c"
+	                                                using hT\<^sub>2_not_named_no_chord
+	                                                  h\<beta>cT\<^sub>2 hne
+	                                                by (by100 blast)
+	                                              thus False
+	                                                using h\<beta>c_chord
+	                                                by (by100 blast)
+	                                            qed
+	                                            have hL\<^sub>1_good_side_witness_finishes:
+	                                              "\<And>w. w \<in> L\<^sub>1 \<Longrightarrow>
+	                                              geotop_simplex_dim w 2 \<Longrightarrow>
+	                                              card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e w
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<le> 2 \<Longrightarrow>
+	                                              w \<inter> J\<^sub>1 =
+	                                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e w
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<Longrightarrow>
+	                                              w \<noteq> \<theta> \<Longrightarrow>
+	                                              w \<noteq> \<beta> \<Longrightarrow>
+	                                              w \<inter> J\<^sub>1 \<noteq> {} \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            proof -
+	                                              fix w
+	                                              assume hwL\<^sub>1: "w \<in> L\<^sub>1"
+	                                              assume hw2:
+	                                                "geotop_simplex_dim w 2"
+	                                              assume hw_card:
+	                                                "card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e w
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+	                                              assume hw_contact:
+	                                                "w \<inter> J\<^sub>1 =
+	                                                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                                    \<and> geotop_is_face e w
+	                                                    \<and> e \<subseteq> J\<^sub>1}"
+	                                              assume hw_ne_\<theta>: "w \<noteq> \<theta>"
+	                                              assume hw_ne_\<beta>: "w \<noteq> \<beta>"
+	                                              assume hw_contact_ne:
+	                                                "w \<inter> J\<^sub>1 \<noteq> {}"
+	                                              have hwT\<^sub>1: "w \<in> ?T\<^sub>1"
+	                                                using hwL\<^sub>1 hw2
+	                                                by (by100 simp)
+	                                              have hw_no_chord:
+	                                                "\<not> geotop_is_face
+	                                                  (closed_segment a c) w"
+	                                                using
+	                                                  hT\<^sub>1_not_named_no_chord
+	                                                  hwT\<^sub>1 hw_ne_\<beta>
+	                                                by (by100 blast)
+	                                              have hG: "?G\<^sub>1 w"
+	                                                using hwL\<^sub>1 hw2 hw_ne_\<theta>
+	                                                  hw_ne_\<beta> hw_no_chord
+	                                                  hw_card hw_contact
+	                                                by (by100 blast)
+	                                              have hcase:
+	                                                "(?G\<^sub>1 w
+	                                                  \<and> w \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c w
+	                                                  \<and> w \<inter> J\<^sub>2 \<noteq> {})"
+	                                                by (rule disjI1,
+	                                                    rule conjI,
+	                                                    rule hG,
+	                                                    rule hw_contact_ne)
+	                                              show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                                by (rule exI[where x = w],
+	                                                    rule hcase)
+	                                            qed
+	                                            have hL\<^sub>2_good_side_witness_finishes:
+	                                              "\<And>w. w \<in> L\<^sub>2 \<Longrightarrow>
+	                                              geotop_simplex_dim w 2 \<Longrightarrow>
+	                                              card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e w
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<le> 2 \<Longrightarrow>
+	                                              w \<inter> J\<^sub>2 =
+	                                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e w
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<Longrightarrow>
+	                                              w \<noteq> \<theta> \<Longrightarrow>
+	                                              w \<noteq> \<beta>\<^sub>c \<Longrightarrow>
+	                                              w \<inter> J\<^sub>2 \<noteq> {} \<Longrightarrow>
+	                                              \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            proof -
+	                                              fix w
+	                                              assume hwL\<^sub>2: "w \<in> L\<^sub>2"
+	                                              assume hw2:
+	                                                "geotop_simplex_dim w 2"
+	                                              assume hw_card:
+	                                                "card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e w
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+	                                              assume hw_contact:
+	                                                "w \<inter> J\<^sub>2 =
+	                                                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                                    \<and> geotop_is_face e w
+	                                                    \<and> e \<subseteq> J\<^sub>2}"
+	                                              assume hw_ne_\<theta>: "w \<noteq> \<theta>"
+	                                              assume hw_ne_\<beta>c:
+	                                                "w \<noteq> \<beta>\<^sub>c"
+	                                              assume hw_contact_ne:
+	                                                "w \<inter> J\<^sub>2 \<noteq> {}"
+	                                              have hwT\<^sub>2: "w \<in> ?T\<^sub>2"
+	                                                using hwL\<^sub>2 hw2
+	                                                by (by100 simp)
+	                                              have hw_ne_\<delta>: "w \<noteq> \<delta>"
+	                                                using hw_ne_\<beta>c
+	                                                  h\<beta>c_eq_\<delta>
+	                                                by (by100 blast)
+	                                              have hw_no_chord:
+	                                                "\<not> geotop_is_face
+	                                                  (closed_segment a c) w"
+	                                                using
+	                                                  hT\<^sub>2_not_named_no_chord
+	                                                  hwT\<^sub>2 hw_ne_\<delta>
+	                                                by (by100 blast)
+	                                              have hG: "?G\<^sub>2 \<beta>\<^sub>c w"
+	                                                using hwL\<^sub>2 hw2 hw_ne_\<theta>
+	                                                  hw_ne_\<beta>c hw_no_chord
+	                                                  hw_card hw_contact
+	                                                by (by100 blast)
+	                                              have hcase:
+	                                                "(?G\<^sub>1 w
+	                                                  \<and> w \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c w
+	                                                  \<and> w \<inter> J\<^sub>2 \<noteq> {})"
+	                                                by (rule disjI2,
+	                                                    rule conjI,
+	                                                    rule hG,
+	                                                    rule hw_contact_ne)
+	                                              show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                  \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                                by (rule exI[where x = w],
+	                                                    rule hcase)
+	                                            qed
 	                                            show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                                \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
