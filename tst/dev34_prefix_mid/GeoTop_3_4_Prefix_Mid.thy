@@ -29869,7 +29869,753 @@ proof -
 		                                                          with the fixed H1 pair, to
 		                                                          the parent-empty counting
 		                                                          contradiction. **)
-		                                                        sorry
+		                                                      proof -
+		                                                        assume hempty_spare:
+		                                                          "t1 \<inter> J\<^sub>2 = {}
+		                                                            \<or> t2 \<inter> J\<^sub>2 = {}"
+		                                                        have hside1_empty_nonnamed_spare_parent_candidate:
+		                                                          "((t1 \<inter> J\<^sub>2 = {}
+		                                                              \<and> t1 \<noteq> \<theta>
+		                                                              \<and> t1 \<noteq> \<beta>\<^sub>c)
+		                                                            \<or> (t2 \<inter> J\<^sub>2 = {}
+		                                                              \<and> t2 \<noteq> \<theta>
+		                                                              \<and> t2 \<noteq> \<beta>\<^sub>c)) \<Longrightarrow>
+		                                                          \<exists>\<eta>.
+		                                                            ((?G\<^sub>1 \<eta>
+		                                                              \<and> \<eta> \<inter> J\<^sub>1 = {}
+		                                                              \<and> \<eta> \<in> K
+		                                                              \<and> geotop_free_2_simplex K J \<eta>
+		                                                              \<and> geotop_simplex_dim \<eta> 2
+		                                                              \<and> \<eta> \<inter> J = {}
+		                                                              \<and> {e\<in>K. geotop_is_edge e
+		                                                                \<and> geotop_is_face e \<eta>
+		                                                                \<and> e \<subseteq> J} = {}
+		                                                              \<and> \<eta> \<noteq> \<theta>
+		                                                              \<and> \<eta> \<noteq> \<beta>)
+		                                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+		                                                              \<and> \<eta> \<inter> J\<^sub>2 = {}
+		                                                              \<and> \<eta> \<in> K
+		                                                              \<and> geotop_free_2_simplex K J \<eta>
+		                                                              \<and> geotop_simplex_dim \<eta> 2
+		                                                              \<and> \<eta> \<inter> J = {}
+		                                                              \<and> {e\<in>K. geotop_is_edge e
+		                                                                \<and> geotop_is_face e \<eta>
+		                                                                \<and> e \<subseteq> J} = {}
+		                                                              \<and> \<eta> \<noteq> \<theta>
+		                                                              \<and> \<eta> \<noteq> \<beta>\<^sub>c))"
+		                                                        proof -
+		                                                          assume hspare:
+		                                                            "(t1 \<inter> J\<^sub>2 = {}
+		                                                              \<and> t1 \<noteq> \<theta>
+		                                                              \<and> t1 \<noteq> \<beta>\<^sub>c)
+		                                                            \<or> (t2 \<inter> J\<^sub>2 = {}
+		                                                              \<and> t2 \<noteq> \<theta>
+		                                                              \<and> t2 \<noteq> \<beta>\<^sub>c)"
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF hspare])
+		                                                            assume ht1_spare:
+		                                                              "t1 \<inter> J\<^sub>2 = {}
+		                                                                \<and> t1 \<noteq> \<theta>
+		                                                                \<and> t1 \<noteq> \<beta>\<^sub>c"
+		                                                            have ht1_empty:
+		                                                              "t1 \<inter> J\<^sub>2 = {}"
+		                                                              using ht1_spare
+		                                                              by (by100 blast)
+		                                                            have ht1_ne_\<theta>:
+		                                                              "t1 \<noteq> \<theta>"
+		                                                              using ht1_spare
+		                                                              by (by100 blast)
+		                                                            have ht1_ne_\<beta>c:
+		                                                              "t1 \<noteq> \<beta>\<^sub>c"
+		                                                              using ht1_spare
+		                                                              by (by100 blast)
+		                                                            have ht1_card:
+		                                                              "card {e\<in>L\<^sub>2.
+		                                                                geotop_is_edge e
+		                                                                \<and> geotop_is_face e t1
+		                                                                \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+		                                                              using ht1_can
+		                                                              by (by100 blast)
+		                                                            have ht1_contact:
+		                                                              "t1 \<inter> J\<^sub>2 =
+		                                                                \<Union>{e\<in>L\<^sub>2.
+		                                                                  geotop_is_edge e
+		                                                                  \<and> geotop_is_face e t1
+		                                                                  \<and> e \<subseteq> J\<^sub>2}"
+		                                                              using ht1_can
+		                                                              by (by100 blast)
+		                                                            have ht1T\<^sub>2:
+		                                                              "t1 \<in> ?T\<^sub>2"
+		                                                              using ht1L\<^sub>2' ht1_2
+		                                                              by (by100 simp)
+		                                                            have ht1_ne_\<delta>:
+		                                                              "t1 \<noteq> \<delta>"
+		                                                              using ht1_ne_\<beta>c
+		                                                                h\<beta>c_eq_\<delta>
+		                                                              by (by100 blast)
+		                                                            have ht1_no_chord:
+		                                                              "\<not> geotop_is_face
+		                                                                (closed_segment a c) t1"
+		                                                              using
+		                                                                hT\<^sub>2_not_named_no_chord
+		                                                                ht1T\<^sub>2
+		                                                                ht1_ne_\<delta>
+		                                                              by (by100 blast)
+		                                                            have ht1G:
+		                                                              "?G\<^sub>2 \<beta>\<^sub>c t1"
+		                                                              using ht1L\<^sub>2' ht1_2
+		                                                                ht1_can ht1_ne_\<theta>
+		                                                                ht1_ne_\<beta>c
+		                                                                ht1_no_chord
+		                                                                ht1_card
+		                                                                ht1_contact
+		                                                              by (intro conjI)
+		                                                            have ht1_parent:
+		                                                              "t1 \<in> K
+		                                                              \<and> geotop_free_2_simplex K J t1
+		                                                              \<and> geotop_simplex_dim t1 2
+		                                                              \<and> t1 \<inter> J = {}
+		                                                              \<and> {e\<in>K. geotop_is_edge e
+		                                                                \<and> geotop_is_face e t1
+		                                                                \<and> e \<subseteq> J} = {}
+		                                                              \<and> t1 \<noteq> \<theta>
+		                                                              \<and> t1 \<noteq> \<beta>\<^sub>c"
+		                                                              by (rule
+		                                                                  hG\<^sub>2_side_empty_parent_empty_selected_free
+		                                                                  [OF ht1G
+		                                                                    ht1_empty])
+		                                                            have hcase:
+		                                                              "(?G\<^sub>1 t1
+		                                                                \<and> t1 \<inter> J\<^sub>1 = {}
+		                                                                \<and> t1 \<in> K
+		                                                                \<and> geotop_free_2_simplex K J t1
+		                                                                \<and> geotop_simplex_dim t1 2
+		                                                                \<and> t1 \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e t1
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> t1 \<noteq> \<theta>
+		                                                                \<and> t1 \<noteq> \<beta>)
+		                                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c t1
+		                                                                \<and> t1 \<inter> J\<^sub>2 = {}
+		                                                                \<and> t1 \<in> K
+		                                                                \<and> geotop_free_2_simplex K J t1
+		                                                                \<and> geotop_simplex_dim t1 2
+		                                                                \<and> t1 \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e t1
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> t1 \<noteq> \<theta>
+		                                                                \<and> t1 \<noteq> \<beta>\<^sub>c)"
+		                                                              using ht1G ht1_empty
+		                                                                ht1_parent
+		                                                              by (by100 blast)
+		                                                            show ?thesis
+		                                                              by (rule exI[where x = t1],
+		                                                                  rule hcase)
+		                                                          next
+		                                                            assume ht2_spare:
+		                                                              "t2 \<inter> J\<^sub>2 = {}
+		                                                                \<and> t2 \<noteq> \<theta>
+		                                                                \<and> t2 \<noteq> \<beta>\<^sub>c"
+		                                                            have ht2_empty:
+		                                                              "t2 \<inter> J\<^sub>2 = {}"
+		                                                              using ht2_spare
+		                                                              by (by100 blast)
+		                                                            have ht2_ne_\<theta>:
+		                                                              "t2 \<noteq> \<theta>"
+		                                                              using ht2_spare
+		                                                              by (by100 blast)
+		                                                            have ht2_ne_\<beta>c:
+		                                                              "t2 \<noteq> \<beta>\<^sub>c"
+		                                                              using ht2_spare
+		                                                              by (by100 blast)
+		                                                            have ht2_card:
+		                                                              "card {e\<in>L\<^sub>2.
+		                                                                geotop_is_edge e
+		                                                                \<and> geotop_is_face e t2
+		                                                                \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+		                                                              using ht2_can
+		                                                              by (by100 blast)
+		                                                            have ht2_contact:
+		                                                              "t2 \<inter> J\<^sub>2 =
+		                                                                \<Union>{e\<in>L\<^sub>2.
+		                                                                  geotop_is_edge e
+		                                                                  \<and> geotop_is_face e t2
+		                                                                  \<and> e \<subseteq> J\<^sub>2}"
+		                                                              using ht2_can
+		                                                              by (by100 blast)
+		                                                            have ht2T\<^sub>2:
+		                                                              "t2 \<in> ?T\<^sub>2"
+		                                                              using ht2L\<^sub>2' ht2_2
+		                                                              by (by100 simp)
+		                                                            have ht2_ne_\<delta>:
+		                                                              "t2 \<noteq> \<delta>"
+		                                                              using ht2_ne_\<beta>c
+		                                                                h\<beta>c_eq_\<delta>
+		                                                              by (by100 blast)
+		                                                            have ht2_no_chord:
+		                                                              "\<not> geotop_is_face
+		                                                                (closed_segment a c) t2"
+		                                                              using
+		                                                                hT\<^sub>2_not_named_no_chord
+		                                                                ht2T\<^sub>2
+		                                                                ht2_ne_\<delta>
+		                                                              by (by100 blast)
+		                                                            have ht2G:
+		                                                              "?G\<^sub>2 \<beta>\<^sub>c t2"
+		                                                              using ht2L\<^sub>2' ht2_2
+		                                                                ht2_can ht2_ne_\<theta>
+		                                                                ht2_ne_\<beta>c
+		                                                                ht2_no_chord
+		                                                                ht2_card
+		                                                                ht2_contact
+		                                                              by (intro conjI)
+		                                                            have ht2_parent:
+		                                                              "t2 \<in> K
+		                                                              \<and> geotop_free_2_simplex K J t2
+		                                                              \<and> geotop_simplex_dim t2 2
+		                                                              \<and> t2 \<inter> J = {}
+		                                                              \<and> {e\<in>K. geotop_is_edge e
+		                                                                \<and> geotop_is_face e t2
+		                                                                \<and> e \<subseteq> J} = {}
+		                                                              \<and> t2 \<noteq> \<theta>
+		                                                              \<and> t2 \<noteq> \<beta>\<^sub>c"
+		                                                              by (rule
+		                                                                  hG\<^sub>2_side_empty_parent_empty_selected_free
+		                                                                  [OF ht2G
+		                                                                    ht2_empty])
+		                                                            have hcase:
+		                                                              "(?G\<^sub>1 t2
+		                                                                \<and> t2 \<inter> J\<^sub>1 = {}
+		                                                                \<and> t2 \<in> K
+		                                                                \<and> geotop_free_2_simplex K J t2
+		                                                                \<and> geotop_simplex_dim t2 2
+		                                                                \<and> t2 \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e t2
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> t2 \<noteq> \<theta>
+		                                                                \<and> t2 \<noteq> \<beta>)
+		                                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c t2
+		                                                                \<and> t2 \<inter> J\<^sub>2 = {}
+		                                                                \<and> t2 \<in> K
+		                                                                \<and> geotop_free_2_simplex K J t2
+		                                                                \<and> geotop_simplex_dim t2 2
+		                                                                \<and> t2 \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e t2
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> t2 \<noteq> \<theta>
+		                                                                \<and> t2 \<noteq> \<beta>\<^sub>c)"
+		                                                              using ht2G ht2_empty
+		                                                                ht2_parent
+		                                                              by (by100 blast)
+		                                                            show ?thesis
+		                                                              by (rule exI[where x = t2],
+		                                                                  rule hcase)
+		                                                          qed
+		                                                        qed
+		                                                        have hside1_empty_parent_candidate_count_book:
+		                                                          "(\<exists>\<eta>.
+		                                                            ((?G\<^sub>1 \<eta>
+		                                                              \<and> \<eta> \<inter> J\<^sub>1 = {}
+		                                                              \<and> \<eta> \<in> K
+		                                                              \<and> geotop_free_2_simplex K J \<eta>
+		                                                              \<and> geotop_simplex_dim \<eta> 2
+		                                                              \<and> \<eta> \<inter> J = {}
+		                                                              \<and> {e\<in>K. geotop_is_edge e
+		                                                                \<and> geotop_is_face e \<eta>
+		                                                                \<and> e \<subseteq> J} = {}
+		                                                              \<and> \<eta> \<noteq> \<theta>
+		                                                              \<and> \<eta> \<noteq> \<beta>)
+		                                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+		                                                              \<and> \<eta> \<inter> J\<^sub>2 = {}
+		                                                              \<and> \<eta> \<in> K
+		                                                              \<and> geotop_free_2_simplex K J \<eta>
+		                                                              \<and> geotop_simplex_dim \<eta> 2
+		                                                              \<and> \<eta> \<inter> J = {}
+		                                                              \<and> {e\<in>K. geotop_is_edge e
+		                                                                \<and> geotop_is_face e \<eta>
+		                                                                \<and> e \<subseteq> J} = {}
+		                                                              \<and> \<eta> \<noteq> \<theta>
+		                                                              \<and> \<eta> \<noteq> \<beta>\<^sub>c))) \<Longrightarrow>
+		                                                          \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                              \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                              \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                          sorry
+		                                                        have hside1_empty_named_or_parent_candidate:
+		                                                          "((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                              \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))
+		                                                            \<or> (\<exists>\<eta>.
+		                                                              ((?G\<^sub>1 \<eta>
+		                                                                \<and> \<eta> \<inter> J\<^sub>1 = {}
+		                                                                \<and> \<eta> \<in> K
+		                                                                \<and> geotop_free_2_simplex K J \<eta>
+		                                                                \<and> geotop_simplex_dim \<eta> 2
+		                                                                \<and> \<eta> \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e \<eta>
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> \<eta> \<noteq> \<theta>
+		                                                                \<and> \<eta> \<noteq> \<beta>)
+		                                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+		                                                                \<and> \<eta> \<inter> J\<^sub>2 = {}
+		                                                                \<and> \<eta> \<in> K
+		                                                                \<and> geotop_free_2_simplex K J \<eta>
+		                                                                \<and> geotop_simplex_dim \<eta> 2
+		                                                                \<and> \<eta> \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e \<eta>
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> \<eta> \<noteq> \<theta>
+		                                                                \<and> \<eta> \<noteq> \<beta>\<^sub>c)))"
+		                                                        proof (cases
+		                                                            "(t1 \<inter> J\<^sub>2 = {}
+		                                                                \<and> t1 \<noteq> \<theta>
+		                                                                \<and> t1 \<noteq> \<beta>\<^sub>c)
+		                                                              \<or> (t2 \<inter> J\<^sub>2 = {}
+		                                                                \<and> t2 \<noteq> \<theta>
+		                                                                \<and> t2 \<noteq> \<beta>\<^sub>c)")
+		                                                          case True
+		                                                          have hparent:
+		                                                            "\<exists>\<eta>.
+		                                                              ((?G\<^sub>1 \<eta>
+		                                                                \<and> \<eta> \<inter> J\<^sub>1 = {}
+		                                                                \<and> \<eta> \<in> K
+		                                                                \<and> geotop_free_2_simplex K J \<eta>
+		                                                                \<and> geotop_simplex_dim \<eta> 2
+		                                                                \<and> \<eta> \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e \<eta>
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> \<eta> \<noteq> \<theta>
+		                                                                \<and> \<eta> \<noteq> \<beta>)
+		                                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+		                                                                \<and> \<eta> \<inter> J\<^sub>2 = {}
+		                                                                \<and> \<eta> \<in> K
+		                                                                \<and> geotop_free_2_simplex K J \<eta>
+		                                                                \<and> geotop_simplex_dim \<eta> 2
+		                                                                \<and> \<eta> \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e \<eta>
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> \<eta> \<noteq> \<theta>
+		                                                                \<and> \<eta> \<noteq> \<beta>\<^sub>c))"
+		                                                            by (rule
+		                                                                hside1_empty_nonnamed_spare_parent_candidate
+		                                                                [OF True])
+		                                                          show ?thesis
+		                                                            by (rule disjI2[OF hparent])
+		                                                        next
+		                                                          case False
+		                                                          have ht1_empty_named:
+		                                                            "t1 \<inter> J\<^sub>2 = {} \<Longrightarrow>
+		                                                            t1 = \<theta> \<or> t1 = \<beta>\<^sub>c"
+		                                                          proof -
+		                                                            assume ht1_empty:
+		                                                              "t1 \<inter> J\<^sub>2 = {}"
+		                                                            show ?thesis
+		                                                            proof (rule ccontr)
+		                                                              assume hnot:
+		                                                                "\<not> (t1 = \<theta>
+		                                                                  \<or> t1 = \<beta>\<^sub>c)"
+		                                                              have ht1_ne_\<theta>:
+		                                                                "t1 \<noteq> \<theta>"
+		                                                                using hnot
+		                                                                by (by100 blast)
+		                                                              have ht1_ne_\<beta>c:
+		                                                                "t1 \<noteq> \<beta>\<^sub>c"
+		                                                                using hnot
+		                                                                by (by100 blast)
+		                                                              have hnon:
+		                                                                "(t1 \<inter> J\<^sub>2 = {}
+		                                                                  \<and> t1 \<noteq> \<theta>
+		                                                                  \<and> t1 \<noteq> \<beta>\<^sub>c)
+		                                                                \<or> (t2 \<inter> J\<^sub>2 = {}
+		                                                                  \<and> t2 \<noteq> \<theta>
+		                                                                  \<and> t2 \<noteq> \<beta>\<^sub>c)"
+		                                                                by (rule disjI1,
+		                                                                    intro conjI,
+		                                                                    rule ht1_empty,
+		                                                                    rule ht1_ne_\<theta>,
+		                                                                    rule ht1_ne_\<beta>c)
+		                                                              show False
+		                                                                using False hnon
+		                                                                by (by100 blast)
+		                                                            qed
+		                                                          qed
+		                                                          have ht2_empty_named:
+		                                                            "t2 \<inter> J\<^sub>2 = {} \<Longrightarrow>
+		                                                            t2 = \<theta> \<or> t2 = \<beta>\<^sub>c"
+		                                                          proof -
+		                                                            assume ht2_empty:
+		                                                              "t2 \<inter> J\<^sub>2 = {}"
+		                                                            show ?thesis
+		                                                            proof (rule ccontr)
+		                                                              assume hnot:
+		                                                                "\<not> (t2 = \<theta>
+		                                                                  \<or> t2 = \<beta>\<^sub>c)"
+		                                                              have ht2_ne_\<theta>:
+		                                                                "t2 \<noteq> \<theta>"
+		                                                                using hnot
+		                                                                by (by100 blast)
+		                                                              have ht2_ne_\<beta>c:
+		                                                                "t2 \<noteq> \<beta>\<^sub>c"
+		                                                                using hnot
+		                                                                by (by100 blast)
+		                                                              have hnon:
+		                                                                "(t1 \<inter> J\<^sub>2 = {}
+		                                                                  \<and> t1 \<noteq> \<theta>
+		                                                                  \<and> t1 \<noteq> \<beta>\<^sub>c)
+		                                                                \<or> (t2 \<inter> J\<^sub>2 = {}
+		                                                                  \<and> t2 \<noteq> \<theta>
+		                                                                  \<and> t2 \<noteq> \<beta>\<^sub>c)"
+		                                                                by (rule disjI2,
+		                                                                    intro conjI,
+		                                                                    rule ht2_empty,
+		                                                                    rule ht2_ne_\<theta>,
+		                                                                    rule ht2_ne_\<beta>c)
+		                                                              show False
+		                                                                using False hnon
+		                                                                by (by100 blast)
+		                                                            qed
+		                                                          qed
+		                                                          have hnamed:
+		                                                            "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                              \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                          proof (rule disjE[OF hempty_spare])
+		                                                            assume ht1_empty:
+		                                                              "t1 \<inter> J\<^sub>2 = {}"
+		                                                            have ht1_named:
+		                                                              "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c"
+		                                                              by (rule
+		                                                                  ht1_empty_named
+		                                                                  [OF ht1_empty])
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF ht1_named])
+		                                                              assume ht1_\<theta>:
+		                                                                "t1 = \<theta>"
+		                                                              have ht2_\<beta>c:
+		                                                                "t2 = \<beta>\<^sub>c"
+		                                                              proof (rule disjE[OF ht2_bad])
+		                                                                assume ht2_\<theta>:
+		                                                                  "t2 = \<theta>"
+		                                                                have False
+		                                                                  using ht1_\<theta>
+		                                                                    ht2_\<theta>
+		                                                                    ht1_ne_t2'
+		                                                                  by (by100 simp)
+		                                                                thus ?thesis
+		                                                                  by (rule FalseE)
+		                                                              next
+		                                                                assume ht2_tail:
+		                                                                  "t2 = \<beta>\<^sub>c
+		                                                                    \<or> t2 \<inter> J\<^sub>2 = {}"
+		                                                                show ?thesis
+		                                                                proof (rule disjE[OF ht2_tail])
+		                                                                  assume ht2_\<beta>c:
+		                                                                    "t2 = \<beta>\<^sub>c"
+		                                                                  show ?thesis
+		                                                                    by (rule ht2_\<beta>c)
+		                                                                next
+		                                                                  assume ht2_empty:
+		                                                                    "t2 \<inter> J\<^sub>2 = {}"
+		                                                                  have ht2_named:
+		                                                                    "t2 = \<theta>
+		                                                                      \<or> t2 = \<beta>\<^sub>c"
+		                                                                    by (rule
+		                                                                        ht2_empty_named
+		                                                                        [OF ht2_empty])
+		                                                                  show ?thesis
+		                                                                  proof (rule disjE[OF ht2_named])
+		                                                                    assume ht2_\<theta>:
+		                                                                      "t2 = \<theta>"
+		                                                                    have False
+		                                                                      using ht1_\<theta>
+		                                                                        ht2_\<theta>
+		                                                                        ht1_ne_t2'
+		                                                                      by (by100 simp)
+		                                                                    thus ?thesis
+		                                                                      by (rule FalseE)
+		                                                                  next
+		                                                                    assume ht2_\<beta>c:
+		                                                                      "t2 = \<beta>\<^sub>c"
+		                                                                    show ?thesis
+		                                                                      by (rule ht2_\<beta>c)
+		                                                                  qed
+		                                                                qed
+		                                                              qed
+		                                                              show ?thesis
+		                                                                by (rule disjI1,
+		                                                                    rule conjI,
+		                                                                    rule ht1_\<theta>,
+		                                                                    rule ht2_\<beta>c)
+		                                                            next
+		                                                              assume ht1_\<beta>c:
+		                                                                "t1 = \<beta>\<^sub>c"
+		                                                              have ht2_\<theta>:
+		                                                                "t2 = \<theta>"
+		                                                              proof (rule disjE[OF ht2_bad])
+		                                                                assume ht2_\<theta>:
+		                                                                  "t2 = \<theta>"
+		                                                                show ?thesis
+		                                                                  by (rule ht2_\<theta>)
+		                                                              next
+		                                                                assume ht2_tail:
+		                                                                  "t2 = \<beta>\<^sub>c
+		                                                                    \<or> t2 \<inter> J\<^sub>2 = {}"
+		                                                                show ?thesis
+		                                                                proof (rule disjE[OF ht2_tail])
+		                                                                  assume ht2_\<beta>c:
+		                                                                    "t2 = \<beta>\<^sub>c"
+		                                                                  have False
+		                                                                    using ht1_\<beta>c
+		                                                                      ht2_\<beta>c
+		                                                                      ht1_ne_t2'
+		                                                                    by (by100 simp)
+		                                                                  thus ?thesis
+		                                                                    by (rule FalseE)
+		                                                                next
+		                                                                  assume ht2_empty:
+		                                                                    "t2 \<inter> J\<^sub>2 = {}"
+		                                                                  have ht2_named:
+		                                                                    "t2 = \<theta>
+		                                                                      \<or> t2 = \<beta>\<^sub>c"
+		                                                                    by (rule
+		                                                                        ht2_empty_named
+		                                                                        [OF ht2_empty])
+		                                                                  show ?thesis
+		                                                                  proof (rule disjE[OF ht2_named])
+		                                                                    assume ht2_\<theta>:
+		                                                                      "t2 = \<theta>"
+		                                                                    show ?thesis
+		                                                                      by (rule ht2_\<theta>)
+		                                                                  next
+		                                                                    assume ht2_\<beta>c:
+		                                                                      "t2 = \<beta>\<^sub>c"
+		                                                                    have False
+		                                                                      using ht1_\<beta>c
+		                                                                        ht2_\<beta>c
+		                                                                        ht1_ne_t2'
+		                                                                      by (by100 simp)
+		                                                                    thus ?thesis
+		                                                                      by (rule FalseE)
+		                                                                  qed
+		                                                                qed
+		                                                              qed
+		                                                              show ?thesis
+		                                                                by (rule disjI2,
+		                                                                    rule conjI,
+		                                                                    rule ht1_\<beta>c,
+		                                                                    rule ht2_\<theta>)
+		                                                            qed
+		                                                          next
+		                                                            assume ht2_empty:
+		                                                              "t2 \<inter> J\<^sub>2 = {}"
+		                                                            have ht2_named:
+		                                                              "t2 = \<theta> \<or> t2 = \<beta>\<^sub>c"
+		                                                              by (rule
+		                                                                  ht2_empty_named
+		                                                                  [OF ht2_empty])
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF ht2_named])
+		                                                              assume ht2_\<theta>:
+		                                                                "t2 = \<theta>"
+		                                                              have ht1_\<beta>c:
+		                                                                "t1 = \<beta>\<^sub>c"
+		                                                              proof (rule disjE[OF ht1_bad])
+		                                                                assume ht1_\<theta>:
+		                                                                  "t1 = \<theta>"
+		                                                                have False
+		                                                                  using ht1_\<theta>
+		                                                                    ht2_\<theta>
+		                                                                    ht1_ne_t2'
+		                                                                  by (by100 simp)
+		                                                                thus ?thesis
+		                                                                  by (rule FalseE)
+		                                                              next
+		                                                                assume ht1_tail:
+		                                                                  "t1 = \<beta>\<^sub>c
+		                                                                    \<or> t1 \<inter> J\<^sub>2 = {}"
+		                                                                show ?thesis
+		                                                                proof (rule disjE[OF ht1_tail])
+		                                                                  assume ht1_\<beta>c:
+		                                                                    "t1 = \<beta>\<^sub>c"
+		                                                                  show ?thesis
+		                                                                    by (rule ht1_\<beta>c)
+		                                                                next
+		                                                                  assume ht1_empty:
+		                                                                    "t1 \<inter> J\<^sub>2 = {}"
+		                                                                  have ht1_named:
+		                                                                    "t1 = \<theta>
+		                                                                      \<or> t1 = \<beta>\<^sub>c"
+		                                                                    by (rule
+		                                                                        ht1_empty_named
+		                                                                        [OF ht1_empty])
+		                                                                  show ?thesis
+		                                                                  proof (rule disjE[OF ht1_named])
+		                                                                    assume ht1_\<theta>:
+		                                                                      "t1 = \<theta>"
+		                                                                    have False
+		                                                                      using ht1_\<theta>
+		                                                                        ht2_\<theta>
+		                                                                        ht1_ne_t2'
+		                                                                      by (by100 simp)
+		                                                                    thus ?thesis
+		                                                                      by (rule FalseE)
+		                                                                  next
+		                                                                    assume ht1_\<beta>c:
+		                                                                      "t1 = \<beta>\<^sub>c"
+		                                                                    show ?thesis
+		                                                                      by (rule ht1_\<beta>c)
+		                                                                  qed
+		                                                                qed
+		                                                              qed
+		                                                              show ?thesis
+		                                                                by (rule disjI2,
+		                                                                    rule conjI,
+		                                                                    rule ht1_\<beta>c,
+		                                                                    rule ht2_\<theta>)
+		                                                            next
+		                                                              assume ht2_\<beta>c:
+		                                                                "t2 = \<beta>\<^sub>c"
+		                                                              have ht1_\<theta>:
+		                                                                "t1 = \<theta>"
+		                                                              proof (rule disjE[OF ht1_bad])
+		                                                                assume ht1_\<theta>:
+		                                                                  "t1 = \<theta>"
+		                                                                show ?thesis
+		                                                                  by (rule ht1_\<theta>)
+		                                                              next
+		                                                                assume ht1_tail:
+		                                                                  "t1 = \<beta>\<^sub>c
+		                                                                    \<or> t1 \<inter> J\<^sub>2 = {}"
+		                                                                show ?thesis
+		                                                                proof (rule disjE[OF ht1_tail])
+		                                                                  assume ht1_\<beta>c:
+		                                                                    "t1 = \<beta>\<^sub>c"
+		                                                                  have False
+		                                                                    using ht1_\<beta>c
+		                                                                      ht2_\<beta>c
+		                                                                      ht1_ne_t2'
+		                                                                    by (by100 simp)
+		                                                                  thus ?thesis
+		                                                                    by (rule FalseE)
+		                                                                next
+		                                                                  assume ht1_empty:
+		                                                                    "t1 \<inter> J\<^sub>2 = {}"
+		                                                                  have ht1_named:
+		                                                                    "t1 = \<theta>
+		                                                                      \<or> t1 = \<beta>\<^sub>c"
+		                                                                    by (rule
+		                                                                        ht1_empty_named
+		                                                                        [OF ht1_empty])
+		                                                                  show ?thesis
+		                                                                  proof (rule disjE[OF ht1_named])
+		                                                                    assume ht1_\<theta>:
+		                                                                      "t1 = \<theta>"
+		                                                                    show ?thesis
+		                                                                      by (rule ht1_\<theta>)
+		                                                                  next
+		                                                                    assume ht1_\<beta>c:
+		                                                                      "t1 = \<beta>\<^sub>c"
+		                                                                    have False
+		                                                                      using ht1_\<beta>c
+		                                                                        ht2_\<beta>c
+		                                                                        ht1_ne_t2'
+		                                                                      by (by100 simp)
+		                                                                    thus ?thesis
+		                                                                      by (rule FalseE)
+		                                                                  qed
+		                                                                qed
+		                                                              qed
+		                                                              show ?thesis
+		                                                                by (rule disjI1,
+		                                                                    rule conjI,
+		                                                                    rule ht1_\<theta>,
+		                                                                    rule ht2_\<beta>c)
+		                                                            qed
+		                                                          qed
+		                                                          show ?thesis
+		                                                            by (rule disjI1[OF hnamed])
+		                                                        qed
+		                                                        show ?thesis
+		                                                        proof (rule disjE[
+		                                                            OF hside1_empty_named_or_parent_candidate])
+		                                                          assume ht_named:
+		                                                            "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                              \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                          have h\<theta>T\<^sub>1: "\<theta> \<in> ?T\<^sub>1"
+		                                                          proof (rule disjE[OF hs_named])
+		                                                            assume hs_case:
+		                                                              "s1 = \<theta> \<and> s2 = \<beta>"
+		                                                            show ?thesis
+		                                                              using hs_case
+		                                                                hs1L\<^sub>1' hs1_2
+		                                                              by (by100 simp)
+		                                                          next
+		                                                            assume hs_case:
+		                                                              "s1 = \<beta> \<and> s2 = \<theta>"
+		                                                            show ?thesis
+		                                                              using hs_case
+		                                                                hs2L\<^sub>1' hs2_2
+		                                                              by (by100 simp)
+		                                                          qed
+		                                                          have h\<theta>T\<^sub>2: "\<theta> \<in> ?T\<^sub>2"
+		                                                          proof (rule disjE[OF ht_named])
+		                                                            assume ht_case:
+		                                                              "t1 = \<theta> \<and> t2 = \<beta>\<^sub>c"
+		                                                            show ?thesis
+		                                                              using ht_case
+		                                                                ht1L\<^sub>2' ht1_2
+		                                                              by (by100 simp)
+		                                                          next
+		                                                            assume ht_case:
+		                                                              "t1 = \<beta>\<^sub>c \<and> t2 = \<theta>"
+		                                                            show ?thesis
+		                                                              using ht_case
+		                                                                ht2L\<^sub>2' ht2_2
+		                                                              by (by100 simp)
+		                                                          qed
+		                                                          have False
+		                                                            using h\<theta>T\<^sub>1 h\<theta>T\<^sub>2
+		                                                              hside_core_omitted_parent_faces_book
+		                                                            by (by100 blast)
+		                                                          thus ?thesis
+		                                                            by (rule FalseE)
+		                                                        next
+		                                                          assume hparent:
+		                                                            "\<exists>\<eta>.
+		                                                              ((?G\<^sub>1 \<eta>
+		                                                                \<and> \<eta> \<inter> J\<^sub>1 = {}
+		                                                                \<and> \<eta> \<in> K
+		                                                                \<and> geotop_free_2_simplex K J \<eta>
+		                                                                \<and> geotop_simplex_dim \<eta> 2
+		                                                                \<and> \<eta> \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e \<eta>
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> \<eta> \<noteq> \<theta>
+		                                                                \<and> \<eta> \<noteq> \<beta>)
+		                                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+		                                                                \<and> \<eta> \<inter> J\<^sub>2 = {}
+		                                                                \<and> \<eta> \<in> K
+		                                                                \<and> geotop_free_2_simplex K J \<eta>
+		                                                                \<and> geotop_simplex_dim \<eta> 2
+		                                                                \<and> \<eta> \<inter> J = {}
+		                                                                \<and> {e\<in>K. geotop_is_edge e
+		                                                                  \<and> geotop_is_face e \<eta>
+		                                                                  \<and> e \<subseteq> J} = {}
+		                                                                \<and> \<eta> \<noteq> \<theta>
+		                                                                \<and> \<eta> \<noteq> \<beta>\<^sub>c))"
+		                                                          show ?thesis
+		                                                            by (rule
+		                                                                hside1_empty_parent_candidate_count_book
+		                                                                [OF hparent])
+		                                                        qed
+		                                                      qed
 		                                                      have ht_named_or_empty:
 		                                                        "t1 \<inter> J\<^sub>2 = {}
 		                                                          \<or> t2 \<inter> J\<^sub>2 = {}
