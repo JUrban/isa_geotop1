@@ -3914,6 +3914,47 @@ proof -
     using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
 qed
 
+lemma geotop_connected_trace_inside_component_closure_touch_three_sets_prefix:
+  fixes A U C G\<^sub>1 G\<^sub>2 G\<^sub>3 :: "'a::real_normed_vector set"
+  assumes hC: "C \<in> components U"
+  assumes hA_conn: "connected A"
+  assumes hA_sub: "A \<subseteq> U"
+  assumes hA_meets_C: "A \<inter> C \<noteq> {}"
+  assumes hG\<^sub>1: "G\<^sub>1 \<inter> closure A \<noteq> {}"
+  assumes hG\<^sub>2: "G\<^sub>2 \<inter> closure A \<noteq> {}"
+  assumes hG\<^sub>3: "G\<^sub>3 \<inter> closure A \<noteq> {}"
+  shows "G\<^sub>1 \<inter> closure C \<noteq> {}
+    \<and> G\<^sub>2 \<inter> closure C \<noteq> {}
+    \<and> G\<^sub>3 \<inter> closure C \<noteq> {}"
+proof -
+  obtain x where hxA: "x \<in> A" and hxC: "x \<in> C"
+    using hA_meets_C by (by100 blast)
+  obtain z where hzU: "z \<in> U"
+    and hC_eq_z: "C = connected_component_set U z"
+    using hC componentsE by (by100 metis)
+  have hxU: "x \<in> U"
+    using hA_sub hxA by (by100 blast)
+  have hC_eq_x: "C = connected_component_set U x"
+    using hC_eq_z hxC connected_component_eq by (by100 blast)
+  have hA_sub_C: "A \<subseteq> C"
+  proof -
+    have "A \<subseteq> connected_component_set U x"
+      by (rule connected_component_maximal[OF hxA hA_conn hA_sub])
+    thus ?thesis
+      using hC_eq_x by (by100 simp)
+  qed
+  have hcl_sub: "closure A \<subseteq> closure C"
+    by (rule closure_mono[OF hA_sub_C])
+  have hG\<^sub>1C: "G\<^sub>1 \<inter> closure C \<noteq> {}"
+    using hG\<^sub>1 hcl_sub by (by100 blast)
+  have hG\<^sub>2C: "G\<^sub>2 \<inter> closure C \<noteq> {}"
+    using hG\<^sub>2 hcl_sub by (by100 blast)
+  have hG\<^sub>3C: "G\<^sub>3 \<inter> closure C \<noteq> {}"
+    using hG\<^sub>3 hcl_sub by (by100 blast)
+  show ?thesis
+    using hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro conjI)
+qed
+
 lemma geotop_finite_closure_Union_subset_prefix:
   fixes F :: "'a::topological_space set set"
   assumes hF: "finite F"
@@ -15246,6 +15287,51 @@ proof -
                     qed
                   qed
                 qed
+              qed
+              have hlocal_connected_trace_component_upgrade:
+                  "\<And>A C. C \<in> components ?Lcomp
+                    \<Longrightarrow> connected A
+                    \<Longrightarrow> A \<subseteq> ?Lcomp
+                    \<Longrightarrow> A \<inter> C \<noteq> {}
+                    \<Longrightarrow> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                    \<Longrightarrow> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                    \<Longrightarrow> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+                    \<Longrightarrow> \<exists>D. D \<in> components ?Lcomp
+                      \<and> ((S - {w}) \<inter> ball w r) \<inter> closure D \<noteq> {}
+                      \<and> ((T - {w}) \<inter> ball w r) \<inter> closure D \<noteq> {}
+                      \<and> ((U - {w}) \<inter> ball w r) \<inter> closure D \<noteq> {}"
+              proof -
+                fix A C
+                assume hC: "C \<in> components ?Lcomp"
+                  and hA_conn: "connected A"
+                  and hA_sub: "A \<subseteq> ?Lcomp"
+                  and hA_meets_C: "A \<inter> C \<noteq> {}"
+                  and hS_A:
+                    "((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+                  and hT_A:
+                    "((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+                  and hU_A:
+                    "((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
+                have htouch_C:
+                    "((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                      \<and> ((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
+                      \<and> ((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                  by (rule geotop_connected_trace_inside_component_closure_touch_three_sets_prefix
+                      [OF hC hA_conn hA_sub hA_meets_C hS_A hT_A hU_A])
+                have hS_C:
+                    "((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                  using htouch_C by (by100 blast)
+                have hT_C:
+                    "((T - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                  using htouch_C by (by100 blast)
+                have hU_C:
+                    "((U - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
+                  using htouch_C by (by100 blast)
+                show "\<exists>D. D \<in> components ?Lcomp
+                  \<and> ((S - {w}) \<inter> ball w r) \<inter> closure D \<noteq> {}
+                  \<and> ((T - {w}) \<inter> ball w r) \<inter> closure D \<noteq> {}
+                  \<and> ((U - {w}) \<inter> ball w r) \<inter> closure D \<noteq> {}"
+                  using hC hS_C hT_C hU_C by (intro exI conjI)
               qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
