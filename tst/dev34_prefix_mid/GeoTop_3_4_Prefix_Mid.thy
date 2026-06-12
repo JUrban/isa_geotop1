@@ -21252,6 +21252,7 @@ proof -
         \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
         \<and> \<beta>\<^sub>c \<noteq> \<beta>
         \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> \<beta>\<^sub>c \<noteq> \<alpha>
         \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
         \<and> \<beta> \<notin> ?T\<^sub>2
         \<and> (?G\<^sub>1 \<rho> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<rho>)"
@@ -21263,6 +21264,7 @@ proof -
       and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
       and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
       and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+      and h\<beta>c_ne_\<alpha>: "\<beta>\<^sub>c \<noteq> \<alpha>"
       and h\<beta>c_chord_face:
         "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
       and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
@@ -21274,7 +21276,7 @@ proof -
         "\<forall>\<rho>\<in>?T\<^sub>2.
           \<rho> \<noteq> \<beta>\<^sub>c \<longrightarrow>
           \<not> geotop_is_face (closed_segment a c) \<rho>"
-      using hside_chord_only_named_faces_avoid_\<theta> by (elim exE conjE)
+      using hside_chord_only_named_faces_avoid_\<theta>_\<alpha> by (elim exE conjE)
     obtain \<sigma> \<sigma>' \<tau> \<tau>'
       where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
         and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
@@ -21337,7 +21339,7 @@ proof -
         apply (rule exI[where x = "\<beta>\<^sub>c"])
         apply (rule exI[where x = \<sigma>])
         using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
-          h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<sigma>L\<^sub>1 h\<sigma>2
+          h\<beta>c_ne_\<alpha> h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<sigma>L\<^sub>1 h\<sigma>2
           h\<sigma>_ne_\<theta> False h\<sigma>_no_chord h\<sigma>_card h\<sigma>_contact
         apply (intro conjI)
         apply assumption+
@@ -21358,7 +21360,7 @@ proof -
           apply (rule exI[where x = "\<beta>\<^sub>c"])
           apply (rule exI[where x = \<tau>])
           using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
-            h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<tau>L\<^sub>2 h\<tau>2
+            h\<beta>c_ne_\<alpha> h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<tau>L\<^sub>2 h\<tau>2
             h\<tau>_ne_\<theta> False h\<tau>_no_chord h\<tau>_card h\<tau>_contact
           apply (intro conjI)
           apply assumption+
@@ -21382,7 +21384,7 @@ proof -
             apply (rule exI[where x = "\<beta>\<^sub>c"])
             apply (rule exI[where x = "\<sigma>'"])
             using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
-              h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<sigma>'L\<^sub>1 h\<sigma>'2
+              h\<beta>c_ne_\<alpha> h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<sigma>'L\<^sub>1 h\<sigma>'2
               False h\<sigma>'_ne_\<beta> h\<sigma>'_no_chord h\<sigma>'_card h\<sigma>'_contact
             apply (intro conjI)
             apply assumption+
@@ -21413,7 +21415,7 @@ proof -
             apply (rule exI[where x = "\<beta>\<^sub>c"])
             apply (rule exI[where x = "\<tau>'"])
             using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
-              h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<tau>'L\<^sub>2 h\<tau>'2
+              h\<beta>c_ne_\<alpha> h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<tau>'L\<^sub>2 h\<tau>'2
               h\<tau>'_ne_\<theta> h\<tau>'_ne_\<beta>c h\<tau>'_no_chord
               h\<tau>'_card h\<tau>'_contact
             apply (intro conjI)
@@ -22922,6 +22924,58 @@ proof -
         {e\<in>K. geotop_is_edge e
           \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {})"
       using hfree hselected_if_contact by (by100 blast)
+  qed
+  have hG\<^sub>1_side_selected_nonempty_not_\<alpha>:
+    "\<And>\<rho>. ?G\<^sub>1 \<rho> \<Longrightarrow>
+      {e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<noteq> {} \<Longrightarrow>
+      \<rho> \<noteq> \<alpha>"
+  proof -
+    fix \<rho>
+    assume hG: "?G\<^sub>1 \<rho>"
+    assume hselected:
+      "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<noteq> {}"
+    have h\<rho>L\<^sub>1: "\<rho> \<in> L\<^sub>1"
+      using hG by (by100 blast)
+    show "\<rho> \<noteq> \<alpha>"
+    proof
+      assume h\<rho>\<alpha>: "\<rho> = \<alpha>"
+      have h\<alpha>L\<^sub>1: "\<alpha> \<in> L\<^sub>1"
+        using h\<rho>L\<^sub>1 h\<rho>\<alpha> by (by100 simp)
+      have "{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} = {}"
+        using h\<alpha>_L\<^sub>1_side_selected_empty[OF h\<alpha>L\<^sub>1] h\<rho>\<alpha>
+        by (by100 simp)
+      thus False
+        using hselected by (by100 blast)
+    qed
+  qed
+  have hG\<^sub>2_side_selected_nonempty_not_\<alpha>:
+    "\<And>\<beta>\<^sub>c \<rho>. ?G\<^sub>2 \<beta>\<^sub>c \<rho> \<Longrightarrow>
+      {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<noteq> {} \<Longrightarrow>
+      \<rho> \<noteq> \<alpha>"
+  proof -
+    fix \<beta>\<^sub>c \<rho>
+    assume hG: "?G\<^sub>2 \<beta>\<^sub>c \<rho>"
+    assume hselected:
+      "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<noteq> {}"
+    have h\<rho>L\<^sub>2: "\<rho> \<in> L\<^sub>2"
+      using hG by (by100 blast)
+    show "\<rho> \<noteq> \<alpha>"
+    proof
+      assume h\<rho>\<alpha>: "\<rho> = \<alpha>"
+      have h\<alpha>L\<^sub>2: "\<alpha> \<in> L\<^sub>2"
+        using h\<rho>L\<^sub>2 h\<rho>\<alpha> by (by100 simp)
+      have "{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} = {}"
+        using h\<alpha>_L\<^sub>2_side_selected_empty[OF h\<alpha>L\<^sub>2] h\<rho>\<alpha>
+        by (by100 simp)
+      thus False
+        using hselected by (by100 blast)
+    qed
   qed
   show ?thesis
     (**
