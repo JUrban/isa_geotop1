@@ -12035,6 +12035,98 @@ proof -
                   \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
             proof -
+              have hN_source_punctured_arc_package:
+                  "\<exists>W. W \<subseteq> N - {p}
+                    \<and> W \<noteq> {}
+                    \<and> p \<in> closure W
+                    \<and> ((\<exists>D. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p})
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}))"
+              proof -
+                obtain D\<^sub>w D\<^sub>q where hN_side:
+                    "(N = D\<^sub>w - {w}
+                      \<and> y \<in> D\<^sub>w - {p}
+                      \<and> p \<in> closure (D\<^sub>w - {w, p}))
+                    \<or> (N = D\<^sub>q
+                      \<and> y \<in> D\<^sub>q - {p}
+                      \<and> p \<in> closure (D\<^sub>q - {p, q\<^sub>1}))"
+                  using hN_split_side_origin_package by (elim exE)
+                show ?thesis
+                  using hN_side
+                proof (elim disjE conjE)
+                  assume hN_eq: "N = D\<^sub>w - {w}"
+                  assume hy_side: "y \<in> D\<^sub>w - {p}"
+                  assume hp_side_cl: "p \<in> closure (D\<^sub>w - {w, p})"
+                  let ?W = "D\<^sub>w - {w, p}"
+                  have hW_sub: "?W \<subseteq> N - {p}"
+                    using hN_eq by (by100 blast)
+                  have hW_nonempty: "?W \<noteq> {}"
+                    by (rule geotop_closure_member_imp_nonempty_prefix
+                        [OF hp_side_cl])
+                  have hbody:
+                      "?W \<subseteq> N - {p}
+                        \<and> ?W \<noteq> {}
+                        \<and> p \<in> closure ?W
+                        \<and> ((\<exists>D. N = D - {w}
+                            \<and> ?W = D - {w, p}
+                            \<and> y \<in> D - {p})
+                          \<or> (\<exists>D. N = D
+                            \<and> ?W = D - {p, q\<^sub>1}
+                            \<and> y \<in> D - {p}))"
+                  proof (intro conjI)
+                    show "?W \<subseteq> N - {p}" by (rule hW_sub)
+                    show "?W \<noteq> {}" by (rule hW_nonempty)
+                    show "p \<in> closure ?W" by (rule hp_side_cl)
+                    show "(\<exists>D. N = D - {w}
+                        \<and> ?W = D - {w, p}
+                        \<and> y \<in> D - {p})
+                      \<or> (\<exists>D. N = D
+                        \<and> ?W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p})"
+                      using hN_eq hy_side by (by100 blast)
+                  qed
+                  show ?thesis
+                    by (rule exI[where x="?W"], rule hbody)
+                next
+                  assume hN_eq: "N = D\<^sub>q"
+                  assume hy_side: "y \<in> D\<^sub>q - {p}"
+                  assume hp_side_cl:
+                      "p \<in> closure (D\<^sub>q - {p, q\<^sub>1})"
+                  let ?W = "D\<^sub>q - {p, q\<^sub>1}"
+                  have hW_sub: "?W \<subseteq> N - {p}"
+                    using hN_eq by (by100 blast)
+                  have hW_nonempty: "?W \<noteq> {}"
+                    by (rule geotop_closure_member_imp_nonempty_prefix
+                        [OF hp_side_cl])
+                  have hbody:
+                      "?W \<subseteq> N - {p}
+                        \<and> ?W \<noteq> {}
+                        \<and> p \<in> closure ?W
+                        \<and> ((\<exists>D. N = D - {w}
+                            \<and> ?W = D - {w, p}
+                            \<and> y \<in> D - {p})
+                          \<or> (\<exists>D. N = D
+                            \<and> ?W = D - {p, q\<^sub>1}
+                            \<and> y \<in> D - {p}))"
+                  proof (intro conjI)
+                    show "?W \<subseteq> N - {p}" by (rule hW_sub)
+                    show "?W \<noteq> {}" by (rule hW_nonempty)
+                    show "p \<in> closure ?W" by (rule hp_side_cl)
+                    show "(\<exists>D. N = D - {w}
+                        \<and> ?W = D - {w, p}
+                        \<and> y \<in> D - {p})
+                      \<or> (\<exists>D. N = D
+                        \<and> ?W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p})"
+                      using hN_eq hy_side by (by100 blast)
+                  qed
+                  show ?thesis
+                    by (rule exI[where x="?W"], rule hbody)
+                qed
+              qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
                     \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
