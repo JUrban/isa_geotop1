@@ -29464,15 +29464,58 @@ proof -
 		                                                      \<or> s2 \<inter> J\<^sub>1 = {}
 		                                                      \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
 		                                                        \<or> (s1 = \<beta> \<and> s2 = \<theta>))))
-		                                                  \<or> ((?H2 x \<and> ?H2 y)
-		                                                    \<and> (t1 \<inter> J\<^sub>2 = {}
-		                                                      \<or> t2 \<inter> J\<^sub>2 = {}
-		                                                      \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
-		                                                        \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))))"
-		                                                have hempty_side_witness_count_book:
-		                                                  "(((?H1 x \<and> ?H1 y)
-		                                                      \<and> (s1 \<inter> J\<^sub>1 = {}
-		                                                        \<or> s2 \<inter> J\<^sub>1 = {}))
+			                                                        \<or> ((?H2 x \<and> ?H2 y)
+			                                                          \<and> (t1 \<inter> J\<^sub>2 = {}
+			                                                            \<or> t2 \<inter> J\<^sub>2 = {}
+			                                                            \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+			                                                              \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))))"
+			                                                have hparent_empty_candidate_count_book:
+			                                                  "(\<exists>\<eta>.
+			                                                    ((?G\<^sub>1 \<eta>
+			                                                      \<and> \<eta> \<inter> J\<^sub>1 = {}
+			                                                      \<and> \<eta> \<in> K
+			                                                      \<and> geotop_free_2_simplex K J \<eta>
+			                                                      \<and> geotop_simplex_dim \<eta> 2
+			                                                      \<and> \<eta> \<inter> J = {}
+			                                                      \<and> {e\<in>K. geotop_is_edge e
+			                                                        \<and> geotop_is_face e \<eta>
+			                                                        \<and> e \<subseteq> J} = {}
+			                                                      \<and> \<eta> \<noteq> \<theta>
+			                                                      \<and> \<eta> \<noteq> \<beta>)
+			                                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta>
+			                                                      \<and> \<eta> \<inter> J\<^sub>2 = {}
+			                                                      \<and> \<eta> \<in> K
+			                                                      \<and> geotop_free_2_simplex K J \<eta>
+			                                                      \<and> geotop_simplex_dim \<eta> 2
+			                                                      \<and> \<eta> \<inter> J = {}
+			                                                      \<and> {e\<in>K. geotop_is_edge e
+			                                                        \<and> geotop_is_face e \<eta>
+			                                                        \<and> e \<subseteq> J} = {}
+			                                                      \<and> \<eta> \<noteq> \<theta>
+			                                                      \<and> \<eta> \<noteq> \<beta>\<^sub>c))) \<Longrightarrow>
+			                                                  \<exists>\<omega>. (?G\<^sub>1 \<omega>
+			                                                      \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+			                                                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+			                                                      \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+			                                                  (**
+			                                                    Shared parent-empty
+			                                                    selected-free form of the
+			                                                    remaining Moise Figure 3.2
+			                                                    count.  All empty side and
+			                                                    named-spare residues have
+			                                                    now been reduced to this
+			                                                    same parent-disk obstruction:
+			                                                    a free 2-simplex has empty
+			                                                    parent-boundary contact and
+			                                                    no selected boundary edge,
+			                                                    so the fixed count must
+			                                                    produce a real side-contact
+			                                                    witness. **)
+			                                                  sorry
+			                                                have hempty_side_witness_count_book:
+			                                                  "(((?H1 x \<and> ?H1 y)
+			                                                      \<and> (s1 \<inter> J\<^sub>1 = {}
+			                                                        \<or> s2 \<inter> J\<^sub>1 = {}))
 		                                                    \<or> ((?H2 x \<and> ?H2 y)
 		                                                      \<and> (t1 \<inter> J\<^sub>2 = {}
 		                                                        \<or> t2 \<inter> J\<^sub>2 = {}))) \<Longrightarrow>
@@ -29695,7 +29738,8 @@ proof -
 				                                                      selected parent edge; the
 				                                                      book count must force a
 				                                                      real side contact. **)
-					                                                    sorry
+					                                                    by (rule
+                                                            hparent_empty_candidate_count_book)
 					                                                  show ?thesis
 				                                                    by (rule
 				                                                        hempty_parent_candidate_count_book
@@ -30144,7 +30188,8 @@ proof -
 		                                                              \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 		                                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
 		                                                              \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
-		                                                          sorry
+		                                                          by (rule
+		                                                              hparent_empty_candidate_count_book)
 		                                                        have hside1_empty_named_or_parent_candidate:
 		                                                          "((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
 		                                                              \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))
@@ -31186,7 +31231,8 @@ proof -
 		                                                              \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 		                                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
 		                                                              \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
-		                                                          sorry
+		                                                          by (rule
+		                                                              hparent_empty_candidate_count_book)
 		                                                        have hside2_empty_named_or_parent_candidate:
 		                                                          "((s1 = \<theta> \<and> s2 = \<beta>)
 		                                                              \<or> (s1 = \<beta> \<and> s2 = \<theta>))
