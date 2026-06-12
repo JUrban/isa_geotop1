@@ -12127,6 +12127,88 @@ proof -
                     by (rule exI[where x="?W"], rule hbody)
                 qed
               qed
+              obtain W where hW_sub_Np: "W \<subseteq> N - {p}"
+                and hW_nonempty: "W \<noteq> {}"
+                and hpW_cl: "p \<in> closure W"
+                and hW_source_cases:
+                  "((\<exists>D. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p})
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}))"
+                using hN_source_punctured_arc_package by (elim exE conjE)
+              have hW_sub_N: "W \<subseteq> N"
+                using hW_sub_Np by (by100 blast)
+              have hW_local_trace_sub:
+                  "W \<inter> ?Lcomp \<subseteq> ?Nloc"
+                using hW_sub_N by (by100 blast)
+              have hW_local_trace_component_cover:
+                  "W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components"
+                using hW_local_trace_sub hN_local_trace_component_cover
+                by (by100 blast)
+              have hW_ball_cover_by_selected_and_trace_components:
+                  "W \<inter> ball w r
+                    \<subseteq> ((S - {w}) \<inter> ball w r)
+                      \<union> ((T - {w}) \<inter> ball w r)
+                      \<union> ((U - {w}) \<inter> ball w r)
+                      \<union> \<Union>?Ntrace_components"
+              proof
+                fix a
+                assume ha: "a \<in> W \<inter> ball w r"
+                have haN_ball: "a \<in> N \<inter> ball w r"
+                  using hW_sub_N ha by (by100 blast)
+                have ha_cover:
+                    "a \<in> ((S - {w}) \<inter> ball w r)
+                      \<union> ((T - {w}) \<inter> ball w r)
+                      \<union> ((U - {w}) \<inter> ball w r)
+                      \<union> \<Union>?Ntrace_components"
+                  using hN_ball_cover_by_selected_and_trace_components
+                    haN_ball by (by100 blast)
+                show "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> \<Union>?Ntrace_components"
+                  by (rule ha_cover)
+              qed
+              have hN_source_trace_cover_package:
+                  "W \<subseteq> N
+                    \<and> W \<subseteq> N - {p}
+                    \<and> W \<noteq> {}
+                    \<and> p \<in> closure W
+                    \<and> W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components
+                    \<and> W \<inter> ball w r
+                      \<subseteq> ((S - {w}) \<inter> ball w r)
+                        \<union> ((T - {w}) \<inter> ball w r)
+                        \<union> ((U - {w}) \<inter> ball w r)
+                        \<union> \<Union>?Ntrace_components
+                    \<and> ((\<exists>D. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p})
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}))"
+              proof (intro conjI)
+                show "W \<subseteq> N" by (rule hW_sub_N)
+                show "W \<subseteq> N - {p}" by (rule hW_sub_Np)
+                show "W \<noteq> {}" by (rule hW_nonempty)
+                show "p \<in> closure W" by (rule hpW_cl)
+                show "W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components"
+                  by (rule hW_local_trace_component_cover)
+                show "W \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> \<Union>?Ntrace_components"
+                  by (rule hW_ball_cover_by_selected_and_trace_components)
+                show "((\<exists>D. N = D - {w}
+                    \<and> W = D - {w, p}
+                    \<and> y \<in> D - {p})
+                  \<or> (\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}))"
+                  by (rule hW_source_cases)
+              qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
                     \<and> ((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}
