@@ -34693,7 +34693,55 @@ lemma geotop_free_triangle_one_boundary_edge_supported_fold_prefix:
     v5 to the opposite vertex v1, extend simplicially over the four indicated
     triangles, and read the image boundary as the polygonal disk triangulated
     by a complex with one fewer 2-simplex. **)
-  sorry
+proof -
+  let ?T = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+  have hT_fin: "finite ?T"
+    using hK_fin by (by100 simp)
+  have h\<theta>T: "\<theta> \<in> ?T"
+    using h\<theta>K h\<theta>2 by (by100 simp)
+  have hT_nonempty: "?T \<noteq> {}"
+    using h\<theta>T by (by100 blast)
+  have hT_after_delete_decreases: "card (?T - {\<theta>}) < card ?T"
+    by (rule card_Diff1_less[OF hT_fin h\<theta>T])
+  have hboundary_one_edge_package:
+      "geotop_is_edge e
+      \<and> geotop_is_face e \<theta>
+      \<and> e \<subseteq> J
+      \<and> \<theta> \<inter> J = e
+      \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}"
+    using hedge heface heJ hcontact hE by (by100 blast)
+  have hclosed_disk_in_support:
+      "geotop_polyhedron K \<subseteq> U"
+    using hK_poly hI_sub_U by (by100 simp)
+  have hbook_figure33_one_boundary_fold:
+      "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+    (**
+      Remaining Moise Figure 3.3 Case 1 PL construction.  From the selected
+      one-boundary-edge free triangle, choose auxiliary vertices v3,v4,v5 in a
+      small carrier contained in \<open>U\<close>, define the PL homeomorphism that fixes
+      the outside of that carrier and the vertices v0,v2,v3,v4, sends v5 to
+      the opposite vertex v1, extends simplicially over the four Figure 3.3
+      triangles, and takes the image boundary and image triangulation as \<open>J'\<close>
+      and \<open>K'\<close>.  The finite triangle-count bookkeeping above is the deletion
+      count that this construction must realize. **)
+    sorry
+  show ?thesis
+    using hbook_figure33_one_boundary_fold by (by100 blast)
+qed
 
 lemma geotop_free_triangle_two_boundary_edges_supported_inverse_fold_prefix:
   fixes J U \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
