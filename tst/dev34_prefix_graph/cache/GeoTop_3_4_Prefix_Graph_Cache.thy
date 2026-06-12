@@ -12361,6 +12361,7 @@ proof -
                     \<and> p \<in> closure W
                     \<and> top1_connected_on W
                       (subspace_topology UNIV geotop_euclidean_topology W)
+                    \<and> y \<in> W
                     \<and> ((\<exists>D. N = D - {w}
                         \<and> W = D - {w, p}
                         \<and> y \<in> D - {p})
@@ -12402,6 +12403,10 @@ proof -
                         [OF hp_side_cl])
                   have hwp: "w \<noteq> p"
                     using hpSN by (by100 blast)
+                  have hyw: "y \<noteq> w"
+                    using hyTN by (by100 blast)
+                  have hyW: "y \<in> ?W"
+                    using hy_side hyw by (by100 blast)
                   have hW_conn: "top1_connected_on ?W
                       (subspace_topology UNIV geotop_euclidean_topology ?W)"
                     by (rule arc_minus_endpoints_connected
@@ -12414,6 +12419,7 @@ proof -
                         \<and> p \<in> closure ?W
                         \<and> top1_connected_on ?W
                           (subspace_topology UNIV geotop_euclidean_topology ?W)
+                        \<and> y \<in> ?W
                         \<and> ((\<exists>D. N = D - {w}
                             \<and> ?W = D - {w, p}
                             \<and> y \<in> D - {p})
@@ -12427,6 +12433,7 @@ proof -
                     show "top1_connected_on ?W
                       (subspace_topology UNIV geotop_euclidean_topology ?W)"
                       by (rule hW_conn)
+                    show "y \<in> ?W" by (rule hyW)
                     show "(\<exists>D. N = D - {w}
                         \<and> ?W = D - {w, p}
                         \<and> y \<in> D - {p})
@@ -12454,6 +12461,10 @@ proof -
                         [OF hp_side_cl])
                   have hpq: "p \<noteq> q\<^sub>1"
                     using hpS by (by100 blast)
+                  have hyq: "y \<noteq> q\<^sub>1"
+                    using hyT by (by100 blast)
+                  have hyW: "y \<in> ?W"
+                    using hy_side hyq by (by100 blast)
                   have hW_conn: "top1_connected_on ?W
                       (subspace_topology UNIV geotop_euclidean_topology ?W)"
                     by (rule arc_minus_endpoints_connected
@@ -12466,6 +12477,7 @@ proof -
                         \<and> p \<in> closure ?W
                         \<and> top1_connected_on ?W
                           (subspace_topology UNIV geotop_euclidean_topology ?W)
+                        \<and> y \<in> ?W
                         \<and> ((\<exists>D. N = D - {w}
                             \<and> ?W = D - {w, p}
                             \<and> y \<in> D - {p})
@@ -12479,6 +12491,7 @@ proof -
                     show "top1_connected_on ?W
                       (subspace_topology UNIV geotop_euclidean_topology ?W)"
                       by (rule hW_conn)
+                    show "y \<in> ?W" by (rule hyW)
                     show "(\<exists>D. N = D - {w}
                         \<and> ?W = D - {w, p}
                         \<and> y \<in> D - {p})
@@ -12496,6 +12509,7 @@ proof -
                 and hpW_cl: "p \<in> closure W"
                 and hW_conn: "top1_connected_on W
                   (subspace_topology UNIV geotop_euclidean_topology W)"
+                and hyW: "y \<in> W"
                 and hW_source_cases:
                   "((\<exists>D. N = D - {w}
                       \<and> W = D - {w, p}
@@ -12544,6 +12558,7 @@ proof -
                     \<and> p \<in> closure W
                     \<and> top1_connected_on W
                       (subspace_topology UNIV geotop_euclidean_topology W)
+                    \<and> y \<in> W
                     \<and> W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components
                     \<and> W \<inter> ball w r
                       \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -12564,6 +12579,7 @@ proof -
                 show "top1_connected_on W
                   (subspace_topology UNIV geotop_euclidean_topology W)"
                   by (rule hW_conn)
+                show "y \<in> W" by (rule hyW)
                 show "W \<inter> ?Lcomp \<subseteq> \<Union>?Ntrace_components"
                   by (rule hW_local_trace_component_cover)
                 show "W \<inter> ball w r
