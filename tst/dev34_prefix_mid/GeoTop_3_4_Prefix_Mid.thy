@@ -25903,7 +25903,123 @@ proof -
             triangle.  The surviving witness has nonempty side-boundary
             contact, so the existing transfer lemmas finish the parent
             selected-free witness. **)
-          sorry
+        proof -
+          fix \<gamma>
+          assume hempty_candidate:
+            "(?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 = {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 = {})"
+          obtain \<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s
+            where h\<sigma>pL\<^sub>1: "\<sigma>\<^sub>p \<in> L\<^sub>1"
+              and h\<sigma>p2: "geotop_simplex_dim \<sigma>\<^sub>p 2"
+              and h\<sigma>p_ne_\<theta>: "\<sigma>\<^sub>p \<noteq> \<theta>"
+              and h\<sigma>p_card:
+                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<sigma>\<^sub>p \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+              and h\<sigma>p_contact:
+                "\<sigma>\<^sub>p \<inter> J\<^sub>1 =
+                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                    \<and> geotop_is_face e \<sigma>\<^sub>p \<and> e \<subseteq> J\<^sub>1}"
+              and h\<sigma>sL\<^sub>1: "\<sigma>\<^sub>s \<in> L\<^sub>1"
+              and h\<sigma>s2: "geotop_simplex_dim \<sigma>\<^sub>s 2"
+              and h\<sigma>s_card:
+                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<sigma>\<^sub>s \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+              and h\<sigma>s_contact:
+                "\<sigma>\<^sub>s \<inter> J\<^sub>1 =
+                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                    \<and> geotop_is_face e \<sigma>\<^sub>s \<and> e \<subseteq> J\<^sub>1}"
+              and h\<sigma>p_ne_\<sigma>s: "\<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s"
+              and h\<tau>pL\<^sub>2: "\<tau>\<^sub>p \<in> L\<^sub>2"
+              and h\<tau>p2: "geotop_simplex_dim \<tau>\<^sub>p 2"
+              and h\<tau>p_ne_\<theta>: "\<tau>\<^sub>p \<noteq> \<theta>"
+              and h\<tau>p_card:
+                "card {e\<in>L\<^sub>2. geotop_is_edge e
+                  \<and> geotop_is_face e \<tau>\<^sub>p \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+              and h\<tau>p_contact:
+                "\<tau>\<^sub>p \<inter> J\<^sub>2 =
+                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                    \<and> geotop_is_face e \<tau>\<^sub>p \<and> e \<subseteq> J\<^sub>2}"
+              and h\<tau>sL\<^sub>2: "\<tau>\<^sub>s \<in> L\<^sub>2"
+              and h\<tau>s2: "geotop_simplex_dim \<tau>\<^sub>s 2"
+              and h\<tau>s_card:
+                "card {e\<in>L\<^sub>2. geotop_is_edge e
+                  \<and> geotop_is_face e \<tau>\<^sub>s \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+              and h\<tau>s_contact:
+                "\<tau>\<^sub>s \<inter> J\<^sub>2 =
+                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                    \<and> geotop_is_face e \<tau>\<^sub>s \<and> e \<subseteq> J\<^sub>2}"
+              and h\<tau>p_ne_\<tau>s: "\<tau>\<^sub>p \<noteq> \<tau>\<^sub>s"
+              and h\<sigma>p_ne_\<tau>p: "\<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p"
+              and h\<sigma>p_primary:
+                "\<sigma>\<^sub>p \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>\<^sub>p"
+              and h\<tau>p_primary:
+                "\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p"
+            using hlarge_fixed_oriented_primary_data by (elim exE conjE)
+          have hprimary_nonempty_finishes:
+            "(\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+              \<or> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {}) \<Longrightarrow>
+              \<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+          proof -
+            assume hprimary:
+              "(\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+                \<or> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {})"
+            show ?thesis
+            proof (rule disjE[OF hprimary])
+              assume hleft:
+                "\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {}"
+              have hG: "?G\<^sub>1 \<sigma>\<^sub>p"
+                using h\<sigma>p_primary hleft by (by100 blast)
+              have hcontact: "\<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {}"
+                using hleft by (by100 blast)
+              have hcase:
+                "(?G\<^sub>1 \<sigma>\<^sub>p \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<sigma>\<^sub>p \<and> \<sigma>\<^sub>p \<inter> J\<^sub>2 \<noteq> {})"
+                by (rule disjI1, rule conjI, rule hG, rule hcontact)
+              show ?thesis
+                by (rule exI[where x = "\<sigma>\<^sub>p"], rule hcase)
+            next
+              assume hright:
+                "\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {}"
+              have hG: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p"
+                using h\<tau>p_primary hright by (by100 blast)
+              have hcontact: "\<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {}"
+                using hright by (by100 blast)
+              have hcase:
+                "(?G\<^sub>1 \<tau>\<^sub>p \<and> \<tau>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {})"
+                by (rule disjI2, rule conjI, rule hG, rule hcontact)
+              show ?thesis
+                by (rule exI[where x = "\<tau>\<^sub>p"], rule hcase)
+            qed
+          qed
+          show "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+          proof (cases
+              "(\<sigma>\<^sub>p \<noteq> \<beta> \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 \<noteq> {})
+                \<or> (\<tau>\<^sub>p \<noteq> \<beta>\<^sub>c \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 \<noteq> {})")
+            case True
+            show ?thesis
+              by (rule hprimary_nonempty_finishes[OF True])
+          next
+            case False
+            have hprimary_residual:
+              "(\<sigma>\<^sub>p = \<beta> \<or> \<sigma>\<^sub>p \<inter> J\<^sub>1 = {})
+                \<and> (\<tau>\<^sub>p = \<beta>\<^sub>c \<or> \<tau>\<^sub>p \<inter> J\<^sub>2 = {})"
+              using False by (by100 blast)
+            (**
+              Remaining reduced counting case.  Both primary canonical side
+              witnesses are unavailable: the side-1 primary is either the
+              named chord triangle \<open>\<beta>\<close> or has empty side contact, and the
+              side-2 primary is either the fixed named chord triangle
+              \<open>\<beta>\<^sub>c\<close> or has empty side contact.  The spare witnesses
+              \<open>\<sigma>\<^sub>s\<close> and \<open>\<tau>\<^sub>s\<close>, together with \<open>hempty_candidate\<close> and
+              \<open>hbranch_empty\<close>, are the remaining Moise two-side counting
+              contradiction to formalize. **)
+            show ?thesis
+              sorry
+          qed
+        qed
         have hlarge_real_side_contact_candidate:
           "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
             \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
