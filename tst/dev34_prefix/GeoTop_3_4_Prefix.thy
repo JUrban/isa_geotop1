@@ -49,6 +49,134 @@ definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" w
        g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
     (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
 
+lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
+  fixes J A1 A2 :: "(real^2) set"
+  assumes hX: "X \<in> J"
+  assumes hX_ne_P: "X \<noteq> P"
+  assumes hX_ne_R: "X \<noteq> R"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  shows "\<exists>r>0. ball X r \<inter> (A1 \<union> A2) = {}"
+  (**
+    D44 endpoint-locality step.  A boundary point different from the two arc
+    attachment points has a small ball disjoint from both cutting arcs, since
+    each arc is closed and meets the polygon boundary only at its prescribed
+    endpoint. **)
+proof -
+  obtain \<gamma>1 :: "real \<Rightarrow> real^2" where h\<gamma>1_arc: "arc \<gamma>1"
+    and h\<gamma>1_img: "path_image \<gamma>1 = A1"
+    using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
+  obtain \<gamma>2 :: "real \<Rightarrow> real^2" where h\<gamma>2_arc: "arc \<gamma>2"
+    and h\<gamma>2_img: "path_image \<gamma>2 = A2"
+    using geotop_is_arc_imp_HOL_arc[OF hA2] by (by100 blast)
+  have hA1_closed: "closed A1"
+    using closed_arc_image[OF h\<gamma>1_arc] h\<gamma>1_img by (by100 simp)
+  have hA2_closed: "closed A2"
+    using closed_arc_image[OF h\<gamma>2_arc] h\<gamma>2_img by (by100 simp)
+  have hA12_closed: "closed (A1 \<union> A2)"
+    by (rule closed_Un[OF hA1_closed hA2_closed])
+  have hX_not_A1: "X \<notin> A1"
+  proof
+    assume hXA1: "X \<in> A1"
+    have "X \<in> A1 \<inter> J"
+      using hXA1 hX by (by100 blast)
+    hence "X = P"
+      using hA1J by (by100 simp)
+    thus False
+      using hX_ne_P by (by100 blast)
+  qed
+  have hX_not_A2: "X \<notin> A2"
+  proof
+    assume hXA2: "X \<in> A2"
+    have "X \<in> A2 \<inter> J"
+      using hXA2 hX by (by100 blast)
+    hence "X = R"
+      using hA2J by (by100 simp)
+    thus False
+      using hX_ne_R by (by100 blast)
+  qed
+  have hX_not_union: "X \<notin> A1 \<union> A2"
+    using hX_not_A1 hX_not_A2 by (by100 blast)
+  have hopen_compl: "open (-(A1 \<union> A2))"
+    by (rule open_Compl[OF hA12_closed])
+  obtain r where hr_pos: "0 < r" and hr_sub: "ball X r \<subseteq> -(A1 \<union> A2)"
+    using hopen_compl hX_not_union open_contains_ball by blast
+  have hr_disj: "ball X r \<inter> (A1 \<union> A2) = {}"
+    using hr_sub by (by100 blast)
+  show ?thesis
+    using hr_pos hr_disj by (by100 blast)
+qed
+
+lemma geotop_polygon_interior_minus_two_arcs_connected_frontier_witness_in_ball_prefix:
+  fixes J A1 A2 :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hr: "0 < r"
+  shows "\<exists>U X'. connected U
+        \<and> U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)
+        \<and> U \<subseteq> ball X r
+        \<and> X \<in> geotop_frontier UNIV geotop_euclidean_topology U
+        \<and> X' \<in> U
+        \<and> X' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+  (**
+    D44 two-arc analogue of the D42 local-side witness.  Near a boundary
+    point away from the two arc endpoints, the complement of both arcs agrees
+    locally with the polygon interior, so Moise's local polygon side can be
+    chosen inside the cut-open set. **)
+proof -
+  have hX_ne_P: "X \<noteq> P"
+    using hX_ne by (by100 blast)
+  have hX_ne_R: "X \<noteq> R"
+    using hX_ne by (by100 blast)
+  obtain rA where hrA_pos: "0 < rA"
+    and hrA_disj: "ball X rA \<inter> (A1 \<union> A2) = {}"
+    using geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix
+        [OF hX hX_ne_P hX_ne_R hA1 hA2 hA1J hA2J]
+    by (elim exE conjE)
+  define \<rho> where "\<rho> = min r rA / 2"
+  have h\<rho>_pos: "0 < \<rho>"
+    unfolding \<rho>_def using hr hrA_pos by (by100 simp)
+  have h\<rho>_le_r: "\<rho> \<le> r"
+    unfolding \<rho>_def using hr hrA_pos by (by100 simp)
+  have h\<rho>_le_rA: "\<rho> \<le> rA"
+    unfolding \<rho>_def using hr hrA_pos by (by100 simp)
+  have hball_\<rho>_sub_r: "ball X \<rho> \<subseteq> ball X r"
+    using h\<rho>_le_r by (by100 auto)
+  have hball_\<rho>_sub_rA: "ball X \<rho> \<subseteq> ball X rA"
+    using h\<rho>_le_rA by (by100 auto)
+  have hball_\<rho>_A12: "ball X \<rho> \<inter> (A1 \<union> A2) = {}"
+    using hball_\<rho>_sub_rA hrA_disj by (by100 blast)
+  obtain U X' where hU_conn: "connected U"
+    and hU_open: "U \<in> geotop_euclidean_topology"
+    and hU_I: "U \<subseteq> geotop_polygon_interior J"
+    and hU_ball_\<rho>: "U \<subseteq> ball X \<rho>"
+    and hX_front_U:
+      "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    and hX'_U: "X' \<in> U"
+    and hX'_I: "X' \<in> geotop_polygon_interior J"
+    using geotop_polygon_local_side_witness_dev34[OF hJ hX h\<rho>_pos]
+    by (elim exE conjE)
+  have hU_ball_r: "U \<subseteq> ball X r"
+    using hU_ball_\<rho> hball_\<rho>_sub_r by (by100 blast)
+  have hU_A12_empty: "U \<inter> (A1 \<union> A2) = {}"
+    using hU_ball_\<rho> hball_\<rho>_A12 by (by100 blast)
+  have hU_cut: "U \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+    using hU_I hU_A12_empty by (by100 blast)
+  have hX'_cut: "X' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+    using hX'_U hU_cut by (by100 blast)
+  show ?thesis
+    using hU_conn hU_open hU_cut hU_ball_r hX_front_U hX'_U hX'_cut
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix:
   fixes J A1 A2 :: "(real^2) set" and P Q R S :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -102,6 +230,66 @@ proof -
     using polygon_interior_disjoint_polygon[OF hJ] hQ by (by100 blast)
   have hS_not_cut: "S \<notin> geotop_polygon_interior J - (A1 \<union> A2)"
     using polygon_interior_disjoint_polygon[OF hJ] hS by (by100 blast)
+  have hQ_S_two_arc_local_access:
+      "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
+        0 < r
+        \<and> connected U\<^sub>Q
+        \<and> connected U\<^sub>S
+        \<and> U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)
+        \<and> U\<^sub>Q \<subseteq> ball Q r
+        \<and> U\<^sub>S \<subseteq> ball S r
+        \<and> ball Q r \<inter> ball S r = {}
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+        \<and> Q' \<in> U\<^sub>Q
+        \<and> S' \<in> U\<^sub>S
+        \<and> Q' \<in> geotop_polygon_interior J - (A1 \<union> A2)
+        \<and> S' \<in> geotop_polygon_interior J - (A1 \<union> A2)
+        \<and> U\<^sub>Q \<inter> U\<^sub>S = {}"
+  proof -
+    have hQ_ne_S: "Q \<noteq> S"
+      using hcard by (auto simp: card_insert_if split: if_splits)
+    obtain r where hr_pos: "0 < r"
+      and hr_disj: "ball Q r \<inter> ball S r = {}"
+      using geotop_distinct_points_disjoint_small_balls_prefix[OF hQ_ne_S]
+      by (elim exE conjE)
+    have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+      using hQ_ne_P hQ_ne_R by (by100 blast)
+    have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+      using hS_ne_P hS_ne_R by (by100 blast)
+    obtain U\<^sub>Q Q' where hU\<^sub>Q_conn: "connected U\<^sub>Q"
+      and hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+      and hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+      and hU\<^sub>Q_ball: "U\<^sub>Q \<subseteq> ball Q r"
+      and hQ_front:
+        "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+      and hQ'_U\<^sub>Q: "Q' \<in> U\<^sub>Q"
+      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+      using geotop_polygon_interior_minus_two_arcs_connected_frontier_witness_in_ball_prefix
+          [OF hJ hQ hQ_ne_PR hA1 hA2 hA1J hA2J hr_pos]
+      by (elim exE conjE)
+    obtain U\<^sub>S S' where hU\<^sub>S_conn: "connected U\<^sub>S"
+      and hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+      and hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+      and hU\<^sub>S_ball: "U\<^sub>S \<subseteq> ball S r"
+      and hS_front:
+        "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+      and hS'_U\<^sub>S: "S' \<in> U\<^sub>S"
+      and hS'_cut: "S' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+      using geotop_polygon_interior_minus_two_arcs_connected_frontier_witness_in_ball_prefix
+          [OF hJ hS hS_ne_PR hA1 hA2 hA1J hA2J hr_pos]
+      by (elim exE conjE)
+    have hU_disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+      using hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj by (by100 blast)
+    show ?thesis
+      using hr_pos hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
+        hU\<^sub>Q_sub hU\<^sub>S_sub hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj
+        hQ_front hS_front hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+      by (intro exI conjI)
+  qed
   have hD44_component_transfer:
     "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
