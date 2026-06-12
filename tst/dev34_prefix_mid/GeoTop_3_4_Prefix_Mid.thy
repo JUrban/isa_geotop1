@@ -26007,17 +26007,283 @@ proof -
               "(\<sigma>\<^sub>p = \<beta> \<or> \<sigma>\<^sub>p \<inter> J\<^sub>1 = {})
                 \<and> (\<tau>\<^sub>p = \<beta>\<^sub>c \<or> \<tau>\<^sub>p \<inter> J\<^sub>2 = {})"
               using False by (by100 blast)
-            (**
-              Remaining reduced counting case.  Both primary canonical side
-              witnesses are unavailable: the side-1 primary is either the
-              named chord triangle \<open>\<beta>\<close> or has empty side contact, and the
-              side-2 primary is either the fixed named chord triangle
-              \<open>\<beta>\<^sub>c\<close> or has empty side contact.  The spare witnesses
-              \<open>\<sigma>\<^sub>s\<close> and \<open>\<tau>\<^sub>s\<close>, together with \<open>hempty_candidate\<close> and
-              \<open>hbranch_empty\<close>, are the remaining Moise two-side counting
-              contradiction to formalize. **)
-            show ?thesis
+            have hspare_no_chord_candidate_if_named_primaries:
+              "\<sigma>\<^sub>p = \<beta> \<Longrightarrow> \<tau>\<^sub>p = \<beta>\<^sub>c \<Longrightarrow>
+                ?G\<^sub>1 \<sigma>\<^sub>s \<or> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s"
+            proof -
+              assume h\<sigma>p_eq_\<beta>: "\<sigma>\<^sub>p = \<beta>"
+              assume h\<tau>p_eq_\<beta>c: "\<tau>\<^sub>p = \<beta>\<^sub>c"
+              obtain \<delta> where h\<delta>T\<^sub>2: "\<delta> \<in> ?T\<^sub>2"
+                and h\<delta>_not_T\<^sub>1: "\<delta> \<notin> ?T\<^sub>1"
+                and h\<delta>_ne_\<beta>: "\<delta> \<noteq> \<beta>"
+                and h\<delta>_ne_\<theta>: "\<delta> \<noteq> \<theta>"
+                and h\<delta>_ne_\<alpha>: "\<delta> \<noteq> \<alpha>"
+                and h\<delta>_chord:
+                  "geotop_is_face (closed_segment a c) \<delta>"
+                and h\<beta>_not_T\<^sub>2_unique: "\<beta> \<notin> ?T\<^sub>2"
+                and hT\<^sub>1_not_named_no_chord:
+                  "\<forall>\<rho>\<in>?T\<^sub>1.
+                    \<rho> \<noteq> \<beta> \<longrightarrow>
+                    \<not> geotop_is_face (closed_segment a c) \<rho>"
+                and hT\<^sub>2_not_named_no_chord:
+                  "\<forall>\<rho>\<in>?T\<^sub>2.
+                    \<rho> \<noteq> \<delta> \<longrightarrow>
+                    \<not> geotop_is_face (closed_segment a c) \<rho>"
+                using hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+                by (elim exE conjE)
+              have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
+              proof (rule ccontr)
+                assume hne: "\<not> \<beta>\<^sub>c = \<delta>"
+                have "\<not> geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+                  using hT\<^sub>2_not_named_no_chord h\<beta>cT\<^sub>2 hne by (by100 blast)
+                thus False
+                  using h\<beta>c_chord by (by100 blast)
+              qed
+              have h\<sigma>sT\<^sub>1: "\<sigma>\<^sub>s \<in> ?T\<^sub>1"
+                using h\<sigma>sL\<^sub>1 h\<sigma>s2 by (by100 simp)
+              have h\<tau>sT\<^sub>2: "\<tau>\<^sub>s \<in> ?T\<^sub>2"
+                using h\<tau>sL\<^sub>2 h\<tau>s2 by (by100 simp)
+              have h\<sigma>s_ne_\<beta>: "\<sigma>\<^sub>s \<noteq> \<beta>"
+                using h\<sigma>p_eq_\<beta> h\<sigma>p_ne_\<sigma>s by (by100 blast)
+              have h\<sigma>s_no_chord:
+                "\<not> geotop_is_face (closed_segment a c) \<sigma>\<^sub>s"
+                using hT\<^sub>1_not_named_no_chord h\<sigma>sT\<^sub>1 h\<sigma>s_ne_\<beta>
+                by (by100 blast)
+              show ?thesis
+              proof (cases "\<sigma>\<^sub>s = \<theta>")
+                case False
+                have hG1: "?G\<^sub>1 \<sigma>\<^sub>s"
+                  using h\<sigma>sL\<^sub>1 h\<sigma>s2 False h\<sigma>s_ne_\<beta> h\<sigma>s_no_chord
+                    h\<sigma>s_card h\<sigma>s_contact
+                  by (by100 blast)
+                show ?thesis
+                  by (rule disjI1[OF hG1])
+              next
+                case True
+                have h\<tau>s_ne_\<beta>c: "\<tau>\<^sub>s \<noteq> \<beta>\<^sub>c"
+                  using h\<tau>p_eq_\<beta>c h\<tau>p_ne_\<tau>s by (by100 blast)
+                have h\<tau>s_ne_\<delta>: "\<tau>\<^sub>s \<noteq> \<delta>"
+                  using h\<tau>s_ne_\<beta>c h\<beta>c_eq_\<delta> by (by100 blast)
+                have h\<tau>s_no_chord:
+                  "\<not> geotop_is_face (closed_segment a c) \<tau>\<^sub>s"
+                  using hT\<^sub>2_not_named_no_chord h\<tau>sT\<^sub>2 h\<tau>s_ne_\<delta>
+                  by (by100 blast)
+                have h\<tau>s_ne_\<theta>: "\<tau>\<^sub>s \<noteq> \<theta>"
+                proof
+                  assume h\<tau>s_eq_\<theta>: "\<tau>\<^sub>s = \<theta>"
+                  have "\<theta> \<in> ?T\<^sub>1"
+                    using True h\<sigma>sT\<^sub>1 by (by100 simp)
+                  moreover have "\<theta> \<in> ?T\<^sub>2"
+                    using h\<tau>s_eq_\<theta> h\<tau>sT\<^sub>2 by (by100 simp)
+                  ultimately show False
+                    using hside_core_omitted_parent_faces_book by (by100 blast)
+                qed
+                have hG2: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s"
+                  using h\<tau>sL\<^sub>2 h\<tau>s2 h\<tau>s_ne_\<theta> h\<tau>s_ne_\<beta>c
+                    h\<tau>s_no_chord h\<tau>s_card h\<tau>s_contact
+                  by (by100 blast)
+                show ?thesis
+                  by (rule disjI2[OF hG2])
+              qed
+            qed
+            have hnamed_primaries_spare_nonempty_finishes:
+              "\<sigma>\<^sub>p = \<beta> \<Longrightarrow> \<tau>\<^sub>p = \<beta>\<^sub>c \<Longrightarrow>
+                ((?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 \<noteq> {})) \<Longrightarrow>
+                \<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+            proof -
+              assume h\<sigma>p_eq_\<beta>: "\<sigma>\<^sub>p = \<beta>"
+              assume h\<tau>p_eq_\<beta>c: "\<tau>\<^sub>p = \<beta>\<^sub>c"
+              assume hspare_nonempty:
+                "(?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 \<noteq> {})"
+              show ?thesis
+              proof (rule disjE[OF hspare_nonempty])
+                assume hleft: "?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 \<noteq> {}"
+                have hcase:
+                  "(?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 \<noteq> {})
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>2 \<noteq> {})"
+                  by (rule disjI1, rule hleft)
+                show ?thesis
+                  by (rule exI[where x = "\<sigma>\<^sub>s"], rule hcase)
+              next
+                assume hright:
+                  "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 \<noteq> {}"
+                have hcase:
+                  "(?G\<^sub>1 \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>1 \<noteq> {})
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 \<noteq> {})"
+                  by (rule disjI2, rule hright)
+                show ?thesis
+                  by (rule exI[where x = "\<tau>\<^sub>s"], rule hcase)
+              qed
+            qed
+            have hnamed_primaries_finishes_or_spare_empty:
+              "\<sigma>\<^sub>p = \<beta> \<Longrightarrow> \<tau>\<^sub>p = \<beta>\<^sub>c \<Longrightarrow>
+                ?thesis \<or>
+                ((?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {}))"
+            proof -
+              assume h\<sigma>p_eq_\<beta>: "\<sigma>\<^sub>p = \<beta>"
+              assume h\<tau>p_eq_\<beta>c: "\<tau>\<^sub>p = \<beta>\<^sub>c"
+              have hspare:
+                "?G\<^sub>1 \<sigma>\<^sub>s \<or> ?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s"
+                by (rule hspare_no_chord_candidate_if_named_primaries
+                    [OF h\<sigma>p_eq_\<beta> h\<tau>p_eq_\<beta>c])
+              show ?thesis
+              proof (rule disjE[OF hspare])
+                assume hG1: "?G\<^sub>1 \<sigma>\<^sub>s"
+                show ?thesis
+                proof (cases "\<sigma>\<^sub>s \<inter> J\<^sub>1 = {}")
+                  case False
+                  have hdone:
+                    "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+                    by (rule hnamed_primaries_spare_nonempty_finishes
+                        [OF h\<sigma>p_eq_\<beta> h\<tau>p_eq_\<beta>c],
+                        rule disjI1, rule conjI, rule hG1, rule False)
+                  show ?thesis
+                    by (rule disjI1[OF hdone])
+                next
+                  case True
+                  have hspare_empty:
+                    "(?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {})"
+                    by (rule disjI1, rule conjI, rule hG1, rule True)
+                  show ?thesis
+                    by (rule disjI2[OF hspare_empty])
+                qed
+              next
+                assume hG2: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s"
+                show ?thesis
+                proof (cases "\<tau>\<^sub>s \<inter> J\<^sub>2 = {}")
+                  case False
+                  have hdone:
+                    "\<exists>\<gamma>. (?G\<^sub>1 \<gamma> \<and> \<gamma> \<inter> J\<^sub>1 \<noteq> {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<gamma> \<and> \<gamma> \<inter> J\<^sub>2 \<noteq> {})"
+                    by (rule hnamed_primaries_spare_nonempty_finishes
+                        [OF h\<sigma>p_eq_\<beta> h\<tau>p_eq_\<beta>c],
+                        rule disjI2, rule conjI, rule hG2, rule False)
+                  show ?thesis
+                    by (rule disjI1[OF hdone])
+                next
+                  case True
+                  have hspare_empty:
+                    "(?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {})"
+                    by (rule disjI2, rule conjI, rule hG2, rule True)
+                  show ?thesis
+                    by (rule disjI2[OF hspare_empty])
+                qed
+              qed
+            qed
+            have hprimary_residual_finishes_or_empty_candidate:
+              "(\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {}))
+                \<or> (\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {}))"
+            proof (cases "\<sigma>\<^sub>p = \<beta>")
+              case False
+              have h\<sigma>p_empty: "\<sigma>\<^sub>p \<inter> J\<^sub>1 = {}"
+                using hprimary_residual False by (by100 blast)
+              have hG1: "?G\<^sub>1 \<sigma>\<^sub>p"
+                using h\<sigma>p_primary False by (by100 blast)
+              have hempty:
+                "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {})"
+                by (rule exI[where x = "\<sigma>\<^sub>p"],
+                    rule disjI1, rule conjI, rule hG1, rule h\<sigma>p_empty)
+              show ?thesis
+                by (rule disjI2[OF hempty])
+            next
+              case True
+              note h\<sigma>p_eq_\<beta> = True
+              show ?thesis
+              proof (cases "\<tau>\<^sub>p = \<beta>\<^sub>c")
+                case False
+                have h\<tau>p_empty: "\<tau>\<^sub>p \<inter> J\<^sub>2 = {}"
+                  using hprimary_residual False by (by100 blast)
+                have hG2: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p"
+                  using h\<tau>p_primary False by (by100 blast)
+                have hempty:
+                  "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {})"
+                  by (rule exI[where x = "\<tau>\<^sub>p"],
+                      rule disjI2, rule conjI, rule hG2, rule h\<tau>p_empty)
+                show ?thesis
+                  by (rule disjI2[OF hempty])
+              next
+                case True
+                note h\<tau>p_eq_\<beta>c = True
+                have hnamed:
+                  "(\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {}))
+                   \<or> ((?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {})
+                    \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {}))"
+                  by (rule hnamed_primaries_finishes_or_spare_empty
+                      [OF h\<sigma>p_eq_\<beta> h\<tau>p_eq_\<beta>c])
+                show ?thesis
+                proof (rule disjE[OF hnamed])
+                  assume hdone:
+                    "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+                  show ?thesis
+                    by (rule disjI1[OF hdone])
+                next
+                  assume hspare_empty:
+                    "(?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {})"
+                  have hempty:
+                    "\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                      \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {})"
+                  proof (rule disjE[OF hspare_empty])
+                    assume hleft:
+                      "?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {}"
+                    have hcase:
+                      "(?G\<^sub>1 \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>1 = {})
+                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<sigma>\<^sub>s \<and> \<sigma>\<^sub>s \<inter> J\<^sub>2 = {})"
+                      by (rule disjI1, rule hleft)
+                    show ?thesis
+                      by (rule exI[where x = "\<sigma>\<^sub>s"], rule hcase)
+                  next
+                    assume hright:
+                      "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {}"
+                    have hcase:
+                      "(?G\<^sub>1 \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>1 = {})
+                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>s \<and> \<tau>\<^sub>s \<inter> J\<^sub>2 = {})"
+                      by (rule disjI2, rule hright)
+                    show ?thesis
+                      by (rule exI[where x = "\<tau>\<^sub>s"], rule hcase)
+                  qed
+                  show ?thesis
+                    by (rule disjI2[OF hempty])
+                qed
+              qed
+            qed
+            have hlarge_empty_candidate_contradiction_book:
+              "(\<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 = {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 = {})) \<Longrightarrow>
+                \<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+                  \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+              (**
+                Remaining all-empty side-candidate contradiction in the fixed
+                large-side Moise Figure 3.2 branch.  The prior facts reduce
+                every primary/spare side-induction witness either to a usable
+                nonempty side contact or to an empty parent-contact candidate.
+                The book step left here is to rule out the latter alternative
+                using \<open>hempty_candidate\<close>, \<open>hbranch_empty\<close>, and the selected
+                nonfree boundary triangle data. **)
               sorry
+            (**
+              The primary/spare case split is now separated from the final
+              Moise book contradiction: if the split gives a nonempty side
+              contact, it is already the desired replacement candidate; if it
+              gives only an empty side candidate, the named book step above
+              rules out that all-empty alternative. **)
+            show ?thesis
+              using hprimary_residual_finishes_or_empty_candidate
+                hlarge_empty_candidate_contradiction_book
+              by (by100 blast)
           qed
         qed
         have hlarge_real_side_contact_candidate:
