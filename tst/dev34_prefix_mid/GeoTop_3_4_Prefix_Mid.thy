@@ -21136,6 +21136,206 @@ proof -
       apply assumption+
       done
   qed
+  let ?G\<^sub>1 = "\<lambda>\<rho>. \<rho> \<in> L\<^sub>1
+    \<and> geotop_simplex_dim \<rho> 2
+    \<and> \<rho> \<noteq> \<theta>
+    \<and> \<rho> \<noteq> \<beta>
+    \<and> \<not> geotop_is_face (closed_segment a c) \<rho>
+    \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+      \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+    \<and> \<rho> \<inter> J\<^sub>1 =
+      \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>1}"
+  let ?G\<^sub>2 = "\<lambda>\<beta>\<^sub>c \<rho>. \<rho> \<in> L\<^sub>2
+    \<and> geotop_simplex_dim \<rho> 2
+    \<and> \<rho> \<noteq> \<theta>
+    \<and> \<rho> \<noteq> \<beta>\<^sub>c
+    \<and> \<not> geotop_is_face (closed_segment a c) \<rho>
+    \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+      \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2} \<le> 2
+    \<and> \<rho> \<inter> J\<^sub>2 =
+      \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J\<^sub>2}"
+  have hside_no_chord_candidate_if_side2_large:
+    "card ?T\<^sub>2 > 1 \<Longrightarrow>
+      \<exists>\<beta>\<^sub>c \<rho>. \<beta>\<^sub>c \<in> ?T\<^sub>2
+        \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+        \<and> \<beta>\<^sub>c \<noteq> \<beta>
+        \<and> \<beta>\<^sub>c \<noteq> \<theta>
+        \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+        \<and> \<beta> \<notin> ?T\<^sub>2
+        \<and> (?G\<^sub>1 \<rho> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<rho>)"
+  proof -
+    assume hT\<^sub>2_gt1: "card ?T\<^sub>2 > 1"
+    have hT\<^sub>1_T\<^sub>2_disjoint: "?T\<^sub>1 \<inter> ?T\<^sub>2 = {}"
+      using hside_core_omitted_parent_faces_book by (by100 blast)
+    obtain \<beta>\<^sub>c where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+      and h\<beta>c_chord_face:
+        "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      and hT\<^sub>1_not_named_no_chord:
+        "\<forall>\<rho>\<in>?T\<^sub>1.
+          \<rho> \<noteq> \<beta> \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>"
+      and hT\<^sub>2_not_named_no_chord:
+        "\<forall>\<rho>\<in>?T\<^sub>2.
+          \<rho> \<noteq> \<beta>\<^sub>c \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>"
+      using hside_chord_only_named_faces_avoid_\<theta> by (elim exE conjE)
+    obtain \<sigma> \<sigma>' \<tau> \<tau>'
+      where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+        and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
+        and h\<sigma>_card:
+          "card {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+        and h\<sigma>_contact:
+          "\<sigma> \<inter> J\<^sub>1 =
+            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+        and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+        and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
+        and h\<sigma>'_card:
+          "card {e\<in>L\<^sub>1. geotop_is_edge e
+            \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+        and h\<sigma>'_contact:
+          "\<sigma>' \<inter> J\<^sub>1 =
+            \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}"
+        and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
+        and h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+        and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+        and h\<tau>_card:
+          "card {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+        and h\<tau>_contact:
+          "\<tau> \<inter> J\<^sub>2 =
+            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+        and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+        and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
+        and h\<tau>'_card:
+          "card {e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+        and h\<tau>'_contact:
+          "\<tau>' \<inter> J\<^sub>2 =
+            \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}"
+        and h\<tau>_ne_\<tau>': "\<tau> \<noteq> \<tau>'"
+        and h\<sigma>_ne_\<tau>: "\<sigma> \<noteq> \<tau>"
+      using hside_oriented_primary_witnesses_distinct_if_side2_large[OF hT\<^sub>2_gt1]
+      by (elim exE conjE)
+    have h\<sigma>T\<^sub>1: "\<sigma> \<in> ?T\<^sub>1"
+      using h\<sigma>L\<^sub>1 h\<sigma>2 by (by100 simp)
+    have h\<sigma>'T\<^sub>1: "\<sigma>' \<in> ?T\<^sub>1"
+      using h\<sigma>'L\<^sub>1 h\<sigma>'2 by (by100 simp)
+    have h\<tau>T\<^sub>2: "\<tau> \<in> ?T\<^sub>2"
+      using h\<tau>L\<^sub>2 h\<tau>2 by (by100 simp)
+    have h\<tau>'T\<^sub>2: "\<tau>' \<in> ?T\<^sub>2"
+      using h\<tau>'L\<^sub>2 h\<tau>'2 by (by100 simp)
+    show ?thesis
+    proof (cases "\<sigma> = \<beta>")
+      case False
+      have h\<sigma>_no_chord:
+        "\<not> geotop_is_face (closed_segment a c) \<sigma>"
+        using hT\<^sub>1_not_named_no_chord h\<sigma>T\<^sub>1 False by (by100 blast)
+      show ?thesis
+        apply (rule exI[where x = "\<beta>\<^sub>c"])
+        apply (rule exI[where x = \<sigma>])
+        using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+          h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<sigma>L\<^sub>1 h\<sigma>2
+          h\<sigma>_ne_\<theta> False h\<sigma>_no_chord h\<sigma>_card h\<sigma>_contact
+        apply (intro conjI)
+        apply assumption+
+        apply (rule disjI1)
+        apply (intro conjI)
+        apply assumption+
+        done
+    next
+      case True
+      note h\<sigma>_eq_\<beta> = True
+      show ?thesis
+      proof (cases "\<tau> = \<beta>\<^sub>c")
+        case False
+        have h\<tau>_no_chord:
+          "\<not> geotop_is_face (closed_segment a c) \<tau>"
+          using hT\<^sub>2_not_named_no_chord h\<tau>T\<^sub>2 False by (by100 blast)
+        show ?thesis
+          apply (rule exI[where x = "\<beta>\<^sub>c"])
+          apply (rule exI[where x = \<tau>])
+          using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+            h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<tau>L\<^sub>2 h\<tau>2
+            h\<tau>_ne_\<theta> False h\<tau>_no_chord h\<tau>_card h\<tau>_contact
+          apply (intro conjI)
+          apply assumption+
+          apply (rule disjI2)
+          apply (intro conjI)
+          apply assumption+
+          done
+      next
+        case True
+        note h\<tau>_eq_\<beta>c = True
+        have h\<sigma>'_ne_\<beta>: "\<sigma>' \<noteq> \<beta>"
+          using h\<sigma>_eq_\<beta> h\<sigma>_ne_\<sigma>' by (by100 blast)
+        have h\<sigma>'_no_chord:
+          "\<not> geotop_is_face (closed_segment a c) \<sigma>'"
+          using hT\<^sub>1_not_named_no_chord h\<sigma>'T\<^sub>1 h\<sigma>'_ne_\<beta>
+          by (by100 blast)
+        show ?thesis
+        proof (cases "\<sigma>' = \<theta>")
+          case False
+          show ?thesis
+            apply (rule exI[where x = "\<beta>\<^sub>c"])
+            apply (rule exI[where x = "\<sigma>'"])
+            using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+              h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<sigma>'L\<^sub>1 h\<sigma>'2
+              False h\<sigma>'_ne_\<beta> h\<sigma>'_no_chord h\<sigma>'_card h\<sigma>'_contact
+            apply (intro conjI)
+            apply assumption+
+            apply (rule disjI1)
+            apply (intro conjI)
+            apply assumption+
+            done
+        next
+          case True
+          note h\<sigma>'_eq_\<theta> = True
+          have h\<tau>'_ne_\<beta>c: "\<tau>' \<noteq> \<beta>\<^sub>c"
+            using h\<tau>_eq_\<beta>c h\<tau>_ne_\<tau>' by (by100 blast)
+          have h\<tau>'_no_chord:
+            "\<not> geotop_is_face (closed_segment a c) \<tau>'"
+            using hT\<^sub>2_not_named_no_chord h\<tau>'T\<^sub>2 h\<tau>'_ne_\<beta>c
+            by (by100 blast)
+          have h\<tau>'_ne_\<theta>: "\<tau>' \<noteq> \<theta>"
+          proof
+            assume h\<tau>'_eq_\<theta>: "\<tau>' = \<theta>"
+            have "\<theta> \<in> ?T\<^sub>1"
+              using h\<sigma>'_eq_\<theta> h\<sigma>'T\<^sub>1 by (by100 simp)
+            moreover have "\<theta> \<in> ?T\<^sub>2"
+              using h\<tau>'_eq_\<theta> h\<tau>'T\<^sub>2 by (by100 simp)
+            ultimately show False
+              using hT\<^sub>1_T\<^sub>2_disjoint by (by100 blast)
+          qed
+          show ?thesis
+            apply (rule exI[where x = "\<beta>\<^sub>c"])
+            apply (rule exI[where x = "\<tau>'"])
+            using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+              h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 h\<tau>'L\<^sub>2 h\<tau>'2
+              h\<tau>'_ne_\<theta> h\<tau>'_ne_\<beta>c h\<tau>'_no_chord
+              h\<tau>'_card h\<tau>'_contact
+            apply (intro conjI)
+            apply assumption+
+            apply (rule disjI2)
+            apply (intro conjI)
+            apply assumption+
+            done
+        qed
+      qed
+    qed
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
