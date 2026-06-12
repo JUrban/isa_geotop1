@@ -3988,6 +3988,44 @@ proof -
     using hC hxG hxC by (by100 blast)
 qed
 
+lemma geotop_finite_trace_component_closure_touch_summary_prefix:
+  fixes F :: "'a::topological_space set set"
+    and U G :: "'a set"
+    and P :: "'a set \<Rightarrow> bool"
+  assumes hF: "finite F"
+  assumes hsummary:
+    "\<And>C. C \<in> F
+      \<Longrightarrow> C \<in> components U
+        \<and> C \<noteq> {}
+        \<and> C \<subseteq> U
+        \<and> connected C
+        \<and> path_connected C
+        \<and> P C"
+  assumes htouch: "G \<inter> closure (\<Union>F) \<noteq> {}"
+  shows "\<exists>C\<in>F.
+    C \<in> components U
+    \<and> C \<noteq> {}
+    \<and> C \<subseteq> U
+    \<and> connected C
+    \<and> path_connected C
+    \<and> P C
+    \<and> G \<inter> closure C \<noteq> {}"
+proof -
+  obtain C where hC: "C \<in> F" and htouch_C: "G \<inter> closure C \<noteq> {}"
+    using geotop_finite_union_closure_touch_member_prefix[OF hF htouch]
+    by (elim bexE)
+  have hC_summary:
+      "C \<in> components U
+      \<and> C \<noteq> {}
+      \<and> C \<subseteq> U
+      \<and> connected C
+      \<and> path_connected C
+      \<and> P C"
+    by (rule hsummary[OF hC])
+  show ?thesis
+    using hC hC_summary htouch_C by (by100 blast)
+qed
+
 lemma geotop_local_component_closure_touch_witness_prefix:
   fixes U G\<^sub>1 G\<^sub>2 G\<^sub>3 C :: "'a::topological_space set"
   assumes hC: "C \<in> components U"
@@ -12253,32 +12291,9 @@ proof -
                   \<and> path_connected C
                   \<and> C \<inter> ?Mloc \<noteq> {}
                   \<and> G \<inter> closure C \<noteq> {}"
-          proof -
-            fix G
-            assume htouch_union:
-                "G \<inter> closure (\<Union>?Mtrace_components) \<noteq> {}"
-            obtain C where hC: "C \<in> ?Mtrace_components"
-              and htouch_C: "G \<inter> closure C \<noteq> {}"
-              using hM_trace_union_closure_touch_member[OF htouch_union]
-              by (elim bexE)
-            have hsummary:
-                "C \<in> components ?Lcomp
-                  \<and> C \<noteq> {}
-                  \<and> C \<subseteq> ?Lcomp
-                  \<and> connected C
-                  \<and> path_connected C
-                  \<and> C \<inter> ?Mloc \<noteq> {}"
-              by (rule hM_trace_component_summary[OF hC])
-            show "\<exists>C\<in>?Mtrace_components.
-              C \<in> components ?Lcomp
-              \<and> C \<noteq> {}
-              \<and> C \<subseteq> ?Lcomp
-              \<and> connected C
-              \<and> path_connected C
-              \<and> C \<inter> ?Mloc \<noteq> {}
-              \<and> G \<inter> closure C \<noteq> {}"
-              using hC hsummary htouch_C by (by100 blast)
-          qed
+            by (rule geotop_finite_trace_component_closure_touch_summary_prefix
+                [where P="\<lambda>C. C \<inter> ?Mloc \<noteq> {}",
+                 OF hM_trace_components_fin hM_trace_component_summary])
           let ?Nloc = "N \<inter> ?Lcomp"
           have hN_local_trace_sub:
               "?Nloc \<subseteq> ?Lcomp"
@@ -12548,32 +12563,9 @@ proof -
                   \<and> path_connected C
                   \<and> C \<inter> ?Nloc \<noteq> {}
                   \<and> G \<inter> closure C \<noteq> {}"
-          proof -
-            fix G
-            assume htouch_union:
-                "G \<inter> closure (\<Union>?Ntrace_components) \<noteq> {}"
-            obtain C where hC: "C \<in> ?Ntrace_components"
-              and htouch_C: "G \<inter> closure C \<noteq> {}"
-              using hN_trace_union_closure_touch_member[OF htouch_union]
-              by (elim bexE)
-            have hsummary:
-                "C \<in> components ?Lcomp
-                  \<and> C \<noteq> {}
-                  \<and> C \<subseteq> ?Lcomp
-                  \<and> connected C
-                  \<and> path_connected C
-                  \<and> C \<inter> ?Nloc \<noteq> {}"
-              by (rule hN_trace_component_summary[OF hC])
-            show "\<exists>C\<in>?Ntrace_components.
-              C \<in> components ?Lcomp
-              \<and> C \<noteq> {}
-              \<and> C \<subseteq> ?Lcomp
-              \<and> connected C
-              \<and> path_connected C
-              \<and> C \<inter> ?Nloc \<noteq> {}
-              \<and> G \<inter> closure C \<noteq> {}"
-              using hC hsummary htouch_C by (by100 blast)
-          qed
+            by (rule geotop_finite_trace_component_closure_touch_summary_prefix
+                [where P="\<lambda>C. C \<inter> ?Nloc \<noteq> {}",
+                 OF hN_trace_components_fin hN_trace_component_summary])
           obtain M\<^sub>p\<^sub>z M\<^sub>y\<^sub>z where hMpz_sub:
               "M\<^sub>p\<^sub>z \<subseteq> geotop_polyhedron L - {w}"
             and hMpz_conn: "connected M\<^sub>p\<^sub>z"
@@ -12740,33 +12732,9 @@ proof -
                   \<and> path_connected C
                   \<and> C \<inter> ?PZloc \<noteq> {}
                   \<and> G \<inter> closure C \<noteq> {}"
-          proof -
-            fix G
-            assume htouch_union:
-                "G \<inter> closure (\<Union>?PZtrace_components) \<noteq> {}"
-            obtain C where hC: "C \<in> ?PZtrace_components"
-              and htouch_C: "G \<inter> closure C \<noteq> {}"
-              using geotop_finite_union_closure_touch_member_prefix
-                [OF hPZ_trace_components_fin htouch_union]
-              by (elim bexE)
-            have hsummary:
-                "C \<in> components ?Lcomp
-                  \<and> C \<noteq> {}
-                  \<and> C \<subseteq> ?Lcomp
-                  \<and> connected C
-                  \<and> path_connected C
-                  \<and> C \<inter> ?PZloc \<noteq> {}"
-              by (rule hPZ_trace_component_summary[OF hC])
-            show "\<exists>C\<in>?PZtrace_components.
-              C \<in> components ?Lcomp
-              \<and> C \<noteq> {}
-              \<and> C \<subseteq> ?Lcomp
-              \<and> connected C
-              \<and> path_connected C
-              \<and> C \<inter> ?PZloc \<noteq> {}
-              \<and> G \<inter> closure C \<noteq> {}"
-              using hC hsummary htouch_C by (by100 blast)
-          qed
+            by (rule geotop_finite_trace_component_closure_touch_summary_prefix
+                [where P="\<lambda>C. C \<inter> ?PZloc \<noteq> {}",
+                 OF hPZ_trace_components_fin hPZ_trace_component_summary])
           have hPZ_trace_components_disjoint_S:
               "\<Union>?PZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
           proof
@@ -13029,33 +12997,9 @@ proof -
                   \<and> path_connected C
                   \<and> C \<inter> ?YZloc \<noteq> {}
                   \<and> G \<inter> closure C \<noteq> {}"
-          proof -
-            fix G
-            assume htouch_union:
-                "G \<inter> closure (\<Union>?YZtrace_components) \<noteq> {}"
-            obtain C where hC: "C \<in> ?YZtrace_components"
-              and htouch_C: "G \<inter> closure C \<noteq> {}"
-              using geotop_finite_union_closure_touch_member_prefix
-                [OF hYZ_trace_components_fin htouch_union]
-              by (elim bexE)
-            have hsummary:
-                "C \<in> components ?Lcomp
-                  \<and> C \<noteq> {}
-                  \<and> C \<subseteq> ?Lcomp
-                  \<and> connected C
-                  \<and> path_connected C
-                  \<and> C \<inter> ?YZloc \<noteq> {}"
-              by (rule hYZ_trace_component_summary[OF hC])
-            show "\<exists>C\<in>?YZtrace_components.
-              C \<in> components ?Lcomp
-              \<and> C \<noteq> {}
-              \<and> C \<subseteq> ?Lcomp
-              \<and> connected C
-              \<and> path_connected C
-              \<and> C \<inter> ?YZloc \<noteq> {}
-              \<and> G \<inter> closure C \<noteq> {}"
-              using hC hsummary htouch_C by (by100 blast)
-          qed
+            by (rule geotop_finite_trace_component_closure_touch_summary_prefix
+                [where P="\<lambda>C. C \<inter> ?YZloc \<noteq> {}",
+                 OF hYZ_trace_components_fin hYZ_trace_component_summary])
           have hYZ_trace_components_disjoint_S:
               "\<Union>?YZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
           proof
