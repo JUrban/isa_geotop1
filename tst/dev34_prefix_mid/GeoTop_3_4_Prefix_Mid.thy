@@ -19185,6 +19185,20 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_empty_contact_imp_selected_boundary_edges_empty_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
+  assumes hcontact: "\<sigma> \<inter> J = {}"
+  shows "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = {}"
+proof (rule ccontr)
+  assume hne:
+    "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<noteq> {}"
+  have "\<sigma> \<inter> J \<noteq> {}"
+    by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
+        [OF hne])
+  thus False
+    using hcontact by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_two_2simplex_free_nonempty_selected_witness_avoids_empty_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -25161,28 +25175,8 @@ proof -
     have hselected_empty:
       "{e\<in>K. geotop_is_edge e
         \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}"
-    proof
-      show "{e\<in>K. geotop_is_edge e
-          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<subseteq> {}"
-      proof
-        fix e
-        assume he:
-          "e \<in> {e\<in>K. geotop_is_edge e
-            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
-        have hnonempty:
-          "{e\<in>K. geotop_is_edge e
-            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
-          using he by (by100 blast)
-        have "\<rho> \<inter> J \<noteq> {}"
-          by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
-              [OF hnonempty])
-        thus "e \<in> {}"
-          using hparent_empty by (by100 blast)
-      qed
-      show "{} \<subseteq> {e\<in>K. geotop_is_edge e
-          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
-        by (by100 simp)
-    qed
+      by (rule geotop_empty_contact_imp_selected_boundary_edges_empty_prefix
+          [OF hparent_empty])
     show "\<rho> \<in> K
       \<and> geotop_free_2_simplex K J \<rho>
       \<and> geotop_simplex_dim \<rho> 2
@@ -25220,28 +25214,8 @@ proof -
     have hselected_empty:
       "{e\<in>K. geotop_is_edge e
         \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}"
-    proof
-      show "{e\<in>K. geotop_is_edge e
-          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<subseteq> {}"
-      proof
-        fix e
-        assume he:
-          "e \<in> {e\<in>K. geotop_is_edge e
-            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
-        have hnonempty:
-          "{e\<in>K. geotop_is_edge e
-            \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} \<noteq> {}"
-          using he by (by100 blast)
-        have "\<rho> \<inter> J \<noteq> {}"
-          by (rule geotop_selected_boundary_edges_nonempty_imp_contact_nonempty_prefix
-              [OF hnonempty])
-        thus "e \<in> {}"
-          using hparent_empty by (by100 blast)
-      qed
-      show "{} \<subseteq> {e\<in>K. geotop_is_edge e
-          \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J}"
-        by (by100 simp)
-    qed
+      by (rule geotop_empty_contact_imp_selected_boundary_edges_empty_prefix
+          [OF hparent_empty])
     show "\<rho> \<in> K
       \<and> geotop_free_2_simplex K J \<rho>
       \<and> geotop_simplex_dim \<rho> 2
