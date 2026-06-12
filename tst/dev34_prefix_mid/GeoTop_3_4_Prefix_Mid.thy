@@ -21072,6 +21072,70 @@ proof -
       apply assumption+
       done
   qed
+  have h\<theta>_not_chord_face:
+    "\<not> geotop_is_face (closed_segment a c) \<theta>"
+  proof
+    assume hface: "geotop_is_face (closed_segment a c) \<theta>"
+    have hchord_sub_\<theta>: "closed_segment a c \<subseteq> \<theta>"
+      by (rule geotop_is_face_imp_subset_prefix[OF hface])
+    have ha_chord: "a \<in> closed_segment a c"
+    proof -
+      have "a \<in> convex hull {a, c}"
+        using hull_inc[of a "{a, c}"] by (by100 simp)
+      thus ?thesis
+        using segment_convex_hull[of a c] by (by100 simp)
+    qed
+    have "a \<in> \<theta> \<inter> J"
+      using hchord_sub_\<theta> ha_chord haJ by (by100 blast)
+    thus False
+      using h\<theta>contact by (by100 blast)
+  qed
+  have hside_chord_only_named_faces_avoid_\<theta>:
+    "\<exists>\<beta>\<^sub>c. \<beta>\<^sub>c \<in> ?T\<^sub>2
+      \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+      \<and> \<beta>\<^sub>c \<noteq> \<beta>
+      \<and> \<beta>\<^sub>c \<noteq> \<theta>
+      \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+      \<and> \<beta> \<notin> ?T\<^sub>2
+      \<and> (\<forall>\<rho>\<in>?T\<^sub>1.
+          \<rho> \<noteq> \<beta> \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>)
+      \<and> (\<forall>\<rho>\<in>?T\<^sub>2.
+          \<rho> \<noteq> \<beta>\<^sub>c \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>)"
+  proof -
+    obtain \<beta>\<^sub>c where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_chord_face:
+        "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      and hT\<^sub>1_not_named_no_chord:
+        "\<forall>\<rho>\<in>?T\<^sub>1.
+          \<rho> \<noteq> \<beta> \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>"
+      and hT\<^sub>2_not_named_no_chord:
+        "\<forall>\<rho>\<in>?T\<^sub>2.
+          \<rho> \<noteq> \<beta>\<^sub>c \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>"
+      using hside_chord_only_named_faces by (elim exE conjE)
+    have h\<beta>c_ne_\<theta>: "\<beta>\<^sub>c \<noteq> \<theta>"
+    proof
+      assume h\<beta>c_eq_\<theta>: "\<beta>\<^sub>c = \<theta>"
+      have "geotop_is_face (closed_segment a c) \<theta>"
+        using h\<beta>c_chord_face h\<beta>c_eq_\<theta> by (by100 simp)
+      thus False
+        using h\<theta>_not_chord_face by (by100 blast)
+    qed
+    show ?thesis
+      apply (rule exI[where x = "\<beta>\<^sub>c"])
+      using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_ne_\<theta>
+        h\<beta>c_chord_face h\<beta>_not_T\<^sub>2 hT\<^sub>1_not_named_no_chord
+        hT\<^sub>2_not_named_no_chord
+      apply (intro conjI)
+      apply assumption+
+      done
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
