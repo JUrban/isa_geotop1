@@ -49,6 +49,61 @@ definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" w
        g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
     (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
 
+lemma geotop_two_arcs_compact_closed_prefix:
+  fixes A1 A2 :: "(real^2) set"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  shows "compact A1 \<and> compact A2
+      \<and> closed A1 \<and> closed A2
+      \<and> A1 \<noteq> {} \<and> A2 \<noteq> {}
+      \<and> compact (A1 \<union> A2) \<and> closed (A1 \<union> A2)"
+proof -
+  obtain \<gamma>1 :: "real \<Rightarrow> real^2" where h\<gamma>1_arc: "arc \<gamma>1"
+    and h\<gamma>1_img: "path_image \<gamma>1 = A1"
+    using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
+  obtain \<gamma>2 :: "real \<Rightarrow> real^2" where h\<gamma>2_arc: "arc \<gamma>2"
+    and h\<gamma>2_img: "path_image \<gamma>2 = A2"
+    using geotop_is_arc_imp_HOL_arc[OF hA2] by (by100 blast)
+  have hA1_compact: "compact A1"
+    using compact_arc_image[OF h\<gamma>1_arc] h\<gamma>1_img by (by100 simp)
+  have hA2_compact: "compact A2"
+    using compact_arc_image[OF h\<gamma>2_arc] h\<gamma>2_img by (by100 simp)
+  have hA1_closed: "closed A1"
+    using closed_arc_image[OF h\<gamma>1_arc] h\<gamma>1_img by (by100 simp)
+  have hA2_closed: "closed A2"
+    using closed_arc_image[OF h\<gamma>2_arc] h\<gamma>2_img by (by100 simp)
+  have hA1_nonempty: "A1 \<noteq> {}"
+    using h\<gamma>1_img by (by100 simp)
+  have hA2_nonempty: "A2 \<noteq> {}"
+    using h\<gamma>2_img by (by100 simp)
+  have hA12_compact: "compact (A1 \<union> A2)"
+    using hA1_compact hA2_compact by (by100 simp)
+  have hA12_closed: "closed (A1 \<union> A2)"
+    using hA1_closed hA2_closed by (by100 simp)
+  show ?thesis
+    using hA1_compact hA2_compact hA1_closed hA2_closed
+      hA1_nonempty hA2_nonempty hA12_compact hA12_closed
+    by (by100 blast)
+qed
+
+lemma geotop_disjoint_arcs_positive_setdist_prefix:
+  fixes A1 A2 :: "(real^2) set"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  shows "0 < setdist A1 A2"
+proof -
+  have hpack: "compact A1 \<and> compact A2
+      \<and> closed A1 \<and> closed A2
+      \<and> A1 \<noteq> {} \<and> A2 \<noteq> {}
+      \<and> compact (A1 \<union> A2) \<and> closed (A1 \<union> A2)"
+    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] .
+  have hsep: "setdist A1 A2 > 0"
+    using setdist_gt_0_compact_closed[of A1 A2] hpack hA12 by (by100 blast)
+  show ?thesis
+    using hsep by (by100 simp)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
@@ -65,18 +120,8 @@ lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
     each arc is closed and meets the polygon boundary only at its prescribed
     endpoint. **)
 proof -
-  obtain \<gamma>1 :: "real \<Rightarrow> real^2" where h\<gamma>1_arc: "arc \<gamma>1"
-    and h\<gamma>1_img: "path_image \<gamma>1 = A1"
-    using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
-  obtain \<gamma>2 :: "real \<Rightarrow> real^2" where h\<gamma>2_arc: "arc \<gamma>2"
-    and h\<gamma>2_img: "path_image \<gamma>2 = A2"
-    using geotop_is_arc_imp_HOL_arc[OF hA2] by (by100 blast)
-  have hA1_closed: "closed A1"
-    using closed_arc_image[OF h\<gamma>1_arc] h\<gamma>1_img by (by100 simp)
-  have hA2_closed: "closed A2"
-    using closed_arc_image[OF h\<gamma>2_arc] h\<gamma>2_img by (by100 simp)
   have hA12_closed: "closed (A1 \<union> A2)"
-    by (rule closed_Un[OF hA1_closed hA2_closed])
+    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hX_not_A1: "X \<notin> A1"
   proof
     assume hXA1: "X \<in> A1"
@@ -230,6 +275,15 @@ proof -
     using polygon_interior_disjoint_polygon[OF hJ] hQ by (by100 blast)
   have hS_not_cut: "S \<notin> geotop_polygon_interior J - (A1 \<union> A2)"
     using polygon_interior_disjoint_polygon[OF hJ] hS by (by100 blast)
+  have hA12_metric_separation:
+      "compact A1 \<and> compact A2
+      \<and> closed A1 \<and> closed A2
+      \<and> A1 \<noteq> {} \<and> A2 \<noteq> {}
+      \<and> compact (A1 \<union> A2) \<and> closed (A1 \<union> A2)
+      \<and> 0 < setdist A1 A2"
+    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2]
+      geotop_disjoint_arcs_positive_setdist_prefix[OF hA1 hA2 hA12]
+    by (by100 blast)
   have hQ_S_two_arc_local_access:
       "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
         0 < r
