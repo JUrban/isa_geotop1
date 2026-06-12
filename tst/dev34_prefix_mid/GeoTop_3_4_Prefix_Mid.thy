@@ -27955,7 +27955,82 @@ proof -
 	                                        free candidates cannot exhaust the
 	                                        side-free witness supply without
 	                                        producing a nonempty side witness. **)
-	                                      sorry
+	                                    proof -
+	                                      fix u v
+	                                      assume hu_parent_empty:
+	                                        "((?G\<^sub>1 u
+	                                            \<and> u \<inter> J\<^sub>1 = {}
+	                                            \<and> u \<in> K
+	                                            \<and> geotop_free_2_simplex K J u
+	                                            \<and> geotop_simplex_dim u 2
+	                                            \<and> u \<inter> J = {}
+	                                            \<and> {e\<in>K. geotop_is_edge e
+	                                              \<and> geotop_is_face e u
+	                                              \<and> e \<subseteq> J} = {}
+	                                            \<and> u \<noteq> \<theta>
+	                                            \<and> u \<noteq> \<beta>)
+	                                          \<or> (?G\<^sub>2 \<beta>\<^sub>c u
+	                                            \<and> u \<inter> J\<^sub>2 = {}
+	                                            \<and> u \<in> K
+	                                            \<and> geotop_free_2_simplex K J u
+	                                            \<and> geotop_simplex_dim u 2
+	                                            \<and> u \<inter> J = {}
+	                                            \<and> {e\<in>K. geotop_is_edge e
+	                                              \<and> geotop_is_face e u
+	                                              \<and> e \<subseteq> J} = {}
+	                                            \<and> u \<noteq> \<theta>
+	                                            \<and> u \<noteq> \<beta>\<^sub>c))"
+	                                      assume hv_parent_empty:
+	                                        "((?G\<^sub>1 v
+	                                            \<and> v \<inter> J\<^sub>1 = {}
+	                                            \<and> v \<in> K
+	                                            \<and> geotop_free_2_simplex K J v
+	                                            \<and> geotop_simplex_dim v 2
+	                                            \<and> v \<inter> J = {}
+	                                            \<and> {e\<in>K. geotop_is_edge e
+	                                              \<and> geotop_is_face e v
+	                                              \<and> e \<subseteq> J} = {}
+	                                            \<and> v \<noteq> \<theta>
+	                                            \<and> v \<noteq> \<beta>)
+	                                          \<or> (?G\<^sub>2 \<beta>\<^sub>c v
+	                                            \<and> v \<inter> J\<^sub>2 = {}
+	                                            \<and> v \<in> K
+	                                            \<and> geotop_free_2_simplex K J v
+	                                            \<and> geotop_simplex_dim v 2
+	                                            \<and> v \<inter> J = {}
+	                                            \<and> {e\<in>K. geotop_is_edge e
+	                                              \<and> geotop_is_face e v
+	                                              \<and> e \<subseteq> J} = {}
+	                                            \<and> v \<noteq> \<theta>
+	                                            \<and> v \<noteq> \<beta>\<^sub>c))"
+	                                      have hfour_fixed_parent_empty_count_book:
+	                                        "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                            \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                            \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                        (**
+	                                          Final fixed-witness Moise count
+	                                          in the current branch.  The
+	                                          enclosing context supplies the
+	                                          older branch obstruction
+	                                          \<open>hbranch_fixed_empty\<close>, the extra
+	                                          obstruction
+	                                          \<open>hextra_fixed_empty\<close>, and the
+	                                          two concrete parent-empty
+	                                          witnesses named here as
+	                                          \<open>hu_parent_empty\<close> and
+	                                          \<open>hv_parent_empty\<close>.  The remaining
+	                                          book step is to use the two
+	                                          side-free witness pairs to force
+	                                          one real side-boundary contact. **)
+	                                        sorry
+	                                      show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                        by (rule
+	                                            hfour_fixed_parent_empty_count_book)
+	                                    qed
 	                                    have hcanonical_non_named_empty_primary_contradicts_book:
 	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 = {})
 	                                        \<or> (\<tau> \<noteq> \<beta>\<^sub>c
