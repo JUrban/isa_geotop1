@@ -12647,6 +12647,27 @@ proof -
             show "a \<in> ?Lcomp"
               using hC_sub haC by (by100 blast)
           qed
+          have hPZ_trace_component_open:
+              "\<And>C. C \<in> ?PZtrace_components \<Longrightarrow> open C"
+          proof -
+            fix C
+            assume hC: "C \<in> ?PZtrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hPZ_trace_component_summary[OF hC] by (by100 blast)
+            show "open C"
+              using hlocal_selected_open hC_comp open_components by (by100 blast)
+          qed
+          have hPZ_trace_components_open:
+              "open (\<Union>?PZtrace_components)"
+          proof (rule open_Union)
+            show "\<forall>C\<in>?PZtrace_components. open C"
+            proof
+              fix C
+              assume hC: "C \<in> ?PZtrace_components"
+              show "open C"
+                by (rule hPZ_trace_component_open[OF hC])
+            qed
+          qed
           have hPZ_ball_cover_by_selected_and_trace_components:
               "M\<^sub>p\<^sub>z \<inter> ball w r
                 \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -12704,6 +12725,126 @@ proof -
               \<and> C \<inter> ?PZloc \<noteq> {}
               \<and> G \<inter> closure C \<noteq> {}"
               using hC hsummary htouch_C by (by100 blast)
+          qed
+          have hPZ_trace_components_disjoint_S:
+              "\<Union>?PZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?PZtrace_components \<inter> ((S - {w}) \<inter> ball w r)
+              \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?PZtrace_components \<inter>
+                ((S - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hPZ_trace_components_union_sub ha by (by100 blast)
+              have haS: "a \<in> S"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haS by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?PZtrace_components \<inter>
+              ((S - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hPZ_trace_components_disjoint_T:
+              "\<Union>?PZtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?PZtrace_components \<inter> ((T - {w}) \<inter> ball w r)
+              \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?PZtrace_components \<inter>
+                ((T - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hPZ_trace_components_union_sub ha by (by100 blast)
+              have haT: "a \<in> T"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haT by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?PZtrace_components \<inter>
+              ((T - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hPZ_trace_components_disjoint_U:
+              "\<Union>?PZtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?PZtrace_components \<inter> ((U - {w}) \<inter> ball w r)
+              \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?PZtrace_components \<inter>
+                ((U - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hPZ_trace_components_union_sub ha by (by100 blast)
+              have haU: "a \<in> U"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haU by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?PZtrace_components \<inter>
+              ((U - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hPZ_trace_component_cover_package:
+              "finite ?PZtrace_components
+                \<and> open (\<Union>?PZtrace_components)
+                \<and> ?PZloc \<subseteq> \<Union>?PZtrace_components
+                \<and> \<Union>?PZtrace_components \<subseteq> ?Lcomp
+                \<and> M\<^sub>p\<^sub>z \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> \<Union>?PZtrace_components
+                \<and> \<Union>?PZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?PZtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?PZtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}
+                \<and> (\<forall>C\<in>?PZtrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?PZloc \<noteq> {})"
+          proof (intro conjI)
+            show "finite ?PZtrace_components"
+              by (rule hPZ_trace_components_fin)
+            show "open (\<Union>?PZtrace_components)"
+              by (rule hPZ_trace_components_open)
+            show "?PZloc \<subseteq> \<Union>?PZtrace_components"
+              by (rule hPZ_local_trace_component_cover)
+            show "\<Union>?PZtrace_components \<subseteq> ?Lcomp"
+              by (rule hPZ_trace_components_union_sub)
+            show "M\<^sub>p\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> \<Union>?PZtrace_components"
+              by (rule hPZ_ball_cover_by_selected_and_trace_components)
+            show "\<Union>?PZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+              by (rule hPZ_trace_components_disjoint_S)
+            show "\<Union>?PZtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+              by (rule hPZ_trace_components_disjoint_T)
+            show "\<Union>?PZtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+              by (rule hPZ_trace_components_disjoint_U)
+            show "\<forall>C\<in>?PZtrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?PZloc \<noteq> {}"
+            proof
+              fix C
+              assume hC: "C \<in> ?PZtrace_components"
+              show "C \<in> components ?Lcomp
+                \<and> C \<noteq> {}
+                \<and> C \<subseteq> ?Lcomp
+                \<and> connected C
+                \<and> path_connected C
+                \<and> C \<inter> ?PZloc \<noteq> {}"
+                by (rule hPZ_trace_component_summary[OF hC])
+            qed
           qed
           let ?YZloc = "M\<^sub>y\<^sub>z \<inter> ?Lcomp"
           let ?YZtrace_components =
@@ -12795,6 +12936,27 @@ proof -
             show "a \<in> ?Lcomp"
               using hC_sub haC by (by100 blast)
           qed
+          have hYZ_trace_component_open:
+              "\<And>C. C \<in> ?YZtrace_components \<Longrightarrow> open C"
+          proof -
+            fix C
+            assume hC: "C \<in> ?YZtrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hYZ_trace_component_summary[OF hC] by (by100 blast)
+            show "open C"
+              using hlocal_selected_open hC_comp open_components by (by100 blast)
+          qed
+          have hYZ_trace_components_open:
+              "open (\<Union>?YZtrace_components)"
+          proof (rule open_Union)
+            show "\<forall>C\<in>?YZtrace_components. open C"
+            proof
+              fix C
+              assume hC: "C \<in> ?YZtrace_components"
+              show "open C"
+                by (rule hYZ_trace_component_open[OF hC])
+            qed
+          qed
           have hYZ_ball_cover_by_selected_and_trace_components:
               "M\<^sub>y\<^sub>z \<inter> ball w r
                 \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -12852,6 +13014,126 @@ proof -
               \<and> C \<inter> ?YZloc \<noteq> {}
               \<and> G \<inter> closure C \<noteq> {}"
               using hC hsummary htouch_C by (by100 blast)
+          qed
+          have hYZ_trace_components_disjoint_S:
+              "\<Union>?YZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?YZtrace_components \<inter> ((S - {w}) \<inter> ball w r)
+              \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?YZtrace_components \<inter>
+                ((S - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hYZ_trace_components_union_sub ha by (by100 blast)
+              have haS: "a \<in> S"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haS by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?YZtrace_components \<inter>
+              ((S - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hYZ_trace_components_disjoint_T:
+              "\<Union>?YZtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?YZtrace_components \<inter> ((T - {w}) \<inter> ball w r)
+              \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?YZtrace_components \<inter>
+                ((T - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hYZ_trace_components_union_sub ha by (by100 blast)
+              have haT: "a \<in> T"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haT by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?YZtrace_components \<inter>
+              ((T - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hYZ_trace_components_disjoint_U:
+              "\<Union>?YZtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?YZtrace_components \<inter> ((U - {w}) \<inter> ball w r)
+              \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?YZtrace_components \<inter>
+                ((U - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hYZ_trace_components_union_sub ha by (by100 blast)
+              have haU: "a \<in> U"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haU by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?YZtrace_components \<inter>
+              ((U - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hYZ_trace_component_cover_package:
+              "finite ?YZtrace_components
+                \<and> open (\<Union>?YZtrace_components)
+                \<and> ?YZloc \<subseteq> \<Union>?YZtrace_components
+                \<and> \<Union>?YZtrace_components \<subseteq> ?Lcomp
+                \<and> M\<^sub>y\<^sub>z \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> \<Union>?YZtrace_components
+                \<and> \<Union>?YZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?YZtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?YZtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}
+                \<and> (\<forall>C\<in>?YZtrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?YZloc \<noteq> {})"
+          proof (intro conjI)
+            show "finite ?YZtrace_components"
+              by (rule hYZ_trace_components_fin)
+            show "open (\<Union>?YZtrace_components)"
+              by (rule hYZ_trace_components_open)
+            show "?YZloc \<subseteq> \<Union>?YZtrace_components"
+              by (rule hYZ_local_trace_component_cover)
+            show "\<Union>?YZtrace_components \<subseteq> ?Lcomp"
+              by (rule hYZ_trace_components_union_sub)
+            show "M\<^sub>y\<^sub>z \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> \<Union>?YZtrace_components"
+              by (rule hYZ_ball_cover_by_selected_and_trace_components)
+            show "\<Union>?YZtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+              by (rule hYZ_trace_components_disjoint_S)
+            show "\<Union>?YZtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+              by (rule hYZ_trace_components_disjoint_T)
+            show "\<Union>?YZtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+              by (rule hYZ_trace_components_disjoint_U)
+            show "\<forall>C\<in>?YZtrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?YZloc \<noteq> {}"
+            proof
+              fix C
+              assume hC: "C \<in> ?YZtrace_components"
+              show "C \<in> components ?Lcomp
+                \<and> C \<noteq> {}
+                \<and> C \<subseteq> ?Lcomp
+                \<and> connected C
+                \<and> path_connected C
+                \<and> C \<inter> ?YZloc \<noteq> {}"
+                by (rule hYZ_trace_component_summary[OF hC])
+            qed
           qed
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
