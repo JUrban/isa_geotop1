@@ -11193,6 +11193,30 @@ proof -
           qed
         qed
       qed
+      have hselected_three_same_component_package:
+          "top1_in_same_component_on (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) p y
+            \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) p z
+            \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) y z"
+      proof (intro conjI)
+        show "top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) p y"
+          by (rule hsame)
+        show "top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) p z"
+          by (rule hpz_same_component_from_three)
+        show "top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) y z"
+          by (rule hyz_same_component_from_three)
+      qed
       have hlocal_open:
           "open (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
       proof -
