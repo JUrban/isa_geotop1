@@ -25679,6 +25679,157 @@ proof -
                 \<and> geotop_is_face e \<rho> \<and> e \<subseteq> J} = {}
               \<and> \<rho> \<noteq> \<theta>
               \<and> \<rho> \<noteq> \<beta>\<^sub>c)"
+        have hlarge_fixed_oriented_primary_data:
+          "\<exists>\<sigma> \<sigma>' \<tau> \<tau>'. \<sigma> \<in> L\<^sub>1
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> \<sigma> \<noteq> \<theta>
+            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2
+            \<and> \<sigma> \<inter> J\<^sub>1 =
+              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}
+            \<and> \<sigma>' \<in> L\<^sub>1
+            \<and> geotop_simplex_dim \<sigma>' 2
+            \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+              \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2
+            \<and> \<sigma>' \<inter> J\<^sub>1 =
+              \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}
+            \<and> \<sigma> \<noteq> \<sigma>'
+            \<and> \<tau> \<in> L\<^sub>2
+            \<and> geotop_simplex_dim \<tau> 2
+            \<and> \<tau> \<noteq> \<theta>
+            \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2
+            \<and> \<tau> \<inter> J\<^sub>2 =
+              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}
+            \<and> \<tau>' \<in> L\<^sub>2
+            \<and> geotop_simplex_dim \<tau>' 2
+            \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+              \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2
+            \<and> \<tau>' \<inter> J\<^sub>2 =
+              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}
+            \<and> \<tau> \<noteq> \<tau>'
+            \<and> \<sigma> \<noteq> \<tau>
+            \<and> (\<sigma> \<noteq> \<beta> \<longrightarrow> ?G\<^sub>1 \<sigma>)
+            \<and> (\<tau> \<noteq> \<beta>\<^sub>c \<longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>)"
+        proof -
+          obtain \<sigma> \<sigma>' \<tau> \<tau>'
+            where h\<sigma>L\<^sub>1: "\<sigma> \<in> L\<^sub>1"
+              and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+              and h\<sigma>_ne_\<theta>: "\<sigma> \<noteq> \<theta>"
+              and h\<sigma>_card:
+                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+              and h\<sigma>_contact:
+                "\<sigma> \<inter> J\<^sub>1 =
+                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                    \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J\<^sub>1}"
+              and h\<sigma>'L\<^sub>1: "\<sigma>' \<in> L\<^sub>1"
+              and h\<sigma>'2: "geotop_simplex_dim \<sigma>' 2"
+              and h\<sigma>'_card:
+                "card {e\<in>L\<^sub>1. geotop_is_edge e
+                  \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1} \<le> 2"
+              and h\<sigma>'_contact:
+                "\<sigma>' \<inter> J\<^sub>1 =
+                  \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+                    \<and> geotop_is_face e \<sigma>' \<and> e \<subseteq> J\<^sub>1}"
+              and h\<sigma>_ne_\<sigma>': "\<sigma> \<noteq> \<sigma>'"
+              and h\<tau>L\<^sub>2: "\<tau> \<in> L\<^sub>2"
+              and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+              and h\<tau>_ne_\<theta>: "\<tau> \<noteq> \<theta>"
+              and h\<tau>_card:
+                "card {e\<in>L\<^sub>2. geotop_is_edge e
+                  \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+              and h\<tau>_contact:
+                "\<tau> \<inter> J\<^sub>2 =
+                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                    \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J\<^sub>2}"
+              and h\<tau>'L\<^sub>2: "\<tau>' \<in> L\<^sub>2"
+              and h\<tau>'2: "geotop_simplex_dim \<tau>' 2"
+              and h\<tau>'_card:
+                "card {e\<in>L\<^sub>2. geotop_is_edge e
+                  \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2} \<le> 2"
+              and h\<tau>'_contact:
+                "\<tau>' \<inter> J\<^sub>2 =
+                  \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                    \<and> geotop_is_face e \<tau>' \<and> e \<subseteq> J\<^sub>2}"
+              and h\<tau>_ne_\<tau>': "\<tau> \<noteq> \<tau>'"
+              and h\<sigma>_ne_\<tau>: "\<sigma> \<noteq> \<tau>"
+            using hside_oriented_primary_witnesses_distinct_if_side2_large[OF True]
+            by (elim exE conjE)
+          obtain \<delta> where h\<delta>T\<^sub>2: "\<delta> \<in> ?T\<^sub>2"
+            and h\<delta>_not_T\<^sub>1: "\<delta> \<notin> ?T\<^sub>1"
+            and h\<delta>_ne_\<beta>: "\<delta> \<noteq> \<beta>"
+            and h\<delta>_ne_\<theta>: "\<delta> \<noteq> \<theta>"
+            and h\<delta>_ne_\<alpha>: "\<delta> \<noteq> \<alpha>"
+            and h\<delta>_chord:
+              "geotop_is_face (closed_segment a c) \<delta>"
+            and h\<beta>_not_T\<^sub>2_unique: "\<beta> \<notin> ?T\<^sub>2"
+            and hT\<^sub>1_not_named_no_chord:
+              "\<forall>\<rho>\<in>?T\<^sub>1.
+                \<rho> \<noteq> \<beta> \<longrightarrow>
+                \<not> geotop_is_face (closed_segment a c) \<rho>"
+            and hT\<^sub>2_not_named_no_chord:
+              "\<forall>\<rho>\<in>?T\<^sub>2.
+                \<rho> \<noteq> \<delta> \<longrightarrow>
+                \<not> geotop_is_face (closed_segment a c) \<rho>"
+            using hside_chord_only_named_faces_avoid_\<theta>_\<alpha>
+            by (elim exE conjE)
+          have h\<beta>c_eq_\<delta>: "\<beta>\<^sub>c = \<delta>"
+          proof (rule ccontr)
+            assume hne: "\<not> \<beta>\<^sub>c = \<delta>"
+            have "\<not> geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+              using hT\<^sub>2_not_named_no_chord h\<beta>cT\<^sub>2 hne by (by100 blast)
+            thus False
+              using h\<beta>c_chord by (by100 blast)
+          qed
+          have h\<sigma>T\<^sub>1: "\<sigma> \<in> ?T\<^sub>1"
+            using h\<sigma>L\<^sub>1 h\<sigma>2 by (by100 simp)
+          have h\<tau>T\<^sub>2: "\<tau> \<in> ?T\<^sub>2"
+            using h\<tau>L\<^sub>2 h\<tau>2 by (by100 simp)
+          have h\<sigma>_primary:
+            "\<sigma> \<noteq> \<beta> \<Longrightarrow> ?G\<^sub>1 \<sigma>"
+          proof -
+            assume h\<sigma>_ne_\<beta>: "\<sigma> \<noteq> \<beta>"
+            have h\<sigma>_no_chord:
+              "\<not> geotop_is_face (closed_segment a c) \<sigma>"
+              using hT\<^sub>1_not_named_no_chord h\<sigma>T\<^sub>1 h\<sigma>_ne_\<beta>
+              by (by100 blast)
+            show "?G\<^sub>1 \<sigma>"
+              using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_ne_\<beta>
+                h\<sigma>_no_chord h\<sigma>_card h\<sigma>_contact
+              by (by100 blast)
+          qed
+          have h\<tau>_primary:
+            "\<tau> \<noteq> \<beta>\<^sub>c \<Longrightarrow> ?G\<^sub>2 \<beta>\<^sub>c \<tau>"
+          proof -
+            assume h\<tau>_ne_\<beta>c: "\<tau> \<noteq> \<beta>\<^sub>c"
+            have h\<tau>_ne_\<delta>: "\<tau> \<noteq> \<delta>"
+              using h\<tau>_ne_\<beta>c h\<beta>c_eq_\<delta> by (by100 blast)
+            have h\<tau>_no_chord:
+              "\<not> geotop_is_face (closed_segment a c) \<tau>"
+              using hT\<^sub>2_not_named_no_chord h\<tau>T\<^sub>2 h\<tau>_ne_\<delta>
+              by (by100 blast)
+            show "?G\<^sub>2 \<beta>\<^sub>c \<tau>"
+              using h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_ne_\<beta>c
+                h\<tau>_no_chord h\<tau>_card h\<tau>_contact
+              by (by100 blast)
+          qed
+          show ?thesis
+            apply (rule exI[where x = \<sigma>])
+            apply (rule exI[where x = "\<sigma>'"])
+            apply (rule exI[where x = \<tau>])
+            apply (rule exI[where x = "\<tau>'"])
+            using h\<sigma>L\<^sub>1 h\<sigma>2 h\<sigma>_ne_\<theta> h\<sigma>_card h\<sigma>_contact
+              h\<sigma>'L\<^sub>1 h\<sigma>'2 h\<sigma>'_card h\<sigma>'_contact h\<sigma>_ne_\<sigma>'
+              h\<tau>L\<^sub>2 h\<tau>2 h\<tau>_ne_\<theta> h\<tau>_card h\<tau>_contact
+              h\<tau>'L\<^sub>2 h\<tau>'2 h\<tau>'_card h\<tau>'_contact h\<tau>_ne_\<tau>'
+              h\<sigma>_ne_\<tau> h\<sigma>_primary h\<tau>_primary
+            by (by100 blast)
+        qed
         have hlarge_fixed_no_chord_candidate:
           "\<exists>\<gamma>. ?G\<^sub>1 \<gamma> \<or> ?G\<^sub>2 \<beta>\<^sub>c \<gamma>"
         proof -
