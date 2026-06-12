@@ -28308,7 +28308,87 @@ proof -
 	                                            to use that same-side pair
 	                                            against the two side-free
 	                                            witnesses on that side. **)
-	                                          sorry
+	                                        proof -
+	                                          assume hsame_side_pair:
+	                                            "\<exists>x y.
+	                                              (?H1 x \<and> ?H1 y)
+	                                              \<or> (?H2 x \<and> ?H2 y)"
+	                                          obtain s1 s2 t1 t2
+	                                            where hs1L\<^sub>1: "s1 \<in> L\<^sub>1"
+	                                              and hs1free:
+	                                                "geotop_free_2_simplex
+	                                                  L\<^sub>1 J\<^sub>1 s1"
+	                                              and hs2L\<^sub>1: "s2 \<in> L\<^sub>1"
+	                                              and hs2free:
+	                                                "geotop_free_2_simplex
+	                                                  L\<^sub>1 J\<^sub>1 s2"
+	                                              and hs1_ne_s2: "s1 \<noteq> s2"
+	                                              and ht1L\<^sub>2: "t1 \<in> L\<^sub>2"
+	                                              and ht1free:
+	                                                "geotop_free_2_simplex
+	                                                  L\<^sub>2 J\<^sub>2 t1"
+	                                              and ht2L\<^sub>2: "t2 \<in> L\<^sub>2"
+	                                              and ht2free:
+	                                                "geotop_free_2_simplex
+	                                                  L\<^sub>2 J\<^sub>2 t2"
+	                                              and ht1_ne_t2: "t1 \<noteq> t2"
+	                                            using hside_free_pair_counting_data
+	                                            by (elim exE conjE)
+	                                          obtain x y where hxy_same_side:
+	                                            "(?H1 x \<and> ?H1 y)
+	                                            \<or> (?H2 x \<and> ?H2 y)"
+	                                            using hsame_side_pair
+	                                            by (elim exE)
+	                                          have hfixed_pair_against_side_witnesses_book:
+	                                            "\<And>x y s1 s2 t1 t2.
+	                                            s1 \<in> L\<^sub>1 \<Longrightarrow>
+	                                            geotop_free_2_simplex
+	                                              L\<^sub>1 J\<^sub>1 s1 \<Longrightarrow>
+	                                            s2 \<in> L\<^sub>1 \<Longrightarrow>
+	                                            geotop_free_2_simplex
+	                                              L\<^sub>1 J\<^sub>1 s2 \<Longrightarrow>
+	                                            s1 \<noteq> s2 \<Longrightarrow>
+	                                            t1 \<in> L\<^sub>2 \<Longrightarrow>
+	                                            geotop_free_2_simplex
+	                                              L\<^sub>2 J\<^sub>2 t1 \<Longrightarrow>
+	                                            t2 \<in> L\<^sub>2 \<Longrightarrow>
+	                                            geotop_free_2_simplex
+	                                              L\<^sub>2 J\<^sub>2 t2 \<Longrightarrow>
+	                                            t1 \<noteq> t2 \<Longrightarrow>
+	                                            ((?H1 x \<and> ?H1 y)
+	                                              \<or> (?H2 x \<and> ?H2 y)) \<Longrightarrow>
+	                                            \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                            (**
+	                                              Side-fixed Moise count now in
+	                                              the exact form needed by the
+	                                              book proof: two distinct
+	                                              free witnesses are available
+	                                              on each side disk, and the
+	                                              four parent-empty obstructions
+	                                              have yielded a concrete
+	                                              same-side empty pair.  The
+	                                              remaining argument is the
+	                                              artificial-chord exclusion:
+	                                              on the named side, at most
+	                                              one selected free witness can
+	                                              be accounted for solely by
+	                                              the chord-named triangle, so
+	                                              the second witness must have
+	                                              real side-boundary contact. **)
+	                                            sorry
+	                                          show ?thesis
+	                                            by (rule
+	                                                hfixed_pair_against_side_witnesses_book
+	                                                [OF hs1L\<^sub>1 hs1free
+	                                                  hs2L\<^sub>1 hs2free
+	                                                  hs1_ne_s2 ht1L\<^sub>2
+	                                                  ht1free ht2L\<^sub>2
+	                                                  ht2free ht1_ne_t2
+	                                                  hxy_same_side])
+	                                        qed
 	                                        show ?thesis
 	                                          by (rule
 	                                              hsame_side_pair_count_book
