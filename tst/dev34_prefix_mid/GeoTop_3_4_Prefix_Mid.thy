@@ -26606,15 +26606,19 @@ proof -
                   have hprimary_spare_counting_data:
                     "\<exists>\<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s.
                       \<sigma>\<^sub>p \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>p
                       \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
                       \<and> \<sigma>\<^sub>p \<noteq> \<theta>
                       \<and> \<sigma>\<^sub>s \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>s
                       \<and> geotop_simplex_dim \<sigma>\<^sub>s 2
                       \<and> \<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s
                       \<and> \<tau>\<^sub>p \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>p
                       \<and> geotop_simplex_dim \<tau>\<^sub>p 2
                       \<and> \<tau>\<^sub>p \<noteq> \<theta>
                       \<and> \<tau>\<^sub>s \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>s
                       \<and> geotop_simplex_dim \<tau>\<^sub>s 2
                       \<and> \<tau>\<^sub>p \<noteq> \<tau>\<^sub>s
                       \<and> \<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p
@@ -26623,15 +26627,23 @@ proof -
                   proof -
                     obtain \<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s
                       where h\<sigma>pL\<^sub>1: "\<sigma>\<^sub>p \<in> L\<^sub>1"
+                        and h\<sigma>pfree:
+                          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>p"
                         and h\<sigma>p2: "geotop_simplex_dim \<sigma>\<^sub>p 2"
                         and h\<sigma>p_ne_\<theta>: "\<sigma>\<^sub>p \<noteq> \<theta>"
                         and h\<sigma>sL\<^sub>1: "\<sigma>\<^sub>s \<in> L\<^sub>1"
+                        and h\<sigma>sfree:
+                          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>s"
                         and h\<sigma>s2: "geotop_simplex_dim \<sigma>\<^sub>s 2"
                         and h\<sigma>p_ne_\<sigma>s: "\<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s"
                         and h\<tau>pL\<^sub>2: "\<tau>\<^sub>p \<in> L\<^sub>2"
+                        and h\<tau>pfree:
+                          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>p"
                         and h\<tau>p2: "geotop_simplex_dim \<tau>\<^sub>p 2"
                         and h\<tau>p_ne_\<theta>: "\<tau>\<^sub>p \<noteq> \<theta>"
                         and h\<tau>sL\<^sub>2: "\<tau>\<^sub>s \<in> L\<^sub>2"
+                        and h\<tau>sfree:
+                          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>s"
                         and h\<tau>s2: "geotop_simplex_dim \<tau>\<^sub>s 2"
                         and h\<tau>p_ne_\<tau>s: "\<tau>\<^sub>p \<noteq> \<tau>\<^sub>s"
                         and h\<sigma>p_ne_\<tau>p: "\<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p"
@@ -26646,10 +26658,10 @@ proof -
                       apply (rule exI[where x = "\<sigma>\<^sub>s"])
                       apply (rule exI[where x = "\<tau>\<^sub>p"])
                       apply (rule exI[where x = "\<tau>\<^sub>s"])
-                      using h\<sigma>pL\<^sub>1 h\<sigma>p2 h\<sigma>p_ne_\<theta> h\<sigma>sL\<^sub>1 h\<sigma>s2
-                        h\<sigma>p_ne_\<sigma>s h\<tau>pL\<^sub>2 h\<tau>p2 h\<tau>p_ne_\<theta>
-                        h\<tau>sL\<^sub>2 h\<tau>s2 h\<tau>p_ne_\<tau>s h\<sigma>p_ne_\<tau>p
-                        h\<sigma>p_primary h\<tau>p_primary
+                      using h\<sigma>pL\<^sub>1 h\<sigma>pfree h\<sigma>p2 h\<sigma>p_ne_\<theta> h\<sigma>sL\<^sub>1
+                        h\<sigma>sfree h\<sigma>s2 h\<sigma>p_ne_\<sigma>s h\<tau>pL\<^sub>2 h\<tau>pfree h\<tau>p2
+                        h\<tau>p_ne_\<theta> h\<tau>sL\<^sub>2 h\<tau>sfree h\<tau>s2 h\<tau>p_ne_\<tau>s
+                        h\<sigma>p_ne_\<tau>p h\<sigma>p_primary h\<tau>p_primary
                       apply (intro conjI)
                       apply assumption+
                       done
@@ -26681,15 +26693,19 @@ proof -
                       \<and> \<tau>\<^sub>1 \<noteq> \<tau>\<^sub>2) \<Longrightarrow>
                     (\<exists>\<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s.
                       \<sigma>\<^sub>p \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>p
                       \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
                       \<and> \<sigma>\<^sub>p \<noteq> \<theta>
                       \<and> \<sigma>\<^sub>s \<in> L\<^sub>1
+                      \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>s
                       \<and> geotop_simplex_dim \<sigma>\<^sub>s 2
                       \<and> \<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s
                       \<and> \<tau>\<^sub>p \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>p
                       \<and> geotop_simplex_dim \<tau>\<^sub>p 2
                       \<and> \<tau>\<^sub>p \<noteq> \<theta>
                       \<and> \<tau>\<^sub>s \<in> L\<^sub>2
+                      \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>s
                       \<and> geotop_simplex_dim \<tau>\<^sub>s 2
                       \<and> \<tau>\<^sub>p \<noteq> \<tau>\<^sub>s
                       \<and> \<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p
@@ -26764,15 +26780,19 @@ proof -
 	                    assume hprimary_spare_counting_data:
 	                      "\<exists>\<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s.
 	                        \<sigma>\<^sub>p \<in> L\<^sub>1
+	                        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>p
 	                        \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
 	                        \<and> \<sigma>\<^sub>p \<noteq> \<theta>
 	                        \<and> \<sigma>\<^sub>s \<in> L\<^sub>1
+	                        \<and> geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>s
 	                        \<and> geotop_simplex_dim \<sigma>\<^sub>s 2
 	                        \<and> \<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s
 	                        \<and> \<tau>\<^sub>p \<in> L\<^sub>2
+	                        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>p
 	                        \<and> geotop_simplex_dim \<tau>\<^sub>p 2
 	                        \<and> \<tau>\<^sub>p \<noteq> \<theta>
 	                        \<and> \<tau>\<^sub>s \<in> L\<^sub>2
+	                        \<and> geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>s
 	                        \<and> geotop_simplex_dim \<tau>\<^sub>s 2
 	                        \<and> \<tau>\<^sub>p \<noteq> \<tau>\<^sub>s
 	                        \<and> \<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p
@@ -26822,15 +26842,23 @@ proof -
 	                          \<and> \<eta> \<noteq> \<beta>\<^sub>c)"
 	                    obtain \<sigma>\<^sub>p \<sigma>\<^sub>s \<tau>\<^sub>p \<tau>\<^sub>s
 	                      where h\<sigma>pL\<^sub>1: "\<sigma>\<^sub>p \<in> L\<^sub>1"
+	                        and h\<sigma>pfree:
+	                          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>p"
 	                        and h\<sigma>p2: "geotop_simplex_dim \<sigma>\<^sub>p 2"
 	                        and h\<sigma>p_ne_\<theta>: "\<sigma>\<^sub>p \<noteq> \<theta>"
 	                        and h\<sigma>sL\<^sub>1: "\<sigma>\<^sub>s \<in> L\<^sub>1"
+	                        and h\<sigma>sfree:
+	                          "geotop_free_2_simplex L\<^sub>1 J\<^sub>1 \<sigma>\<^sub>s"
 	                        and h\<sigma>s2: "geotop_simplex_dim \<sigma>\<^sub>s 2"
 	                        and h\<sigma>p_ne_\<sigma>s: "\<sigma>\<^sub>p \<noteq> \<sigma>\<^sub>s"
 	                        and h\<tau>pL\<^sub>2: "\<tau>\<^sub>p \<in> L\<^sub>2"
+	                        and h\<tau>pfree:
+	                          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>p"
 	                        and h\<tau>p2: "geotop_simplex_dim \<tau>\<^sub>p 2"
 	                        and h\<tau>p_ne_\<theta>: "\<tau>\<^sub>p \<noteq> \<theta>"
 	                        and h\<tau>sL\<^sub>2: "\<tau>\<^sub>s \<in> L\<^sub>2"
+	                        and h\<tau>sfree:
+	                          "geotop_free_2_simplex L\<^sub>2 J\<^sub>2 \<tau>\<^sub>s"
 	                        and h\<tau>s2: "geotop_simplex_dim \<tau>\<^sub>s 2"
 	                        and h\<tau>p_ne_\<tau>s: "\<tau>\<^sub>p \<noteq> \<tau>\<^sub>s"
 	                        and h\<sigma>p_ne_\<tau>p: "\<sigma>\<^sub>p \<noteq> \<tau>\<^sub>p"
