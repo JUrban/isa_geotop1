@@ -28378,7 +28378,180 @@ proof -
 	                                              the chord-named triangle, so
 	                                              the second witness must have
 	                                              real side-boundary contact. **)
-	                                            sorry
+	                                          proof -
+	                                            fix x y s1 s2 t1 t2
+	                                            assume hs1L\<^sub>1': "s1 \<in> L\<^sub>1"
+	                                            assume hs1free':
+	                                              "geotop_free_2_simplex
+	                                                L\<^sub>1 J\<^sub>1 s1"
+	                                            assume hs2L\<^sub>1': "s2 \<in> L\<^sub>1"
+	                                            assume hs2free':
+	                                              "geotop_free_2_simplex
+	                                                L\<^sub>1 J\<^sub>1 s2"
+	                                            assume hs1_ne_s2': "s1 \<noteq> s2"
+	                                            assume ht1L\<^sub>2': "t1 \<in> L\<^sub>2"
+	                                            assume ht1free':
+	                                              "geotop_free_2_simplex
+	                                                L\<^sub>2 J\<^sub>2 t1"
+	                                            assume ht2L\<^sub>2': "t2 \<in> L\<^sub>2"
+	                                            assume ht2free':
+	                                              "geotop_free_2_simplex
+	                                                L\<^sub>2 J\<^sub>2 t2"
+	                                            assume ht1_ne_t2': "t1 \<noteq> t2"
+	                                            assume hxy_same:
+	                                              "(?H1 x \<and> ?H1 y)
+	                                              \<or> (?H2 x \<and> ?H2 y)"
+	                                            have hside_smaller_for_count:
+	                                              "geotop_polyhedron L\<^sub>1 =
+	                                                 closure_on UNIV
+	                                                   geotop_euclidean_topology
+	                                                   (geotop_polygon_interior J\<^sub>1)
+	                                              \<and> geotop_polyhedron L\<^sub>2 =
+	                                                 closure_on UNIV
+	                                                   geotop_euclidean_topology
+	                                                   (geotop_polygon_interior J\<^sub>2)
+	                                              \<and> card ?T\<^sub>1 < card ?T
+	                                              \<and> card ?T\<^sub>2 < card ?T
+	                                              \<and> card ?T\<^sub>1 > 1
+	                                              \<and> card ?T\<^sub>2 > 1"
+	                                              by (rule
+	                                                  hside_complexes_smaller_if_side2_large
+	                                                  [OF True])
+	                                            have hL\<^sub>1_poly_eq':
+	                                              "geotop_polyhedron L\<^sub>1 =
+	                                                 closure_on UNIV
+	                                                   geotop_euclidean_topology
+	                                                   (geotop_polygon_interior J\<^sub>1)"
+	                                              using hside_smaller_for_count
+	                                              by (by100 blast)
+	                                            have hL\<^sub>2_poly_eq':
+	                                              "geotop_polyhedron L\<^sub>2 =
+	                                                 closure_on UNIV
+	                                                   geotop_euclidean_topology
+	                                                   (geotop_polygon_interior J\<^sub>2)"
+	                                              using hside_smaller_for_count
+	                                              by (by100 blast)
+	                                            have hT\<^sub>1_gt1':
+	                                              "card ?T\<^sub>1 > 1"
+	                                              using hside_smaller_for_count
+	                                              by (by100 blast)
+	                                            have hT\<^sub>2_gt1':
+	                                              "card ?T\<^sub>2 > 1"
+	                                              using hside_smaller_for_count
+	                                              by (by100 blast)
+	                                            have hJ\<^sub>1': "geotop_is_polygon J\<^sub>1"
+	                                              using hsubdisk_book_facts
+	                                              by (by100 blast)
+	                                            have hJ\<^sub>2': "geotop_is_polygon J\<^sub>2"
+	                                              using hsubdisk_book_facts
+	                                              by (by100 blast)
+	                                            have hs1_2:
+	                                              "geotop_simplex_dim s1 2"
+	                                              using hs1free'
+	                                              unfolding geotop_free_2_simplex_def
+	                                              by (by100 blast)
+	                                            have hs2_2:
+	                                              "geotop_simplex_dim s2 2"
+	                                              using hs2free'
+	                                              unfolding geotop_free_2_simplex_def
+	                                              by (by100 blast)
+	                                            have ht1_2:
+	                                              "geotop_simplex_dim t1 2"
+	                                              using ht1free'
+	                                              unfolding geotop_free_2_simplex_def
+	                                              by (by100 blast)
+	                                            have ht2_2:
+	                                              "geotop_simplex_dim t2 2"
+	                                              using ht2free'
+	                                              unfolding geotop_free_2_simplex_def
+	                                              by (by100 blast)
+	                                            have hs1_can:
+	                                              "finite {e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e s1
+	                                                  \<and> e \<subseteq> J\<^sub>1}
+	                                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e s1
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                              \<and> s1 \<inter> J\<^sub>1 =
+	                                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e s1
+	                                                  \<and> e \<subseteq> J\<^sub>1}"
+	                                              by (rule
+	                                                  geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+	                                                  [OF hJ\<^sub>1' hL\<^sub>1_complex
+	                                                    hL\<^sub>1_poly_eq' hs1L\<^sub>1'
+	                                                    hs1_2 hT\<^sub>1_gt1'
+	                                                    hs1free'])
+	                                            have hs2_can:
+	                                              "finite {e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e s2
+	                                                  \<and> e \<subseteq> J\<^sub>1}
+	                                              \<and> card {e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e s2
+	                                                  \<and> e \<subseteq> J\<^sub>1} \<le> 2
+	                                              \<and> s2 \<inter> J\<^sub>1 =
+	                                                \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
+	                                                  \<and> geotop_is_face e s2
+	                                                  \<and> e \<subseteq> J\<^sub>1}"
+	                                              by (rule
+	                                                  geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+	                                                  [OF hJ\<^sub>1' hL\<^sub>1_complex
+	                                                    hL\<^sub>1_poly_eq' hs2L\<^sub>1'
+	                                                    hs2_2 hT\<^sub>1_gt1'
+	                                                    hs2free'])
+	                                            have ht1_can:
+	                                              "finite {e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e t1
+	                                                  \<and> e \<subseteq> J\<^sub>2}
+	                                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e t1
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                                              \<and> t1 \<inter> J\<^sub>2 =
+	                                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e t1
+	                                                  \<and> e \<subseteq> J\<^sub>2}"
+	                                              by (rule
+	                                                  geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+	                                                  [OF hJ\<^sub>2' hL\<^sub>2_complex
+	                                                    hL\<^sub>2_poly_eq' ht1L\<^sub>2'
+	                                                    ht1_2 hT\<^sub>2_gt1'
+	                                                    ht1free'])
+	                                            have ht2_can:
+	                                              "finite {e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e t2
+	                                                  \<and> e \<subseteq> J\<^sub>2}
+	                                              \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e t2
+	                                                  \<and> e \<subseteq> J\<^sub>2} \<le> 2
+	                                              \<and> t2 \<inter> J\<^sub>2 =
+	                                                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+	                                                  \<and> geotop_is_face e t2
+	                                                  \<and> e \<subseteq> J\<^sub>2}"
+	                                              by (rule
+	                                                  geotop_free_2_simplex_canonical_selected_edge_contact_prefix
+	                                                  [OF hJ\<^sub>2' hL\<^sub>2_complex
+	                                                    hL\<^sub>2_poly_eq' ht2L\<^sub>2'
+	                                                    ht2_2 hT\<^sub>2_gt1'
+	                                                    ht2free'])
+	                                            show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                                \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                                \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                              (**
+	                                                The remaining proof now has
+	                                                both side-free pairs in
+	                                                canonical selected-edge
+	                                                form.  The next book step
+	                                                is to split on the same-side
+	                                                pair, use the named chord
+	                                                uniqueness facts to show
+	                                                that at most one of the two
+	                                                canonical witnesses on that
+	                                                side is chord-spoiled, and
+	                                                finish with the nonempty
+	                                                contact witness. **)
+	                                              sorry
+	                                          qed
 	                                          show ?thesis
 	                                            by (rule
 	                                                hfixed_pair_against_side_witnesses_book
