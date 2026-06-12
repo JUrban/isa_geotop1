@@ -26857,7 +26857,214 @@ proof -
 	                          The remaining count must use the side-free pair
 	                          data, the two empty parent candidates, and the spare
 	                          witnesses to force a real side-boundary contact. **)
-	                        sorry
+	                      proof -
+	                        assume hprimary_residual_inner:
+	                          "(\<sigma>\<^sub>p = \<beta> \<or> \<sigma>\<^sub>p \<inter> J\<^sub>1 = {})
+	                            \<and> (\<tau>\<^sub>p = \<beta>\<^sub>c \<or> \<tau>\<^sub>p \<inter> J\<^sub>2 = {})"
+	                        have hprimary_empty_parent_candidate_or_named:
+	                          "(\<exists>\<zeta>.
+	                            ((?G\<^sub>1 \<zeta>
+	                              \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                              \<and> \<zeta> \<in> K
+	                              \<and> geotop_free_2_simplex K J \<zeta>
+	                              \<and> geotop_simplex_dim \<zeta> 2
+	                              \<and> \<zeta> \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                              \<and> \<zeta> \<noteq> \<theta>
+	                              \<and> \<zeta> \<noteq> \<beta>)
+	                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                              \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                              \<and> \<zeta> \<in> K
+	                              \<and> geotop_free_2_simplex K J \<zeta>
+	                              \<and> geotop_simplex_dim \<zeta> 2
+	                              \<and> \<zeta> \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                              \<and> \<zeta> \<noteq> \<theta>
+	                              \<and> \<zeta> \<noteq> \<beta>\<^sub>c)))
+	                            \<or> (\<sigma>\<^sub>p = \<beta> \<and> \<tau>\<^sub>p = \<beta>\<^sub>c)"
+	                        proof (cases "\<sigma>\<^sub>p = \<beta>")
+	                          case False
+	                          have h\<sigma>p_side_empty: "\<sigma>\<^sub>p \<inter> J\<^sub>1 = {}"
+	                            using hprimary_residual_inner False by (by100 blast)
+	                          have h\<sigma>pG: "?G\<^sub>1 \<sigma>\<^sub>p"
+	                            using h\<sigma>p_primary False by (by100 blast)
+	                          have h\<sigma>p_parent:
+	                            "\<sigma>\<^sub>p \<in> K
+	                            \<and> geotop_free_2_simplex K J \<sigma>\<^sub>p
+	                            \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
+	                            \<and> \<sigma>\<^sub>p \<inter> J = {}
+	                            \<and> {e\<in>K. geotop_is_edge e
+	                              \<and> geotop_is_face e \<sigma>\<^sub>p \<and> e \<subseteq> J} = {}
+	                            \<and> \<sigma>\<^sub>p \<noteq> \<theta>
+	                            \<and> \<sigma>\<^sub>p \<noteq> \<beta>"
+	                            by (rule hG\<^sub>1_side_empty_parent_empty_selected_free
+	                                [OF h\<sigma>pG h\<sigma>p_side_empty])
+	                          have hcase:
+	                            "(?G\<^sub>1 \<sigma>\<^sub>p
+	                              \<and> \<sigma>\<^sub>p \<inter> J\<^sub>1 = {}
+	                              \<and> \<sigma>\<^sub>p \<in> K
+	                              \<and> geotop_free_2_simplex K J \<sigma>\<^sub>p
+	                              \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
+	                              \<and> \<sigma>\<^sub>p \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<sigma>\<^sub>p \<and> e \<subseteq> J} = {}
+	                              \<and> \<sigma>\<^sub>p \<noteq> \<theta>
+	                              \<and> \<sigma>\<^sub>p \<noteq> \<beta>)
+	                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<sigma>\<^sub>p
+	                              \<and> \<sigma>\<^sub>p \<inter> J\<^sub>2 = {}
+	                              \<and> \<sigma>\<^sub>p \<in> K
+	                              \<and> geotop_free_2_simplex K J \<sigma>\<^sub>p
+	                              \<and> geotop_simplex_dim \<sigma>\<^sub>p 2
+	                              \<and> \<sigma>\<^sub>p \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<sigma>\<^sub>p \<and> e \<subseteq> J} = {}
+	                              \<and> \<sigma>\<^sub>p \<noteq> \<theta>
+	                              \<and> \<sigma>\<^sub>p \<noteq> \<beta>\<^sub>c)"
+	                            using h\<sigma>pG h\<sigma>p_side_empty h\<sigma>p_parent
+	                            by (by100 blast)
+	                          have hex:
+	                            "\<exists>\<zeta>.
+	                              ((?G\<^sub>1 \<zeta>
+	                                \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                \<and> \<zeta> \<in> K
+	                                \<and> geotop_free_2_simplex K J \<zeta>
+	                                \<and> geotop_simplex_dim \<zeta> 2
+	                                \<and> \<zeta> \<inter> J = {}
+	                                \<and> {e\<in>K. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                \<and> \<zeta> \<noteq> \<theta>
+	                                \<and> \<zeta> \<noteq> \<beta>)
+	                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                \<and> \<zeta> \<in> K
+	                                \<and> geotop_free_2_simplex K J \<zeta>
+	                                \<and> geotop_simplex_dim \<zeta> 2
+	                                \<and> \<zeta> \<inter> J = {}
+	                                \<and> {e\<in>K. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                \<and> \<zeta> \<noteq> \<theta>
+	                                \<and> \<zeta> \<noteq> \<beta>\<^sub>c))"
+	                            by (rule exI[where x = "\<sigma>\<^sub>p"], rule hcase)
+	                          show ?thesis
+	                            by (rule disjI1[OF hex])
+	                        next
+	                          case True
+	                          note h\<sigma>p_eq_\<beta> = True
+	                          show ?thesis
+	                          proof (cases "\<tau>\<^sub>p = \<beta>\<^sub>c")
+	                            case True
+	                            show ?thesis
+	                              by (rule disjI2, rule conjI,
+	                                  rule h\<sigma>p_eq_\<beta>, rule True)
+	                          next
+	                            case False
+	                            have h\<tau>p_side_empty: "\<tau>\<^sub>p \<inter> J\<^sub>2 = {}"
+	                              using hprimary_residual_inner False by (by100 blast)
+	                            have h\<tau>pG: "?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p"
+	                              using h\<tau>p_primary False by (by100 blast)
+	                            have h\<tau>p_parent:
+	                              "\<tau>\<^sub>p \<in> K
+	                              \<and> geotop_free_2_simplex K J \<tau>\<^sub>p
+	                              \<and> geotop_simplex_dim \<tau>\<^sub>p 2
+	                              \<and> \<tau>\<^sub>p \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<tau>\<^sub>p \<and> e \<subseteq> J} = {}
+	                              \<and> \<tau>\<^sub>p \<noteq> \<theta>
+	                              \<and> \<tau>\<^sub>p \<noteq> \<beta>\<^sub>c"
+	                              by (rule hG\<^sub>2_side_empty_parent_empty_selected_free
+	                                  [OF h\<tau>pG h\<tau>p_side_empty])
+	                            have hcase:
+	                              "(?G\<^sub>1 \<tau>\<^sub>p
+	                                \<and> \<tau>\<^sub>p \<inter> J\<^sub>1 = {}
+	                                \<and> \<tau>\<^sub>p \<in> K
+	                                \<and> geotop_free_2_simplex K J \<tau>\<^sub>p
+	                                \<and> geotop_simplex_dim \<tau>\<^sub>p 2
+	                                \<and> \<tau>\<^sub>p \<inter> J = {}
+	                                \<and> {e\<in>K. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau>\<^sub>p \<and> e \<subseteq> J} = {}
+	                                \<and> \<tau>\<^sub>p \<noteq> \<theta>
+	                                \<and> \<tau>\<^sub>p \<noteq> \<beta>)
+	                              \<or> (?G\<^sub>2 \<beta>\<^sub>c \<tau>\<^sub>p
+	                                \<and> \<tau>\<^sub>p \<inter> J\<^sub>2 = {}
+	                                \<and> \<tau>\<^sub>p \<in> K
+	                                \<and> geotop_free_2_simplex K J \<tau>\<^sub>p
+	                                \<and> geotop_simplex_dim \<tau>\<^sub>p 2
+	                                \<and> \<tau>\<^sub>p \<inter> J = {}
+	                                \<and> {e\<in>K. geotop_is_edge e
+	                                  \<and> geotop_is_face e \<tau>\<^sub>p \<and> e \<subseteq> J} = {}
+	                                \<and> \<tau>\<^sub>p \<noteq> \<theta>
+	                                \<and> \<tau>\<^sub>p \<noteq> \<beta>\<^sub>c)"
+	                              using h\<tau>pG h\<tau>p_side_empty h\<tau>p_parent
+	                              by (by100 blast)
+	                            have hex:
+	                              "\<exists>\<zeta>.
+	                                ((?G\<^sub>1 \<zeta>
+	                                  \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                                  \<and> \<zeta> \<in> K
+	                                  \<and> geotop_free_2_simplex K J \<zeta>
+	                                  \<and> geotop_simplex_dim \<zeta> 2
+	                                  \<and> \<zeta> \<inter> J = {}
+	                                  \<and> {e\<in>K. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                  \<and> \<zeta> \<noteq> \<theta>
+	                                  \<and> \<zeta> \<noteq> \<beta>)
+	                                \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                                  \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                                  \<and> \<zeta> \<in> K
+	                                  \<and> geotop_free_2_simplex K J \<zeta>
+	                                  \<and> geotop_simplex_dim \<zeta> 2
+	                                  \<and> \<zeta> \<inter> J = {}
+	                                  \<and> {e\<in>K. geotop_is_edge e
+	                                    \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                                  \<and> \<zeta> \<noteq> \<theta>
+	                                  \<and> \<zeta> \<noteq> \<beta>\<^sub>c))"
+	                              by (rule exI[where x = "\<tau>\<^sub>p"], rule hcase)
+	                            show ?thesis
+	                              by (rule disjI1[OF hex])
+	                          qed
+	                        qed
+	                        have hprimary_parent_or_named_counting_book:
+	                          "(\<exists>\<zeta>.
+	                            ((?G\<^sub>1 \<zeta>
+	                              \<and> \<zeta> \<inter> J\<^sub>1 = {}
+	                              \<and> \<zeta> \<in> K
+	                              \<and> geotop_free_2_simplex K J \<zeta>
+	                              \<and> geotop_simplex_dim \<zeta> 2
+	                              \<and> \<zeta> \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                              \<and> \<zeta> \<noteq> \<theta>
+	                              \<and> \<zeta> \<noteq> \<beta>)
+	                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<zeta>
+	                              \<and> \<zeta> \<inter> J\<^sub>2 = {}
+	                              \<and> \<zeta> \<in> K
+	                              \<and> geotop_free_2_simplex K J \<zeta>
+	                              \<and> geotop_simplex_dim \<zeta> 2
+	                              \<and> \<zeta> \<inter> J = {}
+	                              \<and> {e\<in>K. geotop_is_edge e
+	                                \<and> geotop_is_face e \<zeta> \<and> e \<subseteq> J} = {}
+	                              \<and> \<zeta> \<noteq> \<theta>
+	                              \<and> \<zeta> \<noteq> \<beta>\<^sub>c)))
+	                            \<or> (\<sigma>\<^sub>p = \<beta> \<and> \<tau>\<^sub>p = \<beta>\<^sub>c) \<Longrightarrow>
+	                          \<exists>\<eta>. (?G\<^sub>1 \<eta> \<and> \<eta> \<inter> J\<^sub>1 \<noteq> {})
+	                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<eta> \<and> \<eta> \<inter> J\<^sub>2 \<noteq> {})"
+	                          (**
+	                            Remaining Moise Figure 3.2 counting endpoint,
+	                            after the easy empty-primary cases have been
+	                            converted to parent-empty selected-free
+	                            witnesses.  The only alternatives left are an
+	                            additional parent-empty side witness or the
+	                            fully named primary pair \<open>\<beta>, \<beta>\<^sub>c\<close>; the
+	                            side-free pair data, the two fixed parent-empty
+	                            obstructions, and the spare witnesses must force
+	                            a side witness with nonempty boundary contact. **)
+	                          sorry
+	                        show ?thesis
+	                          by (rule hprimary_parent_or_named_counting_book
+	                              [OF hprimary_empty_parent_candidate_or_named])
+	                      qed
 	                      show ?thesis
 	                        by (rule hprimary_residual_parent_empty_counting_book
 	                            [OF hprimary_residual])
