@@ -28003,33 +28003,70 @@ proof -
 	                                              \<and> e \<subseteq> J} = {}
 	                                            \<and> v \<noteq> \<theta>
 	                                            \<and> v \<noteq> \<beta>\<^sub>c))"
-	                                      have hfour_fixed_parent_empty_count_book:
-	                                        "\<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                      let ?H1 = "\<lambda>x.
+	                                        ?G\<^sub>1 x
+	                                        \<and> x \<inter> J\<^sub>1 = {}
+	                                        \<and> x \<in> K
+	                                        \<and> geotop_free_2_simplex K J x
+	                                        \<and> geotop_simplex_dim x 2
+	                                        \<and> x \<inter> J = {}
+	                                        \<and> {e\<in>K. geotop_is_edge e
+	                                          \<and> geotop_is_face e x
+	                                          \<and> e \<subseteq> J} = {}
+	                                        \<and> x \<noteq> \<theta>
+	                                        \<and> x \<noteq> \<beta>"
+	                                      let ?H2 = "\<lambda>x.
+	                                        ?G\<^sub>2 \<beta>\<^sub>c x
+	                                        \<and> x \<inter> J\<^sub>2 = {}
+	                                        \<and> x \<in> K
+	                                        \<and> geotop_free_2_simplex K J x
+	                                        \<and> geotop_simplex_dim x 2
+	                                        \<and> x \<inter> J = {}
+	                                        \<and> {e\<in>K. geotop_is_edge e
+	                                          \<and> geotop_is_face e x
+	                                          \<and> e \<subseteq> J} = {}
+	                                        \<and> x \<noteq> \<theta>
+	                                        \<and> x \<noteq> \<beta>\<^sub>c"
+	                                      have hbranch_case: "?H1 \<rho> \<or> ?H2 \<rho>"
+	                                        using hbranch_fixed_empty by (by100 simp)
+	                                      have hextra_case: "?H1 \<eta> \<or> ?H2 \<eta>"
+	                                        using hextra_fixed_empty by (by100 simp)
+	                                      have hu_case: "?H1 u \<or> ?H2 u"
+	                                        using hu_parent_empty by (by100 simp)
+	                                      have hv_case: "?H1 v \<or> ?H2 v"
+	                                        using hv_parent_empty by (by100 simp)
+	                                      have hfour_fixed_cases_count_book:
+	                                        "(?H1 \<rho> \<or> ?H2 \<rho>) \<Longrightarrow>
+	                                        (?H1 \<eta> \<or> ?H2 \<eta>) \<Longrightarrow>
+	                                        (?H1 u \<or> ?H2 u) \<Longrightarrow>
+	                                        (?H1 v \<or> ?H2 v) \<Longrightarrow>
+	                                        \<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                            \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
 	                                            \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
 	                                        (**
 	                                          Final fixed-witness Moise count
 	                                          in the current branch.  The
-	                                          enclosing context supplies the
-	                                          older branch obstruction
-	                                          \<open>hbranch_fixed_empty\<close>, the extra
-	                                          obstruction
-	                                          \<open>hextra_fixed_empty\<close>, and the
-	                                          two concrete parent-empty
-	                                          witnesses named here as
-	                                          \<open>hu_parent_empty\<close> and
-	                                          \<open>hv_parent_empty\<close>.  The remaining
-	                                          book step is to use the two
-	                                          side-free witness pairs to force
-	                                          one real side-boundary contact. **)
+	                                          four displayed premises are the
+	                                          older branch obstruction \<open>\<rho>\<close>,
+	                                          the extra obstruction \<open>\<eta>\<close>, and
+	                                          the two concrete witnesses \<open>u\<close>
+	                                          and \<open>v\<close>, each classified as a
+	                                          side-1 or side-2 parent-empty
+	                                          selected-free candidate.  The
+	                                          remaining book step is to use the
+	                                          two side-free witness pairs to
+	                                          force one real side-boundary
+	                                          contact. **)
 	                                        sorry
 	                                      show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
 	                                          \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
 	                                        by (rule
-	                                            hfour_fixed_parent_empty_count_book)
+	                                            hfour_fixed_cases_count_book
+	                                            [OF hbranch_case hextra_case
+	                                              hu_case hv_case])
 	                                    qed
 	                                    have hcanonical_non_named_empty_primary_contradicts_book:
 	                                      "(\<sigma> \<noteq> \<beta> \<and> \<sigma> \<inter> J\<^sub>1 = {})
