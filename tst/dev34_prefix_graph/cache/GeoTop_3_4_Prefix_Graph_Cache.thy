@@ -3914,6 +3914,85 @@ proof -
     using hC_comp hG\<^sub>1C hG\<^sub>2C hG\<^sub>3C by (intro exI conjI)
 qed
 
+lemma geotop_branch_vertex_first_entry_decomposition_prefix:
+  fixes L :: "(real^2) set set"
+    and S T U M N :: "(real^2) set"
+    and w p y z :: "real^2"
+    and r :: real
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hwL: "{w} \<in> L"
+  assumes hSCC: "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+      (geotop_polyhedron L)"
+  assumes hr: "0 < r"
+  assumes hS_L: "S \<in> L"
+  assumes hT_L: "T \<in> L"
+  assumes hU_L: "U \<in> L"
+  assumes hS_edge: "geotop_is_edge S"
+  assumes hT_edge: "geotop_is_edge T"
+  assumes hU_edge: "geotop_is_edge U"
+  assumes hwS: "w \<in> S"
+  assumes hwT: "w \<in> T"
+  assumes hwU: "w \<in> U"
+  assumes hST: "S \<noteq> T"
+  assumes hSU: "S \<noteq> U"
+  assumes hTU: "T \<noteq> U"
+  assumes hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+  assumes hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+  assumes hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+  assumes hM_sub: "M \<subseteq> geotop_polyhedron L - {w}"
+  assumes hM_conn: "connected M"
+  assumes hpM: "p \<in> M"
+  assumes hyM: "y \<in> M"
+  assumes hzM: "z \<in> M"
+  assumes hp_cl: "p \<in> closure ((S - {w}) \<inter> ball w r)"
+  assumes hy_cl: "y \<in> closure ((T - {w}) \<inter> ball w r)"
+  assumes hz_cl: "z \<in> closure ((U - {w}) \<inter> ball w r)"
+  assumes hp_not_ball: "p \<notin> ball w r"
+  assumes hy_not_ball: "y \<notin> ball w r"
+  assumes hz_not_ball: "z \<notin> ball w r"
+  assumes hM_ball_cover:
+    "M \<inter> ball w r
+      \<subseteq> ((S - {w}) \<inter> ball w r)
+        \<union> ((T - {w}) \<inter> ball w r)
+        \<union> ((U - {w}) \<inter> ball w r)
+        \<union> (ball w r - (S \<union> T \<union> U))"
+  assumes hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+  assumes hN_conn: "connected N"
+  assumes hpSN: "p \<in> (S - {w}) \<inter> N"
+  assumes hyTN: "y \<in> (T - {w}) \<inter> N"
+  assumes hN_ball_cover:
+    "N \<inter> ball w r
+      \<subseteq> ((S - {w}) \<inter> ball w r)
+        \<union> ((T - {w}) \<inter> ball w r)
+        \<union> ((U - {w}) \<inter> ball w r)
+        \<union> (ball w r - (S \<union> T \<union> U))"
+  shows
+    "(\<exists>A x. connected A
+        \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+        \<and> x \<in> A
+        \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+        \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {})
+     \<and> (\<forall>A x. connected A
+        \<longrightarrow> A \<subseteq> ball w r - (S \<union> T \<union> U)
+        \<longrightarrow> x \<in> A
+        \<longrightarrow> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+        \<longrightarrow> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+        \<longrightarrow> (\<exists>B y. connected B
+            \<and> B \<subseteq> ball w r - (S \<union> T \<union> U)
+            \<and> y \<in> B
+            \<and> ((S - {w}) \<inter> ball w r) \<inter> closure B \<noteq> {}
+            \<and> ((T - {w}) \<inter> ball w r) \<inter> closure B \<noteq> {}
+            \<and> ((U - {w}) \<inter> ball w r) \<inter> closure B \<noteq> {}))"
+  (**
+    Named Moise first-entry decomposition for the branch-vertex obstruction.
+    The split-side witness \<open>N\<close> gives a local complement side touching the
+    selected \<open>S\<close>- and \<open>T\<close>-germs.  The connected three-germ witness \<open>M\<close> then
+    forces a side reached from that same local side to touch the selected
+    \<open>U\<close>-germ as well.  This is intentionally tied to the finite linear graph
+    carried by a simple closed curve, not to arbitrary finite graphs. **)
+  sorry
+
 lemma geotop_branch_vertex_local_side_witness_from_split_side_prefix:
   fixes L :: "(real^2) set set"
     and S T U M N :: "(real^2) set"
@@ -4098,7 +4177,13 @@ proof -
       on the selected \<open>U\<close>-germ as well; otherwise the first entries of \<open>M\<close>
       into the small ball would separate the punctured simple-closed-curve
       carrier into incompatible local sides. **)
-    sorry
+    by (rule geotop_branch_vertex_first_entry_decomposition_prefix
+        [OF hL_linear hL_fin hwL hSCC hr
+          hS_L hT_L hU_L hS_edge hT_edge hU_edge hwS hwT hwU
+          hST hSU hTU hST_disj hSU_disj hTU_disj
+          hM_sub hM_conn hpM hyM hzM hp_cl hy_cl hz_cl
+          hp_not_ball hy_not_ball hz_not_ball hM_ball_cover
+          hN_sub hN_conn hpSN hyTN hN_ball_cover])
   have hbook_first_entry_side:
       "\<exists>A x. connected A
         \<and> A \<subseteq> ?H
