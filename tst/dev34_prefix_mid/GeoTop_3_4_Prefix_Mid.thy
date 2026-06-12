@@ -29571,7 +29571,222 @@ proof -
 		                                                        from empty side-2 contact,
 		                                                        which transfers through the
 		                                                        parent-empty count. **)
-		                                                      sorry
+		                                                    proof -
+		                                                      assume ht1_bad:
+		                                                        "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
+		                                                          \<or> t1 \<inter> J\<^sub>2 = {}"
+		                                                      assume ht2_bad:
+		                                                        "t2 = \<theta> \<or> t2 = \<beta>\<^sub>c
+		                                                          \<or> t2 \<inter> J\<^sub>2 = {}"
+		                                                      have hside1_named_empty_spare_book:
+		                                                        "t1 \<inter> J\<^sub>2 = {}
+		                                                          \<or> t2 \<inter> J\<^sub>2 = {} \<Longrightarrow>
+		                                                        \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                            \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                            \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                        (**
+		                                                          Side-1 named branch with
+		                                                          an empty spare side-2
+		                                                          contact.  The book step is
+		                                                          to convert the empty
+		                                                          nonnamed spare, together
+		                                                          with the fixed H1 pair, to
+		                                                          the parent-empty counting
+		                                                          contradiction. **)
+		                                                        sorry
+		                                                      have ht_named_or_empty:
+		                                                        "t1 \<inter> J\<^sub>2 = {}
+		                                                          \<or> t2 \<inter> J\<^sub>2 = {}
+		                                                          \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                            \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))"
+		                                                      proof (cases "t1 \<inter> J\<^sub>2 = {}")
+		                                                        case True
+		                                                        show ?thesis
+		                                                          by (rule disjI1[OF True])
+		                                                      next
+		                                                        case False
+		                                                        have ht1_named:
+		                                                          "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c"
+		                                                        proof (rule disjE[OF ht1_bad])
+		                                                          assume ht1_\<theta>: "t1 = \<theta>"
+		                                                          show ?thesis
+		                                                            by (rule disjI1[OF ht1_\<theta>])
+		                                                        next
+		                                                          assume ht1_tail:
+		                                                            "t1 = \<beta>\<^sub>c \<or> t1 \<inter> J\<^sub>2 = {}"
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF ht1_tail])
+		                                                            assume ht1_\<beta>c: "t1 = \<beta>\<^sub>c"
+		                                                            show ?thesis
+		                                                              by (rule disjI2[OF ht1_\<beta>c])
+		                                                          next
+		                                                            assume ht1_empty:
+		                                                              "t1 \<inter> J\<^sub>2 = {}"
+		                                                            have False
+		                                                              using False ht1_empty
+		                                                              by (by100 simp)
+		                                                            thus ?thesis
+		                                                              by (rule FalseE)
+		                                                          qed
+		                                                        qed
+		                                                        show ?thesis
+		                                                        proof (cases "t2 \<inter> J\<^sub>2 = {}")
+		                                                          case True
+		                                                          show ?thesis
+		                                                            by (rule disjI2,
+		                                                                rule disjI1,
+		                                                                rule True)
+		                                                        next
+		                                                          case False
+		                                                          have ht2_named:
+		                                                            "t2 = \<theta> \<or> t2 = \<beta>\<^sub>c"
+		                                                          proof (rule disjE[OF ht2_bad])
+		                                                            assume ht2_\<theta>: "t2 = \<theta>"
+		                                                            show ?thesis
+		                                                              by (rule disjI1[OF ht2_\<theta>])
+		                                                          next
+		                                                            assume ht2_tail:
+		                                                              "t2 = \<beta>\<^sub>c \<or> t2 \<inter> J\<^sub>2 = {}"
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF ht2_tail])
+		                                                              assume ht2_\<beta>c:
+		                                                                "t2 = \<beta>\<^sub>c"
+		                                                              show ?thesis
+		                                                                by (rule disjI2[OF ht2_\<beta>c])
+		                                                            next
+		                                                              assume ht2_empty:
+		                                                                "t2 \<inter> J\<^sub>2 = {}"
+		                                                              have False
+		                                                                using False ht2_empty
+		                                                                by (by100 simp)
+		                                                              thus ?thesis
+		                                                                by (rule FalseE)
+		                                                            qed
+		                                                          qed
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF ht1_named])
+		                                                            assume ht1_\<theta>: "t1 = \<theta>"
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF ht2_named])
+		                                                              assume ht2_\<theta>: "t2 = \<theta>"
+		                                                              have False
+		                                                                using ht1_\<theta> ht2_\<theta> ht1_ne_t2'
+		                                                                by (by100 simp)
+		                                                              thus ?thesis
+		                                                                by (rule FalseE)
+		                                                            next
+		                                                              assume ht2_\<beta>c: "t2 = \<beta>\<^sub>c"
+		                                                              show ?thesis
+		                                                                by (rule disjI2,
+		                                                                    rule disjI2,
+		                                                                    rule disjI1,
+		                                                                    rule conjI,
+		                                                                    rule ht1_\<theta>,
+		                                                                    rule ht2_\<beta>c)
+		                                                            qed
+		                                                          next
+		                                                            assume ht1_\<beta>c: "t1 = \<beta>\<^sub>c"
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF ht2_named])
+		                                                              assume ht2_\<theta>: "t2 = \<theta>"
+		                                                              show ?thesis
+		                                                                by (rule disjI2,
+		                                                                    rule disjI2,
+		                                                                    rule disjI2,
+		                                                                    rule conjI,
+		                                                                    rule ht1_\<beta>c,
+		                                                                    rule ht2_\<theta>)
+		                                                            next
+		                                                              assume ht2_\<beta>c: "t2 = \<beta>\<^sub>c"
+		                                                              have False
+		                                                                using ht1_\<beta>c ht2_\<beta>c ht1_ne_t2'
+		                                                                by (by100 simp)
+		                                                              thus ?thesis
+		                                                                by (rule FalseE)
+		                                                            qed
+		                                                          qed
+		                                                        qed
+		                                                      qed
+		                                                      show ?thesis
+		                                                      proof (cases
+		                                                          "t1 \<inter> J\<^sub>2 = {}
+		                                                            \<or> t2 \<inter> J\<^sub>2 = {}")
+		                                                        case True
+		                                                        show ?thesis
+		                                                          by (rule hside1_named_empty_spare_book
+		                                                              [OF True])
+		                                                      next
+		                                                        case False
+		                                                        have ht_named:
+		                                                          "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                            \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                        proof (rule disjE[OF ht_named_or_empty])
+		                                                          assume ht1_empty:
+		                                                            "t1 \<inter> J\<^sub>2 = {}"
+		                                                          have False
+		                                                            using False ht1_empty
+		                                                            by (by100 simp)
+		                                                          thus ?thesis
+		                                                            by (rule FalseE)
+		                                                        next
+		                                                          assume htail:
+		                                                            "t2 \<inter> J\<^sub>2 = {}
+		                                                              \<or> ((t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                                \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>))"
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF htail])
+		                                                            assume ht2_empty:
+		                                                              "t2 \<inter> J\<^sub>2 = {}"
+		                                                            have False
+		                                                              using False ht2_empty
+		                                                              by (by100 simp)
+		                                                            thus ?thesis
+		                                                              by (rule FalseE)
+		                                                          next
+		                                                            assume ht_named:
+		                                                              "(t1 = \<theta> \<and> t2 = \<beta>\<^sub>c)
+		                                                                \<or> (t1 = \<beta>\<^sub>c \<and> t2 = \<theta>)"
+		                                                            show ?thesis
+		                                                              by (rule ht_named)
+		                                                          qed
+		                                                        qed
+		                                                        have h\<theta>T\<^sub>1: "\<theta> \<in> ?T\<^sub>1"
+		                                                        proof (rule disjE[OF hs_named])
+		                                                          assume hs_case:
+		                                                            "s1 = \<theta> \<and> s2 = \<beta>"
+		                                                          show ?thesis
+		                                                            using hs_case hs1L\<^sub>1' hs1_2
+		                                                            by (by100 simp)
+		                                                        next
+		                                                          assume hs_case:
+		                                                            "s1 = \<beta> \<and> s2 = \<theta>"
+		                                                          show ?thesis
+		                                                            using hs_case hs2L\<^sub>1' hs2_2
+		                                                            by (by100 simp)
+		                                                        qed
+		                                                        have h\<theta>T\<^sub>2: "\<theta> \<in> ?T\<^sub>2"
+		                                                        proof (rule disjE[OF ht_named])
+		                                                          assume ht_case:
+		                                                            "t1 = \<theta> \<and> t2 = \<beta>\<^sub>c"
+		                                                          show ?thesis
+		                                                            using ht_case ht1L\<^sub>2' ht1_2
+		                                                            by (by100 simp)
+		                                                        next
+		                                                          assume ht_case:
+		                                                            "t1 = \<beta>\<^sub>c \<and> t2 = \<theta>"
+		                                                          show ?thesis
+		                                                            using ht_case ht2L\<^sub>2' ht2_2
+		                                                            by (by100 simp)
+		                                                        qed
+		                                                        have False
+		                                                          using h\<theta>T\<^sub>1 h\<theta>T\<^sub>2
+		                                                            hside_core_omitted_parent_faces_book
+		                                                          by (by100 blast)
+		                                                        thus ?thesis
+		                                                          by (rule FalseE)
+		                                                      qed
+		                                                    qed
 		                                                    show ?thesis
 		                                                    proof (cases
 		                                                        "t1 = \<theta> \<or> t1 = \<beta>\<^sub>c
@@ -29664,7 +29879,219 @@ proof -
 		                                                        book step is the same
 		                                                        named/empty dichotomy with
 		                                                        sides reversed. **)
-		                                                      sorry
+		                                                    proof -
+		                                                      assume hs1_bad:
+		                                                        "s1 = \<theta> \<or> s1 = \<beta>
+		                                                          \<or> s1 \<inter> J\<^sub>1 = {}"
+		                                                      assume hs2_bad:
+		                                                        "s2 = \<theta> \<or> s2 = \<beta>
+		                                                          \<or> s2 \<inter> J\<^sub>1 = {}"
+		                                                      have hside2_named_empty_spare_book:
+		                                                        "s1 \<inter> J\<^sub>1 = {}
+		                                                          \<or> s2 \<inter> J\<^sub>1 = {} \<Longrightarrow>
+		                                                        \<exists>\<omega>. (?G\<^sub>1 \<omega>
+		                                                            \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+		                                                          \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+		                                                            \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+		                                                        (**
+		                                                          Side-2 named branch with
+		                                                          an empty spare side-1
+		                                                          contact.  This is the
+		                                                          side-reversed form of the
+		                                                          parent-empty transfer/count
+		                                                          residue. **)
+		                                                        sorry
+		                                                      have hs_named_or_empty:
+		                                                        "s1 \<inter> J\<^sub>1 = {}
+		                                                          \<or> s2 \<inter> J\<^sub>1 = {}
+		                                                          \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                            \<or> (s1 = \<beta> \<and> s2 = \<theta>))"
+		                                                      proof (cases "s1 \<inter> J\<^sub>1 = {}")
+		                                                        case True
+		                                                        show ?thesis
+		                                                          by (rule disjI1[OF True])
+		                                                      next
+		                                                        case False
+		                                                        have hs1_named:
+		                                                          "s1 = \<theta> \<or> s1 = \<beta>"
+		                                                        proof (rule disjE[OF hs1_bad])
+		                                                          assume hs1_\<theta>: "s1 = \<theta>"
+		                                                          show ?thesis
+		                                                            by (rule disjI1[OF hs1_\<theta>])
+		                                                        next
+		                                                          assume hs1_tail:
+		                                                            "s1 = \<beta> \<or> s1 \<inter> J\<^sub>1 = {}"
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF hs1_tail])
+		                                                            assume hs1_\<beta>: "s1 = \<beta>"
+		                                                            show ?thesis
+		                                                              by (rule disjI2[OF hs1_\<beta>])
+		                                                          next
+		                                                            assume hs1_empty:
+		                                                              "s1 \<inter> J\<^sub>1 = {}"
+		                                                            have False
+		                                                              using False hs1_empty
+		                                                              by (by100 simp)
+		                                                            thus ?thesis
+		                                                              by (rule FalseE)
+		                                                          qed
+		                                                        qed
+		                                                        show ?thesis
+		                                                        proof (cases "s2 \<inter> J\<^sub>1 = {}")
+		                                                          case True
+		                                                          show ?thesis
+		                                                            by (rule disjI2,
+		                                                                rule disjI1,
+		                                                                rule True)
+		                                                        next
+		                                                          case False
+		                                                          have hs2_named:
+		                                                            "s2 = \<theta> \<or> s2 = \<beta>"
+		                                                          proof (rule disjE[OF hs2_bad])
+		                                                            assume hs2_\<theta>: "s2 = \<theta>"
+		                                                            show ?thesis
+		                                                              by (rule disjI1[OF hs2_\<theta>])
+		                                                          next
+		                                                            assume hs2_tail:
+		                                                              "s2 = \<beta> \<or> s2 \<inter> J\<^sub>1 = {}"
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF hs2_tail])
+		                                                              assume hs2_\<beta>: "s2 = \<beta>"
+		                                                              show ?thesis
+		                                                                by (rule disjI2[OF hs2_\<beta>])
+		                                                            next
+		                                                              assume hs2_empty:
+		                                                                "s2 \<inter> J\<^sub>1 = {}"
+		                                                              have False
+		                                                                using False hs2_empty
+		                                                                by (by100 simp)
+		                                                              thus ?thesis
+		                                                                by (rule FalseE)
+		                                                            qed
+		                                                          qed
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF hs1_named])
+		                                                            assume hs1_\<theta>: "s1 = \<theta>"
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF hs2_named])
+		                                                              assume hs2_\<theta>: "s2 = \<theta>"
+		                                                              have False
+		                                                                using hs1_\<theta> hs2_\<theta> hs1_ne_s2'
+		                                                                by (by100 simp)
+		                                                              thus ?thesis
+		                                                                by (rule FalseE)
+		                                                            next
+		                                                              assume hs2_\<beta>: "s2 = \<beta>"
+		                                                              show ?thesis
+		                                                                by (rule disjI2,
+		                                                                    rule disjI2,
+		                                                                    rule disjI1,
+		                                                                    rule conjI,
+		                                                                    rule hs1_\<theta>,
+		                                                                    rule hs2_\<beta>)
+		                                                            qed
+		                                                          next
+		                                                            assume hs1_\<beta>: "s1 = \<beta>"
+		                                                            show ?thesis
+		                                                            proof (rule disjE[OF hs2_named])
+		                                                              assume hs2_\<theta>: "s2 = \<theta>"
+		                                                              show ?thesis
+		                                                                by (rule disjI2,
+		                                                                    rule disjI2,
+		                                                                    rule disjI2,
+		                                                                    rule conjI,
+		                                                                    rule hs1_\<beta>,
+		                                                                    rule hs2_\<theta>)
+		                                                            next
+		                                                              assume hs2_\<beta>: "s2 = \<beta>"
+		                                                              have False
+		                                                                using hs1_\<beta> hs2_\<beta> hs1_ne_s2'
+		                                                                by (by100 simp)
+		                                                              thus ?thesis
+		                                                                by (rule FalseE)
+		                                                            qed
+		                                                          qed
+		                                                        qed
+		                                                      qed
+		                                                      show ?thesis
+		                                                      proof (cases
+		                                                          "s1 \<inter> J\<^sub>1 = {}
+		                                                            \<or> s2 \<inter> J\<^sub>1 = {}")
+		                                                        case True
+		                                                        show ?thesis
+		                                                          by (rule hside2_named_empty_spare_book
+		                                                              [OF True])
+		                                                      next
+		                                                        case False
+		                                                        have hs_named:
+		                                                          "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                            \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                        proof (rule disjE[OF hs_named_or_empty])
+		                                                          assume hs1_empty:
+		                                                            "s1 \<inter> J\<^sub>1 = {}"
+		                                                          have False
+		                                                            using False hs1_empty
+		                                                            by (by100 simp)
+		                                                          thus ?thesis
+		                                                            by (rule FalseE)
+		                                                        next
+		                                                          assume htail:
+		                                                            "s2 \<inter> J\<^sub>1 = {}
+		                                                              \<or> ((s1 = \<theta> \<and> s2 = \<beta>)
+		                                                                \<or> (s1 = \<beta> \<and> s2 = \<theta>))"
+		                                                          show ?thesis
+		                                                          proof (rule disjE[OF htail])
+		                                                            assume hs2_empty:
+		                                                              "s2 \<inter> J\<^sub>1 = {}"
+		                                                            have False
+		                                                              using False hs2_empty
+		                                                              by (by100 simp)
+		                                                            thus ?thesis
+		                                                              by (rule FalseE)
+		                                                          next
+		                                                            assume hs_named:
+		                                                              "(s1 = \<theta> \<and> s2 = \<beta>)
+		                                                                \<or> (s1 = \<beta> \<and> s2 = \<theta>)"
+		                                                            show ?thesis
+		                                                              by (rule hs_named)
+		                                                          qed
+		                                                        qed
+		                                                        have h\<theta>T\<^sub>2: "\<theta> \<in> ?T\<^sub>2"
+		                                                        proof (rule disjE[OF ht_named])
+		                                                          assume ht_case:
+		                                                            "t1 = \<theta> \<and> t2 = \<beta>\<^sub>c"
+		                                                          show ?thesis
+		                                                            using ht_case ht1L\<^sub>2' ht1_2
+		                                                            by (by100 simp)
+		                                                        next
+		                                                          assume ht_case:
+		                                                            "t1 = \<beta>\<^sub>c \<and> t2 = \<theta>"
+		                                                          show ?thesis
+		                                                            using ht_case ht2L\<^sub>2' ht2_2
+		                                                            by (by100 simp)
+		                                                        qed
+		                                                        have h\<theta>T\<^sub>1: "\<theta> \<in> ?T\<^sub>1"
+		                                                        proof (rule disjE[OF hs_named])
+		                                                          assume hs_case:
+		                                                            "s1 = \<theta> \<and> s2 = \<beta>"
+		                                                          show ?thesis
+		                                                            using hs_case hs1L\<^sub>1' hs1_2
+		                                                            by (by100 simp)
+		                                                        next
+		                                                          assume hs_case:
+		                                                            "s1 = \<beta> \<and> s2 = \<theta>"
+		                                                          show ?thesis
+		                                                            using hs_case hs2L\<^sub>1' hs2_2
+		                                                            by (by100 simp)
+		                                                        qed
+		                                                        have False
+		                                                          using h\<theta>T\<^sub>1 h\<theta>T\<^sub>2
+		                                                            hside_core_omitted_parent_faces_book
+		                                                          by (by100 blast)
+		                                                        thus ?thesis
+		                                                          by (rule FalseE)
+		                                                      qed
+		                                                    qed
 		                                                    show ?thesis
 		                                                    proof (cases
 		                                                        "s1 = \<theta> \<or> s1 = \<beta>
