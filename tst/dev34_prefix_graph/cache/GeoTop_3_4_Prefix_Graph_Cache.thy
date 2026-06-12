@@ -11121,6 +11121,117 @@ proof -
                 by (rule hM_trace_component_summary[OF hC])
             qed
           qed
+          have hM_trace_component_open:
+              "\<And>C. C \<in> ?Mtrace_components \<Longrightarrow> open C"
+          proof -
+            fix C
+            assume hC: "C \<in> ?Mtrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hM_trace_component_summary[OF hC] by (by100 blast)
+            show "open C"
+              using hlocal_selected_open hC_comp open_components by (by100 blast)
+          qed
+          have hM_ball_cover_by_selected_and_trace_components:
+              "M \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> \<Union>?Mtrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> M \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?Mloc"
+              using hM_ball_cover_by_selected_and_trace ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> \<Union>?Mtrace_components"
+              using ha_cover hM_trace_components_cover by (by100 blast)
+          qed
+          have hM_trace_components_disjoint_S:
+              "\<Union>?Mtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?Mtrace_components \<inter> ((S - {w}) \<inter> ball w r) \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?Mtrace_components \<inter>
+                ((S - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hM_trace_components_union_sub ha by (by100 blast)
+              have haS: "a \<in> S"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haS by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?Mtrace_components \<inter>
+              ((S - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hM_trace_components_disjoint_T:
+              "\<Union>?Mtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?Mtrace_components \<inter> ((T - {w}) \<inter> ball w r) \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?Mtrace_components \<inter>
+                ((T - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hM_trace_components_union_sub ha by (by100 blast)
+              have haT: "a \<in> T"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haT by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?Mtrace_components \<inter>
+              ((T - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hM_trace_components_disjoint_U:
+              "\<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?Mtrace_components \<inter>
+                ((U - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hM_trace_components_union_sub ha by (by100 blast)
+              have haU: "a \<in> U"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haU by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?Mtrace_components \<inter>
+              ((U - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hM_trace_component_cover_package:
+              "M \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> \<Union>?Mtrace_components
+                \<and> \<Union>?Mtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?Mtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+          proof (intro conjI)
+            show "M \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> \<Union>?Mtrace_components"
+              by (rule hM_ball_cover_by_selected_and_trace_components)
+            show "\<Union>?Mtrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+              by (rule hM_trace_components_disjoint_S)
+            show "\<Union>?Mtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+              by (rule hM_trace_components_disjoint_T)
+            show "\<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+              by (rule hM_trace_components_disjoint_U)
+          qed
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
