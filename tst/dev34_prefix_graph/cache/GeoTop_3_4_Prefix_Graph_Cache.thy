@@ -11347,7 +11347,11 @@ proof -
               by (by100 simp)
           qed
           have hM_trace_component_cover_package:
-              "M \<inter> ball w r
+              "finite ?Mtrace_components
+                \<and> open (\<Union>?Mtrace_components)
+                \<and> ?Mloc \<subseteq> \<Union>?Mtrace_components
+                \<and> \<Union>?Mtrace_components \<subseteq> ?Lcomp
+                \<and> M \<inter> ball w r
                   \<subseteq> ((S - {w}) \<inter> ball w r)
                     \<union> ((T - {w}) \<inter> ball w r)
                     \<union> ((U - {w}) \<inter> ball w r)
@@ -11356,6 +11360,14 @@ proof -
                 \<and> \<Union>?Mtrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}
                 \<and> \<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
           proof (intro conjI)
+            show "finite ?Mtrace_components"
+              by (rule hM_trace_components_fin)
+            show "open (\<Union>?Mtrace_components)"
+              by (rule hM_trace_components_open)
+            show "?Mloc \<subseteq> \<Union>?Mtrace_components"
+              by (rule hM_trace_components_cover)
+            show "\<Union>?Mtrace_components \<subseteq> ?Lcomp"
+              by (rule hM_trace_components_union_sub)
             show "M \<inter> ball w r
               \<subseteq> ((S - {w}) \<inter> ball w r)
                 \<union> ((T - {w}) \<inter> ball w r)
@@ -11565,6 +11577,7 @@ proof -
           qed
           have hN_trace_component_cover_package:
               "finite ?Ntrace_components
+                \<and> open (\<Union>?Ntrace_components)
                 \<and> ?Nloc \<subseteq> \<Union>?Ntrace_components
                 \<and> \<Union>?Ntrace_components \<subseteq> ?Lcomp
                 \<and> N \<inter> ball w r
@@ -11585,6 +11598,8 @@ proof -
           proof (intro conjI)
             show "finite ?Ntrace_components"
               by (rule hN_trace_components_fin)
+            show "open (\<Union>?Ntrace_components)"
+              by (rule hN_trace_components_open)
             show "?Nloc \<subseteq> \<Union>?Ntrace_components"
               by (rule hN_local_trace_component_cover)
             show "\<Union>?Ntrace_components \<subseteq> ?Lcomp"
