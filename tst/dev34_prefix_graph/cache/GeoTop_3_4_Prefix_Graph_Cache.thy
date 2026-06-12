@@ -10684,6 +10684,9 @@ proof -
       qed
       have hN_conn_HOL: "connected N"
         using hN_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+      have hN_punctured_nonempty:
+          "N - {p} \<noteq> {}"
+        by (rule geotop_closure_member_imp_nonempty_prefix[OF hpN_cl])
       have hN_ball_sector_cover:
           "N \<inter> ball w r
             \<subseteq> ((S - {w}) \<inter> ball w r)
@@ -10691,6 +10694,32 @@ proof -
               \<union> ((U - {w}) \<inter> ball w r)
               \<union> (ball w r - (S \<union> T \<union> U))"
         using hN_sub hselected_punctured_carrier_sector_cover by (by100 blast)
+      have hN_endpoint_first_entry_package:
+          "connected N
+            \<and> N \<subseteq> geotop_polyhedron L - {w}
+            \<and> p \<in> (S - {w}) \<inter> N
+            \<and> y \<in> (T - {w}) \<inter> N
+            \<and> p \<in> closure (N - {p})
+            \<and> N - {p} \<noteq> {}
+            \<and> N \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> (ball w r - (S \<union> T \<union> U))"
+      proof (intro conjI)
+        show "connected N" by (rule hN_conn_HOL)
+        show "N \<subseteq> geotop_polyhedron L - {w}" by (rule hN_sub)
+        show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+        show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+        show "p \<in> closure (N - {p})" by (rule hpN_cl)
+        show "N - {p} \<noteq> {}" by (rule hN_punctured_nonempty)
+        show "N \<inter> ball w r
+          \<subseteq> ((S - {w}) \<inter> ball w r)
+            \<union> ((T - {w}) \<inter> ball w r)
+            \<union> ((U - {w}) \<inter> ball w r)
+            \<union> (ball w r - (S \<union> T \<union> U))"
+          by (rule hN_ball_sector_cover)
+      qed
       have hsplit_side_endpoint_local_component_book_step:
           "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
