@@ -34789,7 +34789,56 @@ lemma geotop_free_triangle_two_boundary_edges_supported_inverse_fold_prefix:
     homeomorphism, supported in the same local carrier inside \<open>U\<close>, so the
     corner triangle is deleted and the remaining edge becomes the replacement
     boundary edge of the smaller polygonal disk. **)
-  sorry
+proof -
+  let ?T = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+  have hT_fin: "finite ?T"
+    using hK_fin by (by100 simp)
+  have h\<theta>T: "\<theta> \<in> ?T"
+    using h\<theta>K h\<theta>2 by (by100 simp)
+  have hT_after_delete_decreases: "card (?T - {\<theta>}) < card ?T"
+    by (rule card_Diff1_less[OF hT_fin h\<theta>T])
+  have hboundary_two_edge_package:
+      "e1 \<noteq> e2
+      \<and> geotop_is_edge e1
+      \<and> geotop_is_edge e2
+      \<and> geotop_is_face e1 \<theta>
+      \<and> geotop_is_face e2 \<theta>
+      \<and> e1 \<subseteq> J
+      \<and> e2 \<subseteq> J
+      \<and> \<theta> \<inter> J = e1 \<union> e2
+      \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+          = {e1, e2}"
+    using he12 he1edge he2edge he1face he2face he1J he2J hcontact hE
+    by (by100 blast)
+  have hclosed_disk_in_support:
+      "geotop_polyhedron K \<subseteq> U"
+    using hK_poly hI_sub_U by (by100 simp)
+  have hbook_figure33_two_boundary_inverse_fold:
+      "\<exists>J' K' f.
+        geotop_is_polygon J'
+        \<and> geotop_is_complex K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J')
+        \<and> closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J') \<subseteq> U
+        \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` J = J'"
+    (**
+      Remaining Moise Figure 3.3 Case 2 inverse-fold construction.  The corner
+      triangle has two boundary edges.  Use the inverse of the Case 1 local PL
+      map in a small carrier contained in \<open>U\<close>, apply the already available
+      fixed-outside inverse-homeomorphism support package, and take the image
+      polygon/complex after deleting the corner triangle. **)
+    sorry
+  show ?thesis
+    using hbook_figure33_two_boundary_inverse_fold by (by100 blast)
+qed
 
 lemma geotop_free_triangle_empty_contact_supported_fold_prefix:
   fixes J U \<theta> :: "(real^2) set" and K :: "(real^2) set set"
