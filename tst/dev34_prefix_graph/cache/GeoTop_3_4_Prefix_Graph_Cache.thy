@@ -3968,29 +3968,19 @@ lemma geotop_branch_vertex_first_entry_decomposition_prefix:
         \<union> ((U - {w}) \<inter> ball w r)
         \<union> (ball w r - (S \<union> T \<union> U))"
   shows
-    "(\<exists>A x. connected A
+    "\<exists>A x. connected A
         \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
         \<and> x \<in> A
         \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
-        \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {})
-     \<and> (\<forall>A x. connected A
-        \<longrightarrow> A \<subseteq> ball w r - (S \<union> T \<union> U)
-        \<longrightarrow> x \<in> A
-        \<longrightarrow> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
-        \<longrightarrow> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
-        \<longrightarrow> (\<exists>B y. connected B
-            \<and> B \<subseteq> ball w r - (S \<union> T \<union> U)
-            \<and> y \<in> B
-            \<and> ((S - {w}) \<inter> ball w r) \<inter> closure B \<noteq> {}
-            \<and> ((T - {w}) \<inter> ball w r) \<inter> closure B \<noteq> {}
-            \<and> ((U - {w}) \<inter> ball w r) \<inter> closure B \<noteq> {}))"
+        \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+        \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
   (**
     Named Moise first-entry decomposition for the branch-vertex obstruction.
-    The split-side witness \<open>N\<close> gives a local complement side touching the
+    The split-side witness \<open>N\<close> gives local complement access between the
     selected \<open>S\<close>- and \<open>T\<close>-germs.  The connected three-germ witness \<open>M\<close> then
-    forces a side reached from that same local side to touch the selected
-    \<open>U\<close>-germ as well.  This is intentionally tied to the finite linear graph
-    carried by a simple closed curve, not to arbitrary finite graphs. **)
+    forces some local side to touch the selected \<open>U\<close>-germ as well.  This is
+    intentionally tied to the finite linear graph carried by a simple closed
+    curve, not to arbitrary finite graphs. **)
 proof -
   let ?G\<^sub>S = "(S - {w}) \<inter> ball w r"
   let ?G\<^sub>T = "(T - {w}) \<inter> ball w r"
@@ -4084,27 +4074,17 @@ proof -
     show "y \<in> T - {w}" by (rule hyT_germ)
   qed
   have hbook_first_entry_core:
-      "(\<exists>A x. connected A
+      "\<exists>A x. connected A
           \<and> A \<subseteq> ?H
           \<and> x \<in> A
           \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
-          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {})
-       \<and> (\<forall>A x. connected A
-          \<longrightarrow> A \<subseteq> ?H
-          \<longrightarrow> x \<in> A
-          \<longrightarrow> ?G\<^sub>S \<inter> closure A \<noteq> {}
-          \<longrightarrow> ?G\<^sub>T \<inter> closure A \<noteq> {}
-          \<longrightarrow> (\<exists>B y. connected B
-              \<and> B \<subseteq> ?H
-              \<and> y \<in> B
-              \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
-              \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
-              \<and> ?G\<^sub>U \<inter> closure B \<noteq> {}))"
+          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}
+          \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
     (**
       Remaining first-entry book step, now with the local geometry and input
-      packages above in scope.  The proof should construct the S/T local side
-      from \<open>N\<close> and then use \<open>M\<close> to transfer to a side accumulating on
-      \<open>?G\<^sub>U\<close>. **)
+      packages above in scope.  The proof should use \<open>N\<close> and \<open>M\<close> to construct
+      one local side accumulating on all three selected germs, rather than a
+      universal upgrade theorem for arbitrary S/T local sides. **)
     sorry
   show ?thesis
     by (rule hbook_first_entry_core)
@@ -4270,30 +4250,18 @@ proof -
     show "y \<in> T - {w}" by (rule hyT_germ)
   qed
   have hbook_first_entry_decomposition:
-      "(\<exists>A x. connected A
+      "\<exists>A x. connected A
           \<and> A \<subseteq> ?H
           \<and> x \<in> A
           \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
-          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {})
-       \<and> (\<forall>A x. connected A
-          \<longrightarrow> A \<subseteq> ?H
-          \<longrightarrow> x \<in> A
-          \<longrightarrow> ?G\<^sub>S \<inter> closure A \<noteq> {}
-          \<longrightarrow> ?G\<^sub>T \<inter> closure A \<noteq> {}
-          \<longrightarrow> (\<exists>B y. connected B
-              \<and> B \<subseteq> ?H
-              \<and> y \<in> B
-              \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
-              \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
-              \<and> ?G\<^sub>U \<inter> closure B \<noteq> {}))"
+          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}
+          \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
     (**
       Moise first-entry decomposition.  The connected split-side witness \<open>N\<close>
-      gives a connected local side of \<open>?H\<close> whose closure touches the selected
-      \<open>S\<close>- and \<open>T\<close>-germs.  The connected three-germ witness \<open>M\<close> then forces
-      that same local side, or a connected side reached from it, to accumulate
-      on the selected \<open>U\<close>-germ as well; otherwise the first entries of \<open>M\<close>
-      into the small ball would separate the punctured simple-closed-curve
-      carrier into incompatible local sides. **)
+      and the connected three-germ witness \<open>M\<close> produce one local side of
+      \<open>?H\<close> whose closure touches the selected \<open>S\<close>-, \<open>T\<close>-, and \<open>U\<close>-germs;
+      otherwise the first entries of \<open>M\<close> into the small ball would separate the
+      punctured simple-closed-curve carrier into incompatible local sides. **)
     by (rule geotop_branch_vertex_first_entry_decomposition_prefix
         [OF hL_linear hL_fin hwL hSCC hr
           hS_L hT_L hU_L hS_edge hT_edge hU_edge hwS hwT hwU
@@ -4301,61 +4269,8 @@ proof -
           hM_sub hM_conn hpM hyM hzM hp_cl hy_cl hz_cl
           hp_not_ball hy_not_ball hz_not_ball hM_ball_cover
           hN_sub hN_conn hpSN hyTN hN_ball_cover])
-  have hbook_first_entry_side:
-      "\<exists>A x. connected A
-        \<and> A \<subseteq> ?H
-        \<and> x \<in> A
-        \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
-        \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}
-        \<and> ?G\<^sub>U \<inter> closure A \<noteq> {}"
-  proof -
-    have hST_side_exists:
-        "\<exists>A x. connected A
-          \<and> A \<subseteq> ?H
-          \<and> x \<in> A
-          \<and> ?G\<^sub>S \<inter> closure A \<noteq> {}
-          \<and> ?G\<^sub>T \<inter> closure A \<noteq> {}"
-      using hbook_first_entry_decomposition by (rule conjunct1)
-    have hST_to_three:
-        "\<forall>A x. connected A
-          \<longrightarrow> A \<subseteq> ?H
-          \<longrightarrow> x \<in> A
-          \<longrightarrow> ?G\<^sub>S \<inter> closure A \<noteq> {}
-          \<longrightarrow> ?G\<^sub>T \<inter> closure A \<noteq> {}
-          \<longrightarrow> (\<exists>B y. connected B
-              \<and> B \<subseteq> ?H
-              \<and> y \<in> B
-              \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
-              \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
-              \<and> ?G\<^sub>U \<inter> closure B \<noteq> {})"
-      using hbook_first_entry_decomposition by (rule conjunct2)
-    obtain A x where hA_conn: "connected A"
-      and hA_sub: "A \<subseteq> ?H"
-      and hxA: "x \<in> A"
-      and hS_touch_A: "?G\<^sub>S \<inter> closure A \<noteq> {}"
-      and hT_touch_A: "?G\<^sub>T \<inter> closure A \<noteq> {}"
-      using hST_side_exists by (by100 blast)
-    have hthree_exists:
-        "\<exists>B y. connected B
-          \<and> B \<subseteq> ?H
-          \<and> y \<in> B
-          \<and> ?G\<^sub>S \<inter> closure B \<noteq> {}
-          \<and> ?G\<^sub>T \<inter> closure B \<noteq> {}
-          \<and> ?G\<^sub>U \<inter> closure B \<noteq> {}"
-      by (rule hST_to_three[rule_format, OF hA_conn hA_sub hxA
-            hS_touch_A hT_touch_A])
-    obtain B y where hB_conn: "connected B"
-      and hB_sub: "B \<subseteq> ?H"
-      and hyB: "y \<in> B"
-      and hS_touch_B: "?G\<^sub>S \<inter> closure B \<noteq> {}"
-      and hT_touch_B: "?G\<^sub>T \<inter> closure B \<noteq> {}"
-      and hU_touch_B: "?G\<^sub>U \<inter> closure B \<noteq> {}"
-      using hthree_exists by (by100 blast)
-    show ?thesis
-      using hB_conn hB_sub hyB hS_touch_B hT_touch_B hU_touch_B by (by100 blast)
-  qed
   show ?thesis
-    by (rule hbook_first_entry_side)
+    by (rule hbook_first_entry_decomposition)
 qed
 
 lemma geotop_branch_vertex_three_germs_same_side_component_prefix:
