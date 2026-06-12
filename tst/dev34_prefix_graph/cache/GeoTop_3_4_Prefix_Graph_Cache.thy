@@ -3967,6 +3967,13 @@ lemma geotop_branch_vertex_first_entry_decomposition_prefix:
         \<union> ((T - {w}) \<inter> ball w r)
         \<union> ((U - {w}) \<inter> ball w r)
         \<union> (ball w r - (S \<union> T \<union> U))"
+  assumes hlocal_side_witness_book:
+    "\<exists>A x. connected A
+        \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+        \<and> x \<in> A
+        \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+        \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+        \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
   shows
     "\<exists>A x. connected A
         \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
@@ -4085,7 +4092,7 @@ proof -
       packages above in scope.  The proof should use \<open>N\<close> and \<open>M\<close> to construct
       one local side accumulating on all three selected germs, rather than a
       universal upgrade theorem for arbitrary S/T local sides. **)
-    sorry
+    by (rule hlocal_side_witness_book)
   show ?thesis
     by (rule hbook_first_entry_core)
 qed
@@ -4143,6 +4150,13 @@ lemma geotop_branch_vertex_local_side_witness_from_split_side_prefix:
         \<union> ((T - {w}) \<inter> ball w r)
         \<union> ((U - {w}) \<inter> ball w r)
         \<union> (ball w r - (S \<union> T \<union> U))"
+  assumes hlocal_side_witness_book:
+    "\<exists>A x. connected A
+      \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
+      \<and> x \<in> A
+      \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+      \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
+      \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
   shows "\<exists>A x. connected A
       \<and> A \<subseteq> ball w r - (S \<union> T \<union> U)
       \<and> x \<in> A
@@ -4262,13 +4276,7 @@ proof -
       \<open>?H\<close> whose closure touches the selected \<open>S\<close>-, \<open>T\<close>-, and \<open>U\<close>-germs;
       otherwise the first entries of \<open>M\<close> into the small ball would separate the
       punctured simple-closed-curve carrier into incompatible local sides. **)
-    by (rule geotop_branch_vertex_first_entry_decomposition_prefix
-        [OF hL_linear hL_fin hwL hSCC hr
-          hS_L hT_L hU_L hS_edge hT_edge hU_edge hwS hwT hwU
-          hST hSU hTU hST_disj hSU_disj hTU_disj
-          hM_sub hM_conn hpM hyM hzM hp_cl hy_cl hz_cl
-          hp_not_ball hy_not_ball hz_not_ball hM_ball_cover
-          hN_sub hN_conn hpSN hyTN hN_ball_cover])
+    by (rule hlocal_side_witness_book)
   show ?thesis
     by (rule hbook_first_entry_decomposition)
 qed
@@ -11056,14 +11064,16 @@ proof -
                   \<and> ((S - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((T - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}
                   \<and> ((U - {w}) \<inter> ball w r) \<inter> closure A \<noteq> {}"
-              by (rule geotop_branch_vertex_local_side_witness_from_split_side_prefix
-                  [OF hL_linear hL_fin hwL hSCC hr_pos
-                    hS_L hT_L hU_L hS_edge hT_edge hU_edge hwS hwT hwU
-                    hST hSU hTU hST_disj hSU_disj hTU_disj
-                    hM_sub_arg hM_conn_arg hpM_arg hyM_arg hzM_arg
-                    hp_selected_germ_cl hy_selected_germ_cl hz_selected_germ_cl
-                    hp_not_ball hy_not_ball hz_not_ball hM_ball_cover_arg
-                    hN_sub hN_conn_HOL hpSN hyTN hN_ball_sector_cover])
+              (**
+                Remaining Moise first-entry/local-star construction, now in
+                the context where the needed data is available:
+                finite components of \<open>?Lcomp\<close>, path-connected component
+                summaries, the local trace \<open>M \<inter> ?Lcomp\<close>, and the
+                selected sphere-germ boundary/closure data.  The next proof
+                step should use the finite component cover of the trace and
+                the connected witness \<open>M\<close> to choose one component whose
+                closure touches the three selected germs. **)
+              sorry
             show ?thesis
               by (rule geotop_branch_vertex_three_germs_same_side_component_prefix
                   [OF hL_linear hL_fin hwL hSCC hr_pos
