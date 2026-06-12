@@ -11232,6 +11232,236 @@ proof -
             show "\<Union>?Mtrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
               by (rule hM_trace_components_disjoint_U)
           qed
+          let ?Nloc = "N \<inter> ?Lcomp"
+          have hN_local_trace_sub:
+              "?Nloc \<subseteq> ?Lcomp"
+            by (by100 blast)
+          have hN_ball_cover_by_selected_and_trace:
+              "N \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?Nloc"
+          proof
+            fix a
+            assume ha: "a \<in> N \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> (ball w r - (S \<union> T \<union> U))"
+              using hN_ball_sector_cover ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> ?Nloc"
+              using ha ha_cover by (by100 blast)
+          qed
+          have hN_local_trace_disjoint_selected_germs:
+              "?Nloc \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> ?Nloc \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> ?Nloc \<inter> ((U - {w}) \<inter> ball w r) = {}"
+            by (by100 blast)
+          let ?Ntrace_components =
+            "{C\<in>components ?Lcomp. C \<inter> ?Nloc \<noteq> {}}"
+          have hN_trace_components_fin:
+              "finite ?Ntrace_components"
+            by (rule finite_subset[OF _ hlocal_selected_components_fin],
+                by100 blast)
+          have hN_local_trace_component_cover:
+              "?Nloc \<subseteq> \<Union>?Ntrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> ?Nloc"
+            have haL: "a \<in> ?Lcomp"
+              by (rule subsetD[OF hN_local_trace_sub ha])
+            let ?C = "connected_component_set ?Lcomp a"
+            have hC_comp: "?C \<in> components ?Lcomp"
+              by (rule componentsI[OF haL])
+            have haC: "a \<in> ?C"
+              using haL connected_component_refl by (by100 simp)
+            have hC_meets: "?C \<inter> ?Nloc \<noteq> {}"
+              using ha haC by (by100 blast)
+            show "a \<in> \<Union>?Ntrace_components"
+              using hC_comp hC_meets haC by (by100 blast)
+          qed
+          have hN_trace_component_summary:
+              "\<And>C. C \<in> ?Ntrace_components
+                \<Longrightarrow> C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Nloc \<noteq> {}"
+          proof -
+            fix C
+            assume hC: "C \<in> ?Ntrace_components"
+            have hC_comp: "C \<in> components ?Lcomp"
+              using hC by (by100 simp)
+            have hsummary:
+                "C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C"
+              by (rule hselected_component_summary[OF hC_comp])
+            have hC_meets: "C \<inter> ?Nloc \<noteq> {}"
+              using hC by (by100 simp)
+            show "C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?Nloc \<noteq> {}"
+              using hC_comp hsummary hC_meets by (by100 blast)
+          qed
+          have hN_trace_components_union_sub:
+              "\<Union>?Ntrace_components \<subseteq> ?Lcomp"
+          proof
+            fix a
+            assume ha: "a \<in> \<Union>?Ntrace_components"
+            obtain C where hC: "C \<in> ?Ntrace_components"
+              and haC: "a \<in> C"
+              using ha by (by100 blast)
+            have hC_sub: "C \<subseteq> ?Lcomp"
+              using hN_trace_component_summary[OF hC] by (by100 blast)
+            show "a \<in> ?Lcomp"
+              using hC_sub haC by (by100 blast)
+          qed
+          have hN_ball_cover_by_selected_and_trace_components:
+              "N \<inter> ball w r
+                \<subseteq> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> \<Union>?Ntrace_components"
+          proof
+            fix a
+            assume ha: "a \<in> N \<inter> ball w r"
+            have ha_cover:
+                "a \<in> ((S - {w}) \<inter> ball w r)
+                  \<union> ((T - {w}) \<inter> ball w r)
+                  \<union> ((U - {w}) \<inter> ball w r)
+                  \<union> ?Nloc"
+              using hN_ball_cover_by_selected_and_trace ha by (by100 blast)
+            show "a \<in> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> \<Union>?Ntrace_components"
+              using ha_cover hN_local_trace_component_cover by (by100 blast)
+          qed
+          have hN_trace_components_disjoint_S:
+              "\<Union>?Ntrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?Ntrace_components \<inter> ((S - {w}) \<inter> ball w r) \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?Ntrace_components \<inter>
+                ((S - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hN_trace_components_union_sub ha by (by100 blast)
+              have haS: "a \<in> S"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haS by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?Ntrace_components \<inter>
+              ((S - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hN_trace_components_disjoint_T:
+              "\<Union>?Ntrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?Ntrace_components \<inter> ((T - {w}) \<inter> ball w r) \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?Ntrace_components \<inter>
+                ((T - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hN_trace_components_union_sub ha by (by100 blast)
+              have haT: "a \<in> T"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haT by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?Ntrace_components \<inter>
+              ((T - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hN_trace_components_disjoint_U:
+              "\<Union>?Ntrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+          proof
+            show "\<Union>?Ntrace_components \<inter> ((U - {w}) \<inter> ball w r) \<subseteq> {}"
+            proof
+              fix a
+              assume ha: "a \<in> \<Union>?Ntrace_components \<inter>
+                ((U - {w}) \<inter> ball w r)"
+              have ha_local: "a \<in> ?Lcomp"
+                using hN_trace_components_union_sub ha by (by100 blast)
+              have haU: "a \<in> U"
+                using ha by (by100 blast)
+              show "a \<in> {}"
+                using ha_local haU by (by100 blast)
+            qed
+            show "{} \<subseteq> \<Union>?Ntrace_components \<inter>
+              ((U - {w}) \<inter> ball w r)"
+              by (by100 simp)
+          qed
+          have hN_trace_component_cover_package:
+              "finite ?Ntrace_components
+                \<and> ?Nloc \<subseteq> \<Union>?Ntrace_components
+                \<and> \<Union>?Ntrace_components \<subseteq> ?Lcomp
+                \<and> N \<inter> ball w r
+                  \<subseteq> ((S - {w}) \<inter> ball w r)
+                    \<union> ((T - {w}) \<inter> ball w r)
+                    \<union> ((U - {w}) \<inter> ball w r)
+                    \<union> \<Union>?Ntrace_components
+                \<and> \<Union>?Ntrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?Ntrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}
+                \<and> \<Union>?Ntrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}
+                \<and> (\<forall>C\<in>?Ntrace_components.
+                  C \<in> components ?Lcomp
+                  \<and> C \<noteq> {}
+                  \<and> C \<subseteq> ?Lcomp
+                  \<and> connected C
+                  \<and> path_connected C
+                  \<and> C \<inter> ?Nloc \<noteq> {})"
+          proof (intro conjI)
+            show "finite ?Ntrace_components"
+              by (rule hN_trace_components_fin)
+            show "?Nloc \<subseteq> \<Union>?Ntrace_components"
+              by (rule hN_local_trace_component_cover)
+            show "\<Union>?Ntrace_components \<subseteq> ?Lcomp"
+              by (rule hN_trace_components_union_sub)
+            show "N \<inter> ball w r
+              \<subseteq> ((S - {w}) \<inter> ball w r)
+                \<union> ((T - {w}) \<inter> ball w r)
+                \<union> ((U - {w}) \<inter> ball w r)
+                \<union> \<Union>?Ntrace_components"
+              by (rule hN_ball_cover_by_selected_and_trace_components)
+            show "\<Union>?Ntrace_components \<inter> ((S - {w}) \<inter> ball w r) = {}"
+              by (rule hN_trace_components_disjoint_S)
+            show "\<Union>?Ntrace_components \<inter> ((T - {w}) \<inter> ball w r) = {}"
+              by (rule hN_trace_components_disjoint_T)
+            show "\<Union>?Ntrace_components \<inter> ((U - {w}) \<inter> ball w r) = {}"
+              by (rule hN_trace_components_disjoint_U)
+            show "\<forall>C\<in>?Ntrace_components.
+              C \<in> components ?Lcomp
+              \<and> C \<noteq> {}
+              \<and> C \<subseteq> ?Lcomp
+              \<and> connected C
+              \<and> path_connected C
+              \<and> C \<inter> ?Nloc \<noteq> {}"
+            proof
+              fix C
+              assume hC: "C \<in> ?Ntrace_components"
+              show "C \<in> components ?Lcomp
+                \<and> C \<noteq> {}
+                \<and> C \<subseteq> ?Lcomp
+                \<and> connected C
+                \<and> path_connected C
+                \<and> C \<inter> ?Nloc \<noteq> {}"
+                by (rule hN_trace_component_summary[OF hC])
+            qed
+          qed
           have hfirst_entry_local_component_bridge:
               "\<exists>C. C \<in> components ?Lcomp
                 \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
