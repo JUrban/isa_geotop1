@@ -12750,6 +12750,101 @@ proof -
                     using hN_eq hW_eq hyD hqW_cl by (by100 blast)
                 qed
               qed
+              have hW_source_ball_entry_cover_cases:
+                  "((\<exists>D a. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> a \<in> W \<inter> ball w r
+                      \<and> a \<in> ((S - {w}) \<inter> ball w r
+                        \<union> ((T - {w}) \<inter> ball w r)
+                        \<union> ((U - {w}) \<inter> ball w r)
+                        \<union> \<Union>?Ntrace_components))
+                    \<or> (\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W))"
+              proof -
+                show ?thesis
+                  using hW_source_ball_entry_cases
+                proof (elim disjE exE conjE)
+                  fix D
+                  assume hN_eq: "N = D - {w}"
+                  assume hW_eq: "W = D - {w, p}"
+                  assume hyD: "y \<in> D - {p}"
+                  assume hwW_cl: "w \<in> closure W"
+                  assume hW_ball: "W \<inter> ball w r \<noteq> {}"
+                  obtain a where ha: "a \<in> W \<inter> ball w r"
+                    using hW_ball by (by100 blast)
+                  have ha_cover:
+                      "a \<in> ((S - {w}) \<inter> ball w r)
+                        \<union> ((T - {w}) \<inter> ball w r)
+                        \<union> ((U - {w}) \<inter> ball w r)
+                        \<union> \<Union>?Ntrace_components"
+                    using hW_ball_cover_by_selected_and_trace_components ha
+                    by (by100 blast)
+                  show ?thesis
+                  proof (rule disjI1)
+                    show "\<exists>D a. N = D - {w}
+                      \<and> W = D - {w, p}
+                      \<and> y \<in> D - {p}
+                      \<and> w \<in> closure W
+                      \<and> a \<in> W \<inter> ball w r
+                      \<and> a \<in> ((S - {w}) \<inter> ball w r
+                        \<union> ((T - {w}) \<inter> ball w r)
+                        \<union> ((U - {w}) \<inter> ball w r)
+                        \<union> \<Union>?Ntrace_components)"
+                    proof (rule exI[where x=D], rule exI[where x=a])
+                      show "N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((S - {w}) \<inter> ball w r
+                          \<union> ((T - {w}) \<inter> ball w r)
+                          \<union> ((U - {w}) \<inter> ball w r)
+                          \<union> \<Union>?Ntrace_components)"
+                      proof (intro conjI)
+                        show "N = D - {w}" by (rule hN_eq)
+                        show "W = D - {w, p}" by (rule hW_eq)
+                        show "y \<in> D - {p}" by (rule hyD)
+                        show "w \<in> closure W" by (rule hwW_cl)
+                        show "a \<in> W \<inter> ball w r" by (rule ha)
+                        show "a \<in> ((S - {w}) \<inter> ball w r
+                          \<union> ((T - {w}) \<inter> ball w r)
+                          \<union> ((U - {w}) \<inter> ball w r)
+                          \<union> \<Union>?Ntrace_components)"
+                          by (rule ha_cover)
+                      qed
+                    qed
+                  qed
+                next
+                  fix D
+                  assume hN_eq: "N = D"
+                  assume hW_eq: "W = D - {p, q\<^sub>1}"
+                  assume hyD: "y \<in> D - {p}"
+                  assume hqW_cl: "q\<^sub>1 \<in> closure W"
+                  show ?thesis
+                  proof (rule disjI2)
+                    show "\<exists>D. N = D
+                      \<and> W = D - {p, q\<^sub>1}
+                      \<and> y \<in> D - {p}
+                      \<and> q\<^sub>1 \<in> closure W"
+                    proof (rule exI[where x=D])
+                      show "N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W"
+                      proof (intro conjI)
+                        show "N = D" by (rule hN_eq)
+                        show "W = D - {p, q\<^sub>1}" by (rule hW_eq)
+                        show "y \<in> D - {p}" by (rule hyD)
+                        show "q\<^sub>1 \<in> closure W" by (rule hqW_cl)
+                      qed
+                    qed
+                  qed
+                qed
+              qed
               have hW_first_entry_boundary_package:
                   "top1_connected_on W
                     (subspace_topology UNIV geotop_euclidean_topology W)
@@ -12783,6 +12878,19 @@ proof -
                         \<and> y \<in> D - {p}
                         \<and> w \<in> closure W
                         \<and> W \<inter> ball w r \<noteq> {})
+                      \<or> (\<exists>D. N = D
+                        \<and> W = D - {p, q\<^sub>1}
+                        \<and> y \<in> D - {p}
+                        \<and> q\<^sub>1 \<in> closure W))
+                    \<and> ((\<exists>D a. N = D - {w}
+                        \<and> W = D - {w, p}
+                        \<and> y \<in> D - {p}
+                        \<and> w \<in> closure W
+                        \<and> a \<in> W \<inter> ball w r
+                        \<and> a \<in> ((S - {w}) \<inter> ball w r
+                          \<union> ((T - {w}) \<inter> ball w r)
+                          \<union> ((U - {w}) \<inter> ball w r)
+                          \<union> \<Union>?Ntrace_components))
                       \<or> (\<exists>D. N = D
                         \<and> W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p}
@@ -12831,6 +12939,20 @@ proof -
                     \<and> y \<in> D - {p}
                     \<and> q\<^sub>1 \<in> closure W))"
                   by (rule hW_source_ball_entry_cases)
+                show "((\<exists>D a. N = D - {w}
+                    \<and> W = D - {w, p}
+                    \<and> y \<in> D - {p}
+                    \<and> w \<in> closure W
+                    \<and> a \<in> W \<inter> ball w r
+                    \<and> a \<in> ((S - {w}) \<inter> ball w r
+                      \<union> ((T - {w}) \<inter> ball w r)
+                      \<union> ((U - {w}) \<inter> ball w r)
+                      \<union> \<Union>?Ntrace_components))
+                  \<or> (\<exists>D. N = D
+                    \<and> W = D - {p, q\<^sub>1}
+                    \<and> y \<in> D - {p}
+                    \<and> q\<^sub>1 \<in> closure W))"
+                  by (rule hW_source_ball_entry_cover_cases)
               qed
               have hfirst_entry_component_witness:
                   "\<exists>C. C \<in> components ?Lcomp
