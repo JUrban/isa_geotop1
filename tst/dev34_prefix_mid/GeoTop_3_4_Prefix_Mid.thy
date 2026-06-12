@@ -28184,7 +28184,136 @@ proof -
 	                                          two side-free witness pairs to
 	                                          force one real side-boundary
 	                                          contact. **)
-		                                        sorry
+	                                      proof -
+	                                        assume h\<rho>case: "?H1 \<rho> \<or> ?H2 \<rho>"
+	                                        assume h\<eta>case: "?H1 \<eta> \<or> ?H2 \<eta>"
+	                                        assume hucase: "?H1 u \<or> ?H2 u"
+	                                        assume hvcase: "?H1 v \<or> ?H2 v"
+	                                        have hsame_side_pair_cases:
+	                                          "\<exists>x y.
+	                                            (?H1 x \<and> ?H1 y)
+	                                            \<or> (?H2 x \<and> ?H2 y)"
+	                                        proof (rule disjE[OF h\<rho>case])
+	                                          assume h\<rho>1: "?H1 \<rho>"
+	                                          show ?thesis
+	                                          proof (rule disjE[OF h\<eta>case])
+	                                            assume h\<eta>1: "?H1 \<eta>"
+	                                            show ?thesis
+	                                              apply (rule exI[where x = "\<rho>"])
+	                                              apply (rule exI[where x = "\<eta>"])
+	                                              apply (rule disjI1)
+	                                              using h\<rho>1 h\<eta>1
+	                                              apply (by100 blast)
+	                                              done
+	                                          next
+	                                            assume h\<eta>2: "?H2 \<eta>"
+	                                            show ?thesis
+	                                            proof (rule disjE[OF hucase])
+	                                              assume hu1: "?H1 u"
+	                                              show ?thesis
+	                                                apply (rule exI[where x = "\<rho>"])
+	                                                apply (rule exI[where x = u])
+	                                                apply (rule disjI1)
+	                                                using h\<rho>1 hu1
+	                                                apply (by100 blast)
+	                                                done
+	                                            next
+	                                              assume hu2: "?H2 u"
+	                                              show ?thesis
+	                                              proof (rule disjE[OF hvcase])
+	                                                assume hv1: "?H1 v"
+	                                                show ?thesis
+	                                                  apply (rule exI[where x = "\<rho>"])
+	                                                  apply (rule exI[where x = v])
+	                                                  apply (rule disjI1)
+	                                                  using h\<rho>1 hv1
+	                                                  apply (by100 blast)
+	                                                  done
+	                                              next
+	                                                assume hv2: "?H2 v"
+	                                                show ?thesis
+	                                                  apply (rule exI[where x = "\<eta>"])
+	                                                  apply (rule exI[where x = u])
+	                                                  apply (rule disjI2)
+	                                                  using h\<eta>2 hu2
+	                                                  apply (by100 blast)
+	                                                  done
+	                                              qed
+	                                            qed
+	                                          qed
+	                                        next
+	                                          assume h\<rho>2: "?H2 \<rho>"
+	                                          show ?thesis
+	                                          proof (rule disjE[OF h\<eta>case])
+	                                            assume h\<eta>1: "?H1 \<eta>"
+	                                            show ?thesis
+	                                            proof (rule disjE[OF hucase])
+	                                              assume hu1: "?H1 u"
+	                                              show ?thesis
+	                                              proof (rule disjE[OF hvcase])
+	                                                assume hv1: "?H1 v"
+	                                                show ?thesis
+	                                                  apply (rule exI[where x = "\<eta>"])
+	                                                  apply (rule exI[where x = u])
+	                                                  apply (rule disjI1)
+	                                                  using h\<eta>1 hu1
+	                                                  apply (by100 blast)
+	                                                  done
+	                                              next
+	                                                assume hv2: "?H2 v"
+	                                                show ?thesis
+	                                                  apply (rule exI[where x = "\<rho>"])
+	                                                  apply (rule exI[where x = v])
+	                                                  apply (rule disjI2)
+	                                                  using h\<rho>2 hv2
+	                                                  apply (by100 blast)
+	                                                  done
+	                                              qed
+	                                            next
+	                                              assume hu2: "?H2 u"
+	                                              show ?thesis
+	                                                apply (rule exI[where x = "\<rho>"])
+	                                                apply (rule exI[where x = u])
+	                                                apply (rule disjI2)
+	                                                using h\<rho>2 hu2
+	                                                apply (by100 blast)
+	                                                done
+	                                            qed
+	                                          next
+	                                            assume h\<eta>2: "?H2 \<eta>"
+	                                            show ?thesis
+	                                              apply (rule exI[where x = "\<rho>"])
+	                                              apply (rule exI[where x = "\<eta>"])
+	                                              apply (rule disjI2)
+	                                              using h\<rho>2 h\<eta>2
+	                                              apply (by100 blast)
+	                                              done
+	                                          qed
+	                                        qed
+	                                        have hsame_side_pair_count_book:
+	                                          "(\<exists>x y.
+	                                            (?H1 x \<and> ?H1 y)
+	                                            \<or> (?H2 x \<and> ?H2 y)) \<Longrightarrow>
+	                                          \<exists>\<omega>. (?G\<^sub>1 \<omega>
+	                                              \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
+	                                            \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
+	                                              \<and> \<omega> \<inter> J\<^sub>2 \<noteq> {})"
+	                                          (**
+	                                            Same-side pigeonhole residue of
+	                                            the fixed Moise count.  Four
+	                                            parent-empty side candidates
+	                                            cannot all be accounted for
+	                                            without producing two on one
+	                                            side; the remaining book step is
+	                                            to use that same-side pair
+	                                            against the two side-free
+	                                            witnesses on that side. **)
+	                                          sorry
+	                                        show ?thesis
+	                                          by (rule
+	                                              hsame_side_pair_count_book
+	                                              [OF hsame_side_pair_cases])
+	                                      qed
 	                                      show "\<exists>\<omega>. (?G\<^sub>1 \<omega>
 	                                          \<and> \<omega> \<inter> J\<^sub>1 \<noteq> {})
 	                                        \<or> (?G\<^sub>2 \<beta>\<^sub>c \<omega>
