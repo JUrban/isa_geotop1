@@ -24596,7 +24596,10 @@ proof -
           \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
             \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}
         \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
-          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2)"
+          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2
+        \<and> \<beta>\<^sub>c \<inter> J =
+          \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+            \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J})"
   proof -
     from hresidual_cases_after_side1_filter show ?thesis
     proof
@@ -24722,6 +24725,18 @@ proof -
             using hsingle_data
             apply (by100 simp)
             done
+          have h\<beta>c_contact_parent:
+            "\<beta>\<^sub>c \<inter> J =
+              \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+            apply (rule hsingleton_side2_parent_contact)
+            using hsingle_data
+            apply (by100 simp)
+            using hsingle_data
+            apply (by100 simp)
+            using hsingle_data
+            apply (by100 simp)
+            done
           have hsingle_plus:
             "\<exists>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c}
               \<and> \<beta>\<^sub>c \<in> ?T\<^sub>2
@@ -24738,9 +24753,12 @@ proof -
                 \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1} \<le> 2
               \<and> \<beta> \<inter> J\<^sub>1 =
                 \<Union>{e\<in>L\<^sub>1. geotop_is_edge e
-                  \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}
+                \<and> geotop_is_face e \<beta> \<and> e \<subseteq> J\<^sub>1}
               \<and> card {e\<in>L\<^sub>2. geotop_is_edge e
-                \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2"
+                \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J} \<le> 2
+              \<and> \<beta>\<^sub>c \<inter> J =
+                \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+                  \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
             apply (rule exI[where x = "\<beta>\<^sub>c"])
             apply (intro conjI)
             using hsingle_data apply (by100 simp)
@@ -24757,6 +24775,7 @@ proof -
             using hsingle_data apply (by100 simp)
             using hsingle_data apply (by100 simp)
             apply (rule h\<beta>c_card_parent)
+            apply (rule h\<beta>c_contact_parent)
             done
           show ?thesis
             by (rule disjI2, rule disjI2, rule disjI2, rule hsingle_plus)
