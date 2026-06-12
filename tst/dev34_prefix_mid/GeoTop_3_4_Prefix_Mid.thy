@@ -21010,6 +21010,68 @@ proof -
       apply assumption+
       done
   qed
+  have hside_chord_only_named_faces:
+    "\<exists>\<beta>\<^sub>c. \<beta>\<^sub>c \<in> ?T\<^sub>2
+      \<and> \<beta>\<^sub>c \<notin> ?T\<^sub>1
+      \<and> \<beta>\<^sub>c \<noteq> \<beta>
+      \<and> geotop_is_face (closed_segment a c) \<beta>\<^sub>c
+      \<and> \<beta> \<notin> ?T\<^sub>2
+      \<and> (\<forall>\<rho>\<in>?T\<^sub>1.
+          \<rho> \<noteq> \<beta> \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>)
+      \<and> (\<forall>\<rho>\<in>?T\<^sub>2.
+          \<rho> \<noteq> \<beta>\<^sub>c \<longrightarrow>
+          \<not> geotop_is_face (closed_segment a c) \<rho>)"
+  proof -
+    obtain \<beta>\<^sub>c where h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+      and h\<beta>c_not_T\<^sub>1: "\<beta>\<^sub>c \<notin> ?T\<^sub>1"
+      and h\<beta>c_ne_\<beta>: "\<beta>\<^sub>c \<noteq> \<beta>"
+      and h\<beta>c_chord_face:
+        "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+      and h\<beta>_not_T\<^sub>2: "\<beta> \<notin> ?T\<^sub>2"
+      and hT\<^sub>1_chord_only_\<beta>:
+        "\<forall>\<rho>\<in>?T\<^sub>1.
+          geotop_is_face (closed_segment a c) \<rho> \<longrightarrow> \<rho> = \<beta>"
+      and hT\<^sub>2_chord_only_\<beta>c:
+        "\<forall>\<rho>\<in>?T\<^sub>2.
+          geotop_is_face (closed_segment a c) \<rho> \<longrightarrow> \<rho> = \<beta>\<^sub>c"
+      using hside_core_chord_classification_book by (elim bexE conjE)
+    have hT\<^sub>1_not_named_no_chord:
+      "\<forall>\<rho>\<in>?T\<^sub>1.
+        \<rho> \<noteq> \<beta> \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<rho>"
+    proof (intro ballI impI notI)
+      fix \<rho>
+      assume h\<rho>T\<^sub>1: "\<rho> \<in> ?T\<^sub>1"
+      assume h\<rho>_ne_\<beta>: "\<rho> \<noteq> \<beta>"
+      assume hface: "geotop_is_face (closed_segment a c) \<rho>"
+      have "\<rho> = \<beta>"
+        using hT\<^sub>1_chord_only_\<beta> h\<rho>T\<^sub>1 hface by (by100 blast)
+      thus False
+        using h\<rho>_ne_\<beta> by (by100 blast)
+    qed
+    have hT\<^sub>2_not_named_no_chord:
+      "\<forall>\<rho>\<in>?T\<^sub>2.
+        \<rho> \<noteq> \<beta>\<^sub>c \<longrightarrow>
+        \<not> geotop_is_face (closed_segment a c) \<rho>"
+    proof (intro ballI impI notI)
+      fix \<rho>
+      assume h\<rho>T\<^sub>2: "\<rho> \<in> ?T\<^sub>2"
+      assume h\<rho>_ne_\<beta>c: "\<rho> \<noteq> \<beta>\<^sub>c"
+      assume hface: "geotop_is_face (closed_segment a c) \<rho>"
+      have "\<rho> = \<beta>\<^sub>c"
+        using hT\<^sub>2_chord_only_\<beta>c h\<rho>T\<^sub>2 hface by (by100 blast)
+      thus False
+        using h\<rho>_ne_\<beta>c by (by100 blast)
+    qed
+    show ?thesis
+      apply (rule exI[where x = "\<beta>\<^sub>c"])
+      using h\<beta>cT\<^sub>2 h\<beta>c_not_T\<^sub>1 h\<beta>c_ne_\<beta> h\<beta>c_chord_face
+        h\<beta>_not_T\<^sub>2 hT\<^sub>1_not_named_no_chord hT\<^sub>2_not_named_no_chord
+      apply (intro conjI)
+      apply assumption+
+      done
+  qed
   show ?thesis
     (**
       Remaining side-disk transfer, now after normalizing the Figure 3.2
