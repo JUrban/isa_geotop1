@@ -24424,6 +24424,144 @@ proof -
         ha_e\<^sub>au hc_e\<^sub>cu he_distinct
       by (by100 blast)
   qed
+  have hsingleton_side2_parent_contact:
+    "\<And>\<beta>\<^sub>c. ?T\<^sub>2 = {\<beta>\<^sub>c} \<Longrightarrow>
+      \<beta>\<^sub>c \<in> ?T\<^sub>2 \<Longrightarrow>
+      geotop_is_face (closed_segment a c) \<beta>\<^sub>c \<Longrightarrow>
+      \<beta>\<^sub>c \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+  proof -
+    fix \<beta>\<^sub>c
+    assume hsingle_eq: "?T\<^sub>2 = {\<beta>\<^sub>c}"
+    assume h\<beta>cT\<^sub>2: "\<beta>\<^sub>c \<in> ?T\<^sub>2"
+    assume h\<beta>c_chord:
+      "geotop_is_face (closed_segment a c) \<beta>\<^sub>c"
+    obtain u e\<^sub>a e\<^sub>c where hu_not: "u \<notin> {a, c}"
+      and h\<beta>c_vertices:
+        "geotop_simplex_vertices \<beta>\<^sub>c {a, c, u}"
+      and he\<^sub>a_eq: "e\<^sub>a = geotop_convex_hull {a, u}"
+      and he\<^sub>c_eq: "e\<^sub>c = geotop_convex_hull {c, u}"
+      and he\<^sub>a_L\<^sub>2: "e\<^sub>a \<in> L\<^sub>2"
+      and he\<^sub>a_edge: "geotop_is_edge e\<^sub>a"
+      and he\<^sub>a_face: "geotop_is_face e\<^sub>a \<beta>\<^sub>c"
+      and he\<^sub>a_sub_J: "e\<^sub>a \<subseteq> J"
+      and he\<^sub>c_L\<^sub>2: "e\<^sub>c \<in> L\<^sub>2"
+      and he\<^sub>c_edge: "geotop_is_edge e\<^sub>c"
+      and he\<^sub>c_face: "geotop_is_face e\<^sub>c \<beta>\<^sub>c"
+      and he\<^sub>c_sub_J: "e\<^sub>c \<subseteq> J"
+      and ha_e\<^sub>a: "a \<in> e\<^sub>a"
+      and hc_e\<^sub>c: "c \<in> e\<^sub>c"
+      and he_distinct: "e\<^sub>a \<noteq> e\<^sub>c"
+      by (rule exE[OF hsingleton_side2_two_nonchord_parent_edges
+          [OF hsingle_eq h\<beta>cT\<^sub>2 h\<beta>c_chord]])
+        (by100 blast)
+    have hJ\<^sub>2: "geotop_is_polygon J\<^sub>2"
+      using hsubdisk_book_facts by (by100 blast)
+    have h\<beta>cL\<^sub>2: "\<beta>\<^sub>c \<in> L\<^sub>2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have h\<beta>c2: "geotop_simplex_dim \<beta>\<^sub>c 2"
+      using h\<beta>cT\<^sub>2 by (by100 simp)
+    have he\<^sub>a_selected:
+      "e\<^sub>a \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+      using he\<^sub>a_L\<^sub>2 he\<^sub>a_edge he\<^sub>a_face he\<^sub>a_sub_J by (by100 blast)
+    have he\<^sub>c_selected:
+      "e\<^sub>c \<in> {e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+      using he\<^sub>c_L\<^sub>2 he\<^sub>c_edge he\<^sub>c_face he\<^sub>c_sub_J by (by100 blast)
+    have h\<beta>cJ\<^sub>2_sub_named_edges:
+      "\<beta>\<^sub>c \<inter> J\<^sub>2 \<subseteq>
+        geotop_convex_hull {a, c} \<union>
+        geotop_convex_hull {a, u} \<union>
+        geotop_convex_hull {c, u}"
+      by (rule geotop_2simplex_polygon_boundary_inter_subset_three_edge_hulls_prefix
+          [OF hJ\<^sub>2 h\<beta>cL\<^sub>2 h\<beta>c2 hside2_complex_exact_from_core
+            h\<beta>c_vertices hac hu_not])
+    have hcontact_sub:
+      "\<beta>\<^sub>c \<inter> J \<subseteq>
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+    proof
+      fix x
+      assume hx: "x \<in> \<beta>\<^sub>c \<inter> J"
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hxJ\<^sub>2: "x \<in> \<beta>\<^sub>c \<inter> J\<^sub>2"
+        using hL\<^sub>2_parent_contact_sub_side_all[OF h\<beta>cL\<^sub>2] hx
+        by (by100 blast)
+      have hx_named:
+        "x \<in> geotop_convex_hull {a, c}
+          \<or> x \<in> geotop_convex_hull {a, u}
+          \<or> x \<in> geotop_convex_hull {c, u}"
+        using h\<beta>cJ\<^sub>2_sub_named_edges hxJ\<^sub>2 by (by100 blast)
+      show "x \<in> \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+      proof (rule disjE[OF hx_named])
+        assume hxchord_hull: "x \<in> geotop_convex_hull {a, c}"
+        have hxchord: "x \<in> closed_segment a c"
+          using hxchord_hull hchord_hull_segment_eq by (by100 simp)
+        show ?thesis
+        proof (cases "x \<in> {a, c}")
+          case True
+          have hx_endpoint_cases: "x = a \<or> x = c"
+            using True by (by100 blast)
+          show ?thesis
+          proof (rule disjE[OF hx_endpoint_cases])
+            assume hxa: "x = a"
+            have "x \<in> e\<^sub>a"
+              using hxa ha_e\<^sub>a by (by100 simp)
+            thus ?thesis
+              using he\<^sub>a_selected by (by100 blast)
+          next
+            assume hxc: "x = c"
+            have "x \<in> e\<^sub>c"
+              using hxc hc_e\<^sub>c by (by100 simp)
+            thus ?thesis
+              using he\<^sub>c_selected by (by100 blast)
+          qed
+        next
+          case False
+          have hxarc:
+            "x \<in> geotop_arc_interior (closed_segment a c) {a, c}"
+            using hxchord False unfolding geotop_arc_interior_def
+            by (by100 blast)
+          have "x \<in> J \<inter>
+              geotop_arc_interior (closed_segment a c) {a, c}"
+            using hxJ hxarc by (by100 blast)
+          thus ?thesis
+            using hchord_arc_interior_disjoint_parent by (by100 blast)
+        qed
+      next
+        assume hxrest:
+          "x \<in> geotop_convex_hull {a, u}
+          \<or> x \<in> geotop_convex_hull {c, u}"
+        show ?thesis
+        proof (rule disjE[OF hxrest])
+          assume "x \<in> geotop_convex_hull {a, u}"
+          hence "x \<in> e\<^sub>a"
+            using he\<^sub>a_eq by (by100 simp)
+          thus ?thesis
+            using he\<^sub>a_selected by (by100 blast)
+        next
+          assume "x \<in> geotop_convex_hull {c, u}"
+          hence "x \<in> e\<^sub>c"
+            using he\<^sub>c_eq by (by100 simp)
+          thus ?thesis
+            using he\<^sub>c_selected by (by100 blast)
+        qed
+      qed
+    qed
+    have hcontact_sup:
+      "\<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+        \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}
+        \<subseteq> \<beta>\<^sub>c \<inter> J"
+      by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+    show "\<beta>\<^sub>c \<inter> J =
+        \<Union>{e\<in>L\<^sub>2. geotop_is_edge e
+          \<and> geotop_is_face e \<beta>\<^sub>c \<and> e \<subseteq> J}"
+      using hcontact_sub hcontact_sup by (by100 blast)
+  qed
   have hresidual_cases_with_singleton_side2_parent_count:
     "(\<exists>\<rho>. \<rho> \<in> K
         \<and> geotop_free_2_simplex K J \<rho>
