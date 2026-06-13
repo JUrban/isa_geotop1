@@ -36067,6 +36067,91 @@ proof -
       by (by100 simp)
     have hJ'_sub_U: "?J' \<subseteq> U"
       using hJ'_closure_decomp hB_CO_support by (by100 blast)
+    have hB02_arc_interior_disjoint_replacement:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter> ?B\<^sub>0\<^sub>1\<^sub>2 = {}"
+    proof -
+      have hB02_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+        using hfigure33_replacement_arc_package by (by100 blast)
+      have hB_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+        using hfigure33_replacement_arc_package by (by100 blast)
+      have hdisj:
+          "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+        using hfigure33_replacement_arc_package by (by100 blast)
+      show ?thesis
+        by (rule arc_interior_disjoint_other_arc[OF hB02_E hB_E hdisj])
+    qed
+    have hB02_arc_interior_sub_closed_disk_minus_replacement:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<subseteq>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2"
+    proof
+      fix x
+      assume hx: "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hxB02 hfigure33_boundary_support_package by (by100 blast)
+      have hx_poly: "x \<in> geotop_polyhedron K"
+        using hJ_sub_K_polyhedron hxJ by (by100 blast)
+      have hx_closed:
+          "x \<in> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)"
+        using hx_poly hK_poly by (by100 simp)
+      have hx_not_replacement: "x \<notin> ?B\<^sub>0\<^sub>1\<^sub>2"
+        using hx hB02_arc_interior_disjoint_replacement by (by100 blast)
+      show "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2"
+        using hx_closed hx_not_replacement by (by100 blast)
+    qed
+    have hB02_arc_interior_sub_oriented_chord_sides:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<subseteq>
+          (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+           geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}) \<union>
+          (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+           geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})"
+      using hB02_arc_interior_sub_closed_disk_minus_replacement hclosure_minus_chord
+      by (by100 blast)
+    have hB02_arc_interior_sub_CR_side:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<subseteq>
+          geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+    proof -
+      let ?H = "geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+      let ?Kside = "geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      have hB02_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+        using hfigure33_replacement_arc_package by (by100 blast)
+      have hB02_conn:
+          "top1_connected_on
+            (geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}))"
+        using arc_interior_connected[OF hB02_E]
+          top1_connected_on_geotop_iff_connected by (by100 blast)
+      have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        using top1_open_sets_is_topology_on_UNIV
+        unfolding geotop_euclidean_topology_eq_open_sets by (by100 simp)
+      have hside_cases:
+          "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<subseteq> ?H \<or>
+           geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<subseteq> ?Kside"
+        by (rule Theorem_GT_1_10
+            [OF hTU hsides_separated hB02_arc_interior_sub_oriented_chord_sides
+              hB02_conn])
+      have hH_clK: "?H \<inter> closure_on UNIV geotop_euclidean_topology ?Kside = {}"
+        using hsides_separated unfolding geotop_separated_def by (by100 simp)
+      have hK_cl: "?Kside \<subseteq> closure_on UNIV geotop_euclidean_topology ?Kside"
+        by (rule subset_closure_on)
+      have hH_K_disj: "?H \<inter> ?Kside = {}"
+        using hH_clK hK_cl by (by100 blast)
+      have hR_H: "R \<in> ?H"
+        using hR_CR_int by (by100 blast)
+      have hR_not_K: "R \<notin> ?Kside"
+        using hH_K_disj hR_H by (by100 blast)
+      show ?thesis
+        using hside_cases hR_B02_int hR_not_K by (by100 blast)
+    qed
     have hCR_eq_old_imp_left_triangle_interior:
         "C\<^sub>R = ?B\<^sub>0\<^sub>2 \<Longrightarrow>
           geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) = rel_interior \<theta>"
