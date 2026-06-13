@@ -8915,6 +8915,48 @@ proof -
     using h\<sigma>V hW\<^sub>\<rho>_ne hW\<^sub>\<rho>_sub_\<sigma> h\<rho>_eq by (by100 blast)
 qed
 
+lemma geotop_face_dim_le_prefix:
+  fixes \<tau> \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<exists>k. k \<le> n \<and> geotop_simplex_dim \<tau> k"
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W"
+    and h\<tau>W: "geotop_simplex_vertices \<tau> W"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF hface])
+  obtain Vn m where hVn_fin: "finite Vn"
+    and hVn_card: "card Vn = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp_Vn: "geotop_general_position Vn m"
+    and h\<sigma>_eq_Vn: "\<sigma> = geotop_convex_hull Vn"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>Vn: "geotop_simplex_vertices \<sigma> Vn"
+    unfolding geotop_simplex_vertices_def
+    using hVn_fin hVn_card hn_le_m hgp_Vn h\<sigma>_eq_Vn by (by100 blast)
+  have hV_eq: "V = Vn"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>Vn])
+  have hW_sub_Vn: "W \<subseteq> Vn"
+    using hW_sub hV_eq by (by100 simp)
+  obtain m' k where hW_fin: "finite W"
+    and hW_card: "card W = k + 1"
+    and hk_le_m': "k \<le> m'"
+    and hgp_W: "geotop_general_position W m'"
+    and h\<tau>_eq_W: "\<tau> = geotop_convex_hull W"
+    using h\<tau>W unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hcard_le: "card W \<le> card Vn"
+    by (rule card_mono[OF hVn_fin hW_sub_Vn])
+  have hk_le_n: "k \<le> n"
+    using hcard_le hW_card hVn_card by (by100 linarith)
+  have h\<tau>dim: "geotop_simplex_dim \<tau> k"
+    unfolding geotop_simplex_dim_def
+    using hW_fin hW_card hk_le_m' hgp_W h\<tau>_eq_W by (by100 blast)
+  show ?thesis
+    using hk_le_n h\<tau>dim by (by100 blast)
+qed
+
 lemma geotop_complex_union_subcomplexes_in_ambient_prefix:
   fixes K L M :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -34836,6 +34878,8 @@ proof -
   let ?K\<^sub>d = "K - {\<theta>}"
   have hK_delete_finite: "finite ?K\<^sub>d"
     using hK_fin by (by100 simp)
+  have hK_simplex_members: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
   have hK_delete_complex: "geotop_is_complex ?K\<^sub>d"
   proof (rule geotop_complex_subset_is_complex)
     show "?K\<^sub>d \<subseteq> K"
@@ -34855,7 +34899,7 @@ proof -
       proof
         assume h\<tau>eq: "\<tau> = \<theta>"
         have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
-          using hK h\<sigma>K unfolding geotop_is_complex_def by (by100 blast)
+          using hK_simplex_members h\<sigma>K by (by100 blast)
         obtain n where h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
           using h\<sigma>simplex
           unfolding geotop_is_simplex_def geotop_simplex_dim_def
@@ -34868,7 +34912,7 @@ proof -
           hence hn_lt_2: "n < 2"
             by (by100 simp)
           obtain k where hk_le: "k \<le> n" and h\<theta>dim_k: "geotop_simplex_dim \<theta> k"
-            using geotop_face_dim_le_dev34[OF h\<sigma>dim, of \<theta>] h\<tau>face h\<tau>eq
+            using geotop_face_dim_le_prefix[OF h\<sigma>dim, of \<theta>] h\<tau>face h\<tau>eq
             by (by100 blast)
           have "k = 2"
             using geotop_simplex_dim_unique[OF h\<theta>dim_k h\<theta>2] by (by100 simp)
@@ -34877,10 +34921,11 @@ proof -
         qed
         have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
           using h\<sigma>dim h2_le_n hn_le_2 by (by100 simp)
+        have h\<theta>face\<sigma>: "geotop_is_face \<theta> \<sigma>"
+          using h\<tau>face h\<tau>eq by (by100 simp)
         have "\<theta> = \<sigma>"
           by (rule geotop_complex_2simplex_face_eq_prefix
-              [OF hK h\<theta>K h\<sigma>K _ h\<theta>2 h\<sigma>2])
-             (use h\<tau>face h\<tau>eq in \<open>by (by100 simp)\<close>)
+              [OF hK h\<theta>K h\<sigma>K h\<theta>face\<sigma> h\<theta>2 h\<sigma>2])
         thus False
           using h\<sigma>ne by (by100 simp)
       qed
@@ -34933,8 +34978,10 @@ proof -
     show ?thesis
       using h01_sub h21_sub by (by100 blast)
   qed
+  have h\<theta>_sub_U: "\<theta> \<subseteq> U"
+    using hfigure33_boundary_support_package by (by100 blast)
   have hB012_sub_U: "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> U"
-    using hB012_sub_\<theta> hfigure33_boundary_support_package by (by100 blast)
+    using hB012_sub_\<theta> h\<theta>_sub_U by (by100 blast)
   have hJ_delete_replacement_sub_U: "?J\<^sub>d \<subseteq> U"
     using hJ_sub_U hB012_sub_U by (by100 blast)
   have hfigure33_replacement_arc_package:
@@ -34997,10 +35044,14 @@ proof -
   proof -
     have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
       using hfigure33_boundary_support_package by (by100 blast)
+    have hv\<^sub>0_B02: "v\<^sub>0 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>2_B02: "v\<^sub>2 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
     have hv\<^sub>0J: "v\<^sub>0 \<in> J"
-      using hB02_sub_J by (by100 simp)
+      using hB02_sub_J hv\<^sub>0_B02 by (by100 blast)
     have hv\<^sub>2J: "v\<^sub>2 \<in> J"
-      using hB02_sub_J by (by100 simp)
+      using hB02_sub_J hv\<^sub>2_B02 by (by100 blast)
     show ?thesis
       by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
           [OF hJ hv\<^sub>0J hv\<^sub>2J hv\<^sub>0v\<^sub>2])
@@ -35027,8 +35078,20 @@ proof -
       using hB012_J_sub_B02 hB02_B012_inter by (by100 blast)
     have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
       using hfigure33_boundary_support_package by (by100 blast)
+    have hv\<^sub>0_B02: "v\<^sub>0 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>2_B02: "v\<^sub>2 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+      using hB02_sub_J hv\<^sub>0_B02 by (by100 blast)
+    have hv\<^sub>2J: "v\<^sub>2 \<in> J"
+      using hB02_sub_J hv\<^sub>2_B02 by (by100 blast)
+    have hv\<^sub>0_B012: "v\<^sub>0 \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>2_B012: "v\<^sub>2 \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+      by (by100 simp)
     have hendpoints_sub: "{v\<^sub>0, v\<^sub>2} \<subseteq> ?B\<^sub>0\<^sub>1\<^sub>2 \<inter> J"
-      using hB02_sub_J by (by100 simp)
+      using hv\<^sub>0J hv\<^sub>2J hv\<^sub>0_B012 hv\<^sub>2_B012 by (by100 blast)
     show ?thesis
       using hB012_J_sub_endpoints hendpoints_sub by (by100 blast)
   qed
