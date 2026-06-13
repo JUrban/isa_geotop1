@@ -35358,6 +35358,67 @@ proof -
     using h\<sigma>S hface by (by100 blast)
 qed
 
+lemma geotop_singleton_simplex_vertices_self_prefix:
+  fixes x :: "real^2"
+  shows "geotop_simplex_vertices {x} {x}"
+  unfolding geotop_simplex_vertices_def
+  apply (rule exI[of _ "0::nat"], rule exI[of _ "0::nat"])
+  apply (intro conjI)
+      apply (by100 simp)
+     apply (by100 simp)
+    apply (by100 simp)
+   apply (by100 simp add: geotop_general_position_def)
+  apply (by100 simp add: geotop_convex_hull_eq_HOL)
+  done
+
+lemma geotop_simplex_face_closure_vertex_member_prefix:
+  fixes S :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
+  assumes h\<sigma>S: "\<sigma> \<in> S"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hxV: "x \<in> V"
+  shows "x \<in> geotop_complex_vertices
+    {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+proof -
+  let ?C = "{\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  have hx_hull_C: "geotop_convex_hull {x} \<in> ?C"
+    by (rule geotop_simplex_face_closure_contains_subset_hull_prefix
+        [OF h\<sigma>S h\<sigma>V]) (use hxV in \<open>by (by100 simp_all)\<close>)
+  have hx_hull: "{x} = geotop_convex_hull {x}"
+    using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+  have hxC: "{x} \<in> ?C"
+    using hx_hull_C hx_hull by (by100 simp)
+  have hx_vertices: "geotop_simplex_vertices {x} {x}"
+    by (rule geotop_singleton_simplex_vertices_self_prefix)
+  show ?thesis
+    unfolding geotop_complex_vertices_def using hxC hx_vertices by (by100 blast)
+qed
+
+lemma geotop_simplex_face_closure_edge_linear_on_prefix:
+  fixes S :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
+    and h :: "real^2 \<Rightarrow> real^2"
+  assumes h\<sigma>S: "\<sigma> \<in> S"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes haV: "a \<in> V"
+  assumes hbV: "b \<in> V"
+  assumes hlin:
+    "\<forall>\<tau>\<in>{\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}.
+      geotop_linear_on \<tau> h"
+  shows "geotop_linear_on (closed_segment a b) h"
+proof -
+  let ?C = "{\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  have hWne: "{a, b} \<noteq> ({}::(real^2) set)"
+    by (by100 simp)
+  have hWsub: "{a, b} \<subseteq> V"
+    using haV hbV by (by100 blast)
+  have hedge_C: "geotop_convex_hull {a, b} \<in> ?C"
+    by (rule geotop_simplex_face_closure_contains_subset_hull_prefix
+        [OF h\<sigma>S h\<sigma>V hWne hWsub])
+  have hseg: "closed_segment a b = geotop_convex_hull {a, b}"
+    unfolding geotop_convex_hull_eq_HOL by (rule segment_convex_hull)
+  show ?thesis
+    using hlin hedge_C hseg by (by100 simp)
+qed
+
 lemma geotop_frontier_Un_shared_rel_interior_subset_prefix:
   fixes A B E F G P :: "(real^2) set"
   assumes hA: "frontier A \<subseteq> E \<union> G"
