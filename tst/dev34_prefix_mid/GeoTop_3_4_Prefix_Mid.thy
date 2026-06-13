@@ -41639,6 +41639,140 @@ proof -
 			            thus False
 			              using hv\<^sub>2_mid_off_line by (by100 blast)
 			          qed
+			          have hfigure33_endpoint_closed_germ_v\<^sub>0_limit_opposite_disj:
+			              "(closed_segment v\<^sub>0 p\<^sub>0 \<inter> cball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1} = {}"
+			          proof (rule equals0I)
+			            fix x
+			            assume hx:
+			              "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 \<inter> cball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}"
+			            have hx_seg: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+			              using hx by (by100 blast)
+			            have hx_cball: "x \<in> cball v\<^sub>0 \<rho>\<^sub>0"
+			              using hx by (by100 blast)
+			            have hx_limit:
+			                "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}"
+			              using hx by (by100 blast)
+			            have h\<theta>_conv: "convex \<theta>"
+			              by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
+			            have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+			              by (rule GeoTopBase0.geotop_simplex_vertices_subset[OF h\<theta>vertices])
+			            have hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+			              using hverts_sub by (by100 blast)
+			            have hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+			              using hverts_sub by (by100 blast)
+			            have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+			              using hverts_sub by (by100 blast)
+			            have hv\<^sub>5_\<theta>: "?v\<^sub>5 \<in> \<theta>"
+			            proof -
+			              have hseg_sub: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
+			                by (rule closed_segment_subset[OF hv\<^sub>0_\<theta> hv\<^sub>2_\<theta> h\<theta>_conv])
+			              show ?thesis
+			                using hseg_sub midpoint_in_closed_segment[of v\<^sub>0 v\<^sub>2]
+			                by (by100 blast)
+			            qed
+			            have hlimit_sub:
+			                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+			            proof -
+			              have hverts: "{v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+			                using hv\<^sub>2_\<theta> hv\<^sub>5_\<theta> hv\<^sub>1_\<theta> by (by100 blast)
+			              have "convex hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+			                by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
+			              thus ?thesis
+			                unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+			            qed
+			            have hx\<theta>: "x \<in> \<theta>"
+			              using hlimit_sub hx_limit by (by100 blast)
+			            have hx_ball_\<delta>: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+			              using hx_cball h\<rho>\<^sub>0_lt_\<delta>\<^sub>0 by (by100 simp)
+			            have hxCO: "x \<in> C\<^sub>O"
+			              using hCO_local_v\<^sub>0 hx_ball_\<delta> hx_seg by (by100 blast)
+			            have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+			              using hxCO hx\<theta> hCO_theta_inter by (by100 blast)
+			            have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+			            proof
+			              assume hxv\<^sub>2: "x = v\<^sub>2"
+			              have "dist v\<^sub>0 v\<^sub>2 \<le> \<rho>\<^sub>0"
+			                using hx_cball hxv\<^sub>2 by (by100 simp)
+			              also have "\<dots> \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+			                using h\<rho>\<^sub>0_le_v\<^sub>0v\<^sub>2_quarter .
+			              finally show False
+			                using hv\<^sub>0v\<^sub>2_dist_pos by (by100 linarith)
+			            qed
+			            have hxv\<^sub>0: "x = v\<^sub>0"
+			              using hx_end hx_ne_v\<^sub>2 by (by100 blast)
+			            show False
+			              using hx_limit hxv\<^sub>0 hv\<^sub>0_notin_limit_opposite_v\<^sub>2
+			              by (by100 blast)
+			          qed
+			          have hfigure33_endpoint_closed_germ_v\<^sub>2_limit_opposite_disj:
+			              "(closed_segment v\<^sub>2 p\<^sub>2 \<inter> cball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1} = {}"
+			          proof (rule equals0I)
+			            fix x
+			            assume hx:
+			              "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 \<inter> cball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}"
+			            have hx_seg: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+			              using hx by (by100 blast)
+			            have hx_cball: "x \<in> cball v\<^sub>2 \<rho>\<^sub>2"
+			              using hx by (by100 blast)
+			            have hx_limit:
+			                "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}"
+			              using hx by (by100 blast)
+			            have h\<theta>_conv: "convex \<theta>"
+			              by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
+			            have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+			              by (rule GeoTopBase0.geotop_simplex_vertices_subset[OF h\<theta>vertices])
+			            have hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+			              using hverts_sub by (by100 blast)
+			            have hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+			              using hverts_sub by (by100 blast)
+			            have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+			              using hverts_sub by (by100 blast)
+			            have hv\<^sub>5_\<theta>: "?v\<^sub>5 \<in> \<theta>"
+			            proof -
+			              have hseg_sub: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
+			                by (rule closed_segment_subset[OF hv\<^sub>0_\<theta> hv\<^sub>2_\<theta> h\<theta>_conv])
+			              show ?thesis
+			                using hseg_sub midpoint_in_closed_segment[of v\<^sub>0 v\<^sub>2]
+			                by (by100 blast)
+			            qed
+			            have hlimit_sub:
+			                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+			            proof -
+			              have hverts: "{v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+			                using hv\<^sub>0_\<theta> hv\<^sub>5_\<theta> hv\<^sub>1_\<theta> by (by100 blast)
+			              have "convex hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+			                by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
+			              thus ?thesis
+			                unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+			            qed
+			            have hx\<theta>: "x \<in> \<theta>"
+			              using hlimit_sub hx_limit by (by100 blast)
+			            have hx_ball_\<delta>: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+			              using hx_cball h\<rho>\<^sub>2_lt_\<delta>\<^sub>2 by (by100 simp)
+			            have hxCO: "x \<in> C\<^sub>O"
+			              using hCO_local_v\<^sub>2 hx_ball_\<delta> hx_seg by (by100 blast)
+			            have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+			              using hxCO hx\<theta> hCO_theta_inter by (by100 blast)
+			            have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+			            proof
+			              assume hxv\<^sub>0: "x = v\<^sub>0"
+			              have "dist v\<^sub>0 v\<^sub>2 \<le> \<rho>\<^sub>2"
+			                using hx_cball hxv\<^sub>0 by (simp add: dist_commute)
+			              also have "\<dots> \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+			                using h\<rho>\<^sub>2_le_v\<^sub>0v\<^sub>2_quarter .
+			              finally show False
+			                using hv\<^sub>0v\<^sub>2_dist_pos by (by100 linarith)
+			            qed
+			            have hxv\<^sub>2: "x = v\<^sub>2"
+			              using hx_end hx_ne_v\<^sub>0 by (by100 blast)
+			            show False
+			              using hx_limit hxv\<^sub>2 hv\<^sub>2_notin_limit_opposite_v\<^sub>0
+			              by (by100 blast)
+			          qed
 			          have hfigure33_endpoint_germ_v\<^sub>0_limit_opposite_disj:
 			              "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
 			                  ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
