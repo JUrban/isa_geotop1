@@ -47212,6 +47212,16 @@ proof
     using hxy_in_old he1K he2K by (by100 auto)
   have hxzK: "closed_segment x z \<in> K"
     using hxz_in_old he1K he2K by (by100 auto)
+  have hxy_face_\<theta>: "geotop_is_face (closed_segment x y) \<theta>"
+    using hxy_in_old he1_face he2_face by (by100 auto)
+  have hxz_face_\<theta>: "geotop_is_face (closed_segment x z) \<theta>"
+    using hxz_in_old he1_face he2_face by (by100 auto)
+  have hxy_sub_\<theta>: "closed_segment x y \<subseteq> \<theta>"
+    by (rule geotop_is_face_imp_subset_prefix[OF hxy_face_\<theta>])
+  have hxz_sub_\<theta>: "closed_segment x z \<subseteq> \<theta>"
+    by (rule geotop_is_face_imp_subset_prefix[OF hxz_face_\<theta>])
+  have hx\<theta>: "x \<in> \<theta>"
+    using hxy_sub_\<theta> by (by100 simp)
   have hd_not_sub_xy: "\<not> d \<subseteq> closed_segment x y"
   proof
     assume hd_sub: "d \<subseteq> closed_segment x y"
@@ -47317,6 +47327,16 @@ proof
     show ?thesis
       by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF hI0 hxI])
   qed
+  have hd_old_sides_inter_eq_x:
+      "d \<inter> (closed_segment x y \<union> closed_segment x z) = {x}"
+    using hd_xy_inter_eq_x hd_xz_inter_eq_x by (by100 blast)
+  have hd_\<theta>_inter_nonempty: "d \<inter> \<theta> \<noteq> {}"
+    using hxd hx\<theta> by (by100 blast)
+  have hd_\<theta>_inter_faces:
+      "geotop_is_face (d \<inter> \<theta>) d
+      \<and> geotop_is_face (d \<inter> \<theta>) \<theta>"
+    using geotop_is_complex_intersection[OF hK] hdK h\<theta>K
+      hd_\<theta>_inter_nonempty by (by100 blast)
   obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
     and h\<rho>2: "geotop_simplex_dim \<rho> 2"
     and hd_face_\<rho>: "geotop_is_face d \<rho>"
