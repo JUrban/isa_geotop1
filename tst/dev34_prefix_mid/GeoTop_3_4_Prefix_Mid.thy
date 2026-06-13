@@ -38797,6 +38797,16 @@ proof -
     have hCO_minus_endpoints_theta_disj:
         "(C\<^sub>O - {v\<^sub>0, v\<^sub>2}) \<inter> \<theta> = {}"
       using hCO_theta_inter by (by100 blast)
+    have hCO_compact: "compact C\<^sub>O"
+      by (rule geotop_broken_line_compact[OF hCO_bl])
+    have hCO_closed: "closed C\<^sub>O"
+      by (rule geotop_broken_line_closed[OF hCO_bl])
+    have h\<theta>_simplex: "geotop_is_simplex \<theta>"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF h\<theta>2])
+    have h\<theta>_compact: "compact \<theta>"
+      by (rule GeoTopBase0.geotop_simplex_compact[OF h\<theta>_simplex])
+    have h\<theta>_closed: "closed \<theta>"
+      using h\<theta>_compact compact_imp_closed by (by100 blast)
     have hB02_sub_CR: "?B\<^sub>0\<^sub>2 \<subseteq> C\<^sub>R"
     proof
       fix x
