@@ -34866,6 +34866,47 @@ proof -
     using htop1 hHK by (by100 blast)
 qed
 
+lemma geotop_closed_carrier_homeomorphism_extend_identity_top1_support_prefix:
+  fixes C U :: "(real^2) set" and h k :: "real^2 \<Rightarrow> real^2"
+  assumes hC_closed: "closed C"
+  assumes hhomeo: "homeomorphism C C h k"
+  assumes hfix_h: "\<forall>x\<in>frontier C. h x = x"
+  assumes hfix_k: "\<forall>x\<in>frontier C. k x = x"
+  assumes hC_sub_U: "C \<subseteq> U"
+  shows "\<exists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology H
+          \<and> (\<forall>x\<in>C. H x = h x)
+          \<and> (\<forall>x\<in>UNIV - U. H x = x)"
+proof -
+  obtain H where hH_homeo:
+      "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology H"
+    and hH_carrier: "\<forall>x\<in>C. H x = h x"
+    and hH_fix_carrier: "\<forall>x\<in>UNIV - C. H x = x"
+    using geotop_closed_carrier_homeomorphism_extend_identity_top1_prefix
+        [OF hC_closed hhomeo hfix_h hfix_k]
+    by (elim exE conjE)
+  have hH_fix_U: "\<forall>x\<in>UNIV - U. H x = x"
+  proof
+    fix x
+    assume hx: "x \<in> UNIV - U"
+    have "x \<in> UNIV - C"
+      using hx hC_sub_U by (by100 blast)
+    thus "H x = x"
+      using hH_fix_carrier by (by100 blast)
+  qed
+  show ?thesis
+  proof (rule exI[of _ H], intro conjI)
+    show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology H"
+      by (rule hH_homeo)
+    show "\<forall>x\<in>C. H x = h x"
+      by (rule hH_carrier)
+    show "\<forall>x\<in>UNIV - U. H x = x"
+      by (rule hH_fix_U)
+  qed
+qed
+
 lemma geotop_linear_on_vertices_simplicial_on_prefix:
   fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes hV: "geotop_simplex_vertices \<sigma> V"
@@ -34875,6 +34916,27 @@ lemma geotop_linear_on_vertices_simplicial_on_prefix:
   shows "geotop_simplicial_on \<sigma> f \<tau>"
   unfolding geotop_simplicial_on_def
   using hV hW hlin hverts by (by100 blast)
+
+lemma geotop_carrier_extension_simplicial_on_prefix:
+  fixes C \<sigma> :: "(real^2) set" and h H :: "real^2 \<Rightarrow> real^2"
+  assumes h\<sigma>_sub_C: "\<sigma> \<subseteq> C"
+  assumes hH_agree: "\<forall>x\<in>C. H x = h x"
+  assumes hsimp: "geotop_simplicial_on \<sigma> h \<tau>"
+  shows "geotop_simplicial_on \<sigma> H \<tau>"
+proof -
+  have heq: "\<forall>x\<in>\<sigma>. H x = h x"
+    using h\<sigma>_sub_C hH_agree by (by100 blast)
+  show ?thesis
+    by (rule geotop_simplicial_on_eq_on[OF hsimp heq])
+qed
+
+lemma geotop_carrier_extension_vertex_value_prefix:
+  fixes C :: "(real^2) set" and h H :: "real^2 \<Rightarrow> real^2"
+  assumes hvC: "v \<in> C"
+  assumes hH_agree: "\<forall>x\<in>C. H x = h x"
+  assumes hv: "h v = w"
+  shows "H v = w"
+  using hvC hH_agree hv by (by100 blast)
 
 lemma geotop_supported_carrier_fix_boundary_image_prefix:
   fixes C C\<^sub>O :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
