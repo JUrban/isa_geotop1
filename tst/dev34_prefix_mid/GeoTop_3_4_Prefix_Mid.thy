@@ -34424,6 +34424,43 @@ proof -
   qed
 qed
 
+lemma geotop_finite_simplex_face_closure_prefix:
+  fixes S :: "'a::euclidean_space set set"
+  assumes hS_fin: "finite S"
+  assumes hS_simp: "\<forall>\<sigma>\<in>S. geotop_is_simplex \<sigma>"
+  shows "finite {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+proof -
+  let ?C = "{\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  let ?F = "\<Union>\<sigma>\<in>S. insert \<sigma> {\<tau>. geotop_is_face \<tau> \<sigma>}"
+  have hsub: "?C \<subseteq> ?F"
+  proof
+    fix \<tau>
+    assume h\<tau>: "\<tau> \<in> ?C"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S"
+      and h\<tau>\<sigma>: "\<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>"
+      using h\<tau> by (by100 blast)
+    have "\<tau> \<in> insert \<sigma> {\<rho>. geotop_is_face \<rho> \<sigma>}"
+      using h\<tau>\<sigma> by (by100 blast)
+    thus "\<tau> \<in> ?F"
+      using h\<sigma>S by (by100 blast)
+  qed
+  have hfin_F: "finite ?F"
+  proof (rule finite_UN_I)
+    show "finite S"
+      by (rule hS_fin)
+    fix \<sigma>
+    assume h\<sigma>S: "\<sigma> \<in> S"
+    have h\<sigma>simp: "geotop_is_simplex \<sigma>"
+      using hS_simp h\<sigma>S by (by100 blast)
+    have hfaces_fin: "finite {\<tau>. geotop_is_face \<tau> \<sigma>}"
+      by (rule geotop_simplex_faces_finite[OF h\<sigma>simp])
+    show "finite (insert \<sigma> {\<tau>. geotop_is_face \<tau> \<sigma>})"
+      using hfaces_fin by (by100 simp)
+  qed
+  show ?thesis
+    by (rule finite_subset[OF hsub hfin_F])
+qed
+
 lemma geotop_polygon_disk_triangulation_2simplex_count_ge1_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
