@@ -35745,9 +35745,15 @@ proof -
 	               C = geotop_component_at UNIV geotop_euclidean_topology
 	                    (geotop_polygon_interior J -
 	                     geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}) P}
-	            =
+	        =
 	            {geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2),
 	             geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)}
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J) =
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<union>
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O))
 	        \<and> closure_on UNIV geotop_euclidean_topology
 	            (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2 =
 	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
@@ -35996,8 +36002,8 @@ proof -
 	      using hR_B02_int hsplit hJ_split hpoly_CR_B hpoly_B_CO
 	        hCR_CO_inter hCR_int_CO_disj hCO_int_CR_disj
 	        hCR_B_disj hB_CO_disj hCR_B_inter hB_CO_inter
-	        hcomponents_after_chord hclosure_minus_chord hCR_side_connected
-	        hCO_side_connected hsides_separated
+	        hcomponents_after_chord hclosure_decomp hclosure_minus_chord
+	        hCR_side_connected hCO_side_connected hsides_separated
 	        hclosure_CR_B_sub_U hclosure_B_CO_sub_U
 	      by (by100 blast)
   qed
@@ -36053,6 +36059,13 @@ proof -
 	         =
 	         {geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2),
 	          geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)}"
+	      and hclosure_decomp:
+	        "closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J) =
+	         closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<union>
+	         closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O))"
 	      and hclosure_minus_chord:
 	        "closure_on UNIV geotop_euclidean_topology
 	            (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2 =
@@ -36424,6 +36437,122 @@ proof -
           \<and> (\<forall>P\<in>UNIV - U. f P = P)
           \<and> f ` J = ?J'"
     proof -
+      have hB02_no_2simplex_over_delete:
+          "\<not> (\<exists>\<sigma>\<in>?K\<^sub>d. geotop_simplex_dim \<sigma> 2 \<and> ?B\<^sub>0\<^sub>2 \<subseteq> \<sigma>)"
+      proof
+        assume hbad:
+          "\<exists>\<sigma>\<in>?K\<^sub>d. geotop_simplex_dim \<sigma> 2 \<and> ?B\<^sub>0\<^sub>2 \<subseteq> \<sigma>"
+        obtain \<sigma> where h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+          and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+          and hB02_sub_\<sigma>: "?B\<^sub>0\<^sub>2 \<subseteq> \<sigma>"
+          using hbad by (by100 blast)
+        have hB02_face_\<sigma>: "geotop_is_face ?B\<^sub>0\<^sub>2 \<sigma>"
+          by (rule geotop_complex_subset_simplex_face_prefix
+              [OF hK_delete_complex hB02Kd h\<sigma>Kd hB02_sub_\<sigma>])
+        have "\<sigma> \<in>
+          {\<rho>\<in>?K\<^sub>d. geotop_simplex_dim \<rho> 2
+            \<and> geotop_is_face ?B\<^sub>0\<^sub>2 \<rho>}"
+          using h\<sigma>Kd h\<sigma>2 hB02_face_\<sigma> by (by100 simp)
+        thus False
+          using hB02_no_incident_after_delete by (by100 blast)
+      qed
+      have hKr_poly_without_old_edge_rel:
+          "geotop_polyhedron ?K\<^sub>r =
+            geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+      proof
+        show "geotop_polyhedron ?K\<^sub>r \<subseteq>
+            geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+        proof
+          fix x
+          assume hxKr: "x \<in> geotop_polyhedron ?K\<^sub>r"
+          obtain \<sigma> where h\<sigma>Kr: "\<sigma> \<in> ?K\<^sub>r" and hx\<sigma>: "x \<in> \<sigma>"
+            using hxKr unfolding geotop_polyhedron_def by (by100 blast)
+          have h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+            using h\<sigma>Kr by (by100 blast)
+          have h\<sigma>ne: "\<sigma> \<noteq> ?B\<^sub>0\<^sub>2"
+            using h\<sigma>Kr by (by100 blast)
+          have hxKd: "x \<in> geotop_polyhedron ?K\<^sub>d"
+            unfolding geotop_polyhedron_def using h\<sigma>Kd hx\<sigma> by (by100 blast)
+          have hx_not_rel: "x \<notin> rel_interior ?B\<^sub>0\<^sub>2"
+          proof
+            assume hxrel: "x \<in> rel_interior ?B\<^sub>0\<^sub>2"
+            have hcarrier_eq:
+                "geotop_K_carrier ?K\<^sub>d x = ?B\<^sub>0\<^sub>2"
+              by (rule geotop_K_carrier_eq
+                  [OF hK_delete_complex hB02Kd hxrel])
+            have hcarrier_sub_\<sigma>:
+                "geotop_K_carrier ?K\<^sub>d x \<subseteq> \<sigma>"
+              by (rule geotop_K_carrier_subset_containing_simplex
+                  [OF hK_delete_complex hK_delete_finite h\<sigma>Kd hx\<sigma>])
+            have hB02_sub_\<sigma>: "?B\<^sub>0\<^sub>2 \<subseteq> \<sigma>"
+              using hcarrier_eq hcarrier_sub_\<sigma> by (by100 simp)
+            have hmeet:
+                "\<sigma> \<inter> rel_interior ?B\<^sub>0\<^sub>2 \<noteq> {}"
+              using hx\<sigma> hxrel by (by100 blast)
+            have h\<sigma>sub_B02: "\<sigma> \<subseteq> ?B\<^sub>0\<^sub>2"
+              by (rule geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset_prefix
+                  [OF hK_delete_complex hB02Kd h\<sigma>Kd hB02_edge hmeet
+                    hB02_no_2simplex_over_delete])
+            have "\<sigma> = ?B\<^sub>0\<^sub>2"
+              using hB02_sub_\<sigma> h\<sigma>sub_B02 by (by100 blast)
+            thus False
+              using h\<sigma>ne by (by100 blast)
+          qed
+          show "x \<in> geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+            using hxKd hx_not_rel by (by100 blast)
+        qed
+        show "geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2 \<subseteq>
+            geotop_polyhedron ?K\<^sub>r"
+        proof
+          fix x
+          assume hx: "x \<in> geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+          have hxKd: "x \<in> geotop_polyhedron ?K\<^sub>d"
+            using hx by (by100 blast)
+          have hx_not_rel: "x \<notin> rel_interior ?B\<^sub>0\<^sub>2"
+            using hx by (by100 blast)
+          have hcarrierKd: "geotop_K_carrier ?K\<^sub>d x \<in> ?K\<^sub>d"
+            by (rule geotop_K_carrier_in
+                [OF hK_delete_complex hK_delete_finite hxKd])
+          have hxcarrier: "x \<in> geotop_K_carrier ?K\<^sub>d x"
+            by (rule geotop_K_carrier_contains_point
+                [OF hK_delete_complex hK_delete_finite hxKd])
+          have hcarrier_ne:
+              "geotop_K_carrier ?K\<^sub>d x \<noteq> ?B\<^sub>0\<^sub>2"
+          proof
+            assume hcarrier_eq:
+                "geotop_K_carrier ?K\<^sub>d x = ?B\<^sub>0\<^sub>2"
+            have hxrel: "x \<in> rel_interior ?B\<^sub>0\<^sub>2"
+              using geotop_K_carrier_rel_interior
+                [OF hK_delete_complex hK_delete_finite hxKd] hcarrier_eq
+              by (by100 simp)
+            thus False
+              using hx_not_rel by (by100 blast)
+          qed
+          have hcarrierKr: "geotop_K_carrier ?K\<^sub>d x \<in> ?K\<^sub>r"
+            using hcarrierKd hcarrier_ne by (by100 simp)
+          show "x \<in> geotop_polyhedron ?K\<^sub>r"
+            unfolding geotop_polyhedron_def
+            using hcarrierKr hxcarrier by (by100 blast)
+        qed
+      qed
+      have hretained_closure_after_old_edge_delete:
+          "geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2 =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')"
+        sorry
+      have hbook_delete_triangle_carrier:
+          "geotop_polyhedron ?K\<^sub>r =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')"
+        using hKr_poly_without_old_edge_rel hretained_closure_after_old_edge_delete
+        by (by100 simp)
+      have hbook_supported_PL_map:
+          "\<exists>f.
+              top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f
+              \<and> (\<forall>P\<in>UNIV - U. f P = P)
+              \<and> f ` J = ?J'"
+        sorry
       have hbook_delete_triangle_geometry_and_map:
           "geotop_polyhedron ?K\<^sub>r =
               closure_on UNIV geotop_euclidean_topology
@@ -36433,7 +36562,8 @@ proof -
                 UNIV geotop_euclidean_topology f
               \<and> (\<forall>P\<in>UNIV - U. f P = P)
               \<and> f ` J = ?J')"
-        sorry
+        using hbook_delete_triangle_carrier hbook_supported_PL_map
+        by (by100 blast)
       have hKr_poly:
           "geotop_polyhedron ?K\<^sub>r =
             closure_on UNIV geotop_euclidean_topology
