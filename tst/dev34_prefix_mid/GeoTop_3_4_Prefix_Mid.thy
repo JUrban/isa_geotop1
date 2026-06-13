@@ -37555,9 +37555,18 @@ proof -
                 \<and> f v\<^sub>3 = v\<^sub>3
                 \<and> f v\<^sub>4 = v\<^sub>4
                 \<and> f v\<^sub>5 = v\<^sub>1
-                \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                      \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                        geotop_simplicial_on \<sigma> f \<tau>)
+                \<and> geotop_simplicial_on
+                      (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f
+                      (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})
+                \<and> geotop_simplicial_on
+                      (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f
+                      (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})
+                \<and> geotop_simplicial_on
+                      (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}) f
+                      (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})
+                \<and> geotop_simplicial_on
+                      (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) f
+                      (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})
                 \<and> ?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5
                 \<and> C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                     \<subseteq> {v\<^sub>0, v\<^sub>2}"
@@ -37657,10 +37666,22 @@ proof -
               and hfv\<^sub>3: "f v\<^sub>3 = v\<^sub>3"
               and hfv\<^sub>4: "f v\<^sub>4 = v\<^sub>4"
               and hfv\<^sub>5: "f v\<^sub>5 = v\<^sub>1"
-              and hfsimp:
-                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                    geotop_simplicial_on \<sigma> f \<tau>"
+              and hfsimp045:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})"
+              and hfsimp245:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})"
+              and hfsimp053:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}) f
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})"
+              and hfsimp253:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) f
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
               and hB02_split:
                 "?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5"
               and hCO_carrier_inter:
@@ -37825,32 +37846,49 @@ proof -
             have hsource_triangles_fin:
                 "finite (?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5)"
               by (by100 simp)
-	            have htarget_triangles_fin:
-	                "finite (?target_triangles v\<^sub>3 v\<^sub>4)"
-	              by (by100 simp)
-	            have hsource_inter:
-	                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-	                  \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-	                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-	                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
-	                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-	              by (rule geotop_figure33_source_triangles_intersections_faces_prefix
-	                  [OF hncol045 hncol245 hncol053 hncol253 hsource045245
-	                    hsource045053 hsource045253 hsource245053
-	                    hsource245253 hsource053253])
-	            have htarget_inter:
-	                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-	                  \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-	                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-	                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
-	                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-	              by (rule geotop_figure33_target_triangles_intersections_faces_prefix
-	                  [OF hncol041 hncol241 hncol013 hncol213 htarget041241
-	                    htarget041013 htarget041213 htarget241013
-	                    htarget241213 htarget013213])
-	            have hsource_complex:
-	                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
-	              by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
+            have htarget_triangles_fin:
+                "finite (?target_triangles v\<^sub>3 v\<^sub>4)"
+              by (by100 simp)
+            have hsource_inter:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+              by (rule geotop_figure33_source_triangles_intersections_faces_prefix
+                  [OF hncol045 hncol245 hncol053 hncol253 hsource045245
+                    hsource045053 hsource045253 hsource245053
+                    hsource245253 hsource053253])
+            have htarget_inter:
+                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                  \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+              by (rule geotop_figure33_target_triangles_intersections_faces_prefix
+                  [OF hncol041 hncol241 hncol013 hncol213 htarget041241
+                    htarget041013 htarget041213 htarget241013
+                    htarget241213 htarget013213])
+            have hfsimp:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on \<sigma> f \<tau>"
+            proof
+              fix \<sigma>
+              assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              have hcases:
+                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                using h\<sigma> by (by100 simp)
+              show "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_simplicial_on \<sigma> f \<tau>"
+                using hcases hfsimp045 hfsimp245 hfsimp053 hfsimp253
+                by (by100 auto)
+            qed
+            have hsource_complex:
+                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
                   [OF hsource_triangles_fin hsource_simp hsource_inter])
             have htarget_complex:
                 "geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)"
