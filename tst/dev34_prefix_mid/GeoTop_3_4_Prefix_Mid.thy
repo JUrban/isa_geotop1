@@ -35507,13 +35507,44 @@ proof -
             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}
         \<and> C\<^sub>R \<inter> ?B\<^sub>0\<^sub>1\<^sub>2 = {v\<^sub>0, v\<^sub>2}
         \<and> ?B\<^sub>0\<^sub>1\<^sub>2 \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}
-        \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}
-        \<and> geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)
-        \<and> geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)
-        \<and> closure_on UNIV geotop_euclidean_topology
-            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U
-        \<and> closure_on UNIV geotop_euclidean_topology
-            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)) \<subseteq> U"
+	        \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}
+	        \<and> geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)
+	        \<and> geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)
+	        \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+	                geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}.
+	               C = geotop_component_at UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J -
+	                     geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}) P}
+	            =
+	            {geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2),
+	             geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)}
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2 =
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}) \<union>
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})
+	        \<and> top1_connected_on
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2})
+	            (subspace_topology UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	               geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}))
+	        \<and> top1_connected_on
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})
+	            (subspace_topology UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}))
+	        \<and> geotop_separated UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2})
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U
+	        \<and> closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)) \<subseteq> U"
   proof -
     have hB02_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
       using hfigure33_replacement_arc_package by (by100 blast)
@@ -35651,36 +35682,94 @@ proof -
           [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
             hCR_B_disj hCR_CO_disj hB_CO_disj
             hfigure33_replacement_arc_interior_subset_polygon_interior])
-    have hpoly_B_CO: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
-      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(3)
-          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
-            hCR_B_disj hCR_CO_disj hB_CO_disj
-            hfigure33_replacement_arc_interior_subset_polygon_interior])
-    have hclosure_decomp:
-        "closure_on UNIV geotop_euclidean_topology
-           (geotop_polygon_interior J) =
-         closure_on UNIV geotop_euclidean_topology
-           (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2))
+	    have hpoly_B_CO: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
+	      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(3)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hcomponents_after_chord:
+	        "{C. \<exists>P\<in>geotop_polygon_interior J -
+	                geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}.
+	               C = geotop_component_at UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J -
+	                     geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}) P}
+	         =
+	         {geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2),
+	          geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)}"
+	      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(4)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hclosure_decomp:
+	        "closure_on UNIV geotop_euclidean_topology
+	           (geotop_polygon_interior J) =
+	         closure_on UNIV geotop_euclidean_topology
+	           (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2))
          \<union> closure_on UNIV geotop_euclidean_topology
            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O))"
       by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(5)
-          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
-            hCR_B_disj hCR_CO_disj hB_CO_disj
-            hfigure33_replacement_arc_interior_subset_polygon_interior])
-    have hclosure_CR_B_sub_U:
-        "closure_on UNIV geotop_euclidean_topology
-          (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U"
-      using hclosure_decomp hI_sub_U by (by100 blast)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hclosure_minus_chord:
+	        "closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2 =
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}) \<union>
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})"
+	      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(6)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hCR_side_connected:
+	        "top1_connected_on
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2})
+	            (subspace_topology UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	               geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}))"
+	      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(7)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hCO_side_connected:
+	        "top1_connected_on
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})
+	            (subspace_topology UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}))"
+	      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(8)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hsides_separated:
+	        "geotop_separated UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2})
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})"
+	      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(9)
+	          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+	            hCR_B_disj hCR_CO_disj hB_CO_disj
+	            hfigure33_replacement_arc_interior_subset_polygon_interior])
+	    have hclosure_CR_B_sub_U:
+	        "closure_on UNIV geotop_euclidean_topology
+	          (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U"
+	      using hclosure_decomp hI_sub_U by (by100 blast)
     have hclosure_B_CO_sub_U:
         "closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)) \<subseteq> U"
       using hclosure_decomp hI_sub_U by (by100 blast)
     show ?thesis
-      using hR_B02_int hsplit hJ_split hpoly_CR_B hpoly_B_CO
-        hCR_CO_inter hCR_int_CO_disj hCO_int_CR_disj
-        hCR_B_disj hB_CO_disj hCR_B_inter hB_CO_inter
-        hclosure_CR_B_sub_U hclosure_B_CO_sub_U
-      by (by100 blast)
+	      using hR_B02_int hsplit hJ_split hpoly_CR_B hpoly_B_CO
+	        hCR_CO_inter hCR_int_CO_disj hCO_int_CR_disj
+	        hCR_B_disj hB_CO_disj hCR_B_inter hB_CO_inter
+	        hcomponents_after_chord hclosure_minus_chord hCR_side_connected
+	        hCO_side_connected hsides_separated
+	        hclosure_CR_B_sub_U hclosure_B_CO_sub_U
+	      by (by100 blast)
   qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
@@ -35724,10 +35813,46 @@ proof -
       and hB_CO_inter: "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}"
       and hR_CR_int: "R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
       and hCR_B_polygon: "geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
-      and hB_CO_polygon: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
-      and hCR_B_support:
-        "closure_on UNIV geotop_euclidean_topology
-          (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U"
+	      and hB_CO_polygon: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
+	      and hcomponents_after_chord:
+	        "{C. \<exists>P\<in>geotop_polygon_interior J -
+	                geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}.
+	               C = geotop_component_at UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J -
+	                     geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}) P}
+	         =
+	         {geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2),
+	          geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)}"
+	      and hclosure_minus_chord:
+	        "closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J) - ?B\<^sub>0\<^sub>1\<^sub>2 =
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}) \<union>
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})"
+	      and hCR_side_connected:
+	        "top1_connected_on
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2})
+	            (subspace_topology UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	               geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}))"
+	      and hCO_side_connected:
+	        "top1_connected_on
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})
+	            (subspace_topology UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}))"
+	      and hsides_separated:
+	        "geotop_separated UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+	             geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2})
+	            (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})"
+	      and hCR_B_support:
+	        "closure_on UNIV geotop_euclidean_topology
+	          (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U"
       and hB_CO_support:
         "closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)) \<subseteq> U"
