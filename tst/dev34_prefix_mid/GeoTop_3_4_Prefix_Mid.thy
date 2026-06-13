@@ -39690,6 +39690,25 @@ proof -
                   by (rule hvertex_map_target_to_source[OF hVsub htarget])
               qed
             qed
+            have hfigure33_carrier_PLH:
+                "\<exists>g.
+                  geotop_PLH
+                    (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    (?target_carrier v\<^sub>3 v\<^sub>4) g
+                  \<and> g ` geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    = geotop_polyhedron (?target_carrier v\<^sub>3 v\<^sub>4)
+                  \<and> (\<forall>v\<in>geotop_complex_vertices
+                        (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                        g v = ?vertex_map v)
+                  \<and> (\<forall>\<sigma>\<in>?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                        geotop_linear_on \<sigma> g)
+                  \<and> (\<forall>\<tau>\<in>?target_carrier v\<^sub>3 v\<^sub>4.
+                        geotop_linear_on \<tau>
+                          (inv_into
+                            (geotop_polyhedron
+                              (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)) g))"
+              by (rule geotop_isomorphism_induces_PLH
+                  [OF hsource_complex htarget_complex hfigure33_carrier_isomorphism])
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
