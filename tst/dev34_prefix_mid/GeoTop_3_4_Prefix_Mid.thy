@@ -34986,6 +34986,25 @@ proof -
       using hB02_bl hB012_bl hB02_arc hB012_arc hdisj htriangle_boundary_polygon
       by (by100 blast)
   qed
+  have hfigure33_boundary_endpoint_split_package:
+      "\<exists>C\<^sub>1 C\<^sub>2.
+        J = C\<^sub>1 \<union> C\<^sub>2
+        \<and> C\<^sub>1 \<inter> C\<^sub>2 = {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+  proof -
+    have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
+      using hfigure33_boundary_support_package by (by100 blast)
+    have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+      using hB02_sub_J by (by100 simp)
+    have hv\<^sub>2J: "v\<^sub>2 \<in> J"
+      using hB02_sub_J by (by100 simp)
+    show ?thesis
+      by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
+          [OF hJ hv\<^sub>0J hv\<^sub>2J hv\<^sub>0v\<^sub>2])
+  qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
