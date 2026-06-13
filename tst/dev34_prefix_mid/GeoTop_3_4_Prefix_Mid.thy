@@ -38518,6 +38518,122 @@ proof -
               show ?thesis
                 using hv\<^sub>2v\<^sub>5 hv\<^sub>5v\<^sub>3 by (by100 auto)
             qed
+            have hvertex_map_hull045_target:
+                "geotop_convex_hull (?vertex_map ` {v\<^sub>0, v\<^sub>4, v\<^sub>5})
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              have htarget_mem:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                by (by100 simp)
+              have hcarrier_mem:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1} = \<sigma> \<or>
+                    geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}"])
+                  show "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1} =
+                      geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1} \<or>
+                      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})
+                        (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})"
+                    by (by100 simp)
+                  show "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                      \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                    by (rule htarget_mem)
+                qed
+              qed
+              show ?thesis
+                using hcarrier_mem hvertex_map_045 by (by100 simp)
+            qed
+            have hvertex_map_hull245_target:
+                "geotop_convex_hull (?vertex_map ` {v\<^sub>2, v\<^sub>4, v\<^sub>5})
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              have htarget_mem:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                by (by100 simp)
+              have hcarrier_mem:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1} = \<sigma> \<or>
+                    geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}"])
+                  show "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1} =
+                      geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1} \<or>
+                      geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})
+                        (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})"
+                    by (by100 simp)
+                  show "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                      \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                    by (rule htarget_mem)
+                qed
+              qed
+              show ?thesis
+                using hcarrier_mem hvertex_map_245 by (by100 simp)
+            qed
+            have hvertex_map_hull053_target:
+                "geotop_convex_hull (?vertex_map ` {v\<^sub>0, v\<^sub>5, v\<^sub>3})
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              have htarget_mem:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                by (by100 simp)
+              have hcarrier_mem:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3} = \<sigma> \<or>
+                    geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}"])
+                  show "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3} =
+                      geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3} \<or>
+                      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})
+                        (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})"
+                    by (by100 simp)
+                  show "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                      \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                    by (rule htarget_mem)
+                qed
+              qed
+              show ?thesis
+                using hcarrier_mem hvertex_map_053 by (by100 simp)
+            qed
+            have hvertex_map_hull253_target:
+                "geotop_convex_hull (?vertex_map ` {v\<^sub>2, v\<^sub>5, v\<^sub>3})
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              have htarget_mem:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+                    \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                by (by100 simp)
+              have hcarrier_mem:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3} = \<sigma> \<or>
+                    geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"])
+                  show "geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3} =
+                      geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3} \<or>
+                      geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})
+                        (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+                    by (by100 simp)
+                  show "geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+                      \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                    by (rule htarget_mem)
+                qed
+              qed
+              show ?thesis
+                using hcarrier_mem hvertex_map_253 by (by100 simp)
+            qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
