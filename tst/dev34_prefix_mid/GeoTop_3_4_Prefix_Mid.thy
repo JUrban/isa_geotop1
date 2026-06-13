@@ -47048,6 +47048,53 @@ proof -
     using hbook_supported_PL_fold by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_corner_two_boundary_edges_no_other_incident_edge_prefix:
+  fixes J \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
+    and x y z :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes hboundary_two_edge_package:
+    "e1 \<noteq> e2
+      \<and> geotop_is_edge e1
+      \<and> geotop_is_edge e2
+      \<and> geotop_is_face e1 \<theta>
+      \<and> geotop_is_face e2 \<theta>
+      \<and> e1 \<subseteq> J
+      \<and> e2 \<subseteq> J
+      \<and> \<theta> \<inter> J = e1 \<union> e2
+      \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+          = {e1, e2}"
+  assumes hxy: "x \<noteq> y"
+  assumes hxz: "x \<noteq> z"
+  assumes hyz: "y \<noteq> z"
+  assumes hnot_col_xyz: "\<not> collinear {x, y, z}"
+  assumes hcorner_edge_set:
+    "{e1, e2} = {closed_segment x y, closed_segment x z}"
+  assumes hcorner_frontier:
+    "frontier \<theta> =
+      closed_segment x y \<union>
+        (closed_segment x z \<union> closed_segment y z)"
+  assumes hcorner_contact:
+    "\<theta> \<inter> J = closed_segment x y \<union> closed_segment x z"
+  shows "\<not> (\<exists>d\<in>K - {\<theta>}.
+      d \<noteq> e1 \<and> d \<noteq> e2 \<and> geotop_is_edge d \<and> x \<in> d)"
+  (**
+    Moise Figure 3.3 corner-local wedge step.  If a free triangle meets the
+    polygon boundary in the two adjacent boundary edges through the corner
+    vertex \<open>x\<close>, then those two boundary edges exhaust the triangulation edges
+    incident with \<open>x\<close> after the corner triangle is deleted.  A third edge
+    germ would either be a third polygon-boundary germ at the polygon vertex,
+    contradicting the finite polygonal boundary graph, or an interior germ
+    leaving the closed disk through the local corner wedge already occupied by
+    \<open>\<theta>\<close>. **)
+  sorry
+
 lemma geotop_figure33_two_boundary_named_supported_inverse_fold_prefix:
   fixes J U \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
     and a b c p q r :: "real^2"
@@ -47776,7 +47823,10 @@ proof -
 	    have hx_no_other_incident_edge_after_old_edge_delete:
 	        "\<not> (\<exists>d\<in>?K\<^sub>d.
 	          d \<noteq> e1 \<and> d \<noteq> e2 \<and> geotop_is_edge d \<and> x \<in> d)"
-	      sorry
+	      by (rule geotop_polygon_disk_corner_two_boundary_edges_no_other_incident_edge_prefix
+	          [OF hJ hK hK_fin hK_poly h\<theta>K h\<theta>2 hboundary_two_edge_package
+	            hxy hxz hyz hnot_col_xyz hcorner_edge_set hcorner_frontier
+	            hcorner_contact])
 	    have hx_no_face_after_edge_delete:
 	        "\<And>\<sigma>. \<sigma> \<in> ?K\<^sub>d \<Longrightarrow> \<sigma> \<noteq> e1 \<Longrightarrow> \<sigma> \<noteq> e2 \<Longrightarrow>
 	          \<sigma> \<noteq> {x} \<Longrightarrow>
