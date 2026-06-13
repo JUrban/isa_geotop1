@@ -42328,7 +42328,98 @@ proof -
 			                  triangle has only an \<open>O(t)\<close> outward tilt.  Choosing
 			                  \<open>t\<close> below that fixed angular gap makes the punctured
 			                  germ disjoint from the same-apex outer triangle. **)
-			                sorry
+			              proof -
+			                have hfigure33_endpoint_germ_v0_same_outer_empty_scalar:
+			                    "\<exists>\<eta>>0. \<forall>t>0.
+			                      t < \<eta> \<longrightarrow>
+			                      ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                      = {}"
+			                  (**
+			                    Endpoint \<open>v\<^sub>0\<close> angular separation.  In the basis
+			                    \<open>?v\<^sub>5 - v\<^sub>0\<close>, \<open>v\<^sub>1 - v\<^sub>0\<close>, the retained boundary
+			                    ray has a fixed coordinate gap from the old triangle
+			                    cone, while the moving same-apex triangle is obtained
+			                    by an \<open>O(t)\<close> shear of that cone. **)
+			                  sorry
+			                have hfigure33_endpoint_germ_v2_same_outer_empty_scalar:
+			                    "\<exists>\<eta>>0. \<forall>t>0.
+			                      t < \<eta> \<longrightarrow>
+			                      ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                      = {}"
+			                  (**
+			                    Endpoint \<open>v\<^sub>2\<close> angular separation, symmetric to the
+			                    \<open>v\<^sub>0\<close> statement with basis
+			                    \<open>?v\<^sub>5 - v\<^sub>2\<close>, \<open>v\<^sub>1 - v\<^sub>2\<close>. **)
+			                  sorry
+			                obtain \<eta>\<^sub>0 where h\<eta>\<^sub>0_pos: "0 < \<eta>\<^sub>0"
+			                  and hempty0:
+			                    "\<forall>t>0.
+			                      t < \<eta>\<^sub>0 \<longrightarrow>
+			                      ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                      = {}"
+			                  using hfigure33_endpoint_germ_v0_same_outer_empty_scalar
+			                  by (elim exE conjE)
+			                obtain \<eta>\<^sub>2 where h\<eta>\<^sub>2_pos: "0 < \<eta>\<^sub>2"
+			                  and hempty2:
+			                    "\<forall>t>0.
+			                      t < \<eta>\<^sub>2 \<longrightarrow>
+			                      ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                      = {}"
+			                  using hfigure33_endpoint_germ_v2_same_outer_empty_scalar
+			                  by (elim exE conjE)
+			                define \<eta> where "\<eta> = min \<eta>\<^sub>0 \<eta>\<^sub>2"
+			                have h\<eta>_pos: "0 < \<eta>"
+			                  unfolding \<eta>_def using h\<eta>\<^sub>0_pos h\<eta>\<^sub>2_pos by (by100 simp)
+			                have hsmall:
+			                    "\<forall>t>0.
+			                      t < \<eta> \<longrightarrow>
+			                      ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                          ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                          geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                        \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                          ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                          geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                      = {}"
+			                proof (intro allI impI)
+			                  fix t :: real
+			                  assume ht_pos: "0 < t"
+			                  assume ht_lt: "t < \<eta>"
+			                  have ht_lt0: "t < \<eta>\<^sub>0"
+			                    using ht_lt unfolding \<eta>_def by (by100 simp)
+			                  have ht_lt2: "t < \<eta>\<^sub>2"
+			                    using ht_lt unfolding \<eta>_def by (by100 simp)
+			                  have h0:
+			                      "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                      = {}"
+			                    using hempty0 ht_pos ht_lt0 by (by100 blast)
+			                  have h2:
+			                      "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                      = {}"
+			                    using hempty2 ht_pos ht_lt2 by (by100 blast)
+			                  show "((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                          ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                          geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                        \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                          ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                          geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                      = {}"
+			                    using h0 h2 by (by100 simp)
+			                qed
+			                show ?thesis
+			                  using h\<eta>_pos hsmall by (by100 blast)
+			              qed
 			              obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
 			                and hempty:
 			                  "\<forall>t>0.
