@@ -35559,6 +35559,40 @@ proof -
       using hfigure33_boundary_through_old_edge_point_split
       by (elim exE conjE)
     let ?J' = "?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O"
+    have hCO_sub_J: "C\<^sub>O \<subseteq> J"
+      using hJ_oriented_split by (by100 blast)
+    have hCO_endpoints_sub: "{v\<^sub>0, v\<^sub>2} \<subseteq> C\<^sub>O"
+      using hCO_E unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hJ'_retained_old_boundary: "?J' \<inter> J = C\<^sub>O"
+    proof
+      show "?J' \<inter> J \<subseteq> C\<^sub>O"
+      proof
+        fix x
+        assume hx: "x \<in> ?J' \<inter> J"
+        have hx_cases: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2 \<or> x \<in> C\<^sub>O"
+          using hx by (by100 blast)
+        show "x \<in> C\<^sub>O"
+        proof (rule disjE[OF hx_cases])
+          assume hxB: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+          have hxJ: "x \<in> J"
+            using hx by (by100 blast)
+          have "x \<in> {v\<^sub>0, v\<^sub>2}"
+            using hxB hxJ hfigure33_replacement_meets_boundary_only_endpoints
+            by (by100 blast)
+          thus "x \<in> C\<^sub>O"
+            using hCO_endpoints_sub by (by100 blast)
+        next
+          assume "x \<in> C\<^sub>O"
+          thus "x \<in> C\<^sub>O" .
+        qed
+      qed
+      show "C\<^sub>O \<subseteq> ?J' \<inter> J"
+        using hCO_sub_J by (by100 blast)
+    qed
+    have hJ'_discarded_side_inter: "?J' \<inter> C\<^sub>R = {v\<^sub>0, v\<^sub>2}"
+      using hCR_B_inter hCR_CO_inter by (by100 blast)
+    have hdiscarded_side_J'_inter: "C\<^sub>R \<inter> ?J' = {v\<^sub>0, v\<^sub>2}"
+      using hJ'_discarded_side_inter by (by100 blast)
     have hbook_oriented_PL_fold_core:
         "\<exists>K' f.
           geotop_is_complex K'
