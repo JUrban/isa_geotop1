@@ -36792,7 +36792,92 @@ proof -
           auxiliary vertices inside the supported carrier, keep the outside of
           that carrier fixed, send the old boundary chord to the broken
           replacement arc, and fix the retained boundary arc. **)
-        sorry
+      proof -
+        let ?source_triangles =
+          "\<lambda>v\<^sub>3 v\<^sub>4 v\<^sub>5.
+            {geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+             geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+             geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+             geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}"
+        let ?target_triangles =
+          "\<lambda>v\<^sub>3 v\<^sub>4.
+            {geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+             geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+             geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+             geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}"
+        let ?source_carrier =
+          "\<lambda>v\<^sub>3 v\<^sub>4 v\<^sub>5.
+            {\<tau>. \<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+              \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+        let ?target_carrier =
+          "\<lambda>v\<^sub>3 v\<^sub>4.
+            {\<tau>. \<exists>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+              \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+        have hfigure33_book_local_simplicial_extension:
+            "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
+              collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
+              \<and> geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+              \<and> finite (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+              \<and> geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)
+              \<and> finite (?target_carrier v\<^sub>3 v\<^sub>4)
+              \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
+              \<and> (\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                    f P = P)
+              \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    UNIV geotop_euclidean_topology f
+              \<and> f v\<^sub>0 = v\<^sub>0
+              \<and> f v\<^sub>2 = v\<^sub>2
+              \<and> f v\<^sub>3 = v\<^sub>3
+              \<and> f v\<^sub>4 = v\<^sub>4
+              \<and> f v\<^sub>5 = v\<^sub>1
+              \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                      geotop_simplicial_on \<sigma> f \<tau>)
+              \<and> f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2
+              \<and> f ` C\<^sub>O = C\<^sub>O"
+          (**
+            Book Figure 3.3 local construction: choose \<open>v\<^sub>3,v\<^sub>4,v\<^sub>5\<close>,
+            leave \<open>v\<^sub>0,v\<^sub>2,v\<^sub>3,v\<^sub>4\<close> fixed, send \<open>v\<^sub>5\<close> to \<open>v\<^sub>1\<close>, and
+            extend simplicially over the four named source triangles. **)
+          sorry
+        show ?thesis
+        proof -
+          obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcarrier_sub_U:
+              "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
+            and hf_fix_carrier:
+              "\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                f P = P"
+            and hf_homeo:
+              "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f"
+            and hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
+            and hf_CO: "f ` C\<^sub>O = C\<^sub>O"
+            using hfigure33_book_local_simplicial_extension
+            by (elim exE conjE)
+          have hf_fix_U: "\<forall>P\<in>UNIV - U. f P = P"
+          proof
+            fix P
+            assume hP: "P \<in> UNIV - U"
+            have hP_not_carrier:
+                "P \<in> UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              using hP hcarrier_sub_U by (by100 blast)
+            show "f P = P"
+              using hf_fix_carrier hP_not_carrier by (by100 blast)
+          qed
+          show ?thesis
+          proof (rule exI[of _ f], intro conjI)
+            show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f"
+              by (rule hf_homeo)
+            show "\<forall>P\<in>UNIV - U. f P = P"
+              by (rule hf_fix_U)
+            show "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
+              by (rule hf_B02)
+            show "f ` C\<^sub>O = C\<^sub>O"
+              by (rule hf_CO)
+          qed
+        qed
+      qed
       have hbook_supported_PL_map:
           "\<exists>f.
               top1_homeomorphism_on UNIV geotop_euclidean_topology
