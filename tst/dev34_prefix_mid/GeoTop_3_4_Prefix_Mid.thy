@@ -38304,6 +38304,188 @@ proof -
                 by (rule subset_antisym
                     [OF htarget_carrier_vertices_sub htarget_vertices_sup])
             qed
+            let ?vertex_map = "\<lambda>x. if x = v\<^sub>5 then v\<^sub>1 else x"
+            have hfigure33_vertex_map_bij:
+                "bij_betw ?vertex_map
+                  (geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5))
+                  (geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4))"
+            proof -
+              have hv\<^sub>1_not_source_vertices:
+                  "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                using hv\<^sub>1_not hv\<^sub>1v\<^sub>3 hv\<^sub>4v\<^sub>1 hv\<^sub>1v\<^sub>5 by (by100 simp)
+              have hv\<^sub>0v\<^sub>5: "v\<^sub>0 \<noteq> v\<^sub>5"
+                using hv\<^sub>0_off_line hv\<^sub>5_line by (by100 blast)
+              have hv\<^sub>2v\<^sub>5: "v\<^sub>2 \<noteq> v\<^sub>5"
+                using hv\<^sub>2_off_line hv\<^sub>5_line by (by100 blast)
+              have hvertex_map_image:
+                  "?vertex_map ` {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}
+                    = {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+              proof
+                show "?vertex_map ` {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}
+                    \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                proof
+                  fix y
+                  assume hy:
+                      "y \<in> ?vertex_map ` {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                  obtain x where hx: "x \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                    and hyx: "y = ?vertex_map x"
+                    using hy by (by100 blast)
+                  show "y \<in> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                  proof (cases "x = v\<^sub>5")
+                    case True
+                    show ?thesis
+                      using True hyx by (by100 simp)
+                  next
+                    case False
+                    have hx_cases:
+                        "x = v\<^sub>0 \<or> x = v\<^sub>2 \<or> x = v\<^sub>3 \<or> x = v\<^sub>4"
+                      using hx False by (by100 simp)
+                    show ?thesis
+                      using hx_cases
+                    proof (elim disjE)
+                      assume "x = v\<^sub>0"
+                      thus ?thesis
+                        using hyx False by (by100 simp)
+                    next
+                      assume "x = v\<^sub>2"
+                      thus ?thesis
+                        using hyx False by (by100 simp)
+                    next
+                      assume "x = v\<^sub>3"
+                      thus ?thesis
+                        using hyx False by (by100 simp)
+                    next
+                      assume "x = v\<^sub>4"
+                      thus ?thesis
+                        using hyx False by (by100 simp)
+                    qed
+                  qed
+                qed
+                show "{v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}
+                    \<subseteq> ?vertex_map ` {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                proof
+                  fix y
+                  assume hy: "y \<in> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                  have hy_cases:
+                      "y = v\<^sub>0 \<or> y = v\<^sub>1 \<or> y = v\<^sub>2 \<or> y = v\<^sub>3 \<or> y = v\<^sub>4"
+                    using hy by (by100 simp)
+                  show "y \<in> ?vertex_map ` {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                    using hy_cases
+                  proof (elim disjE)
+                    assume "y = v\<^sub>0"
+                    have "y = ?vertex_map v\<^sub>0"
+                      using \<open>y = v\<^sub>0\<close> hv\<^sub>0v\<^sub>5 by (by100 simp)
+                    moreover have "v\<^sub>0 \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                      by (by100 simp)
+                    thus ?thesis
+                      using calculation by (by100 blast)
+                  next
+                    assume "y = v\<^sub>1"
+                    have "y = ?vertex_map v\<^sub>5"
+                      using \<open>y = v\<^sub>1\<close> by (by100 simp)
+                    moreover have "v\<^sub>5 \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                      by (by100 simp)
+                    thus ?thesis
+                      using calculation by (by100 blast)
+                  next
+                    assume "y = v\<^sub>2"
+                    have "y = ?vertex_map v\<^sub>2"
+                      using \<open>y = v\<^sub>2\<close> hv\<^sub>2v\<^sub>5 by (by100 simp)
+                    moreover have "v\<^sub>2 \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                      by (by100 simp)
+                    thus ?thesis
+                      using calculation by (by100 blast)
+                  next
+                    assume "y = v\<^sub>3"
+                    have "y = ?vertex_map v\<^sub>3"
+                      using \<open>y = v\<^sub>3\<close> hv\<^sub>5v\<^sub>3 by (by100 simp)
+                    moreover have "v\<^sub>3 \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                      by (by100 simp)
+                    thus ?thesis
+                      using calculation by (by100 blast)
+                  next
+                    assume "y = v\<^sub>4"
+                    have "y = ?vertex_map v\<^sub>4"
+                      using \<open>y = v\<^sub>4\<close> hv\<^sub>4v\<^sub>5 by (by100 simp)
+                    moreover have "v\<^sub>4 \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                      by (by100 simp)
+                    thus ?thesis
+                      using calculation by (by100 blast)
+                  qed
+                qed
+              qed
+              have hvertex_map_inj:
+                  "inj_on ?vertex_map {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+              proof (rule inj_onI)
+                fix x y
+                assume hx: "x \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                assume hy: "y \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                assume hxy: "?vertex_map x = ?vertex_map y"
+                show "x = y"
+                proof (cases "x = v\<^sub>5")
+                  case True
+                  have hy_v\<^sub>5: "y = v\<^sub>5"
+                  proof (rule ccontr)
+                    assume hy_not: "y \<noteq> v\<^sub>5"
+                    have "?vertex_map y = y"
+                      using hy_not by (by100 simp)
+                    hence "y = v\<^sub>1"
+                      using hxy True by (by100 simp)
+                    thus False
+                      using hy hv\<^sub>1_not_source_vertices by (by100 simp)
+                  qed
+                  show ?thesis
+                    using True hy_v\<^sub>5 by (by100 simp)
+                next
+                  case False
+                  have hx_map: "?vertex_map x = x"
+                    using False by (by100 simp)
+                  show ?thesis
+                  proof (cases "y = v\<^sub>5")
+                    case True
+                    have "x = v\<^sub>1"
+                      using hxy hx_map True by (by100 simp)
+                    thus ?thesis
+                      using hx hv\<^sub>1_not_source_vertices by (by100 simp)
+                  next
+                    case False
+                    have "?vertex_map y = y"
+                      using False by (by100 simp)
+                    thus ?thesis
+                      using hxy hx_map by (by100 simp)
+                  qed
+                qed
+              qed
+              have hsource_vertices:
+                  "geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    = {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                by (rule hsource_carrier_vertices_eq)
+              have htarget_vertices:
+                  "geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)
+                    = {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                by (rule htarget_carrier_vertices_eq)
+              have hvertex_map_image_carriers:
+                  "?vertex_map `
+                    geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    = geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)"
+                using hvertex_map_image hsource_vertices htarget_vertices
+                by (by100 simp)
+              have hvertex_map_inj_carrier:
+                  "inj_on ?vertex_map
+                    (geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5))"
+                using hvertex_map_inj hsource_vertices by (by100 simp)
+              show ?thesis
+                unfolding bij_betw_def
+              proof (intro conjI)
+                show "inj_on ?vertex_map
+                    (geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5))"
+                  by (rule hvertex_map_inj_carrier)
+                show "?vertex_map `
+                    geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    = geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)"
+                  by (rule hvertex_map_image_carriers)
+              qed
+            qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
