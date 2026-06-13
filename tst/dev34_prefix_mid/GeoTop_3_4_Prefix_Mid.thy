@@ -35593,6 +35593,19 @@ proof -
       using hCR_B_inter hCR_CO_inter by (by100 blast)
     have hdiscarded_side_J'_inter: "C\<^sub>R \<inter> ?J' = {v\<^sub>0, v\<^sub>2}"
       using hJ'_discarded_side_inter by (by100 blast)
+    have hJ'_closure_on_eq:
+        "closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior ?J') =
+        closure (geotop_polygon_interior ?J')"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hJ'_closure_decomp:
+        "closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior ?J') =
+        geotop_polygon_interior ?J' \<union> ?J'"
+      using hJ'_closure_on_eq polygon_interior_closure_eq[OF hB_CO_polygon]
+      by (by100 simp)
+    have hJ'_sub_U: "?J' \<subseteq> U"
+      using hJ'_closure_decomp hB_CO_support by (by100 blast)
     have hbook_oriented_PL_fold_core:
         "\<exists>K' f.
           geotop_is_complex K'
