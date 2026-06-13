@@ -35493,7 +35493,62 @@ proof -
               UNIV geotop_euclidean_topology f
         \<and> (\<forall>P\<in>UNIV - U. f P = P)
         \<and> f ` J = J'"
-    sorry
+  proof -
+    obtain R C\<^sub>R C\<^sub>O where hR_B02_int:
+        "R \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      and hJ_oriented_split: "J = C\<^sub>R \<union> C\<^sub>O"
+      and hCR_bl: "geotop_is_broken_line C\<^sub>R"
+      and hCO_bl: "geotop_is_broken_line C\<^sub>O"
+      and hCR_E: "geotop_arc_endpoints C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+      and hCO_E: "geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      and hCR_CO_disj:
+        "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
+      and hR_CR_int: "R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+      and hCR_B_polygon: "geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      and hB_CO_polygon: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
+      and hCR_B_support:
+        "closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<subseteq> U"
+      and hB_CO_support:
+        "closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)) \<subseteq> U"
+      using hfigure33_boundary_through_old_edge_point_split by (by100 blast)
+    let ?J' = "?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O"
+    have hbook_oriented_PL_fold_core:
+        "\<exists>K' f.
+          geotop_is_complex K'
+          \<and> finite K'
+          \<and> geotop_polyhedron K' =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')
+          \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+              < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+          \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f
+          \<and> (\<forall>P\<in>UNIV - U. f P = P)
+          \<and> f ` J = ?J'"
+      sorry
+    show ?thesis
+    proof (rule exI[of _ ?J'])
+      show "\<exists>K' f.
+          geotop_is_polygon ?J' \<and>
+          geotop_is_complex K' \<and>
+          finite K' \<and>
+          geotop_polyhedron K' =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior ?J') \<and>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior ?J') \<subseteq> U \<and>
+          card {\<tau> \<in> K'. geotop_simplex_dim \<tau> 2}
+            < card {\<tau> \<in> K. geotop_simplex_dim \<tau> 2} \<and>
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology f \<and>
+          (\<forall>P\<in>UNIV - U. f P = P) \<and> f ` J = ?J'"
+        using hB_CO_polygon hB_CO_support hbook_oriented_PL_fold_core
+        by (by100 blast)
+    qed
+  qed
   show ?thesis
     using hbook_supported_PL_fold by (by100 blast)
 qed
