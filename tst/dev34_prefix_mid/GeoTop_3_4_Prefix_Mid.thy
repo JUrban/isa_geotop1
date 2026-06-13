@@ -47711,31 +47711,11 @@ proof -
 	      show ?thesis
 	        by (rule mp[OF himp hx_face_e1_for_delete])
 	    qed
-	    have hx_no_incident_edge_after_edge_delete:
-	        "\<not> (\<exists>d\<in>?K\<^sub>d. geotop_is_edge d \<and> x \<in> d)"
-	      sorry
 	    have hx_no_face_after_edge_delete:
 	        "\<And>\<sigma>. \<sigma> \<in> ?K\<^sub>d \<Longrightarrow> \<sigma> \<noteq> e1 \<Longrightarrow> \<sigma> \<noteq> e2 \<Longrightarrow>
 	          \<sigma> \<noteq> {x} \<Longrightarrow>
 	          geotop_is_face {x} \<sigma> \<Longrightarrow> False"
-	    proof -
-	      fix \<sigma>
-	      assume h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
-	      assume h\<sigma>ne_e1: "\<sigma> \<noteq> e1"
-	      assume h\<sigma>ne_e2: "\<sigma> \<noteq> e2"
-	      assume h\<sigma>ne_x: "\<sigma> \<noteq> {x}"
-	      assume hx_face_\<sigma>: "geotop_is_face {x} \<sigma>"
-	      have hx_sub_\<sigma>: "{x} \<subseteq> \<sigma>"
-	        by (rule geotop_is_face_imp_subset_prefix[OF hx_face_\<sigma>])
-	      have hx\<sigma>: "x \<in> \<sigma>"
-	        using hx_sub_\<sigma> by (by100 simp)
-	      have h\<sigma>eq_x: "\<sigma> = {x}"
-	        by (rule geotop_complex_no_incident_edge_simplex_containing_vertex_eq_singleton_prefix
-	            [OF hK_delete_complex hx_no_incident_edge_after_edge_delete
-	              hxKd_for_delete h\<sigma>Kd hx\<sigma>])
-	      show False
-	        using h\<sigma>eq_x h\<sigma>ne_x by (by100 simp)
-	    qed
+	      sorry
 	    have hK_reduced_complex: "geotop_is_complex ?K\<^sub>r"
 	    proof (rule geotop_complex_subset_is_complex)
 	      show "?K\<^sub>r \<subseteq> ?K\<^sub>d"
