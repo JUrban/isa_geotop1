@@ -42355,7 +42355,73 @@ proof -
 			                      coordinate inequality for the moving ray from
 			                      \<open>v\<^sub>0\<close> toward \<open>?v\<^sub>4_of t\<close>, limiting to the old
 			                      edge \<open>v\<^sub>0\<close>--\<open>?v\<^sub>5\<close>. **)
-			                    sorry
+			                  proof -
+			                    have hfigure33_endpoint_segment_v0_left_skinny_only_vertex_scalar:
+			                        "\<exists>\<eta>>0. \<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+			                          \<subseteq> {v\<^sub>0}"
+			                      (**
+			                        Moise Figure 3.3 left endpoint ray-angle
+			                        statement.  The full local boundary ray from
+			                        \<open>v\<^sub>0\<close> can touch the moving skinny cone along
+			                        \<open>v\<^sub>0\<close>--\<open>?v\<^sub>4_of t\<close> only at its endpoint, for
+			                        all sufficiently small positive scalar
+			                        displacements.  This is the affine-coordinate
+			                        sign comparison in the basis
+			                        \<open>?v\<^sub>5 - v\<^sub>0\<close>, \<open>v\<^sub>1 - v\<^sub>0\<close>. **)
+			                      sorry
+			                    obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
+			                      and hray:
+			                        "\<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+			                          \<subseteq> {v\<^sub>0}"
+			                      using hfigure33_endpoint_segment_v0_left_skinny_only_vertex_scalar
+			                      by (elim exE conjE)
+			                    have hsmall:
+			                        "\<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+			                          = {}"
+			                    proof (intro allI impI)
+			                      fix t :: real
+			                      assume ht_pos: "0 < t"
+			                      assume ht_lt: "t < \<eta>"
+			                      have hray_t:
+			                          "closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+			                          \<subseteq> {v\<^sub>0}"
+			                        using hray ht_pos ht_lt by (by100 blast)
+			                      show "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+			                          = {}"
+			                      proof (rule equals0I)
+			                        fix x
+			                        assume hx:
+			                          "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}"
+			                        have hx_ray:
+			                            "x \<in> closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                              geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}"
+			                          using hx by (by100 blast)
+			                        have hx_v\<^sub>0: "x \<in> {v\<^sub>0}"
+			                          using hray_t hx_ray by (by100 blast)
+			                        have hx_not_v\<^sub>0: "x \<notin> {v\<^sub>0}"
+			                          using hx by (by100 blast)
+			                        show False
+			                          using hx_v\<^sub>0 hx_not_v\<^sub>0 by (by100 blast)
+			                      qed
+			                    qed
+			                    show ?thesis
+			                      using h\<eta>_pos hsmall by (by100 blast)
+			                  qed
 			                  have hfigure33_endpoint_germ_v0_right_skinny_empty_scalar:
 			                      "\<exists>\<eta>>0. \<forall>t>0.
 			                        t < \<eta> \<longrightarrow>
@@ -42366,7 +42432,70 @@ proof -
 			                    (**
 			                      Right skinny edge cone at \<open>v\<^sub>0\<close>, limiting to the
 			                      old edge \<open>v\<^sub>0\<close>--\<open>v\<^sub>1\<close>. **)
-			                    sorry
+			                  proof -
+			                    have hfigure33_endpoint_segment_v0_right_skinny_only_vertex_scalar:
+			                        "\<exists>\<eta>>0. \<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                            geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+			                          \<subseteq> {v\<^sub>0}"
+			                      (**
+			                        Moise Figure 3.3 right endpoint ray-angle
+			                        statement.  The full local boundary ray from
+			                        \<open>v\<^sub>0\<close> can touch the moving skinny cone along
+			                        \<open>v\<^sub>0\<close>--\<open>?v\<^sub>3_of t\<close> only at \<open>v\<^sub>0\<close>, once
+			                        the scalar displacement is small enough. **)
+			                      sorry
+			                    obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
+			                      and hray:
+			                        "\<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                            geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+			                          \<subseteq> {v\<^sub>0}"
+			                      using hfigure33_endpoint_segment_v0_right_skinny_only_vertex_scalar
+			                      by (elim exE conjE)
+			                    have hsmall:
+			                        "\<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                            geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+			                          = {}"
+			                    proof (intro allI impI)
+			                      fix t :: real
+			                      assume ht_pos: "0 < t"
+			                      assume ht_lt: "t < \<eta>"
+			                      have hray_t:
+			                          "closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                            geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+			                          \<subseteq> {v\<^sub>0}"
+			                        using hray ht_pos ht_lt by (by100 blast)
+			                      show "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                            geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+			                          = {}"
+			                      proof (rule equals0I)
+			                        fix x
+			                        assume hx:
+			                          "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                            geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}"
+			                        have hx_ray:
+			                            "x \<in> closed_segment v\<^sub>0 p\<^sub>0 \<inter>
+			                              geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}"
+			                          using hx by (by100 blast)
+			                        have hx_v\<^sub>0: "x \<in> {v\<^sub>0}"
+			                          using hray_t hx_ray by (by100 blast)
+			                        have hx_not_v\<^sub>0: "x \<notin> {v\<^sub>0}"
+			                          using hx by (by100 blast)
+			                        show False
+			                          using hx_v\<^sub>0 hx_not_v\<^sub>0 by (by100 blast)
+			                      qed
+			                    qed
+			                    show ?thesis
+			                      using h\<eta>_pos hsmall by (by100 blast)
+			                  qed
 			                  obtain \<eta>\<^sub>L where h\<eta>\<^sub>L_pos: "0 < \<eta>\<^sub>L"
 			                    and hleft:
 			                      "\<forall>t>0.
