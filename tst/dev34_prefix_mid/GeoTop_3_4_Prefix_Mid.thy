@@ -37702,6 +37702,23 @@ proof -
     using hid_homeo h\<sigma>2 hJ_frontier hsupport by (by100 blast)
 qed
 
+lemma geotop_map_fixed_outside_mono_prefix:
+  fixes C U :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hC_U: "C \<subseteq> U"
+  assumes hfix_C: "\<forall>P\<in>UNIV - C. f P = P"
+  shows "\<forall>P\<in>UNIV - U. f P = P"
+  (**
+    Support monotonicity: a map fixed outside a smaller carrier is fixed outside
+    every larger support set containing that carrier. **)
+proof
+  fix P
+  assume hP: "P \<in> UNIV - U"
+  have "P \<in> UNIV - C"
+    using hP hC_U by (by100 blast)
+  thus "f P = P"
+    using hfix_C by (by100 blast)
+qed
+
 lemma geotop_map_fixed_on_set_from_support_contact_prefix:
   fixes A C F :: "'a set" and f :: "'a \<Rightarrow> 'a"
   assumes hcontact: "A \<inter> C \<subseteq> F"
@@ -47086,15 +47103,8 @@ proof -
             using hfigure33_book_local_simplicial_extension
             by (elim exE conjE)
           have hf_fix_U: "\<forall>P\<in>UNIV - U. f P = P"
-          proof
-            fix P
-            assume hP: "P \<in> UNIV - U"
-            have hP_not_carrier:
-                "P \<in> UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
-              using hP hcarrier_sub_U by (by100 blast)
-            show "f P = P"
-              using hf_fix_carrier hP_not_carrier by (by100 blast)
-          qed
+            by (rule geotop_map_fixed_outside_mono_prefix
+                [OF hcarrier_sub_U hf_fix_carrier])
           show ?thesis
           proof (rule exI[of _ f], intro conjI)
             show "top1_homeomorphism_on UNIV geotop_euclidean_topology
