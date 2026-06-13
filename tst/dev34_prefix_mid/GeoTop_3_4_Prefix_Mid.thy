@@ -38041,7 +38041,7 @@ proof -
             extend simplicially over the four named source triangles. **)
         proof -
           have hfigure33_book_local_simplicial_extension_boundary_control:
-              "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
+              "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5.
                 collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
                 \<and> v\<^sub>1 \<noteq> v\<^sub>5
                 \<and> v\<^sub>4 \<noteq> v\<^sub>5
@@ -38087,27 +38087,16 @@ proof -
 	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
 	                  = geotop_convex_hull {v\<^sub>1, v\<^sub>3}
 	                \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
-                \<and> (\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
-                      f P = P)
-                \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
-                      UNIV geotop_euclidean_topology f
-                \<and> f v\<^sub>0 = v\<^sub>0
-                \<and> f v\<^sub>2 = v\<^sub>2
-                \<and> f v\<^sub>3 = v\<^sub>3
-                \<and> f v\<^sub>4 = v\<^sub>4
-                \<and> f v\<^sub>5 = v\<^sub>1
-                \<and> geotop_simplicial_on
-                      (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f
-                      (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})
-                \<and> geotop_simplicial_on
-                      (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f
-                      (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})
-                \<and> geotop_simplicial_on
-                      (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}) f
-                      (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})
-                \<and> geotop_simplicial_on
-                      (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) f
-                      (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})
+                \<and> geotop_polyhedron (?target_carrier v\<^sub>3 v\<^sub>4)
+                    = geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                \<and> (\<forall>h. (\<forall>v\<in>geotop_complex_vertices
+                          (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                          h v = (if v = v\<^sub>5 then v\<^sub>1 else v))
+                    \<longrightarrow> (\<forall>\<sigma>\<in>?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                          geotop_linear_on \<sigma> h)
+                    \<longrightarrow> (\<forall>x\<in>frontier
+                          (geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)).
+                          h x = x))
                 \<and> ?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5
                 \<and> C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                     \<subseteq> {v\<^sub>0, v\<^sub>2}"
@@ -38137,7 +38126,7 @@ proof -
                 \<and> f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2
                 \<and> f ` C\<^sub>O = C\<^sub>O"
           proof -
-            obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcol:
+            obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 where hcol:
                 "collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
               and hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
               and hv\<^sub>4v\<^sub>5: "v\<^sub>4 \<noteq> v\<^sub>5"
@@ -38196,33 +38185,18 @@ proof -
 	                  = geotop_convex_hull {v\<^sub>1, v\<^sub>3}"
 	              and hcarrier_sub_U:
                 "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
-              and hf_fix_carrier:
-                "\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
-                  f P = P"
-              and hf_homeo:
-                "top1_homeomorphism_on UNIV geotop_euclidean_topology
-                  UNIV geotop_euclidean_topology f"
-              and hfv\<^sub>0: "f v\<^sub>0 = v\<^sub>0"
-              and hfv\<^sub>2: "f v\<^sub>2 = v\<^sub>2"
-              and hfv\<^sub>3: "f v\<^sub>3 = v\<^sub>3"
-              and hfv\<^sub>4: "f v\<^sub>4 = v\<^sub>4"
-              and hfv\<^sub>5: "f v\<^sub>5 = v\<^sub>1"
-              and hfsimp045:
-                "geotop_simplicial_on
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})"
-              and hfsimp245:
-                "geotop_simplicial_on
-                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f
-                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})"
-              and hfsimp053:
-                "geotop_simplicial_on
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}) f
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})"
-              and hfsimp253:
-                "geotop_simplicial_on
-                  (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) f
-                  (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+              and hcarrier_poly_eq:
+                "geotop_polyhedron (?target_carrier v\<^sub>3 v\<^sub>4)
+                  = geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              and hcarrier_frontier_fix_rule:
+                "\<forall>h. (\<forall>v\<in>geotop_complex_vertices
+                        (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                        h v = (if v = v\<^sub>5 then v\<^sub>1 else v))
+                  \<longrightarrow> (\<forall>\<sigma>\<in>?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                        geotop_linear_on \<sigma> h)
+                  \<longrightarrow> (\<forall>x\<in>frontier
+                        (geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)).
+                        h x = x)"
               and hB02_split:
                 "?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5"
               and hCO_carrier_inter:
@@ -38483,23 +38457,6 @@ proof -
               show ?thesis
                 by (rule geotop_simplex_face_closure_vertices_subset_prefix
                     [OF htarget_seed_vertices])
-            qed
-            have hfsimp:
-                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                    geotop_simplicial_on \<sigma> f \<tau>"
-            proof
-              fix \<sigma>
-              assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
-              have hcases:
-                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
-                using h\<sigma> by (by100 simp)
-              show "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_simplicial_on \<sigma> f \<tau>"
-                using hcases hfsimp045 hfsimp245 hfsimp053 hfsimp253
-                by (by100 auto)
             qed
             have hsource_complex:
                 "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
@@ -40362,6 +40319,192 @@ proof -
                   geotop_simplicial_on \<sigma> g \<tau>"
                 using hcases hg_simp045 hg_simp245 hg_simp053 hg_simp253
                 by (by100 auto)
+            qed
+            let ?C = "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+            have hcarrier_homeomorphism_self:
+                "homeomorphism ?C ?C g (inv_into ?C g)"
+              using hfigure33_carrier_homeomorphism hcarrier_poly_eq by (by100 simp)
+            have hcarrier_closed: "closed ?C"
+              by (rule geotop_complex_polyhedron_closed
+                  [OF hsource_complex hsource_fin_local])
+            have hg_frontier_fix:
+                "\<forall>x\<in>frontier ?C. g x = x"
+              using hcarrier_frontier_fix_rule hg_vertices hg_lin by (by100 blast)
+            have hinv_frontier_fix:
+                "\<forall>x\<in>frontier ?C. inv_into ?C g x = x"
+            proof
+              fix x
+              assume hx: "x \<in> frontier ?C"
+              have hxC: "x \<in> ?C"
+              proof -
+                have "frontier ?C \<subseteq> ?C"
+                  by (rule frontier_subset_closed[OF hcarrier_closed])
+                thus ?thesis
+                  using hx by (by100 blast)
+              qed
+              have hgx: "g x = x"
+                using hg_frontier_fix hx by (by100 blast)
+              have "inv_into ?C g (g x) = x"
+                using hcarrier_homeomorphism_self hxC by (rule homeomorphism_apply1)
+              thus "inv_into ?C g x = x"
+                using hgx by (by100 simp)
+            qed
+            obtain f where hf_homeo:
+                "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology f"
+              and hf_agree_carrier:
+                "\<forall>x\<in>?C. f x = g x"
+              and hf_fix_carrier:
+                "\<forall>x\<in>UNIV - ?C. f x = x"
+              using geotop_closed_carrier_homeomorphism_extend_identity_top1_prefix
+                  [OF hcarrier_closed hcarrier_homeomorphism_self
+                    hg_frontier_fix hinv_frontier_fix]
+              by (elim exE conjE)
+            have hf_agree_on_carrier:
+                "\<And>x. x \<in> ?C \<Longrightarrow> f x = g x"
+            proof -
+              fix x
+              assume hx: "x \<in> ?C"
+              show "f x = g x"
+                by (rule bspec[OF hf_agree_carrier hx])
+            qed
+            have hf_vertex_value:
+                "\<And>v w. v \<in> ?C \<Longrightarrow> g v = w \<Longrightarrow> f v = w"
+            proof -
+              fix v w
+              assume hvC: "v \<in> ?C"
+              assume hgv: "g v = w"
+              have hfg: "f v = g v"
+                by (rule hf_agree_on_carrier[OF hvC])
+              show "f v = w"
+                by (rule HOL.trans[OF hfg hgv])
+            qed
+            have hv\<^sub>0_carrier: "v\<^sub>0 \<in> ?C"
+            proof -
+              have htri: "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hvHOL: "v\<^sub>0 \<in> convex hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                by (rule hull_inc) (by100 simp)
+              have hv: "v\<^sub>0 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                using hvHOL geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>4, v\<^sub>5}"]
+                by (simp only: geotop_convex_hull_eq_HOL)
+              thus ?thesis
+                using htri hv
+                unfolding geotop_polyhedron_def by (by100 blast)
+            qed
+            have hv\<^sub>2_carrier: "v\<^sub>2 \<in> ?C"
+            proof -
+              have htri: "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hvHOL: "v\<^sub>2 \<in> convex hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                by (rule hull_inc) (by100 simp)
+              have hv: "v\<^sub>2 \<in> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                using hvHOL geotop_convex_hull_eq_HOL[of "{v\<^sub>2, v\<^sub>4, v\<^sub>5}"]
+                by (simp only: geotop_convex_hull_eq_HOL)
+              thus ?thesis
+                using htri hv
+                unfolding geotop_polyhedron_def by (by100 blast)
+            qed
+            have hv\<^sub>3_carrier: "v\<^sub>3 \<in> ?C"
+            proof -
+              have htri: "geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hvHOL: "v\<^sub>3 \<in> convex hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                by (rule hull_inc) (by100 simp)
+              have hv: "v\<^sub>3 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                using hvHOL geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>5, v\<^sub>3}"]
+                by (simp only: geotop_convex_hull_eq_HOL)
+              thus ?thesis
+                using htri hv
+                unfolding geotop_polyhedron_def by (by100 blast)
+            qed
+            have hv\<^sub>4_carrier: "v\<^sub>4 \<in> ?C"
+            proof -
+              have htri: "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hvHOL: "v\<^sub>4 \<in> convex hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                by (rule hull_inc) (by100 simp)
+              have hv: "v\<^sub>4 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                using hvHOL geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>4, v\<^sub>5}"]
+                by (simp only: geotop_convex_hull_eq_HOL)
+              thus ?thesis
+                using htri hv
+                unfolding geotop_polyhedron_def by (by100 blast)
+            qed
+            have hv\<^sub>5_carrier: "v\<^sub>5 \<in> ?C"
+            proof -
+              have htri: "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hvHOL: "v\<^sub>5 \<in> convex hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                by (rule hull_inc) (by100 simp)
+              have hv: "v\<^sub>5 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                using hvHOL geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>4, v\<^sub>5}"]
+                by (simp only: geotop_convex_hull_eq_HOL)
+              thus ?thesis
+                using htri hv
+                unfolding geotop_polyhedron_def by (by100 blast)
+            qed
+            have hfv\<^sub>0: "f v\<^sub>0 = v\<^sub>0"
+              by (rule hf_vertex_value[OF hv\<^sub>0_carrier hg_v\<^sub>0])
+            have hfv\<^sub>2: "f v\<^sub>2 = v\<^sub>2"
+              by (rule hf_vertex_value[OF hv\<^sub>2_carrier hg_v\<^sub>2])
+            have hfv\<^sub>3: "f v\<^sub>3 = v\<^sub>3"
+              by (rule hf_vertex_value[OF hv\<^sub>3_carrier hg_v\<^sub>3])
+            have hfv\<^sub>4: "f v\<^sub>4 = v\<^sub>4"
+              by (rule hf_vertex_value[OF hv\<^sub>4_carrier hg_v\<^sub>4])
+            have hfv\<^sub>5: "f v\<^sub>5 = v\<^sub>1"
+              by (rule hf_vertex_value[OF hv\<^sub>5_carrier hg_v\<^sub>5])
+            have hfsimp:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on \<sigma> f \<tau>"
+            proof
+              fix \<sigma>
+              assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              have hex\<tau>:
+                  "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on \<sigma> g \<tau>"
+                by (rule bspec[OF hfigure33_carrier_simplicial_on_g h\<sigma>])
+              obtain \<tau> where h\<tau>:
+                  "\<tau> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                and hgsimp: "geotop_simplicial_on \<sigma> g \<tau>"
+                using hex\<tau> by (elim bexE)
+              have h\<sigma>carrier: "\<sigma> \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              proof -
+                have hcases:
+                    "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                  using h\<sigma> by (by100 simp)
+                thus ?thesis
+                proof (elim disjE)
+                  assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                  thus ?thesis by (by100 simp)
+                next
+                  assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                  thus ?thesis by (by100 simp)
+                next
+                  assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                  thus ?thesis by (by100 simp)
+                next
+                  assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                  thus ?thesis by (by100 simp)
+                qed
+              qed
+              have h\<sigma>sub: "\<sigma> \<subseteq> ?C"
+                using h\<sigma>carrier unfolding geotop_polyhedron_def by (by100 blast)
+              have hfsimp\<sigma>: "geotop_simplicial_on \<sigma> f \<tau>"
+                by (rule geotop_carrier_extension_simplicial_on_prefix
+                    [OF h\<sigma>sub hf_agree_carrier hgsimp])
+              show "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                  geotop_simplicial_on \<sigma> f \<tau>"
+                using h\<tau> hfsimp\<sigma> by (by100 blast)
             qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
