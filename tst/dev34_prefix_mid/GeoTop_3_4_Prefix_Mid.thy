@@ -37506,20 +37506,46 @@ proof -
                 \<and> v\<^sub>4 \<noteq> v\<^sub>5
                 \<and> v\<^sub>5 \<noteq> v\<^sub>3
                 \<and> v\<^sub>4 \<noteq> v\<^sub>1
-                \<and> v\<^sub>1 \<noteq> v\<^sub>3
-                \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
-                \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
-                \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                      \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-                          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
-                          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)
-                \<and> (\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                      \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-                          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
-                          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)
-                \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
+	                \<and> v\<^sub>1 \<noteq> v\<^sub>3
+	                \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
+	                \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+	                  = geotop_convex_hull {v\<^sub>4, v\<^sub>5}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>0, v\<^sub>5}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>5}
+	                \<and> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>5}
+	                \<and> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>2, v\<^sub>5}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>5, v\<^sub>3}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+	                  = geotop_convex_hull {v\<^sub>4, v\<^sub>1}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>1}
+	                \<and> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>1}
+	                \<and> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>2, v\<^sub>1}
+	                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>1, v\<^sub>3}
+	                \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
                 \<and> (\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
                       f P = P)
                 \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
@@ -37567,22 +37593,58 @@ proof -
               and hv\<^sub>4v\<^sub>5: "v\<^sub>4 \<noteq> v\<^sub>5"
               and hv\<^sub>5v\<^sub>3: "v\<^sub>5 \<noteq> v\<^sub>3"
               and hv\<^sub>4v\<^sub>1: "v\<^sub>4 \<noteq> v\<^sub>1"
-              and hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> v\<^sub>3"
-              and hv\<^sub>0_off_line: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
-              and hv\<^sub>2_off_line: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
-              and hsource_inter:
-                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                  \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
-                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-              and htarget_inter:
-                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                  \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
-                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-              and hcarrier_sub_U:
+	              and hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> v\<^sub>3"
+	              and hv\<^sub>0_off_line: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
+	              and hv\<^sub>2_off_line: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
+	              and hsource045245:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+	                  = geotop_convex_hull {v\<^sub>4, v\<^sub>5}"
+	              and hsource045053:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>0, v\<^sub>5}"
+	              and hsource045253:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>5}"
+	              and hsource245053:
+	                "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>5}"
+	              and hsource245253:
+	                "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>2, v\<^sub>5}"
+	              and hsource053253:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>5, v\<^sub>3}"
+	              and htarget041241:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+	                  = geotop_convex_hull {v\<^sub>4, v\<^sub>1}"
+	              and htarget041013:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+	              and htarget041213:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>1}"
+	              and htarget241013:
+	                "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>1}"
+	              and htarget241213:
+	                "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>2, v\<^sub>1}"
+	              and htarget013213:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+	                  = geotop_convex_hull {v\<^sub>1, v\<^sub>3}"
+	              and hcarrier_sub_U:
                 "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
               and hf_fix_carrier:
                 "\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
@@ -37763,12 +37825,32 @@ proof -
             have hsource_triangles_fin:
                 "finite (?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5)"
               by (by100 simp)
-            have htarget_triangles_fin:
-                "finite (?target_triangles v\<^sub>3 v\<^sub>4)"
-              by (by100 simp)
-            have hsource_complex:
-                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
-              by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
+	            have htarget_triangles_fin:
+	                "finite (?target_triangles v\<^sub>3 v\<^sub>4)"
+	              by (by100 simp)
+	            have hsource_inter:
+	                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+	                  \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+	                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+	                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+	                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+	              by (rule geotop_figure33_source_triangles_intersections_faces_prefix
+	                  [OF hncol045 hncol245 hncol053 hncol253 hsource045245
+	                    hsource045053 hsource045253 hsource245053
+	                    hsource245253 hsource053253])
+	            have htarget_inter:
+	                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+	                  \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+	                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+	                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+	                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+	              by (rule geotop_figure33_target_triangles_intersections_faces_prefix
+	                  [OF hncol041 hncol241 hncol013 hncol213 htarget041241
+	                    htarget041013 htarget041213 htarget241013
+	                    htarget241213 htarget013213])
+	            have hsource_complex:
+	                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+	              by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
                   [OF hsource_triangles_fin hsource_simp hsource_inter])
             have htarget_complex:
                 "geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)"
