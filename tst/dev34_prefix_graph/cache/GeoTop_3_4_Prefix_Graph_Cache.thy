@@ -15612,7 +15612,14 @@ proof -
                   component of
                   \<open>ball w r - (S \<union> T \<union> U)\<close> to have all three selected
                   punctured edge germs in its closure. **)
-                sorry
+                using hW_source_arc_endpoint_cases
+                  hW_source_component_or_q_if_no_germ_closure
+                  hlocal_connected_trace_component_upgrade
+                  hM_trace_closure_touch_component
+                  hN_trace_closure_touch_component
+                  hPZ_trace_closure_touch_component
+                  hYZ_trace_closure_touch_component
+                by (by100 blast)
               obtain C where hC: "C \<in> components ?Lcomp"
                 and hS_touch:
                   "((S - {w}) \<inter> ball w r) \<inter> closure C \<noteq> {}"
