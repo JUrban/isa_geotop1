@@ -38833,6 +38833,82 @@ proof -
       using broken_line_endpoint_local_segment
         [OF hCO_bl hCO_E hv\<^sub>2_CO_endpoint]
       by (elim exE conjE)
+    let ?C\<^sub>O_mid =
+      "C\<^sub>O - (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+    have hC\<^sub>O_mid_compact: "compact ?C\<^sub>O_mid"
+    proof -
+      have hopen:
+          "open (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+        by (intro open_Un open_ball)
+      have hclosed_compl:
+          "closed (- (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)))"
+        by (rule closed_Compl[OF hopen])
+      have hmid_eq:
+          "?C\<^sub>O_mid =
+            C\<^sub>O \<inter> - (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+        by (by100 blast)
+      show ?thesis
+        using compact_Int_closed[OF hCO_compact hclosed_compl] hmid_eq
+        by (by100 simp)
+    qed
+    have hC\<^sub>O_mid_closed: "closed ?C\<^sub>O_mid"
+      using hC\<^sub>O_mid_compact compact_imp_closed by (by100 blast)
+    have hv\<^sub>0_in_endpoint_ball:
+        "v\<^sub>0 \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2)"
+      using h\<delta>\<^sub>0_pos by (by100 simp)
+    have hv\<^sub>2_in_endpoint_ball:
+        "v\<^sub>2 \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+      using h\<delta>\<^sub>2_pos by (by100 simp)
+    have hC\<^sub>O_mid_theta_disj:
+        "?C\<^sub>O_mid \<inter> \<theta> = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx: "x \<in> ?C\<^sub>O_mid \<inter> \<theta>"
+      have hxCO: "x \<in> C\<^sub>O"
+        using hx by (by100 blast)
+      have hx\<theta>: "x \<in> \<theta>"
+        using hx by (by100 blast)
+      have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxCO hx\<theta> hCO_theta_inter by (by100 blast)
+      have hx_not_ball:
+          "x \<notin> ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<and>
+           x \<notin> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+        using hx by (by100 blast)
+      show False
+      proof (rule disjE[OF hx_end[unfolded insert_iff]])
+        assume hx0: "x = v\<^sub>0"
+        show False
+          using hx0 hx_not_ball hv\<^sub>0_in_endpoint_ball by (by100 blast)
+      next
+        assume hx2_or_empty: "x = v\<^sub>2 \<or> x \<in> {}"
+        have hx2: "x = v\<^sub>2"
+          using hx2_or_empty by (by100 blast)
+        show False
+          using hx2 hx_not_ball hv\<^sub>2_in_endpoint_ball by (by100 blast)
+      qed
+    qed
+    have h\<theta>_nonempty: "\<theta> \<noteq> {}"
+    proof -
+      have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+        by (rule GeoTopBase0.geotop_simplex_vertices_subset[OF h\<theta>vertices])
+      show ?thesis
+        using hverts_sub by (by100 blast)
+    qed
+    have hC\<^sub>O_mid_setdist_gap:
+        "?C\<^sub>O_mid = {} \<or> 0 < setdist ?C\<^sub>O_mid \<theta>"
+    proof (cases "?C\<^sub>O_mid = {}")
+      case True
+      show ?thesis
+        using True by (by100 blast)
+    next
+      case False
+      have "setdist ?C\<^sub>O_mid \<theta> > 0"
+        using setdist_gt_0_compact_closed[OF hC\<^sub>O_mid_compact h\<theta>_closed]
+          False h\<theta>_nonempty hC\<^sub>O_mid_theta_disj
+        by (by100 simp)
+      thus ?thesis
+        by (by100 blast)
+    qed
     have hB02_sub_CR: "?B\<^sub>0\<^sub>2 \<subseteq> C\<^sub>R"
     proof
       fix x
