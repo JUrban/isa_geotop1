@@ -35323,7 +35323,9 @@ proof -
         \<and> geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}
         \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}
-        \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+        \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)
+        \<and> geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
   proof -
     have hB02_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
       using hfigure33_replacement_arc_package by (by100 blast)
@@ -35373,8 +35375,82 @@ proof -
       by (by100 blast)
     have hJ_split: "J = C\<^sub>R \<union> C\<^sub>O"
       using hsplit hL_poly by (by100 blast)
+    have hCR_bl: "geotop_is_broken_line C\<^sub>R"
+      using hsplit by (by100 blast)
+    have hCO_bl: "geotop_is_broken_line C\<^sub>O"
+      using hsplit by (by100 blast)
+    have hCR_E: "geotop_arc_endpoints C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+      using hsplit by (by100 blast)
+    have hCO_E: "geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      using hsplit by (by100 blast)
+    have hCR_CO_disj:
+        "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
+      using hsplit by (by100 blast)
+    have hB_bl: "geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hB_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hCR_sub_J: "C\<^sub>R \<subseteq> J"
+      using hJ_split by (by100 blast)
+    have hCO_sub_J: "C\<^sub>O \<subseteq> J"
+      using hJ_split by (by100 blast)
+    have hCR_B_disj:
+        "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx:
+          "x \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      have hxCR: "x \<in> C\<^sub>R"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxB: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_E: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hxCR hCR_sub_J by (by100 blast)
+      have "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxB hxJ hfigure33_replacement_meets_boundary_only_endpoints
+        by (by100 blast)
+      thus False
+        using hx_not_E by (by100 blast)
+    qed
+    have hB_CO_disj:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx:
+          "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      have hxB: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxCO: "x \<in> C\<^sub>O"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_E: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hxCO hCO_sub_J by (by100 blast)
+      have "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxB hxJ hfigure33_replacement_meets_boundary_only_endpoints
+        by (by100 blast)
+      thus False
+        using hx_not_E by (by100 blast)
+    qed
+    have hpoly_CR_B: "geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(1)
+          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+            hCR_B_disj hCR_CO_disj hB_CO_disj
+            hfigure33_replacement_arc_interior_subset_polygon_interior])
+    have hpoly_B_CO: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(3)
+          [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
+            hCR_B_disj hCR_CO_disj hB_CO_disj
+            hfigure33_replacement_arc_interior_subset_polygon_interior])
     show ?thesis
-      using hR_B02_int hsplit hJ_split by (by100 blast)
+      using hR_B02_int hsplit hJ_split hpoly_CR_B hpoly_B_CO by (by100 blast)
   qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
