@@ -35700,6 +35700,100 @@ proof -
     using hpq ha_open hb_open by (by100 blast)
 qed
 
+lemma geotop_convex_hull_insert_inter_affine_base_prefix:
+  fixes A L :: "(real^2) set"
+  assumes hA_ne: "A \<noteq> {}"
+  assumes hA_L: "A \<subseteq> L"
+  assumes hL_aff: "affine L"
+  assumes hcL: "c \<notin> L"
+  shows "geotop_convex_hull (insert c A) \<inter> L = geotop_convex_hull A"
+proof
+  show "geotop_convex_hull (insert c A) \<inter> L \<subseteq> geotop_convex_hull A"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_convex_hull (insert c A) \<inter> L"
+    have hx_cone: "x \<in> convex hull (insert c A)"
+      using hx unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    have hxL: "x \<in> L"
+      using hx by (by100 simp)
+    obtain u v y where hu: "0 \<le> u"
+      and hv: "0 \<le> v"
+      and huv: "u + v = 1"
+      and hy: "y \<in> convex hull A"
+      and hx_eq: "x = u *\<^sub>R c + v *\<^sub>R y"
+      using hx_cone unfolding convex_hull_insert[OF hA_ne] by (by100 blast)
+    have hA_hull_L: "convex hull A \<subseteq> L"
+      by (rule hull_minimal[of A L convex, OF hA_L affine_imp_convex[OF hL_aff]])
+    have hyL: "y \<in> L"
+      using hA_hull_L hy by (by100 blast)
+    show "x \<in> geotop_convex_hull A"
+    proof (cases "u = 0")
+      case True
+      have "x = y"
+        using True huv hx_eq by (by100 simp)
+      thus ?thesis
+        using hy unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    next
+      case False
+      have hcoef: "(1 / u) + (1 - 1 / u) = 1"
+        by (by100 simp)
+      have hcoef_y: "v / u + (1 - 1 / u) = 0"
+        using huv False by (simp add: field_simps)
+      have hc_eq: "(1 / u) *\<^sub>R x + (1 - 1 / u) *\<^sub>R y = c"
+      proof -
+        have "(1 / u) *\<^sub>R x + (1 - 1 / u) *\<^sub>R y
+            = (1 / u) *\<^sub>R (u *\<^sub>R c + v *\<^sub>R y)
+              + (1 - 1 / u) *\<^sub>R y"
+          using hx_eq by (by100 simp)
+        also have "\<dots> = c + ((v / u) *\<^sub>R y + (1 - 1 / u) *\<^sub>R y)"
+          using False by (simp add: scaleR_add_left algebra_simps)
+        also have "\<dots> = c + (v / u + (1 - 1 / u)) *\<^sub>R y"
+          by (simp add: scaleR_left_distrib)
+        also have "\<dots> = c"
+          using hcoef_y by (by100 simp)
+        finally show ?thesis .
+      qed
+      have "c \<in> L"
+        using mem_affine[OF hL_aff hxL hyL hcoef] hc_eq by (by100 simp)
+      thus ?thesis
+        using hcL by (by100 blast)
+    qed
+  qed
+  show "geotop_convex_hull A \<subseteq> geotop_convex_hull (insert c A) \<inter> L"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_convex_hull A"
+    have hmono: "geotop_convex_hull A \<subseteq> geotop_convex_hull (insert c A)"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_mono) (by100 blast)
+    have hA_hull_L: "convex hull A \<subseteq> L"
+      by (rule hull_minimal[of A L convex, OF hA_L affine_imp_convex[OF hL_aff]])
+    have hxL: "x \<in> L"
+      using hx hA_hull_L unfolding geotop_convex_hull_eq_HOL by (by100 blast)
+    show "x \<in> geotop_convex_hull (insert c A) \<inter> L"
+      using hx hmono hxL by (by100 blast)
+  qed
+qed
+
+lemma geotop_triangle_inter_affine_base_pair_prefix:
+  fixes a b c :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hc: "c \<notin> affine hull {a, b}"
+  shows "geotop_convex_hull {a, b, c} \<inter> affine hull {a, b}
+    = geotop_convex_hull {a, b}"
+proof -
+  have hpair_ne: "{a, b} \<noteq> {}"
+    by (by100 simp)
+  have hpair_sub: "{a, b} \<subseteq> affine hull {a, b}"
+    by (rule hull_subset)
+  have hbase:
+      "geotop_convex_hull (insert c {a, b}) \<inter> affine hull {a, b}
+        = geotop_convex_hull {a, b}"
+    by (rule geotop_convex_hull_insert_inter_affine_base_prefix
+        [OF hpair_ne hpair_sub affine_affine_hull hc])
+  show ?thesis
+    using hbase by (by100 simp add: insert_commute)
+qed
+
 lemma geotop_not_collinear_off_affine_hull_pair_prefix:
   fixes p x y :: "real^2"
   assumes hxy: "x \<noteq> y"
