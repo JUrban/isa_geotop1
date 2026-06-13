@@ -47208,6 +47208,48 @@ proof
     using hxy_in_old he1J he2J by (by100 auto)
   have hxzJ: "closed_segment x z \<subseteq> J"
     using hxz_in_old he1J he2J by (by100 auto)
+  have hxyK: "closed_segment x y \<in> K"
+    using hxy_in_old he1K he2K by (by100 auto)
+  have hxzK: "closed_segment x z \<in> K"
+    using hxz_in_old he1K he2K by (by100 auto)
+  have hd_not_sub_xy: "\<not> d \<subseteq> closed_segment x y"
+  proof
+    assume hd_sub: "d \<subseteq> closed_segment x y"
+    have hd_face_xy: "geotop_is_face d (closed_segment x y)"
+      by (rule geotop_complex_subset_simplex_face_prefix
+          [OF hK hdK hxyK hd_sub])
+    have "d = closed_segment x y"
+      by (rule geotop_edge_face_of_edge_eq_prefix
+          [OF hd_edge hxy_edge hd_face_xy])
+    thus False
+      using hxy_in_old hd_ne_e1 hd_ne_e2 by (by100 blast)
+  qed
+  have hd_not_sub_xz: "\<not> d \<subseteq> closed_segment x z"
+  proof
+    assume hd_sub: "d \<subseteq> closed_segment x z"
+    have hd_face_xz: "geotop_is_face d (closed_segment x z)"
+      by (rule geotop_complex_subset_simplex_face_prefix
+          [OF hK hdK hxzK hd_sub])
+    have "d = closed_segment x z"
+      by (rule geotop_edge_face_of_edge_eq_prefix
+          [OF hd_edge hxz_edge hd_face_xz])
+    thus False
+      using hxz_in_old hd_ne_e1 hd_ne_e2 by (by100 blast)
+  qed
+  have hd_xy_inter_nonempty: "d \<inter> closed_segment x y \<noteq> {}"
+    using hxd by (by100 blast)
+  have hd_xz_inter_nonempty: "d \<inter> closed_segment x z \<noteq> {}"
+    using hxd by (by100 blast)
+  have hd_xy_inter_faces:
+      "geotop_is_face (d \<inter> closed_segment x y) d
+      \<and> geotop_is_face (d \<inter> closed_segment x y) (closed_segment x y)"
+    using geotop_is_complex_intersection[OF hK] hdK hxyK
+      hd_xy_inter_nonempty by (by100 blast)
+  have hd_xz_inter_faces:
+      "geotop_is_face (d \<inter> closed_segment x z) d
+      \<and> geotop_is_face (d \<inter> closed_segment x z) (closed_segment x z)"
+    using geotop_is_complex_intersection[OF hK] hdK hxzK
+      hd_xz_inter_nonempty by (by100 blast)
   obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
     and h\<rho>2: "geotop_simplex_dim \<rho> 2"
     and hd_face_\<rho>: "geotop_is_face d \<rho>"
