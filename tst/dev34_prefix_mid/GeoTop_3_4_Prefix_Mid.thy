@@ -37732,6 +37732,99 @@ lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
     chord \<open>yz\<close> to the two-edge corner arc \<open>yx \<union> xz\<close>. **)
   sorry
 
+lemma geotop_polygon_disk_boundary_edge_unique_incident_2simplex_core_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes heJ: "e \<subseteq> J"
+  shows "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  (**
+    Early Section 3 form of the disk-boundary edge uniqueness fact.  A second
+    two-simplex incident to a polygon-boundary edge would put the relative
+    interior of that edge inside the HOL interior of the closed disk carrier,
+    while the edge is still contained in the polygon boundary. **)
+proof -
+  let ?F = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+  have hF_sub: "?F \<subseteq> {\<sigma>}"
+  proof
+    fix \<rho>
+    assume h\<rho>F: "\<rho> \<in> ?F"
+    have h\<rho>K: "\<rho> \<in> K"
+      using h\<rho>F by (by100 simp)
+    have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      using h\<rho>F by (by100 simp)
+    have h\<rho>face: "geotop_is_face e \<rho>"
+      using h\<rho>F by (by100 simp)
+    show "\<rho> \<in> {\<sigma>}"
+    proof (rule ccontr)
+      assume h\<rho>not: "\<rho> \<notin> {\<sigma>}"
+      have h\<sigma>\<rho>: "\<sigma> \<noteq> \<rho>"
+        using h\<rho>not by (by100 simp)
+      have he_dim: "geotop_simplex_dim e 1"
+        using hedge unfolding geotop_is_edge_def by (by100 simp)
+      have he_simplex: "geotop_is_simplex e"
+        by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+      obtain p where hp: "p \<in> rel_interior e"
+      proof -
+        have "rel_interior e \<noteq> {}"
+          by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
+        thus ?thesis
+          using that by (by100 blast)
+      qed
+      have hp_e: "p \<in> e"
+        using hp rel_interior_subset by (by100 blast)
+      have hpJ: "p \<in> J"
+        using heJ hp_e by (by100 blast)
+      have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<rho>)"
+        by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+            [OF hK h\<sigma>K h\<rho>K h\<sigma>2 h\<rho>2 h\<sigma>\<rho> h\<sigma>face h\<rho>face hedge])
+      have hp_int_union: "p \<in> interior (\<sigma> \<union> \<rho>)"
+        using hrel_int_union hp by (by100 blast)
+      have hunion_sub_poly: "\<sigma> \<union> \<rho> \<subseteq> geotop_polyhedron K"
+        using h\<sigma>K h\<rho>K unfolding geotop_polyhedron_def by (by100 blast)
+      have hp_int_poly: "p \<in> interior (geotop_polyhedron K)"
+      proof -
+        have "interior (\<sigma> \<union> \<rho>) \<subseteq> interior (geotop_polyhedron K)"
+          by (rule interior_mono[OF hunion_sub_poly])
+        thus ?thesis
+          using hp_int_union by (by100 blast)
+      qed
+      have hclosure_on:
+          "closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) =
+           closure (geotop_polygon_interior J)"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have hpoly_closure:
+          "geotop_polyhedron K = closure (geotop_polygon_interior J)"
+        using hK_poly hclosure_on by (by100 simp)
+      have hpI: "p \<in> geotop_polygon_interior J"
+      proof -
+        have "p \<in> interior (closure (geotop_polygon_interior J))"
+          using hp_int_poly hpoly_closure by (by100 simp)
+        thus ?thesis
+          using geotop_polygon_interior_regular_closed_prefix[OF hJ]
+          by (by100 simp)
+      qed
+      have "p \<in> geotop_polygon_interior J \<inter> J"
+        using hpI hpJ by (by100 blast)
+      thus False
+        using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    qed
+  qed
+  have hsingle_sub: "{\<sigma>} \<subseteq> ?F"
+    using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  show ?thesis
+    using hF_sub hsingle_sub by (by100 blast)
+qed
+
 lemma geotop_figure33_one_boundary_named_supported_fold_prefix:
   fixes J U \<theta> e :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
@@ -47250,8 +47343,10 @@ proof
     by (rule geotop_is_face_imp_subset_prefix[OF hxy_face_\<theta>])
   have hxz_sub_\<theta>: "closed_segment x z \<subseteq> \<theta>"
     by (rule geotop_is_face_imp_subset_prefix[OF hxz_face_\<theta>])
+  have hx_xy: "x \<in> closed_segment x y"
+    by (by100 simp)
   have hx\<theta>: "x \<in> \<theta>"
-    using hxy_sub_\<theta> by (by100 simp)
+    using hxy_sub_\<theta> hx_xy by (by100 blast)
   have h\<theta>vertices_xyz0: "geotop_simplex_vertices \<theta> {x, y, z}"
   proof -
     obtain Vxy Wxy where h\<theta>Vxy: "geotop_simplex_vertices \<theta> Vxy"
@@ -47294,8 +47389,15 @@ proof
     have hxyz_card: "card {x, y, z} = 3"
       using hxy hxz hyz by (by100 simp)
     have hVxy_eq_xyz: "Vxy = {x, y, z}"
-      using hxyz_sub_Vxy hVxy_fin hVxy_card hxyz_card
-      by (by100 (metis card_subset_eq))
+    proof -
+      have hxyz_eq_Vxy: "{x, y, z} = Vxy"
+      proof (rule card_subset_eq[OF hVxy_fin hxyz_sub_Vxy])
+        show "card {x, y, z} = card Vxy"
+          using hVxy_card hxyz_card by (by100 simp)
+      qed
+      thus ?thesis
+        by (by100 simp)
+    qed
     show ?thesis
       using h\<theta>Vxy hVxy_eq_xyz by (by100 simp)
   qed
@@ -47508,8 +47610,15 @@ proof
       have hxyz_card: "card {x, y, z} = 3"
         using hxy hxz hyz by (by100 simp)
       have hVxy_eq_xyz: "Vxy = {x, y, z}"
-        using hxyz_sub_Vxy hVxy_fin hVxy_card hxyz_card
-        by (by100 (metis card_subset_eq))
+      proof -
+        have hxyz_eq_Vxy: "{x, y, z} = Vxy"
+        proof (rule card_subset_eq[OF hVxy_fin hxyz_sub_Vxy])
+          show "card {x, y, z} = card Vxy"
+            using hVxy_card hxyz_card by (by100 simp)
+        qed
+        thus ?thesis
+          by (by100 simp)
+      qed
       show ?thesis
         using h\<theta>Vxy hVxy_eq_xyz by (by100 simp)
     qed
@@ -47530,31 +47639,40 @@ proof
         using hWd_sub hVd_eq_xyz by (by100 simp)
       have hWd_cases:
           "Wd = {x, y} \<or> Wd = {x, z} \<or> Wd = {y, z}"
-        using hWd_sub_xyz hWd_card hxy hxz hyz by (by100 blast)
+      proof -
+        obtain a b where hWd_ab: "Wd = {a, b}" and hab: "a \<noteq> b"
+          using hWd_card card_2_iff by (by100 metis)
+        have ha: "a = x \<or> a = y \<or> a = z"
+          using hWd_ab hWd_sub_xyz by (by100 auto)
+        have hb: "b = x \<or> b = y \<or> b = z"
+          using hWd_ab hWd_sub_xyz by (by100 auto)
+        show ?thesis
+          using hWd_ab hab ha hb by (by100 auto)
+      qed
       show ?thesis
       proof (rule disjE[OF hWd_cases])
         assume hWd: "Wd = {x, y}"
+        have hxy_hull: "geotop_convex_hull {x, y} = closed_segment x y"
+          by (simp only: geotop_convex_hull_eq_HOL segment_convex_hull)
         have "d = closed_segment x y"
-          using hd_eq_hull hWd geotop_convex_hull_eq_HOL[of "{x, y}"]
-            segment_convex_hull[of x y]
-          by (by100 simp)
+          by (simp only: hd_eq_hull hWd hxy_hull)
         thus ?thesis by (by100 blast)
       next
         assume hcases: "Wd = {x, z} \<or> Wd = {y, z}"
         show ?thesis
         proof (rule disjE[OF hcases])
           assume hWd: "Wd = {x, z}"
+          have hxz_hull: "geotop_convex_hull {x, z} = closed_segment x z"
+            by (simp only: geotop_convex_hull_eq_HOL segment_convex_hull)
           have "d = closed_segment x z"
-            using hd_eq_hull hWd geotop_convex_hull_eq_HOL[of "{x, z}"]
-              segment_convex_hull[of x z]
-            by (by100 simp)
+            by (simp only: hd_eq_hull hWd hxz_hull)
           thus ?thesis by (by100 blast)
         next
           assume hWd: "Wd = {y, z}"
+          have hyz_hull: "geotop_convex_hull {y, z} = closed_segment y z"
+            by (simp only: geotop_convex_hull_eq_HOL segment_convex_hull)
           have "d = closed_segment y z"
-            using hd_eq_hull hWd geotop_convex_hull_eq_HOL[of "{y, z}"]
-              segment_convex_hull[of y z]
-            by (by100 simp)
+            by (simp only: hd_eq_hull hWd hyz_hull)
           thus ?thesis by (by100 blast)
         qed
       qed
@@ -47707,7 +47825,16 @@ proof
       using hW_sub hV_eq_xyz by (by100 simp)
     have hW_cases:
         "W = {x, y} \<or> W = {x, z} \<or> W = {y, z}"
-      using hW_sub_xyz hW_card hxy hxz hyz by (by100 blast)
+    proof -
+      obtain a b where hW_ab: "W = {a, b}" and hab: "a \<noteq> b"
+        using hW_card card_2_iff by (by100 metis)
+      have ha: "a = x \<or> a = y \<or> a = z"
+        using hW_ab hW_sub_xyz by (by100 auto)
+      have hb: "b = x \<or> b = y \<or> b = z"
+        using hW_ab hW_sub_xyz by (by100 auto)
+      show ?thesis
+        using hW_ab hab ha hb by (by100 auto)
+    qed
     have hx_not_yz: "x \<notin> closed_segment y z"
     proof
       assume hx_yz: "x \<in> closed_segment y z"
@@ -47764,77 +47891,11 @@ proof
       using he_old hxy_face_\<theta> hxz_face_\<theta> by (by100 auto)
     have heJ: "e \<subseteq> J"
       using he_old hxyJ hxzJ by (by100 auto)
-    let ?F = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    have hF_sub: "?F \<subseteq> {\<theta>}"
-    proof
-      fix \<sigma>
-      assume h\<sigma>F: "\<sigma> \<in> ?F"
-      have h\<sigma>K: "\<sigma> \<in> K"
-        using h\<sigma>F by (by100 simp)
-      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-        using h\<sigma>F by (by100 simp)
-      have h\<sigma>face: "geotop_is_face e \<sigma>"
-        using h\<sigma>F by (by100 simp)
-      show "\<sigma> \<in> {\<theta>}"
-      proof (rule ccontr)
-        assume h\<sigma>not: "\<sigma> \<notin> {\<theta>}"
-        have h\<theta>\<sigma>: "\<theta> \<noteq> \<sigma>"
-          using h\<sigma>not by (by100 simp)
-        have he_dim: "geotop_simplex_dim e 1"
-          using hedge unfolding geotop_is_edge_def by (by100 simp)
-        have he_simplex: "geotop_is_simplex e"
-          by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
-        obtain p where hp: "p \<in> rel_interior e"
-        proof -
-          have "rel_interior e \<noteq> {}"
-            by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
-          thus ?thesis
-            using that by (by100 blast)
-        qed
-        have hp_e: "p \<in> e"
-          using hp rel_interior_subset by (by100 blast)
-        have hpJ: "p \<in> J"
-          using heJ hp_e by (by100 blast)
-        have hrel_int_union: "rel_interior e \<subseteq> interior (\<theta> \<union> \<sigma>)"
-          by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
-              [OF hK h\<theta>K h\<sigma>K h\<theta>2 h\<sigma>2 h\<theta>\<sigma> hface h\<sigma>face hedge])
-        have hp_int_union: "p \<in> interior (\<theta> \<union> \<sigma>)"
-          using hrel_int_union hp by (by100 blast)
-        have hunion_sub_poly: "\<theta> \<union> \<sigma> \<subseteq> geotop_polyhedron K"
-          using h\<theta>K h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
-        have hp_int_poly: "p \<in> interior (geotop_polyhedron K)"
-        proof -
-          have "interior (\<theta> \<union> \<sigma>) \<subseteq> interior (geotop_polyhedron K)"
-            by (rule interior_mono[OF hunion_sub_poly])
-          thus ?thesis
-            using hp_int_union by (by100 blast)
-        qed
-        have hclosure_on:
-            "closure_on UNIV geotop_euclidean_topology
-              (geotop_polygon_interior J) =
-             closure (geotop_polygon_interior J)"
-          by (rule closure_on_geotop_UNIV_eq_closure)
-        have hpoly_closure:
-            "geotop_polyhedron K = closure (geotop_polygon_interior J)"
-          using hK_poly hclosure_on by (by100 simp)
-        have hpI: "p \<in> geotop_polygon_interior J"
-        proof -
-          have "p \<in> interior (closure (geotop_polygon_interior J))"
-            using hp_int_poly hpoly_closure by (by100 simp)
-          thus ?thesis
-            using geotop_polygon_interior_regular_closed_prefix[OF hJ]
-            by (by100 simp)
-        qed
-        have "p \<in> geotop_polygon_interior J \<inter> J"
-          using hpI hpJ by (by100 blast)
-        thus False
-          using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
-      qed
-    qed
-    have hsingle_sub: "{\<theta>} \<subseteq> ?F"
-      using h\<theta>K h\<theta>2 hface by (by100 simp)
-    show "?F = {\<theta>}"
-      using hF_sub hsingle_sub by (by100 blast)
+    have heK: "e \<in> K"
+      using hK h\<theta>K hface unfolding geotop_is_complex_def by (by100 blast)
+    show "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = {\<theta>}"
+      by (rule geotop_polygon_disk_boundary_edge_unique_incident_2simplex_core_prefix
+          [OF hJ hK hK_poly heK hedge h\<theta>K h\<theta>2 hface heJ])
   qed
   have h\<rho>_\<theta>_inter_not_dim1:
       "\<not> geotop_simplex_dim (\<rho> \<inter> \<theta>) 1"
