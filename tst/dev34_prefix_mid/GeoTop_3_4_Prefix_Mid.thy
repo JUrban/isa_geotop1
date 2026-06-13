@@ -35178,6 +35178,91 @@ proof -
     show "x \<in> geotop_polygon_interior J"
       using hx_closed hclosed_decomp hx_not_J by (by100 blast)
   qed
+  have hfigure33_boundary_chord_decomposition_hypotheses:
+      "\<exists>C\<^sub>1 C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
+        \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
+        \<and> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
+        \<and> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+            \<subseteq> geotop_polygon_interior J"
+  proof -
+    obtain C\<^sub>1 C\<^sub>2 where hJ_split: "J = C\<^sub>1 \<union> C\<^sub>2"
+        and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+        and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+        and hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+        and hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+        and hC\<^sub>1C\<^sub>2_disj:
+          "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      using hfigure33_boundary_broken_split_package by (by100 blast)
+    have hB_bl: "geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hBE:
+        "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hC\<^sub>1_sub_J: "C\<^sub>1 \<subseteq> J"
+      using hJ_split by (by100 blast)
+    have hC\<^sub>2_sub_J: "C\<^sub>2 \<subseteq> J"
+      using hJ_split by (by100 blast)
+    have hC\<^sub>1B_disj:
+        "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx:
+          "x \<in> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      have hxC: "x \<in> C\<^sub>1"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxB: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_E: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hxC hC\<^sub>1_sub_J by (by100 blast)
+      have "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxB hxJ hfigure33_replacement_meets_boundary_only_endpoints
+        by (by100 blast)
+      thus False
+        using hx_not_E by (by100 blast)
+    qed
+    have hBC\<^sub>2_disj:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+    proof (rule equals0I)
+      fix x
+      assume hx:
+          "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      have hxB: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxC: "x \<in> C\<^sub>2"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_not_E: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+        using hx unfolding geotop_arc_interior_def by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hxC hC\<^sub>2_sub_J by (by100 blast)
+      have "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxB hxJ hfigure33_replacement_meets_boundary_only_endpoints
+        by (by100 blast)
+      thus False
+        using hx_not_E by (by100 blast)
+    qed
+    show ?thesis
+      using hJ_split hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+        hC\<^sub>1B_disj hC\<^sub>1C\<^sub>2_disj hBC\<^sub>2_disj
+        hfigure33_replacement_arc_interior_subset_polygon_interior
+      by (by100 blast)
+  qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
