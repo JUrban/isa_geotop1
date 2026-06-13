@@ -37180,6 +37180,37 @@ proof -
       qed
     qed
   qed
+  have hfigure33_corner_inverse_supported_PL_fold_core:
+      "\<And>x y z.
+        x \<noteq> y \<Longrightarrow>
+        x \<noteq> z \<Longrightarrow>
+        y \<noteq> z \<Longrightarrow>
+        e1 \<union> e2 = closed_segment x y \<union> closed_segment x z \<Longrightarrow>
+        frontier \<theta> =
+          closed_segment x y \<union>
+          (closed_segment x z \<union> closed_segment y z) \<Longrightarrow>
+        \<theta> \<inter> J = closed_segment x y \<union> closed_segment x z \<Longrightarrow>
+        \<exists>J' K' f.
+          geotop_is_polygon J'
+          \<and> geotop_is_complex K'
+          \<and> finite K'
+          \<and> geotop_polyhedron K' =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J')
+          \<and> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior J') \<subseteq> U
+          \<and> card {\<tau>\<in>K'. geotop_simplex_dim \<tau> 2}
+              < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}
+          \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f
+          \<and> (\<forall>P\<in>UNIV - U. f P = P)
+          \<and> f ` J = J'"
+    (**
+      Moise Figure 3.3 Case 2 normalized corner inverse fold.  The boundary
+      corner is the two-edge arc \<open>xy \<union> xz\<close> and the post-deletion boundary
+      uses the remaining edge \<open>yz\<close>; this is the inverse of the supported
+      Case 1 local PL construction, with the inverse fixed outside \<open>U\<close>. **)
+    sorry
   have hbook_supported_inverse_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
@@ -37196,7 +37227,23 @@ proof -
               UNIV geotop_euclidean_topology f
         \<and> (\<forall>P\<in>UNIV - U. f P = P)
         \<and> f ` J = J'"
-    sorry
+  proof -
+    obtain x y z where hxy: "x \<noteq> y"
+      and hxz: "x \<noteq> z"
+      and hyz: "y \<noteq> z"
+      and hcorner_edges:
+        "e1 \<union> e2 = closed_segment x y \<union> closed_segment x z"
+      and hcorner_frontier:
+        "frontier \<theta> =
+          closed_segment x y \<union>
+          (closed_segment x z \<union> closed_segment y z)"
+      and hcorner_contact:
+        "\<theta> \<inter> J = closed_segment x y \<union> closed_segment x z"
+      using hfigure33_corner_edge_package by (elim exE conjE)
+    show ?thesis
+      by (rule hfigure33_corner_inverse_supported_PL_fold_core
+          [OF hxy hxz hyz hcorner_edges hcorner_frontier hcorner_contact])
+  qed
   show ?thesis
     using hbook_supported_inverse_PL_fold by (by100 blast)
 qed
