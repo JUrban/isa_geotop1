@@ -37702,6 +37702,64 @@ proof -
     using hid_homeo h\<sigma>2 hJ_frontier hsupport by (by100 blast)
 qed
 
+lemma geotop_map_fixed_on_set_from_support_contact_prefix:
+  fixes A C F :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hcontact: "A \<inter> C \<subseteq> F"
+  assumes hfix_out: "\<forall>P\<in>UNIV - C. f P = P"
+  assumes hfix_F: "\<forall>P\<in>F. f P = P"
+  shows "f ` A = A"
+  (**
+    Support bookkeeping for Figure 3.3 retained arcs: if the only points of an
+    arc lying in the active carrier are fixed, and everything outside the
+    carrier is fixed, then the whole arc is fixed as a set. **)
+proof -
+  have hpoint: "\<forall>P\<in>A. f P = P"
+  proof
+    fix P
+    assume hP: "P \<in> A"
+    show "f P = P"
+    proof (cases "P \<in> C")
+      case True
+      have "P \<in> F"
+        using hcontact hP True by (by100 blast)
+      thus ?thesis
+        using hfix_F by (by100 blast)
+    next
+      case False
+      have "P \<in> UNIV - C"
+        using False by (by100 simp)
+      thus ?thesis
+        using hfix_out by (by100 blast)
+    qed
+  qed
+  show ?thesis
+  proof
+    show "f ` A \<subseteq> A"
+    proof
+      fix Q
+      assume hQ: "Q \<in> f ` A"
+      obtain P where hP: "P \<in> A" and hQeq: "Q = f P"
+        using hQ by (by100 blast)
+      have "f P = P"
+        using hpoint hP by (by100 blast)
+      thus "Q \<in> A"
+        using hQeq hP by (by100 simp)
+    qed
+  next
+    show "A \<subseteq> f ` A"
+    proof
+      fix P
+      assume hP: "P \<in> A"
+      have hfP: "f P = P"
+        using hpoint hP by (by100 blast)
+      have "f P \<in> f ` A"
+        by (rule imageI[OF hP])
+      thus "P \<in> f ` A"
+        using hfP by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
   fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
@@ -46875,28 +46933,14 @@ proof -
               finally show ?thesis
                 by (by100 simp)
             qed
-            have hf_CO_pointwise: "\<forall>P\<in>C\<^sub>O. f P = P"
-            proof
-              fix P
-              assume hP_CO: "P \<in> C\<^sub>O"
-              show "f P = P"
-              proof (cases "P \<in> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)")
-                case True
-                have hP_end: "P = v\<^sub>0 \<or> P = v\<^sub>2"
-                  using hP_CO True hCO_carrier_inter by (by100 blast)
-                show ?thesis
-                  using hP_end hfv\<^sub>0 hfv\<^sub>2 by (by100 blast)
-              next
-                case False
-                have hP_out:
-                    "P \<in> UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
-                  using False by (by100 blast)
-                show ?thesis
-                  using hf_fix_carrier hP_out by (by100 blast)
-              qed
-            qed
             have hf_CO: "f ` C\<^sub>O = C\<^sub>O"
-              using hf_CO_pointwise by (by100 force)
+            proof -
+              have hfix_endpoints: "\<forall>P\<in>{v\<^sub>0, v\<^sub>2}. f P = P"
+                using hfv\<^sub>0 hfv\<^sub>2 by (by100 simp)
+              show ?thesis
+                by (rule geotop_map_fixed_on_set_from_support_contact_prefix
+                    [OF hCO_carrier_inter hf_fix_carrier hfix_endpoints])
+            qed
             show ?thesis
             proof (rule exI[of _ v\<^sub>3], rule exI[of _ v\<^sub>4],
                 rule exI[of _ v\<^sub>5], rule exI[of _ f], intro conjI)
