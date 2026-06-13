@@ -36780,13 +36780,57 @@ proof -
                 (geotop_polygon_interior ?J')"
         using hKr_poly_without_old_edge_rel hretained_closure_after_old_edge_delete
         by (by100 simp)
+      have hfigure33_supported_PL_fold_map:
+          "\<exists>f.
+              top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f
+              \<and> (\<forall>P\<in>UNIV - U. f P = P)
+              \<and> f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2
+              \<and> f ` C\<^sub>O = C\<^sub>O"
+        (**
+          Moise Figure 3.3 Case 1 local supported PL map.  Choose the
+          auxiliary vertices inside the supported carrier, keep the outside of
+          that carrier fixed, send the old boundary chord to the broken
+          replacement arc, and fix the retained boundary arc. **)
+        sorry
       have hbook_supported_PL_map:
           "\<exists>f.
               top1_homeomorphism_on UNIV geotop_euclidean_topology
                 UNIV geotop_euclidean_topology f
               \<and> (\<forall>P\<in>UNIV - U. f P = P)
               \<and> f ` J = ?J'"
-        sorry
+      proof -
+        obtain f where hf_homeo:
+            "top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f"
+          and hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+          and hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
+          and hf_CO: "f ` C\<^sub>O = C\<^sub>O"
+          using hfigure33_supported_PL_fold_map by (elim exE conjE)
+        have hf_CR: "f ` C\<^sub>R = ?B\<^sub>0\<^sub>1\<^sub>2"
+          by (simp only: hCR_eq_old hf_B02)
+        have hfJ: "f ` J = ?J'"
+        proof -
+          have "f ` J = f ` (C\<^sub>R \<union> C\<^sub>O)"
+            by (simp only: hJ_oriented_split)
+          also have "... = f ` C\<^sub>R \<union> f ` C\<^sub>O"
+            by (rule image_Un)
+          also have "... = ?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O"
+            by (simp only: hf_CR hf_CO)
+          finally show ?thesis
+            .
+        qed
+        show ?thesis
+        proof (rule exI[of _ f], intro conjI)
+          show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f"
+            by (rule hf_homeo)
+          show "\<forall>P\<in>UNIV - U. f P = P"
+            by (rule hf_fix)
+          show "f ` J = ?J'"
+            by (rule hfJ)
+        qed
+      qed
       have hbook_delete_triangle_geometry_and_map:
           "geotop_polyhedron ?K\<^sub>r =
               closure_on UNIV geotop_euclidean_topology
