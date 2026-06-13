@@ -38807,6 +38807,32 @@ proof -
       by (rule GeoTopBase0.geotop_simplex_compact[OF h\<theta>_simplex])
     have h\<theta>_closed: "closed \<theta>"
       using h\<theta>_compact compact_imp_closed by (by100 blast)
+    have hv\<^sub>0_CO_endpoint: "v\<^sub>0 \<in> {v\<^sub>0, v\<^sub>2}"
+      by (by100 simp)
+    have hv\<^sub>2_CO_endpoint: "v\<^sub>2 \<in> {v\<^sub>0, v\<^sub>2}"
+      by (by100 simp)
+    obtain \<delta>\<^sub>0 p\<^sub>0 where h\<delta>\<^sub>0_pos: "\<delta>\<^sub>0 > 0"
+      and hp\<^sub>0_ne: "p\<^sub>0 \<noteq> v\<^sub>0"
+      and hCO_local_v\<^sub>0:
+        "ball v\<^sub>0 \<delta>\<^sub>0 \<inter> C\<^sub>O =
+          ball v\<^sub>0 \<delta>\<^sub>0 \<inter> closed_segment v\<^sub>0 p\<^sub>0"
+      and hCO_arc_local_v\<^sub>0:
+        "ball v\<^sub>0 \<delta>\<^sub>0 \<inter> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}
+          \<subseteq> closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}"
+      using broken_line_endpoint_local_segment
+        [OF hCO_bl hCO_E hv\<^sub>0_CO_endpoint]
+      by (elim exE conjE)
+    obtain \<delta>\<^sub>2 p\<^sub>2 where h\<delta>\<^sub>2_pos: "\<delta>\<^sub>2 > 0"
+      and hp\<^sub>2_ne: "p\<^sub>2 \<noteq> v\<^sub>2"
+      and hCO_local_v\<^sub>2:
+        "ball v\<^sub>2 \<delta>\<^sub>2 \<inter> C\<^sub>O =
+          ball v\<^sub>2 \<delta>\<^sub>2 \<inter> closed_segment v\<^sub>2 p\<^sub>2"
+      and hCO_arc_local_v\<^sub>2:
+        "ball v\<^sub>2 \<delta>\<^sub>2 \<inter> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}
+          \<subseteq> closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}"
+      using broken_line_endpoint_local_segment
+        [OF hCO_bl hCO_E hv\<^sub>2_CO_endpoint]
+      by (elim exE conjE)
     have hB02_sub_CR: "?B\<^sub>0\<^sub>2 \<subseteq> C\<^sub>R"
     proof
       fix x
