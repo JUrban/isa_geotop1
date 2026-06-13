@@ -35343,6 +35343,21 @@ proof
   qed
 qed
 
+lemma geotop_simplex_face_closure_contains_subset_hull_prefix:
+  fixes S :: "(real^2) set set" and \<sigma> W V :: "(real^2) set"
+  assumes h\<sigma>S: "\<sigma> \<in> S"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hWne: "W \<noteq> {}"
+  assumes hWsub: "W \<subseteq> V"
+  shows "geotop_convex_hull W
+    \<in> {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+proof -
+  have hface: "geotop_is_face (geotop_convex_hull W) \<sigma>"
+    by (rule geotop_is_face_of_subset[OF h\<sigma>V hWne hWsub])
+  show ?thesis
+    using h\<sigma>S hface by (by100 blast)
+qed
+
 lemma geotop_linear_on_vertex_segment_image_prefix:
   fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes hlin: "geotop_linear_on \<sigma> f"
