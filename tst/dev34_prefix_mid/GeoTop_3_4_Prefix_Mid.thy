@@ -34937,6 +34937,55 @@ proof -
     using hB012_sub_\<theta> hfigure33_boundary_support_package by (by100 blast)
   have hJ_delete_replacement_sub_U: "?J\<^sub>d \<subseteq> U"
     using hJ_sub_U hB012_sub_U by (by100 blast)
+  have hfigure33_replacement_arc_package:
+      "geotop_is_broken_line ?B\<^sub>0\<^sub>2
+      \<and> geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2
+      \<and> geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
+      \<and> geotop_is_polygon (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+  proof -
+    have hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hv\<^sub>2v\<^sub>1: "v\<^sub>2 \<noteq> v\<^sub>1"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hB02_bl: "geotop_is_broken_line ?B\<^sub>0\<^sub>2"
+      by (rule geotop_closed_segment_is_broken_line[OF hv\<^sub>0v\<^sub>2])
+    have hB012_bl_raw:
+        "geotop_is_broken_line
+          (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
+      by (rule geotop_two_segment_join_broken_line_prefix
+          [OF hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 hnot_col])
+    have hB012_bl: "geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2"
+      using hB012_bl_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2] by (by100 simp)
+    have hB02_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hB012_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hdisj:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hfrontier_segments:
+        "frontier \<theta> = ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have hfrontier_polygon: "geotop_is_polygon (frontier \<theta>)"
+      using hfigure33_local_triangle_package by (by100 blast)
+    have htriangle_boundary_polygon: "geotop_is_polygon (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+    proof -
+      have "?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2 =
+          ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)"
+        by (by100 blast)
+      thus ?thesis
+        using hfrontier_segments hfrontier_polygon by (by100 simp)
+    qed
+    show ?thesis
+      using hB02_bl hB012_bl hB02_arc hB012_arc hdisj htriangle_boundary_polygon
+      by (by100 blast)
+  qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
