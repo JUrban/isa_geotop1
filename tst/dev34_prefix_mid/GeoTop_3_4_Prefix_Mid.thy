@@ -35303,6 +35303,28 @@ proof -
       using hB02_bl hB012_bl hB02_arc hB012_arc hdisj htriangle_boundary_polygon
       by (by100 blast)
   qed
+  have h\<theta>_old_replacement_closure_decomp:
+      "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) =
+        rel_interior \<theta> \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+  proof -
+    have hclosure_on_eq:
+        "closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) =
+        closure (geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2))"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have htriangle_polygon:
+        "geotop_is_polygon (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hclosure:
+        "closure (geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) =
+          geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+          (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      by (rule polygon_interior_closure_eq[OF htriangle_polygon])
+    show ?thesis
+      using hclosure_on_eq hclosure h\<theta>_polygon_interior_old_replacement_rel
+      by (by100 simp)
+  qed
   have hfigure33_boundary_endpoint_split_package:
       "\<exists>C\<^sub>1 C\<^sub>2.
         J = C\<^sub>1 \<union> C\<^sub>2
@@ -35964,6 +35986,13 @@ proof -
           closure_on UNIV geotop_euclidean_topology
             (geotop_polygon_interior J) - rel_interior \<theta>"
       using hKd_poly_without_theta_rel_interior hK_poly by (by100 simp)
+    have hKd_poly_without_old_replacement_triangle_interior:
+        "geotop_polyhedron ?K\<^sub>d =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) -
+          geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      using hKd_poly_without_theta_rel_interior_closed_disk
+        h\<theta>_polygon_interior_old_replacement_rel by (by100 simp)
     have hCO_sub_J: "C\<^sub>O \<subseteq> J"
       using hJ_oriented_split by (by100 blast)
     have hCO_sub_Kd_polyhedron: "C\<^sub>O \<subseteq> geotop_polyhedron ?K\<^sub>d"
