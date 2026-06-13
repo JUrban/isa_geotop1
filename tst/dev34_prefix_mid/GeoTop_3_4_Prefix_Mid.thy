@@ -34470,6 +34470,402 @@ proof -
     using hsym hsym_fix by (by100 blast)
 qed
 
+lemma geotop_linear_on_continuous_on_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  fixes f :: "real^2 \<Rightarrow> real^2"
+  assumes hlin: "geotop_linear_on \<sigma> f"
+  shows "continuous_on \<sigma> f"
+  (**
+    A map that is barycentrically linear on one simplex is continuous on that
+    simplex.  This is the active-prefix copy of the established dev34 helper,
+    needed for turning the Figure 3.3 carrier PLH into a topological
+    homeomorphism on the local carrier. **)
+proof -
+  obtain V where hV: "geotop_simplex_vertices \<sigma> V"
+      and hlin_V:
+        "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+          f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using hlin unfolding geotop_linear_on_def by (by100 blast)
+  have hV_fin: "finite V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_ne: "V \<noteq> {}"
+    using hV unfolding geotop_simplex_vertices_def by (by100 fastforce)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  obtain a where haV: "a \<in> V"
+    using hV_ne by (by100 blast)
+  define B where "B = ((\<lambda>v. v - a) ` (V - {a}))"
+  have hB_indep: "independent B"
+    using affine_dependent_iff_dependent2[OF haV] hV_ai
+    unfolding B_def by (by100 simp)
+  define fb where "fb b = f (SOME v. v \<in> V - {a} \<and> b = v - a) - f a" for b
+  obtain A :: "real^2 \<Rightarrow> real^2" where hA_lin: "linear A"
+      and hA_B: "\<forall>b\<in>B. A b = fb b"
+    using linear_independent_extend[OF hB_indep, of fb] by (by100 blast)
+  interpret A: linear A
+    by (rule hA_lin)
+  define g where "g x = f a + A (x - a)" for x
+  have hA_vertex: "\<forall>v\<in>V. A (v - a) = f v - f a"
+  proof
+    fix v assume hvV: "v \<in> V"
+    show "A (v - a) = f v - f a"
+    proof (cases "v = a")
+      case True
+      then show ?thesis using A.zero by (by100 simp)
+    next
+      case False
+      have hvB: "v - a \<in> B"
+        unfolding B_def using hvV False by (by100 blast)
+      have hsome: "(SOME w. w \<in> V - {a} \<and> v - a = w - a) = v"
+      proof (rule some_equality)
+        show "v \<in> V - {a} \<and> v - a = v - a"
+          using hvV False by (by100 simp)
+      next
+        fix w assume "w \<in> V - {a} \<and> v - a = w - a"
+        then show "w = v" by (by100 simp)
+      qed
+      have "A (v - a) = fb (v - a)"
+        using hA_B hvB by (by100 blast)
+      also have "\<dots> = f v - f a"
+        unfolding fb_def using hsome by (by100 simp)
+      finally show ?thesis .
+    qed
+  qed
+  have hg_cont: "continuous_on \<sigma> g"
+  proof -
+    have hA_bounded: "bounded_linear A"
+      using hA_lin linear_conv_bounded_linear by (by100 blast)
+    have hA_cont: "continuous_on UNIV A"
+      by (rule linear_continuous_on[OF hA_bounded])
+    have hminus_cont: "continuous_on \<sigma> (\<lambda>x. x - a)"
+      by (intro continuous_intros)
+    have hA_minus_cont: "continuous_on \<sigma> (\<lambda>x. A (x - a))"
+    proof -
+      have hA_on_image: "continuous_on ((\<lambda>x. x - a) ` \<sigma>) A"
+        by (rule continuous_on_subset[OF hA_cont]) (by100 blast)
+      have "continuous_on \<sigma> (A \<circ> (\<lambda>x. x - a))"
+        by (rule continuous_on_compose[OF hminus_cont hA_on_image])
+      thus ?thesis
+        unfolding comp_def by (by100 simp)
+    qed
+    show ?thesis
+      unfolding g_def
+      using hA_minus_cont by (intro continuous_intros)
+  qed
+  show ?thesis
+  proof (rule continuous_on_eq[OF hg_cont])
+    fix x assume hx\<sigma>: "x \<in> \<sigma>"
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    proof -
+      have "\<sigma> = geotop_convex_hull V"
+        using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+      thus ?thesis using geotop_convex_hull_eq_HOL by (by100 simp)
+    qed
+    have hx_hull: "x \<in> convex hull V"
+      using hx\<sigma> h\<sigma>_HOL by (by100 simp)
+    have h_hull_char:
+      "convex hull V =
+        {y. \<exists>\<alpha>::real^2 \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+              (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = y}"
+      by (rule convex_hull_finite[OF hV_fin])
+    obtain \<alpha> :: "real^2 \<Rightarrow> real"
+      where h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+        and h\<alpha>_sum: "sum \<alpha> V = 1"
+        and h\<alpha>_x: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+      using hx_hull h_hull_char by (by100 blast)
+    have hf_x: "f x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+      using hlin_V h\<alpha>_nn h\<alpha>_sum h\<alpha>_x by (by100 blast)
+    have hshift: "x - a = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a))"
+    proof -
+      have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a)) =
+          (\<Sum>v\<in>V. (\<alpha> v *\<^sub>R v) - (\<alpha> v *\<^sub>R a))"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+        fix v assume "v \<in> V"
+        show "\<alpha> v *\<^sub>R (v - a) = \<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R a"
+          by (rule scaleR_right_diff_distrib)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R a)"
+        by (rule sum_subtractf)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (sum \<alpha> V) *\<^sub>R a"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R a) = (sum \<alpha> V) *\<^sub>R a"
+          by (simp only: scaleR_sum_left)
+        thus ?thesis by (by100 simp)
+      qed
+      also have "\<dots> = x - (sum \<alpha> V) *\<^sub>R a"
+        using h\<alpha>_x by (by100 simp)
+      also have "\<dots> = x - a"
+        using h\<alpha>_sum by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    have hA_sum: "A (x - a) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a))"
+    proof -
+      have "A (x - a) = A (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a))"
+        using hshift by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. A (\<alpha> v *\<^sub>R (v - a)))"
+        by (rule A.sum)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+        fix v assume "v \<in> V"
+        show "A (\<alpha> v *\<^sub>R (v - a)) = \<alpha> v *\<^sub>R A (v - a)"
+          by (rule A.scale)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a))"
+        using hA_vertex by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hsum_aff:
+      "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a)) =
+        (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - f a"
+    proof -
+      have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a)) =
+          (\<Sum>v\<in>V. (\<alpha> v *\<^sub>R f v) - (\<alpha> v *\<^sub>R f a))"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+        fix v assume "v \<in> V"
+        show "\<alpha> v *\<^sub>R (f v - f a) = \<alpha> v *\<^sub>R f v - \<alpha> v *\<^sub>R f a"
+          by (rule scaleR_right_diff_distrib)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f a)"
+        by (rule sum_subtractf)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - (sum \<alpha> V) *\<^sub>R f a"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f a) = (sum \<alpha> V) *\<^sub>R f a"
+          by (simp only: scaleR_sum_left)
+        thus ?thesis by (by100 simp)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - f a"
+        using h\<alpha>_sum by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hg_x: "g x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+      unfolding g_def using hA_sum hsum_aff by (by100 simp)
+    show "g x = f x"
+      using hf_x hg_x by (by100 simp)
+  qed
+qed
+
+lemma geotop_finite_complex_linear_on_continuous_polyhedron_prefix:
+  fixes K :: "(real^2) set set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hlin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f"
+  shows "continuous_on (geotop_polyhedron K) f"
+proof -
+  have hclosed: "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> closed \<sigma>"
+    by (rule geotop_complex_simplex_closed[OF hK])
+  have hcont: "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> continuous_on \<sigma> f"
+  proof -
+    fix \<sigma>
+    assume h\<sigma>K: "\<sigma> \<in> K"
+    have "geotop_linear_on \<sigma> f"
+      using hlin h\<sigma>K by (by100 blast)
+    thus "continuous_on \<sigma> f"
+      by (rule geotop_linear_on_continuous_on_prefix)
+  qed
+  have "continuous_on (\<Union>\<sigma>\<in>K. \<sigma>) f"
+    by (rule continuous_on_closed_Union[OF hK_fin hclosed hcont])
+  thus ?thesis
+    unfolding geotop_polyhedron_def by (by100 simp)
+qed
+
+lemma geotop_finite_PLH_linear_homeomorphism_polyhedra_prefix:
+  fixes K L :: "(real^2) set set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hL: "geotop_is_complex L"
+  assumes hL_fin: "finite L"
+  assumes hPLH: "geotop_PLH K L f"
+  assumes hlin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f"
+  assumes hinvlin:
+    "\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
+  shows "homeomorphism (geotop_polyhedron K) (geotop_polyhedron L)
+            f (inv_into (geotop_polyhedron K) f)"
+proof -
+  let ?PK = "geotop_polyhedron K"
+  let ?PL = "geotop_polyhedron L"
+  let ?finv = "inv_into ?PK f"
+  have hbij: "bij_betw f ?PK ?PL"
+    using hPLH unfolding geotop_PLH_def by (by100 blast)
+  have hinj: "inj_on f ?PK"
+    using hbij bij_betw_imp_inj_on by (by100 blast)
+  have hf_image: "f ` ?PK = ?PL"
+    using hbij unfolding bij_betw_def by (by100 blast)
+  have hf_cont: "continuous_on ?PK f"
+    by (rule geotop_finite_complex_linear_on_continuous_polyhedron_prefix
+        [OF hK hK_fin hlin])
+  have hinv_cont: "continuous_on ?PL ?finv"
+    by (rule geotop_finite_complex_linear_on_continuous_polyhedron_prefix
+        [OF hL hL_fin hinvlin])
+  have hf_into: "f ` ?PK \<subseteq> ?PL"
+    using hf_image by (by100 simp)
+  have hinv_into: "?finv ` ?PL \<subseteq> ?PK"
+  proof
+    fix y
+    assume "y \<in> ?finv ` ?PL"
+    then obtain z where hzPL: "z \<in> ?PL" and hy: "y = ?finv z"
+      by (by100 blast)
+    have hz_image: "z \<in> f ` ?PK"
+      using hzPL hf_image by (by100 blast)
+    have "?finv z \<in> ?PK"
+      by (rule inv_into_into[OF hz_image])
+    thus "y \<in> ?PK"
+      using hy by (by100 simp)
+  qed
+  have hleft: "\<And>x. x \<in> ?PK \<Longrightarrow> ?finv (f x) = x"
+    by (rule inv_into_f_f[OF hinj])
+  have hright: "\<And>y. y \<in> ?PL \<Longrightarrow> f (?finv y) = y"
+  proof -
+    fix y
+    assume hyPL: "y \<in> ?PL"
+    have hy_image: "y \<in> f ` ?PK"
+      using hyPL hf_image by (by100 blast)
+    show "f (?finv y) = y"
+      by (rule f_inv_into_f[OF hy_image])
+  qed
+  show ?thesis
+    by (rule homeomorphismI[OF hf_cont hinv_cont hf_into hinv_into hleft hright])
+qed
+
+lemma geotop_closed_carrier_homeomorphism_extend_identity_prefix:
+  fixes C :: "'a::euclidean_space set" and h k :: "'a \<Rightarrow> 'a"
+  assumes hC_closed: "closed C"
+  assumes hhomeo: "homeomorphism C C h k"
+  assumes hfix_h: "\<forall>x\<in>frontier C. h x = x"
+  assumes hfix_k: "\<forall>x\<in>frontier C. k x = x"
+  defines "H \<equiv> (\<lambda>x. if x \<in> C then h x else x)"
+  defines "K \<equiv> (\<lambda>x. if x \<in> C then k x else x)"
+  shows "homeomorphism UNIV UNIV H K \<and> (\<forall>x\<in>UNIV - C. H x = x)"
+proof -
+  let ?D = "UNIV - interior C"
+  have hD_closed: "closed ?D"
+    by (by100 simp)
+  have hcover: "C \<union> ?D = UNIV"
+    using interior_subset by (by100 blast)
+  have hC_closedin: "closedin (top_of_set (C \<union> ?D)) C"
+    using hC_closed hcover by (by100 simp add: closedin_closed)
+  have hD_closedin: "closedin (top_of_set (C \<union> ?D)) ?D"
+    using hD_closed hcover by (by100 simp add: closedin_closed)
+  have hfrontier_eq: "frontier C = C - interior C"
+    using hC_closed unfolding frontier_def by (by100 simp)
+  have hcont_h: "continuous_on C h"
+    using hhomeo by (rule homeomorphism_cont1)
+  have hcont_k: "continuous_on C k"
+    using hhomeo by (rule homeomorphism_cont2)
+  have hcont_id_D: "continuous_on ?D (\<lambda>x::'a. x)"
+    by (rule continuous_on_id)
+  have hcont_H_UNIV: "continuous_on UNIV H"
+  proof -
+    have hcont_union:
+        "continuous_on (C \<union> ?D) (\<lambda>x. if x \<in> C then h x else x)"
+    proof (rule continuous_on_cases_local[OF hC_closedin hD_closedin hcont_h hcont_id_D])
+      fix x
+      assume hx: "x \<in> C \<and> \<not> x \<in> C \<or> x \<in> ?D \<and> x \<in> C"
+      have hx_frontier: "x \<in> frontier C"
+        using hx hfrontier_eq by (by100 blast)
+      show "h x = x"
+        using hfix_h hx_frontier by (by100 blast)
+    qed
+    show ?thesis
+      using hcont_union hcover unfolding H_def by (by100 simp)
+  qed
+  have hcont_K_UNIV: "continuous_on UNIV K"
+  proof -
+    have hcont_union:
+        "continuous_on (C \<union> ?D) (\<lambda>x. if x \<in> C then k x else x)"
+    proof (rule continuous_on_cases_local[OF hC_closedin hD_closedin hcont_k hcont_id_D])
+      fix x
+      assume hx: "x \<in> C \<and> \<not> x \<in> C \<or> x \<in> ?D \<and> x \<in> C"
+      have hx_frontier: "x \<in> frontier C"
+        using hx hfrontier_eq by (by100 blast)
+      show "k x = x"
+        using hfix_k hx_frontier by (by100 blast)
+    qed
+    show ?thesis
+      using hcont_union hcover unfolding K_def by (by100 simp)
+  qed
+  have hKH: "\<And>x. x \<in> UNIV \<Longrightarrow> K (H x) = x"
+  proof -
+    fix x
+    assume "x \<in> UNIV"
+    show "K (H x) = x"
+    proof (cases "x \<in> C")
+      case True
+      have hhxC: "h x \<in> C"
+        using hhomeo True homeomorphism_image1[OF hhomeo] by (by100 blast)
+      have "k (h x) = x"
+        using hhomeo True by (rule homeomorphism_apply1)
+      thus ?thesis
+        using True hhxC unfolding H_def K_def by (by100 simp)
+    next
+      case False
+      show ?thesis
+        using False unfolding H_def K_def by (by100 simp)
+    qed
+  qed
+  have hHK: "\<And>y. y \<in> UNIV \<Longrightarrow> H (K y) = y"
+  proof -
+    fix y
+    assume "y \<in> UNIV"
+    show "H (K y) = y"
+    proof (cases "y \<in> C")
+      case True
+      have hkyC: "k y \<in> C"
+        using hhomeo True homeomorphism_image2[OF hhomeo] by (by100 blast)
+      have "h (k y) = y"
+        using hhomeo True by (rule homeomorphism_apply2)
+      thus ?thesis
+        using True hkyC unfolding H_def K_def by (by100 simp)
+    next
+      case False
+      show ?thesis
+        using False unfolding H_def K_def by (by100 simp)
+    qed
+  qed
+  have hH_homeo: "homeomorphism UNIV UNIV H K"
+    by (rule homeomorphismI[OF hcont_H_UNIV hcont_K_UNIV])
+      (use hKH hHK in \<open>by (by100 blast)+\<close>)
+  have hH_fix: "\<forall>x\<in>UNIV - C. H x = x"
+    unfolding H_def by (by100 simp)
+  show ?thesis
+    using hH_homeo hH_fix by (by100 blast)
+qed
+
+lemma geotop_closed_carrier_homeomorphism_extend_identity_top1_prefix:
+  fixes C :: "(real^2) set" and h k :: "real^2 \<Rightarrow> real^2"
+  assumes hC_closed: "closed C"
+  assumes hhomeo: "homeomorphism C C h k"
+  assumes hfix_h: "\<forall>x\<in>frontier C. h x = x"
+  assumes hfix_k: "\<forall>x\<in>frontier C. k x = x"
+  shows "\<exists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology H
+          \<and> (\<forall>x\<in>C. H x = h x)
+          \<and> (\<forall>x\<in>UNIV - C. H x = x)"
+proof -
+  let ?H = "\<lambda>x. if x \<in> C then h x else x"
+  let ?K = "\<lambda>x. if x \<in> C then k x else x"
+  have hHK:
+      "homeomorphism UNIV UNIV ?H ?K \<and> (\<forall>x\<in>UNIV - C. ?H x = x)"
+    by (rule geotop_closed_carrier_homeomorphism_extend_identity_prefix
+        [OF hC_closed hhomeo hfix_h hfix_k refl refl])
+  have hHOL: "homeomorphism UNIV UNIV ?H ?K"
+    using hHK by (by100 blast)
+  have htop1: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+      UNIV geotop_euclidean_topology ?H"
+  proof -
+    have hsub: "top1_homeomorphism_on UNIV
+        (subspace_topology UNIV geotop_euclidean_topology UNIV)
+        UNIV (subspace_topology UNIV geotop_euclidean_topology UNIV) ?H"
+      by (rule geotop_HOL_homeomorphism_imp_top1_homeomorphism_on[OF hHOL])
+    show ?thesis
+      using hsub by (simp add: subspace_topology_UNIV_UNIV)
+  qed
+  show ?thesis
+    using htop1 hHK by (by100 blast)
+qed
+
 lemma geotop_supported_fold_normalization_compose_prefix:
   fixes J J' U \<sigma> :: "(real^2) set" and f g :: "real^2 \<Rightarrow> real^2"
   assumes hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
@@ -39709,6 +40105,57 @@ proof -
                               (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)) g))"
               by (rule geotop_isomorphism_induces_PLH
                   [OF hsource_complex htarget_complex hfigure33_carrier_isomorphism])
+            obtain g where hg_PLH:
+                "geotop_PLH
+                  (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                  (?target_carrier v\<^sub>3 v\<^sub>4) g"
+              and hg_poly_image:
+                "g ` geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                  = geotop_polyhedron (?target_carrier v\<^sub>3 v\<^sub>4)"
+              and hg_vertices:
+                "\<forall>v\<in>geotop_complex_vertices
+                    (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                    g v = ?vertex_map v"
+              and hg_lin:
+                "\<forall>\<sigma>\<in>?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    geotop_linear_on \<sigma> g"
+              and hg_inv_lin:
+                "\<forall>\<tau>\<in>?target_carrier v\<^sub>3 v\<^sub>4.
+                    geotop_linear_on \<tau>
+                      (inv_into
+                        (geotop_polyhedron
+                          (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)) g)"
+              using hfigure33_carrier_PLH by (elim exE conjE)
+            have hsource_fin_local:
+                "finite (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+            proof -
+              have hsource_triangles_fin:
+                  "finite (?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+                by (by100 simp)
+              show ?thesis
+                by (rule geotop_finite_simplex_face_closure_prefix
+                    [OF hsource_triangles_fin hsource_simp])
+            qed
+            have htarget_fin_local:
+                "finite (?target_carrier v\<^sub>3 v\<^sub>4)"
+            proof -
+              have htarget_triangles_fin:
+                  "finite (?target_triangles v\<^sub>3 v\<^sub>4)"
+                by (by100 simp)
+              show ?thesis
+                by (rule geotop_finite_simplex_face_closure_prefix
+                    [OF htarget_triangles_fin htarget_simp])
+            qed
+            have hfigure33_carrier_homeomorphism:
+                "homeomorphism
+                  (geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5))
+                  (geotop_polyhedron (?target_carrier v\<^sub>3 v\<^sub>4))
+                  g
+                  (inv_into
+                    (geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)) g)"
+              by (rule geotop_finite_PLH_linear_homeomorphism_polyhedra_prefix
+                  [OF hsource_complex hsource_fin_local htarget_complex
+                    htarget_fin_local hg_PLH hg_lin hg_inv_lin])
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
