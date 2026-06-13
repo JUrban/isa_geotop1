@@ -35193,7 +35193,9 @@ proof -
         \<and> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
             geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
         \<and> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
-            \<subseteq> geotop_polygon_interior J"
+            \<subseteq> geotop_polygon_interior J
+        \<and> geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)
+        \<and> geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>2)"
   proof -
     obtain C\<^sub>1 C\<^sub>2 where hJ_split: "J = C\<^sub>1 \<union> C\<^sub>2"
         and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
@@ -35257,11 +35259,59 @@ proof -
       thus False
         using hx_not_E by (by100 blast)
     qed
+    have hpoly_left: "geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(1)
+          [OF hJ_split hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+            hC\<^sub>1B_disj hC\<^sub>1C\<^sub>2_disj hBC\<^sub>2_disj
+            hfigure33_replacement_arc_interior_subset_polygon_interior])
+    have hpoly_right: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>2)"
+      by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(3)
+          [OF hJ_split hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
+            hC\<^sub>1B_disj hC\<^sub>1C\<^sub>2_disj hBC\<^sub>2_disj
+            hfigure33_replacement_arc_interior_subset_polygon_interior])
     show ?thesis
-      using hJ_split hC\<^sub>1_bl hB_bl hC\<^sub>2_bl hC\<^sub>1E hBE hC\<^sub>2E
-        hC\<^sub>1B_disj hC\<^sub>1C\<^sub>2_disj hBC\<^sub>2_disj
-        hfigure33_replacement_arc_interior_subset_polygon_interior
-      by (by100 blast)
+    proof (rule exI[of _ C\<^sub>1])
+      show "\<exists>C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2 \<and>
+          geotop_is_broken_line C\<^sub>1 \<and>
+          geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2 \<and>
+          geotop_is_broken_line C\<^sub>2 \<and>
+          geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<and>
+          geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<and>
+          geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2} \<and>
+          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {} \<and>
+          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {} \<and>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {} \<and>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+            \<subseteq> geotop_polygon_interior J \<and>
+          geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<and>
+          geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>2)"
+      proof (rule exI[of _ C\<^sub>2], intro conjI)
+        show "J = C\<^sub>1 \<union> C\<^sub>2" by (rule hJ_split)
+        show "geotop_is_broken_line C\<^sub>1" by (rule hC\<^sub>1_bl)
+        show "geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2" by (rule hB_bl)
+        show "geotop_is_broken_line C\<^sub>2" by (rule hC\<^sub>2_bl)
+        show "geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}" by (rule hC\<^sub>1E)
+        show "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}" by (rule hBE)
+        show "geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}" by (rule hC\<^sub>2E)
+        show "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+          by (rule hC\<^sub>1B_disj)
+        show "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+          by (rule hC\<^sub>1C\<^sub>2_disj)
+        show "geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+          by (rule hBC\<^sub>2_disj)
+        show "geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+            \<subseteq> geotop_polygon_interior J"
+          by (rule hfigure33_replacement_arc_interior_subset_polygon_interior)
+        show "geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>0\<^sub>1\<^sub>2)" by (rule hpoly_left)
+        show "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>2)" by (rule hpoly_right)
+      qed
+    qed
   qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
