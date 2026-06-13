@@ -287,6 +287,61 @@ proof -
     using hK hKfin hK_poly hcarrier by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_fine_Sd_named_carrier_meeting_first_arc_misses_second_prefix:
+  fixes J A1 A2 :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hA1_sub:
+    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J)"
+  assumes h\<delta>: "0 < \<delta>"
+  assumes hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+  shows "\<exists>K m N. geotop_is_complex K
+      \<and> finite K
+      \<and> geotop_polyhedron K =
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      \<and> N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})
+      \<and> A1 \<subseteq> N
+      \<and> N \<inter> A2 = {}"
+proof -
+  obtain K m where hK: "geotop_is_complex K"
+    and hKfin: "finite K"
+    and hK_poly: "geotop_polyhedron K =
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    and hcarrier_miss:
+      "(\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+    using geotop_polygon_disk_fine_Sd_carrier_meeting_first_arc_misses_second_prefix
+        [OF hJ h\<delta> hgap]
+    by (elim exE conjE)
+  define N where "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  have hsub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) =
+        geotop_polyhedron K"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hA1_sub_Sd_poly:
+      "A1 \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+    using hA1_sub hK_poly hSd_poly by (by100 simp)
+  have hA1_sub_N: "A1 \<subseteq> N"
+  proof
+    fix x
+    assume hx: "x \<in> A1"
+    have hx_poly: "x \<in> geotop_polyhedron (geotop_iterated_Sd m K)"
+      using hA1_sub_Sd_poly hx by (by100 blast)
+    obtain B where hB: "B \<in> geotop_iterated_Sd m K" and hxB: "x \<in> B"
+      using hx_poly unfolding geotop_polyhedron_def by (by100 blast)
+    have hB_meets: "B \<inter> A1 \<noteq> {}"
+      using hx hxB by (by100 blast)
+    show "x \<in> N"
+      unfolding N_def using hB hxB hB_meets by (by100 blast)
+  qed
+  have hN_miss: "N \<inter> A2 = {}"
+    unfolding N_def by (rule hcarrier_miss)
+  show ?thesis
+    using hK hKfin hK_poly N_def hA1_sub_N hN_miss
+    by (intro exI conjI)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
@@ -494,6 +549,22 @@ proof -
       by (rule geotop_polygon_disk_fine_Sd_carrier_meeting_first_arc_misses_second_prefix
           [OF hJ h\<delta>_pos h\<delta>_gap])
   qed
+  have hD44_named_fine_disk_carrier:
+      "\<exists>K m N. geotop_is_complex K
+        \<and> finite K
+        \<and> geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+        \<and> N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})
+        \<and> A1 \<subseteq> N
+        \<and> N \<inter> A2 = {}"
+  proof -
+    obtain \<delta> where h\<delta>_pos: "0 < \<delta>"
+      and h\<delta>_gap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+      using hA12_metric_separation by (by100 blast)
+    show ?thesis
+      by (rule geotop_polygon_disk_fine_Sd_named_carrier_meeting_first_arc_misses_second_prefix
+          [OF hJ hA1_sub h\<delta>_pos h\<delta>_gap])
+  qed
   have hQ_S_two_arc_local_access:
       "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
         0 < r
@@ -570,11 +641,13 @@ proof -
       subarc endpoints, and then use cyclic order to transfer that component
       frontier statement to the prescribed opposite boundary points \<open>Q,S\<close>.
 
-      The previous placeholder bundled the intermediate brick decomposition,
-      regular-neighborhood manifold, frontier sphere, and endpoint-transfer
-      facts as separate conjuncts.  The surrounding theorem only needs this
-      final component-transfer conclusion, so the open obligation is kept as
-      one exact Moise book package rather than five unrelated local goals. **)
+      The named carrier package above now supplies the fine closed-disk brick
+      neighborhood \<open>N\<close> with \<open>A1 \<subseteq> N\<close> and \<open>N \<inter> A2 = {}\<close>.  The remaining
+      open book step starts from that carrier, restricts it to the closed
+      polygonal disk, analyzes the frontier component through \<open>P\<close>, and uses
+      the cyclic order of \<open>P,Q,R,S\<close> on \<open>J\<close> to transfer the component frontier
+      to the opposite boundary points \<open>Q,S\<close>. **)
+    using hD44_named_fine_disk_carrier hQ_S_two_arc_local_access
     sorry
   show ?thesis
     using hD44_component_transfer by (by100 blast)
