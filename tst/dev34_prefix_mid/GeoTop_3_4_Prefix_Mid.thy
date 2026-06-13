@@ -37816,6 +37816,45 @@ proof -
   qed
 qed
 
+lemma geotop_supported_fold_from_carrier_extension_prefix:
+  fixes U B D C :: "(real^2) set"
+    and SC :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> (real^2) set set"
+  assumes hex:
+    "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
+      geotop_polyhedron (SC v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
+      \<and> (\<forall>P\<in>UNIV - geotop_polyhedron (SC v\<^sub>3 v\<^sub>4 v\<^sub>5). f P = P)
+      \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology f
+      \<and> f ` B = D
+      \<and> f ` C = C"
+  shows "\<exists>f.
+      top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology f
+      \<and> (\<forall>P\<in>UNIV - U. f P = P)
+      \<and> f ` B = D
+      \<and> f ` C = C"
+  (**
+    Figure 3.3 support wrapper: once the carrier construction supplies a map
+    fixed off its source carrier and that carrier lies in \<open>U\<close>, expose the
+    book conclusion fixed off \<open>U\<close>. **)
+proof -
+  obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcarrier_sub_U:
+      "geotop_polyhedron (SC v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
+    and hfix_carrier:
+      "\<forall>P\<in>UNIV - geotop_polyhedron (SC v\<^sub>3 v\<^sub>4 v\<^sub>5). f P = P"
+    and hhomeo:
+      "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology f"
+    and hfB: "f ` B = D"
+    and hfC: "f ` C = C"
+    using hex by (elim exE conjE)
+  have hfix_U: "\<forall>P\<in>UNIV - U. f P = P"
+    by (rule geotop_map_fixed_outside_mono_prefix
+        [OF hcarrier_sub_U hfix_carrier])
+  show ?thesis
+    using hhomeo hfix_U hfB hfC by (by100 blast)
+qed
+
 lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
   fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
@@ -47118,33 +47157,36 @@ proof -
         qed
         show ?thesis
         proof -
-          obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcarrier_sub_U:
-              "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
-            and hf_fix_carrier:
-              "\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
-                f P = P"
-            and hf_homeo:
-              "top1_homeomorphism_on UNIV geotop_euclidean_topology
-                UNIV geotop_euclidean_topology f"
-            and hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
-            and hf_CO: "f ` C\<^sub>O = C\<^sub>O"
-            using hfigure33_book_local_simplicial_extension
-            by (elim exE conjE)
-          have hf_fix_U: "\<forall>P\<in>UNIV - U. f P = P"
-            by (rule geotop_map_fixed_outside_mono_prefix
-                [OF hcarrier_sub_U hf_fix_carrier])
-          show ?thesis
-          proof (rule exI[of _ f], intro conjI)
-            show "top1_homeomorphism_on UNIV geotop_euclidean_topology
-                UNIV geotop_euclidean_topology f"
-              by (rule hf_homeo)
-            show "\<forall>P\<in>UNIV - U. f P = P"
-              by (rule hf_fix_U)
-            show "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
-              by (rule hf_B02)
-            show "f ` C\<^sub>O = C\<^sub>O"
-              by (rule hf_CO)
+          have hfold_extension:
+              "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
+                geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
+                \<and> (\<forall>P\<in>UNIV - geotop_polyhedron
+                      (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5). f P = P)
+                \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+                      UNIV geotop_euclidean_topology f
+                \<and> f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2
+                \<and> f ` C\<^sub>O = C\<^sub>O"
+          proof -
+            obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcarrier_sub_U:
+                "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
+              and hf_fix_carrier:
+                "\<forall>P\<in>UNIV - geotop_polyhedron
+                  (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5). f P = P"
+              and hf_homeo:
+                "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology f"
+              and hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
+              and hf_CO: "f ` C\<^sub>O = C\<^sub>O"
+              using hfigure33_book_local_simplicial_extension
+              by (elim exE conjE)
+            show ?thesis
+              using hcarrier_sub_U hf_fix_carrier hf_homeo hf_B02 hf_CO
+              by (intro exI[of _ v\<^sub>3] exI[of _ v\<^sub>4] exI[of _ v\<^sub>5]
+                  exI[of _ f] conjI)
           qed
+          show ?thesis
+            by (rule geotop_supported_fold_from_carrier_extension_prefix
+                [OF hfold_extension])
         qed
       qed
       have hbook_supported_PL_map:
