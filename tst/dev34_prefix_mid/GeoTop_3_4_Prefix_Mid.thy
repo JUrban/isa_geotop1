@@ -36877,6 +36877,34 @@ proof -
             leave \<open>v\<^sub>0,v\<^sub>2,v\<^sub>3,v\<^sub>4\<close> fixed, send \<open>v\<^sub>5\<close> to \<open>v\<^sub>1\<close>, and
             extend simplicially over the four named source triangles. **)
         proof -
+          have hfigure33_book_local_simplicial_extension_boundary_control:
+              "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
+                collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
+                \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                      geotop_is_simplex \<sigma>)
+                \<and> (\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                      geotop_is_simplex \<sigma>)
+                \<and> geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                \<and> geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)
+                \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
+                \<and> (\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                      f P = P)
+                \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+                      UNIV geotop_euclidean_topology f
+                \<and> f v\<^sub>0 = v\<^sub>0
+                \<and> f v\<^sub>2 = v\<^sub>2
+                \<and> f v\<^sub>3 = v\<^sub>3
+                \<and> f v\<^sub>4 = v\<^sub>4
+                \<and> f v\<^sub>5 = v\<^sub>1
+                \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                      \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                        geotop_simplicial_on \<sigma> f \<tau>)
+                \<and> ?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5
+                \<and> f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1
+                \<and> f ` closed_segment v\<^sub>2 v\<^sub>5 = closed_segment v\<^sub>2 v\<^sub>1
+                \<and> C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    \<subseteq> {v\<^sub>0, v\<^sub>2}"
+            sorry
           have hfigure33_book_local_simplicial_extension_no_finiteness:
               "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
                 collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
@@ -36901,7 +36929,119 @@ proof -
                         geotop_simplicial_on \<sigma> f \<tau>)
                 \<and> f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2
                 \<and> f ` C\<^sub>O = C\<^sub>O"
-            sorry
+          proof -
+            obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcol:
+                "collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+              and hsource_simp:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5. geotop_is_simplex \<sigma>"
+              and htarget_simp:
+                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>"
+              and hsource_complex:
+                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              and htarget_complex:
+                "geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)"
+              and hcarrier_sub_U:
+                "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
+              and hf_fix_carrier:
+                "\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                  f P = P"
+              and hf_homeo:
+                "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology f"
+              and hfv\<^sub>0: "f v\<^sub>0 = v\<^sub>0"
+              and hfv\<^sub>2: "f v\<^sub>2 = v\<^sub>2"
+              and hfv\<^sub>3: "f v\<^sub>3 = v\<^sub>3"
+              and hfv\<^sub>4: "f v\<^sub>4 = v\<^sub>4"
+              and hfv\<^sub>5: "f v\<^sub>5 = v\<^sub>1"
+              and hfsimp:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on \<sigma> f \<tau>"
+              and hB02_split:
+                "?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5"
+              and hf_B05: "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
+              and hf_B25: "f ` closed_segment v\<^sub>2 v\<^sub>5 = closed_segment v\<^sub>2 v\<^sub>1"
+              and hCO_carrier_inter:
+                "C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+              using hfigure33_book_local_simplicial_extension_boundary_control
+              by (elim exE conjE)
+            have hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
+            proof -
+              have "f ` ?B\<^sub>0\<^sub>2 =
+                  f ` (closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5)"
+                by (simp only: hB02_split)
+              also have "... =
+                  f ` closed_segment v\<^sub>0 v\<^sub>5 \<union> f ` closed_segment v\<^sub>2 v\<^sub>5"
+                by (rule image_Un)
+              also have "... = closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>2 v\<^sub>1"
+                by (simp only: hf_B05 hf_B25)
+              finally show ?thesis
+                by (by100 simp)
+            qed
+            have hf_CO_pointwise: "\<forall>P\<in>C\<^sub>O. f P = P"
+            proof
+              fix P
+              assume hP_CO: "P \<in> C\<^sub>O"
+              show "f P = P"
+              proof (cases "P \<in> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)")
+                case True
+                have hP_end: "P = v\<^sub>0 \<or> P = v\<^sub>2"
+                  using hP_CO True hCO_carrier_inter by (by100 blast)
+                show ?thesis
+                  using hP_end hfv\<^sub>0 hfv\<^sub>2 by (by100 blast)
+              next
+                case False
+                have hP_out:
+                    "P \<in> UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+                  using False by (by100 blast)
+                show ?thesis
+                  using hf_fix_carrier hP_out by (by100 blast)
+              qed
+            qed
+            have hf_CO: "f ` C\<^sub>O = C\<^sub>O"
+              using hf_CO_pointwise by (by100 force)
+            show ?thesis
+            proof (rule exI[of _ v\<^sub>3], rule exI[of _ v\<^sub>4],
+                rule exI[of _ v\<^sub>5], rule exI[of _ f], intro conjI)
+              show "collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                by (rule hcol)
+              show "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5. geotop_is_simplex \<sigma>"
+                by (rule hsource_simp)
+              show "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>"
+                by (rule htarget_simp)
+              show "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+                by (rule hsource_complex)
+              show "geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)"
+                by (rule htarget_complex)
+              show "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
+                by (rule hcarrier_sub_U)
+              show "\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
+                  f P = P"
+                by (rule hf_fix_carrier)
+              show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology f"
+                by (rule hf_homeo)
+              show "f v\<^sub>0 = v\<^sub>0"
+                by (rule hfv\<^sub>0)
+              show "f v\<^sub>2 = v\<^sub>2"
+                by (rule hfv\<^sub>2)
+              show "f v\<^sub>3 = v\<^sub>3"
+                by (rule hfv\<^sub>3)
+              show "f v\<^sub>4 = v\<^sub>4"
+                by (rule hfv\<^sub>4)
+              show "f v\<^sub>5 = v\<^sub>1"
+                by (rule hfv\<^sub>5)
+              show "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on \<sigma> f \<tau>"
+                by (rule hfsimp)
+              show "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
+                by (rule hf_B02)
+              show "f ` C\<^sub>O = C\<^sub>O"
+                by (rule hf_CO)
+            qed
+          qed
           show ?thesis
           proof -
             obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcol:
