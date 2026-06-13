@@ -35358,6 +35358,76 @@ proof -
     using h\<sigma>S hface by (by100 blast)
 qed
 
+lemma geotop_frontier_Un_shared_rel_interior_subset_prefix:
+  fixes A B E F G P :: "(real^2) set"
+  assumes hA: "frontier A \<subseteq> E \<union> G"
+  assumes hB: "frontier B \<subseteq> F \<union> G"
+  assumes hGint: "rel_interior G \<subseteq> interior (A \<union> B)"
+  assumes hGbd: "G - rel_interior G \<subseteq> P"
+  shows "frontier (A \<union> B) \<subseteq> E \<union> F \<union> P"
+proof
+  fix x
+  assume hx: "x \<in> frontier (A \<union> B)"
+  have hx_cases: "x \<in> frontier A \<or> x \<in> frontier B"
+    using frontier_Un_subset hx by (by100 blast)
+  have hx_not_int: "x \<notin> interior (A \<union> B)"
+    using hx unfolding frontier_def by (by100 blast)
+  show "x \<in> E \<union> F \<union> P"
+  proof (rule disjE[OF hx_cases])
+    assume hxA: "x \<in> frontier A"
+    have hxEG: "x \<in> E \<union> G"
+      using hA hxA by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hxEG])
+      assume "x \<in> E"
+      thus ?thesis by (by100 blast)
+    next
+      assume hxG: "x \<in> G"
+      show ?thesis
+      proof (cases "x \<in> rel_interior G")
+        case True
+        have "x \<in> interior (A \<union> B)"
+          using hGint True by (by100 blast)
+        thus ?thesis
+          using hx_not_int by (by100 blast)
+      next
+        case False
+        have "x \<in> G - rel_interior G"
+          using hxG False by (by100 blast)
+        hence "x \<in> P"
+          using hGbd by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+  next
+    assume hxB: "x \<in> frontier B"
+    have hxFG: "x \<in> F \<union> G"
+      using hB hxB by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hxFG])
+      assume "x \<in> F"
+      thus ?thesis by (by100 blast)
+    next
+      assume hxG: "x \<in> G"
+      show ?thesis
+      proof (cases "x \<in> rel_interior G")
+        case True
+        have "x \<in> interior (A \<union> B)"
+          using hGint True by (by100 blast)
+        thus ?thesis
+          using hx_not_int by (by100 blast)
+      next
+        case False
+        have "x \<in> G - rel_interior G"
+          using hxG False by (by100 blast)
+        hence "x \<in> P"
+          using hGbd by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_linear_on_vertex_segment_image_prefix:
   fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes hlin: "geotop_linear_on \<sigma> f"
