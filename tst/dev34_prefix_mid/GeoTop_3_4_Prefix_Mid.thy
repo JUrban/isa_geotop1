@@ -47646,6 +47646,57 @@ proof -
 	            by (rule hpoly_right)
 	        qed
 	      qed
+	      have hB\<^sub>c_boundary_through_point_split:
+	          "\<exists>R C\<^sub>R C\<^sub>O.
+	            R \<in> geotop_arc_interior ?B\<^sub>c {y, z}
+	            \<and> J = C\<^sub>R \<union> C\<^sub>O
+	            \<and> geotop_is_broken_line C\<^sub>R
+	            \<and> geotop_is_broken_line C\<^sub>O
+	            \<and> geotop_arc_endpoints C\<^sub>R {y, z}
+	            \<and> geotop_arc_endpoints C\<^sub>O {y, z}
+	            \<and> geotop_arc_interior C\<^sub>R {y, z} \<inter>
+	                geotop_arc_interior C\<^sub>O {y, z} = {}
+	            \<and> R \<in> geotop_arc_interior C\<^sub>R {y, z}"
+	      proof -
+	        obtain R where hR_B\<^sub>c_int:
+	            "R \<in> geotop_arc_interior ?B\<^sub>c {y, z}"
+	          using arc_interior_nonempty[OF hB\<^sub>c_E] by (by100 blast)
+	        have hR_B\<^sub>c: "R \<in> ?B\<^sub>c"
+	          using hR_B\<^sub>c_int unfolding geotop_arc_interior_def by (by100 blast)
+	        have hR_not: "R \<notin> {y, z}"
+	          using hR_B\<^sub>c_int unfolding geotop_arc_interior_def by (by100 blast)
+	        have hRJ: "R \<in> J"
+	          using hR_B\<^sub>c hB\<^sub>c_sub_J by (by100 blast)
+	        obtain L where hL_linear: "geotop_is_linear_graph L"
+	          and hL_fin: "finite L"
+	          and hL_conn: "geotop_complex_connected L"
+	          and hL_poly: "geotop_polyhedron L = J"
+	          and hL_y: "{y} \<in> L"
+	          and hL_z: "{z} \<in> L"
+	          using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+	            [OF hJ hyJ hzJ] by (by100 blast)
+	        have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+	          using hJ hL_poly by (by100 simp)
+	        have hR_poly: "R \<in> geotop_polyhedron L"
+	          using hRJ hL_poly by (by100 simp)
+	        obtain C\<^sub>R C\<^sub>O where hsplit:
+	            "geotop_polyhedron L = C\<^sub>R \<union> C\<^sub>O
+	            \<and> geotop_is_broken_line C\<^sub>R
+	            \<and> geotop_is_broken_line C\<^sub>O
+	            \<and> geotop_arc_endpoints C\<^sub>R {y, z}
+	            \<and> geotop_arc_endpoints C\<^sub>O {y, z}
+	            \<and> geotop_arc_interior C\<^sub>R {y, z} \<inter>
+	                geotop_arc_interior C\<^sub>O {y, z} = {}
+	            \<and> R \<in> geotop_arc_interior C\<^sub>R {y, z}"
+	          using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
+	            [OF hL_linear hL_fin hL_conn hL_polygon hL_y hL_z hyz
+	              hR_poly hR_not]
+	          by (by100 blast)
+	        have hJ_split: "J = C\<^sub>R \<union> C\<^sub>O"
+	          using hsplit hL_poly by (by100 blast)
+	        show ?thesis
+	          using hR_B\<^sub>c_int hsplit hJ_split by (by100 blast)
+	      qed
 	      have hcorner_forward_boundary_split:
 	          "\<exists>C\<^sub>O.
 	            J = ?B\<^sub>c \<union> C\<^sub>O
