@@ -47528,6 +47528,79 @@ proof -
 	      using he1K he1_ne_\<theta> by (by100 simp)
 	    have he2Kd: "e2 \<in> ?K\<^sub>d"
 	      using he2K he2_ne_\<theta> by (by100 simp)
+	    have hcorner_boundary_vertices:
+	        "x \<in> J \<and> y \<in> J \<and> z \<in> J"
+	    proof -
+	      have hx_arc: "x \<in> closed_segment x y \<union> closed_segment x z"
+	        by (by100 simp)
+	      have hy_arc: "y \<in> closed_segment x y \<union> closed_segment x z"
+	        by (by100 simp)
+	      have hz_arc: "z \<in> closed_segment x y \<union> closed_segment x z"
+	        by (by100 simp)
+	      have hx_int: "x \<in> \<theta> \<inter> J"
+	        using hcorner_contact hx_arc by (by100 simp)
+	      have hy_int: "y \<in> \<theta> \<inter> J"
+	        using hcorner_contact hy_arc by (by100 simp)
+	      have hz_int: "z \<in> \<theta> \<inter> J"
+	        using hcorner_contact hz_arc by (by100 simp)
+	      show ?thesis
+	        using hx_int hy_int hz_int by (by100 blast)
+	    qed
+	    have hcorner_old_segments_edges:
+	        "geotop_is_edge (closed_segment x y)
+	        \<and> geotop_is_edge (closed_segment x z)"
+	    proof -
+	      have hxy_in: "closed_segment x y \<in> {e1, e2}"
+	        using hcorner_edge_set by (by100 simp)
+	      have hxz_in: "closed_segment x z \<in> {e1, e2}"
+	        using hcorner_edge_set by (by100 simp)
+	      have hxy_edge: "geotop_is_edge (closed_segment x y)"
+	        using hxy_in he1_edge he2_edge by (by100 auto)
+	      have hxz_edge: "geotop_is_edge (closed_segment x z)"
+	        using hxz_in he1_edge he2_edge by (by100 auto)
+	      show ?thesis
+	        by (intro conjI hxy_edge hxz_edge)
+	    qed
+	    have hcorner_old_segments_in_delete:
+	        "closed_segment x y \<in> ?K\<^sub>d
+	        \<and> closed_segment x z \<in> ?K\<^sub>d"
+	    proof -
+	      have hxy_in: "closed_segment x y \<in> {e1, e2}"
+	        using hcorner_edge_set by (by100 simp)
+	      have hxz_in: "closed_segment x z \<in> {e1, e2}"
+	        using hcorner_edge_set by (by100 simp)
+	      have hxyKd: "closed_segment x y \<in> ?K\<^sub>d"
+	        using hxy_in he1Kd he2Kd by (by100 auto)
+	      have hxzKd: "closed_segment x z \<in> ?K\<^sub>d"
+	        using hxz_in he1Kd he2Kd by (by100 auto)
+	      show ?thesis
+	        by (intro conjI hxyKd hxzKd)
+	    qed
+	    have hcorner_apex_faces_old_segments:
+	        "geotop_is_face {x} (closed_segment x y)
+	        \<and> geotop_is_face {x} (closed_segment x z)"
+	    proof -
+	      have hxy_face: "geotop_is_face {x} (closed_segment x y)"
+	        by (rule geotop_closed_segment_is_face_endpoint[OF hxy])
+	           (by100 simp)
+	      have hxz_face: "geotop_is_face {x} (closed_segment x z)"
+	        by (rule geotop_closed_segment_is_face_endpoint[OF hxz])
+	           (by100 simp)
+	      show ?thesis
+	        by (intro conjI hxy_face hxz_face)
+	    qed
+	    have hcorner_apex_singleton_in_delete: "{x} \<in> ?K\<^sub>d"
+	    proof -
+	      have hface_closed:
+	          "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+	        by (rule geotop_is_complex_face_closed[OF hK_delete_complex])
+	      have hxyKd: "closed_segment x y \<in> ?K\<^sub>d"
+	        using hcorner_old_segments_in_delete by (by100 blast)
+	      have hxy_face: "geotop_is_face {x} (closed_segment x y)"
+	        using hcorner_apex_faces_old_segments by (by100 blast)
+	      show ?thesis
+	        using hface_closed hxyKd hxy_face by (by100 blast)
+	    qed
 	    have hboundary_edge_unique_incident:
 	        "\<And>e.
 	          geotop_is_edge e \<Longrightarrow>
@@ -47699,18 +47772,7 @@ proof -
 	      qed
 	    qed
 	    have hxKd_for_delete: "{x} \<in> ?K\<^sub>d"
-	    proof -
-	      have hface_closed:
-	          "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
-	        by (rule geotop_is_complex_face_closed[OF hK_delete_complex])
-	      have hfaces_e1:
-	          "\<forall>\<tau>. geotop_is_face \<tau> e1 \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
-	        by (rule bspec[OF hface_closed he1Kd])
-	      have himp: "geotop_is_face {x} e1 \<longrightarrow> {x} \<in> ?K\<^sub>d"
-	        by (rule spec[OF hfaces_e1])
-	      show ?thesis
-	        by (rule mp[OF himp hx_face_e1_for_delete])
-	    qed
+	      by (rule hcorner_apex_singleton_in_delete)
 	    have hx_no_other_incident_edge_after_old_edge_delete:
 	        "\<not> (\<exists>d\<in>?K\<^sub>d.
 	          d \<noteq> e1 \<and> d \<noteq> e2 \<and> geotop_is_edge d \<and> x \<in> d)"
