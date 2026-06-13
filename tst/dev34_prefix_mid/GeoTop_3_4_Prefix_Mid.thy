@@ -35685,6 +35685,26 @@ proof -
     using h_hull_image hsource_hull htarget_hull by (by100 simp)
 qed
 
+lemma geotop_simplicial_on_vertex_segment_image_prefix:
+  fixes \<sigma> \<tau> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes hsimp: "geotop_simplicial_on \<sigma> f \<tau>"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  assumes haV: "a \<in> V"
+  assumes hbV: "b \<in> V"
+  assumes hfab: "f a \<noteq> f b"
+  shows "f ` closed_segment a b = closed_segment (f a) (f b)"
+  (**
+    Figure 3.3 segment-image wrapper: the local construction usually knows
+    simpliciality on a source triangle, while the segment image lemma needs
+    only linearity on that triangle. **)
+proof -
+  have hlin: "geotop_linear_on \<sigma> f"
+    using hsimp unfolding geotop_simplicial_on_def by (elim exE conjE)
+  show ?thesis
+    by (rule geotop_linear_on_vertex_segment_image_prefix
+        [OF hlin hV haV hbV hfab])
+qed
+
 lemma geotop_linear_on_segment_fix_endpoints_prefix:
   fixes h :: "real^2 \<Rightarrow> real^2"
   assumes hab: "a \<noteq> b"
@@ -46879,10 +46899,6 @@ proof -
                   "geotop_simplicial_on
                     (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f \<tau>"
                 using hex045 by (elim bexE)
-              have hlin045:
-                  "geotop_linear_on (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f"
-                using hsimp045 unfolding geotop_simplicial_on_def
-                by (elim exE conjE)
               have hv\<^sub>1_ne_v\<^sub>0: "v\<^sub>1 \<noteq> v\<^sub>0"
                 using hv\<^sub>1_not by (by100 simp)
               have hf_v\<^sub>0_v\<^sub>5_ne: "f v\<^sub>0 \<noteq> f v\<^sub>5"
@@ -46893,8 +46909,8 @@ proof -
                 by (by100 simp)
               have "f ` closed_segment v\<^sub>0 v\<^sub>5 =
                   closed_segment (f v\<^sub>0) (f v\<^sub>5)"
-                by (rule geotop_linear_on_vertex_segment_image_prefix
-                    [OF hlin045 hsource045_vertices hv\<^sub>0_mem hv\<^sub>5_mem
+                by (rule geotop_simplicial_on_vertex_segment_image_prefix
+                    [OF hsimp045 hsource045_vertices hv\<^sub>0_mem hv\<^sub>5_mem
                       hf_v\<^sub>0_v\<^sub>5_ne])
               thus ?thesis
                 using hfv\<^sub>0 hfv\<^sub>5 by (by100 simp)
@@ -46917,10 +46933,6 @@ proof -
                   "geotop_simplicial_on
                     (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f \<tau>"
                 using hex245 by (elim bexE)
-              have hlin245:
-                  "geotop_linear_on (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f"
-                using hsimp245 unfolding geotop_simplicial_on_def
-                by (elim exE conjE)
               have hv\<^sub>1_ne_v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
                 using hv\<^sub>1_not by (by100 simp)
               have hf_v\<^sub>2_v\<^sub>5_ne: "f v\<^sub>2 \<noteq> f v\<^sub>5"
@@ -46931,8 +46943,8 @@ proof -
                 by (by100 simp)
               have "f ` closed_segment v\<^sub>2 v\<^sub>5 =
                   closed_segment (f v\<^sub>2) (f v\<^sub>5)"
-                by (rule geotop_linear_on_vertex_segment_image_prefix
-                    [OF hlin245 hsource245_vertices hv\<^sub>2_mem hv\<^sub>5_mem
+                by (rule geotop_simplicial_on_vertex_segment_image_prefix
+                    [OF hsimp245 hsource245_vertices hv\<^sub>2_mem hv\<^sub>5_mem
                       hf_v\<^sub>2_v\<^sub>5_ne])
               thus ?thesis
                 using hfv\<^sub>2 hfv\<^sub>5 by (by100 simp)
