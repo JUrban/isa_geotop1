@@ -4051,6 +4051,49 @@ proof -
     using hC_conn hC_sub hxC hG\<^sub>1 hG\<^sub>2 hG\<^sub>3 by (intro exI conjI)
 qed
 
+lemma geotop_trace_component_entry_closure_summary_prefix:
+  fixes F :: "'a::topological_space set set"
+    and U W V N\<^sub>loc C :: "'a set"
+  assumes hsummary:
+    "\<And>D. D \<in> F \<Longrightarrow>
+      D \<in> components U
+      \<and> D \<noteq> {}
+      \<and> D \<subseteq> U
+      \<and> connected D
+      \<and> path_connected D
+      \<and> D \<inter> N\<^sub>loc \<noteq> {}"
+  assumes hC: "C \<in> F"
+  assumes hentry: "W \<inter> V \<inter> C \<noteq> {}"
+  shows "C \<in> components U
+    \<and> C \<noteq> {}
+    \<and> C \<subseteq> U
+    \<and> connected C
+    \<and> path_connected C
+    \<and> C \<inter> N\<^sub>loc \<noteq> {}
+    \<and> W \<inter> V \<inter> C \<noteq> {}
+    \<and> W \<inter> closure C \<noteq> {}"
+proof -
+  have hbase:
+      "C \<in> components U
+      \<and> C \<noteq> {}
+      \<and> C \<subseteq> U
+      \<and> connected C
+      \<and> path_connected C
+      \<and> C \<inter> N\<^sub>loc \<noteq> {}"
+    by (rule hsummary[OF hC])
+  have hW_closure_C: "W \<inter> closure C \<noteq> {}"
+  proof -
+    obtain a where haW: "a \<in> W" and haC: "a \<in> C"
+      using hentry by (by100 blast)
+    have ha_cl: "a \<in> closure C"
+      by (rule subsetD[OF closure_subset haC])
+    show ?thesis
+      using haW ha_cl by (by100 blast)
+  qed
+  show ?thesis
+    using hbase hentry hW_closure_C by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_first_entry_decomposition_prefix:
   fixes L :: "(real^2) set set"
     and S T U M N :: "(real^2) set"
@@ -14286,37 +14329,8 @@ proof -
                       \<and> C \<inter> ?Nloc \<noteq> {}
                       \<and> W \<inter> ball w r \<inter> C \<noteq> {}
                       \<and> W \<inter> closure C \<noteq> {}"
-              proof -
-                fix C
-                assume hC: "C \<in> ?Ntrace_components"
-                assume hW_meets_C: "W \<inter> ball w r \<inter> C \<noteq> {}"
-                have hsummary:
-                    "C \<in> components ?Lcomp
-                      \<and> C \<noteq> {}
-                      \<and> C \<subseteq> ?Lcomp
-                      \<and> connected C
-                      \<and> path_connected C
-                      \<and> C \<inter> ?Nloc \<noteq> {}"
-                  by (rule hN_trace_component_summary[OF hC])
-                have hW_closure_C: "W \<inter> closure C \<noteq> {}"
-                proof -
-                  obtain a where haW: "a \<in> W" and haC: "a \<in> C"
-                    using hW_meets_C by (by100 blast)
-                  have ha_cl: "a \<in> closure C"
-                    by (rule subsetD[OF closure_subset haC])
-                  show ?thesis
-                    using haW ha_cl by (by100 blast)
-                qed
-                show "C \<in> components ?Lcomp
-                  \<and> C \<noteq> {}
-                  \<and> C \<subseteq> ?Lcomp
-                  \<and> connected C
-                  \<and> path_connected C
-                  \<and> C \<inter> ?Nloc \<noteq> {}
-                  \<and> W \<inter> ball w r \<inter> C \<noteq> {}
-                  \<and> W \<inter> closure C \<noteq> {}"
-                  using hsummary hW_meets_C hW_closure_C by (by100 blast)
-              qed
+                by (rule geotop_trace_component_entry_closure_summary_prefix
+                    [OF hN_trace_component_summary])
               have hW_local_trace_component_touch_summary:
                   "W \<inter> ?Lcomp \<noteq> {}
                     \<Longrightarrow> \<exists>C\<in>?Ntrace_components.
