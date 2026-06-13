@@ -262,6 +262,31 @@ proof -
     using hmiss by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_fine_Sd_carrier_meeting_first_arc_misses_second_prefix:
+  fixes J A1 A2 :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<delta>: "0 < \<delta>"
+  assumes hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+  shows "\<exists>K m. geotop_is_complex K
+      \<and> finite K
+      \<and> geotop_polyhedron K =
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      \<and> (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+proof -
+  obtain K where hK: "geotop_is_complex K"
+    and hKfin: "finite K"
+    and hK_poly: "geotop_polyhedron K =
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    using Theorem_GT_2_2[OF hJ] by (by100 blast)
+  obtain m where hcarrier:
+      "(\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+    using geotop_fine_iterated_Sd_carrier_meeting_first_arc_misses_second_prefix
+        [OF hK hKfin h\<delta> hgap]
+    by (by100 blast)
+  show ?thesis
+    using hK hKfin hK_poly hcarrier by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
@@ -454,6 +479,20 @@ proof -
       by (rule geotop_disjoint_arcs_positive_setdist_prefix[OF hA1 hA2 hA12])
     show ?thesis
       using h\<delta>_pos h\<delta>_gap hpack hsd by (by100 blast)
+  qed
+  have hD44_fine_disk_carrier_avoids_A2:
+      "\<exists>K m. geotop_is_complex K
+        \<and> finite K
+        \<and> geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+        \<and> (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+  proof -
+    obtain \<delta> where h\<delta>_pos: "0 < \<delta>"
+      and h\<delta>_gap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+      using hA12_metric_separation by (by100 blast)
+    show ?thesis
+      by (rule geotop_polygon_disk_fine_Sd_carrier_meeting_first_arc_misses_second_prefix
+          [OF hJ h\<delta>_pos h\<delta>_gap])
   qed
   have hQ_S_two_arc_local_access:
       "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
