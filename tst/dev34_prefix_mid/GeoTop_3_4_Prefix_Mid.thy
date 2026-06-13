@@ -34866,6 +34866,47 @@ proof -
     using htop1 hHK by (by100 blast)
 qed
 
+lemma geotop_linear_on_vertices_simplicial_on_prefix:
+  fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  assumes hW: "geotop_simplex_vertices \<tau> W"
+  assumes hlin: "geotop_linear_on \<sigma> f"
+  assumes hverts: "\<forall>v\<in>V. f v \<in> W"
+  shows "geotop_simplicial_on \<sigma> f \<tau>"
+  unfolding geotop_simplicial_on_def
+  using hV hW hlin hverts by (by100 blast)
+
+lemma geotop_supported_carrier_fix_boundary_image_prefix:
+  fixes C C\<^sub>O :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes hC\<^sub>O_carrier: "C\<^sub>O \<inter> C \<subseteq> {v\<^sub>0, v\<^sub>2}"
+  assumes hfix_out: "\<forall>P\<in>UNIV - C. f P = P"
+  assumes hfv\<^sub>0: "f v\<^sub>0 = v\<^sub>0"
+  assumes hfv\<^sub>2: "f v\<^sub>2 = v\<^sub>2"
+  shows "f ` C\<^sub>O = C\<^sub>O"
+proof -
+  have hpointwise: "\<forall>P\<in>C\<^sub>O. f P = P"
+  proof
+    fix P
+    assume hP: "P \<in> C\<^sub>O"
+    show "f P = P"
+    proof (cases "P \<in> C")
+      case True
+      have "P = v\<^sub>0 \<or> P = v\<^sub>2"
+        using hP True hC\<^sub>O_carrier by (by100 blast)
+      thus ?thesis
+        using hfv\<^sub>0 hfv\<^sub>2 by (by100 blast)
+    next
+      case False
+      have "P \<in> UNIV - C"
+        using False by (by100 blast)
+      thus ?thesis
+        using hfix_out by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hpointwise by (by100 force)
+qed
+
 lemma geotop_supported_fold_normalization_compose_prefix:
   fixes J J' U \<sigma> :: "(real^2) set" and f g :: "real^2 \<Rightarrow> real^2"
   assumes hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
@@ -40156,6 +40197,110 @@ proof -
               by (rule geotop_finite_PLH_linear_homeomorphism_polyhedra_prefix
                   [OF hsource_complex hsource_fin_local htarget_complex
                     htarget_fin_local hg_PLH hg_lin hg_inv_lin])
+            have hv\<^sub>0v\<^sub>5: "v\<^sub>0 \<noteq> v\<^sub>5"
+              using hv\<^sub>0_off_line hv\<^sub>5_line by (by100 blast)
+            have hv\<^sub>2v\<^sub>5: "v\<^sub>2 \<noteq> v\<^sub>5"
+              using hv\<^sub>2_off_line hv\<^sub>5_line by (by100 blast)
+            have hg_v\<^sub>0: "g v\<^sub>0 = v\<^sub>0"
+              using hg_vertices hsource_carrier_vertices_eq hv\<^sub>0v\<^sub>5 by (by100 simp)
+            have hg_v\<^sub>2: "g v\<^sub>2 = v\<^sub>2"
+              using hg_vertices hsource_carrier_vertices_eq hv\<^sub>2v\<^sub>5 by (by100 simp)
+            have hg_v\<^sub>3: "g v\<^sub>3 = v\<^sub>3"
+              using hg_vertices hsource_carrier_vertices_eq hv\<^sub>5v\<^sub>3 by (by100 simp)
+            have hg_v\<^sub>4: "g v\<^sub>4 = v\<^sub>4"
+              using hg_vertices hsource_carrier_vertices_eq hv\<^sub>4v\<^sub>5 by (by100 simp)
+            have hg_v\<^sub>5: "g v\<^sub>5 = v\<^sub>1"
+              using hg_vertices hsource_carrier_vertices_eq by (by100 simp)
+            have hg_simp045:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) g
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})"
+            proof -
+              have hcarrier:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 blast)
+              have hlin:
+                  "geotop_linear_on (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) g"
+                using hg_lin hcarrier by (by100 blast)
+              have hverts: "\<forall>v\<in>{v\<^sub>0, v\<^sub>4, v\<^sub>5}. g v \<in> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                using hg_v\<^sub>0 hg_v\<^sub>4 hg_v\<^sub>5 by (by100 simp)
+              show ?thesis
+                by (rule geotop_linear_on_vertices_simplicial_on_prefix
+                    [OF hsource045_vertices htarget041_vertices hlin hverts])
+            qed
+            have hg_simp245:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) g
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})"
+            proof -
+              have hcarrier:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 blast)
+              have hlin:
+                  "geotop_linear_on (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) g"
+                using hg_lin hcarrier by (by100 blast)
+              have hverts: "\<forall>v\<in>{v\<^sub>2, v\<^sub>4, v\<^sub>5}. g v \<in> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                using hg_v\<^sub>2 hg_v\<^sub>4 hg_v\<^sub>5 by (by100 simp)
+              show ?thesis
+                by (rule geotop_linear_on_vertices_simplicial_on_prefix
+                    [OF hsource245_vertices htarget241_vertices hlin hverts])
+            qed
+            have hg_simp053:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}) g
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})"
+            proof -
+              have hcarrier:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 blast)
+              have hlin:
+                  "geotop_linear_on (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}) g"
+                using hg_lin hcarrier by (by100 blast)
+              have hverts: "\<forall>v\<in>{v\<^sub>0, v\<^sub>5, v\<^sub>3}. g v \<in> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                using hg_v\<^sub>0 hg_v\<^sub>3 hg_v\<^sub>5 by (by100 simp)
+              show ?thesis
+                by (rule geotop_linear_on_vertices_simplicial_on_prefix
+                    [OF hsource053_vertices htarget013_vertices hlin hverts])
+            qed
+            have hg_simp253:
+                "geotop_simplicial_on
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) g
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+            proof -
+              have hcarrier:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 blast)
+              have hlin:
+                  "geotop_linear_on (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) g"
+                using hg_lin hcarrier by (by100 blast)
+              have hverts: "\<forall>v\<in>{v\<^sub>2, v\<^sub>5, v\<^sub>3}. g v \<in> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                using hg_v\<^sub>2 hg_v\<^sub>3 hg_v\<^sub>5 by (by100 simp)
+              show ?thesis
+                by (rule geotop_linear_on_vertices_simplicial_on_prefix
+                    [OF hsource253_vertices htarget213_vertices hlin hverts])
+            qed
+            have hfigure33_carrier_simplicial_on_g:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on \<sigma> g \<tau>"
+            proof
+              fix \<sigma>
+              assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              have hcases:
+                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                using h\<sigma> by (by100 simp)
+              show "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                  geotop_simplicial_on \<sigma> g \<tau>"
+                using hcases hg_simp045 hg_simp245 hg_simp053 hg_simp253
+                by (by100 auto)
+            qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
