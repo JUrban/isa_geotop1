@@ -47721,6 +47721,140 @@ proof
       qed
     qed
   qed
+  have hcorner_old_side_unique_incident:
+      "\<And>e.
+        (e = closed_segment x y \<or> e = closed_segment x z) \<Longrightarrow>
+        {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = {\<theta>}"
+  proof -
+    fix e :: "(real^2) set"
+    assume he_old: "e = closed_segment x y \<or> e = closed_segment x z"
+    have hedge: "geotop_is_edge e"
+      using he_old hxy_edge hxz_edge by (by100 auto)
+    have hface: "geotop_is_face e \<theta>"
+      using he_old hxy_face_\<theta> hxz_face_\<theta> by (by100 auto)
+    have heJ: "e \<subseteq> J"
+      using he_old hxyJ hxzJ by (by100 auto)
+    let ?F = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    have hF_sub: "?F \<subseteq> {\<theta>}"
+    proof
+      fix \<sigma>
+      assume h\<sigma>F: "\<sigma> \<in> ?F"
+      have h\<sigma>K: "\<sigma> \<in> K"
+        using h\<sigma>F by (by100 simp)
+      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        using h\<sigma>F by (by100 simp)
+      have h\<sigma>face: "geotop_is_face e \<sigma>"
+        using h\<sigma>F by (by100 simp)
+      show "\<sigma> \<in> {\<theta>}"
+      proof (rule ccontr)
+        assume h\<sigma>not: "\<sigma> \<notin> {\<theta>}"
+        have h\<theta>\<sigma>: "\<theta> \<noteq> \<sigma>"
+          using h\<sigma>not by (by100 simp)
+        have he_dim: "geotop_simplex_dim e 1"
+          using hedge unfolding geotop_is_edge_def by (by100 simp)
+        have he_simplex: "geotop_is_simplex e"
+          by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+        obtain p where hp: "p \<in> rel_interior e"
+        proof -
+          have "rel_interior e \<noteq> {}"
+            by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
+          thus ?thesis
+            using that by (by100 blast)
+        qed
+        have hp_e: "p \<in> e"
+          using hp rel_interior_subset by (by100 blast)
+        have hpJ: "p \<in> J"
+          using heJ hp_e by (by100 blast)
+        have hrel_int_union: "rel_interior e \<subseteq> interior (\<theta> \<union> \<sigma>)"
+          by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+              [OF hK h\<theta>K h\<sigma>K h\<theta>2 h\<sigma>2 h\<theta>\<sigma> hface h\<sigma>face hedge])
+        have hp_int_union: "p \<in> interior (\<theta> \<union> \<sigma>)"
+          using hrel_int_union hp by (by100 blast)
+        have hunion_sub_poly: "\<theta> \<union> \<sigma> \<subseteq> geotop_polyhedron K"
+          using h\<theta>K h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+        have hp_int_poly: "p \<in> interior (geotop_polyhedron K)"
+        proof -
+          have "interior (\<theta> \<union> \<sigma>) \<subseteq> interior (geotop_polyhedron K)"
+            by (rule interior_mono[OF hunion_sub_poly])
+          thus ?thesis
+            using hp_int_union by (by100 blast)
+        qed
+        have hclosure_on:
+            "closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J) =
+             closure (geotop_polygon_interior J)"
+          by (rule closure_on_geotop_UNIV_eq_closure)
+        have hpoly_closure:
+            "geotop_polyhedron K = closure (geotop_polygon_interior J)"
+          using hK_poly hclosure_on by (by100 simp)
+        have hpI: "p \<in> geotop_polygon_interior J"
+        proof -
+          have "p \<in> interior (closure (geotop_polygon_interior J))"
+            using hp_int_poly hpoly_closure by (by100 simp)
+          thus ?thesis
+            using geotop_polygon_interior_regular_closed_prefix[OF hJ]
+            by (by100 simp)
+        qed
+        have "p \<in> geotop_polygon_interior J \<inter> J"
+          using hpI hpJ by (by100 blast)
+        thus False
+          using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+      qed
+    qed
+    have hsingle_sub: "{\<theta>} \<subseteq> ?F"
+      using h\<theta>K h\<theta>2 hface by (by100 simp)
+    show "?F = {\<theta>}"
+      using hF_sub hsingle_sub by (by100 blast)
+  qed
+  have h\<rho>_\<theta>_inter_not_dim1:
+      "\<not> geotop_simplex_dim (\<rho> \<inter> \<theta>) 1"
+  proof
+    assume hI1: "geotop_simplex_dim (\<rho> \<inter> \<theta>) 1"
+    have hI_face_\<rho>: "geotop_is_face (\<rho> \<inter> \<theta>) \<rho>"
+      using h\<rho>_\<theta>_inter_faces by (by100 blast)
+    have hcases:
+        "\<rho> \<inter> \<theta> = closed_segment x y
+        \<or> \<rho> \<inter> \<theta> = closed_segment x z"
+      by (rule h\<rho>_\<theta>_inter_edge_case_old_sides[OF hI1])
+    show False
+    proof (rule disjE[OF hcases])
+      assume hI_eq: "\<rho> \<inter> \<theta> = closed_segment x y"
+      have huniq:
+          "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face (closed_segment x y) \<sigma>} = {\<theta>}"
+        by (rule hcorner_old_side_unique_incident) (by100 blast)
+      have "\<rho> \<in> {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face (closed_segment x y) \<sigma>}"
+        using h\<rho>K h\<rho>2 hI_face_\<rho> hI_eq by (by100 simp)
+      hence "\<rho> \<in> {\<theta>}"
+        using huniq by (by100 simp)
+      thus False
+        using h\<rho>_ne_\<theta> by (by100 simp)
+    next
+      assume hI_eq: "\<rho> \<inter> \<theta> = closed_segment x z"
+      have huniq:
+          "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face (closed_segment x z) \<sigma>} = {\<theta>}"
+        by (rule hcorner_old_side_unique_incident) (by100 blast)
+      have "\<rho> \<in> {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face (closed_segment x z) \<sigma>}"
+        using h\<rho>K h\<rho>2 hI_face_\<rho> hI_eq by (by100 simp)
+      hence "\<rho> \<in> {\<theta>}"
+        using huniq by (by100 simp)
+      thus False
+        using h\<rho>_ne_\<theta> by (by100 simp)
+    qed
+  qed
+  have h\<rho>_\<theta>_inter_eq_x: "\<rho> \<inter> \<theta> = {x}"
+  proof (rule disjE[OF h\<rho>_\<theta>_inter_dim_cases])
+    assume hI0: "geotop_simplex_dim (\<rho> \<inter> \<theta>) 0"
+    show ?thesis
+      by (rule h\<rho>_\<theta>_inter_eq_x_if_dim0[OF hI0])
+  next
+    assume hI1: "geotop_simplex_dim (\<rho> \<inter> \<theta>) 1"
+    thus ?thesis
+      using h\<rho>_\<theta>_inter_not_dim1 by (by100 blast)
+  qed
   have hthird_boundary_or_interior:
     "d \<subseteq> J \<or> \<not> d \<subseteq> J"
     by (by100 blast)
