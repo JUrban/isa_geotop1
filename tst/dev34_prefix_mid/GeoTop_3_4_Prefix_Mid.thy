@@ -41234,6 +41234,63 @@ proof -
 		            show ?thesis
 		              using h\<eta>_pos hsmall by (by100 blast)
 		          qed
+		          have hCO_endpoint_balls_sub_local_segments:
+		              "C\<^sub>O \<inter> (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))
+		                \<subseteq> {v\<^sub>0, v\<^sub>2}
+		                  \<union> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                  \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+		          proof
+		            fix x
+		            assume hx:
+		              "x \<in> C\<^sub>O \<inter>
+		                (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+		            have hxCO: "x \<in> C\<^sub>O"
+		              using hx by (by100 blast)
+		            have hx_ball_cases:
+		              "x \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<or>
+		               x \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+		              using hx by (by100 blast)
+		            show "x \<in> {v\<^sub>0, v\<^sub>2}
+		                  \<union> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                  \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+		            proof (rule disjE[OF hx_ball_cases])
+		              assume hx_ball0: "x \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2)"
+		              have hx_ball0_big: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+		                using hx_ball0 h\<delta>\<^sub>0_pos by (by100 simp)
+		              have hx_seg0: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+		                using hCO_local_v\<^sub>0 hxCO hx_ball0_big by (by100 blast)
+		              show ?thesis
+		              proof (cases "x = v\<^sub>0")
+		                case True
+		                show ?thesis
+		                  using True by (by100 simp)
+		              next
+		                case False
+		                have "x \<in> closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}"
+		                  using hx_seg0 False by (by100 blast)
+		                thus ?thesis
+		                  by (by100 blast)
+		              qed
+		            next
+		              assume hx_ball2: "x \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+		              have hx_ball2_big: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+		                using hx_ball2 h\<delta>\<^sub>2_pos by (by100 simp)
+		              have hx_seg2: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+		                using hCO_local_v\<^sub>2 hxCO hx_ball2_big by (by100 blast)
+		              show ?thesis
+		              proof (cases "x = v\<^sub>2")
+		                case True
+		                show ?thesis
+		                  using True by (by100 simp)
+		              next
+		                case False
+		                have "x \<in> closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}"
+		                  using hx_seg2 False by (by100 blast)
+		                thus ?thesis
+		                  by (by100 blast)
+		              qed
+		            qed
+		          qed
 		          have hfigure33_source_carrier_endpoint_contact_bound_scalar:
 		              "\<exists>\<eta>>0. \<forall>t>0.
 		                t < \<eta> \<longrightarrow>
