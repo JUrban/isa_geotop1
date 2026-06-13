@@ -34683,6 +34683,62 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix:
+  fixes a b x y :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hxy: "x \<noteq> y"
+  assumes hx: "x \<in> affine hull {a, b}"
+  assumes hy: "y \<in> affine hull {a, b}"
+  shows "affine hull {x, y} = affine hull {a, b}"
+proof -
+  have ha_ab: "a \<in> affine hull {a, b}"
+    by (rule hull_subset[THEN subsetD], by100 simp)
+  have hb_ab: "b \<in> affine hull {a, b}"
+    by (rule hull_subset[THEN subsetD], by100 simp)
+  have hxy_sub_ab: "{x, y} \<subseteq> affine hull {a, b}"
+    using hx hy by (by100 blast)
+  have hxy_hull_sub_ab:
+      "affine hull {x, y} \<subseteq> affine hull {a, b}"
+    by (rule hull_minimal[OF hxy_sub_ab affine_affine_hull])
+  have hcol_xya: "collinear {x, y, a}"
+    unfolding collinear_affine_hull
+    using hx hy ha_ab by (by100 blast)
+  have hcol_xyb: "collinear {x, y, b}"
+    unfolding collinear_affine_hull
+    using hx hy hb_ab by (by100 blast)
+  have ha_xy: "a \<in> affine hull {x, y}"
+    by (rule collinear_3_imp_in_affine_hull[OF hcol_xya hxy])
+  have hb_xy: "b \<in> affine hull {x, y}"
+    by (rule collinear_3_imp_in_affine_hull[OF hcol_xyb hxy])
+  have hab_sub_xy: "{a, b} \<subseteq> affine hull {x, y}"
+    using ha_xy hb_xy by (by100 blast)
+  have hab_hull_sub_xy:
+      "affine hull {a, b} \<subseteq> affine hull {x, y}"
+    by (rule hull_minimal[OF hab_sub_xy affine_affine_hull])
+  show ?thesis
+    using hxy_hull_sub_ab hab_hull_sub_xy by (by100 blast)
+qed
+
+lemma geotop_not_collinear_off_affine_hull_pair_prefix:
+  fixes p x y :: "real^2"
+  assumes hxy: "x \<noteq> y"
+  assumes hp: "p \<notin> affine hull {x, y}"
+  shows "\<not> collinear {p, x, y}"
+proof
+  assume hcol: "collinear {p, x, y}"
+  have hcol_xyp: "collinear {x, y, p}"
+  proof -
+    have "{x, y, p} = {p, x, y}"
+      by (by100 blast)
+    thus ?thesis
+      using hcol by (by100 simp)
+  qed
+  have "p \<in> affine hull {x, y}"
+    by (rule collinear_3_imp_in_affine_hull[OF hcol_xyp hxy])
+  thus False
+    using hp by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_triangulation_2simplex_count_ge1_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
