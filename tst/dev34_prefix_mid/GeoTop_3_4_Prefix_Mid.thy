@@ -47250,6 +47250,73 @@ proof
       \<and> geotop_is_face (d \<inter> closed_segment x z) (closed_segment x z)"
     using geotop_is_complex_intersection[OF hK] hdK hxzK
       hd_xz_inter_nonempty by (by100 blast)
+  have hd_xy_inter_eq_x: "d \<inter> closed_segment x y = {x}"
+    (**
+      The third edge can share only the corner vertex with the old boundary
+      side \<open>closed_segment x y\<close>.  Otherwise the complex intersection would
+      make the whole third edge a face of the old edge, contradicting the
+      normalization \<open>d \<noteq> e1,e2\<close>. **)
+  proof -
+    let ?I = "d \<inter> closed_segment x y"
+    have hI_face_d: "geotop_is_face ?I d"
+      using hd_xy_inter_faces by (by100 blast)
+    have hxI: "x \<in> ?I"
+      using hxd by (by100 simp)
+    have hd_dim1: "geotop_simplex_dim d 1"
+      using hd_edge unfolding geotop_is_edge_def by (by100 simp)
+    obtain k where hk_le: "k \<le> 1" and hI_dim: "geotop_simplex_dim ?I k"
+      using geotop_face_dim_le_prefix[OF hd_dim1 hI_face_d] by (by100 blast)
+    have hk_ne1: "k \<noteq> 1"
+    proof
+      assume hk1: "k = 1"
+      have hI_edge: "geotop_is_edge ?I"
+        using hI_dim hk1 unfolding geotop_is_edge_def by (by100 simp)
+      have hI_eq_d: "?I = d"
+        by (rule geotop_edge_face_of_edge_eq_prefix[OF hI_edge hd_edge hI_face_d])
+      have "d \<subseteq> closed_segment x y"
+        using hI_eq_d by (by100 blast)
+      thus False
+        using hd_not_sub_xy by (by100 blast)
+    qed
+    have hk0: "k = 0"
+      using hk_le hk_ne1 by (by100 linarith)
+    have hI0: "geotop_simplex_dim ?I 0"
+      using hI_dim hk0 by (by100 simp)
+    show ?thesis
+      by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF hI0 hxI])
+  qed
+  have hd_xz_inter_eq_x: "d \<inter> closed_segment x z = {x}"
+    (**
+      Same corner-germ control on the other old boundary side. **)
+  proof -
+    let ?I = "d \<inter> closed_segment x z"
+    have hI_face_d: "geotop_is_face ?I d"
+      using hd_xz_inter_faces by (by100 blast)
+    have hxI: "x \<in> ?I"
+      using hxd by (by100 simp)
+    have hd_dim1: "geotop_simplex_dim d 1"
+      using hd_edge unfolding geotop_is_edge_def by (by100 simp)
+    obtain k where hk_le: "k \<le> 1" and hI_dim: "geotop_simplex_dim ?I k"
+      using geotop_face_dim_le_prefix[OF hd_dim1 hI_face_d] by (by100 blast)
+    have hk_ne1: "k \<noteq> 1"
+    proof
+      assume hk1: "k = 1"
+      have hI_edge: "geotop_is_edge ?I"
+        using hI_dim hk1 unfolding geotop_is_edge_def by (by100 simp)
+      have hI_eq_d: "?I = d"
+        by (rule geotop_edge_face_of_edge_eq_prefix[OF hI_edge hd_edge hI_face_d])
+      have "d \<subseteq> closed_segment x z"
+        using hI_eq_d by (by100 blast)
+      thus False
+        using hd_not_sub_xz by (by100 blast)
+    qed
+    have hk0: "k = 0"
+      using hk_le hk_ne1 by (by100 linarith)
+    have hI0: "geotop_simplex_dim ?I 0"
+      using hI_dim hk0 by (by100 simp)
+    show ?thesis
+      by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF hI0 hxI])
+  qed
   obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
     and h\<rho>2: "geotop_simplex_dim \<rho> 2"
     and hd_face_\<rho>: "geotop_is_face d \<rho>"
