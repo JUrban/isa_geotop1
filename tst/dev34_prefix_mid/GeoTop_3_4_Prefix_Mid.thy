@@ -47539,6 +47539,72 @@ proof
     using geotop_polygon_disk_edge_owned_by_2simplex_prefix
       [OF hJ hK hK_poly hdK hd_edge]
     by (elim bexE conjE)
+  have h\<rho>_ne_\<theta>: "\<rho> \<noteq> \<theta>"
+  proof
+    assume h\<rho>eq: "\<rho> = \<theta>"
+    have "d \<subseteq> \<theta>"
+      using geotop_is_face_imp_subset_prefix[OF hd_face_\<rho>] h\<rho>eq by (by100 simp)
+    thus False
+      using hd_not_sub_\<theta> by (by100 blast)
+  qed
+  have hd_sub_\<rho>: "d \<subseteq> \<rho>"
+    by (rule geotop_is_face_imp_subset_prefix[OF hd_face_\<rho>])
+  have hx\<rho>: "x \<in> \<rho>"
+    using hxd hd_sub_\<rho> by (by100 blast)
+  have h\<rho>_\<theta>_inter_nonempty: "\<rho> \<inter> \<theta> \<noteq> {}"
+    using hx\<rho> hx\<theta> by (by100 blast)
+  have h\<rho>_\<theta>_inter_faces:
+      "geotop_is_face (\<rho> \<inter> \<theta>) \<rho>
+      \<and> geotop_is_face (\<rho> \<inter> \<theta>) \<theta>"
+    using geotop_is_complex_intersection[OF hK] h\<rho>K h\<theta>K
+      h\<rho>_\<theta>_inter_nonempty by (by100 blast)
+  have h\<rho>_\<theta>_inter_dim_cases:
+      "geotop_simplex_dim (\<rho> \<inter> \<theta>) 0
+      \<or> geotop_simplex_dim (\<rho> \<inter> \<theta>) 1"
+  proof -
+    let ?I = "\<rho> \<inter> \<theta>"
+    have hI_face_\<theta>: "geotop_is_face ?I \<theta>"
+      using h\<rho>_\<theta>_inter_faces by (by100 blast)
+    have hI_face_\<rho>: "geotop_is_face ?I \<rho>"
+      using h\<rho>_\<theta>_inter_faces by (by100 blast)
+    obtain k where hk_le: "k \<le> 2" and hI_dim: "geotop_simplex_dim ?I k"
+      using geotop_face_dim_le_prefix[OF h\<theta>2 hI_face_\<theta>] by (by100 blast)
+    have hk_ne2: "k \<noteq> 2"
+    proof
+      assume hk2: "k = 2"
+      have hI2: "geotop_simplex_dim ?I 2"
+        using hI_dim hk2 by (by100 simp)
+      have hIK: "?I \<in> K"
+        using geotop_is_complex_face_closed[OF hK] h\<theta>K hI_face_\<theta>
+        by (by100 blast)
+      have hI_eq_\<theta>: "?I = \<theta>"
+        by (rule geotop_complex_2simplex_face_eq_prefix
+            [OF hK hIK h\<theta>K hI_face_\<theta> hI2 h\<theta>2])
+      have h\<theta>_sub_\<rho>: "\<theta> \<subseteq> \<rho>"
+        using hI_eq_\<theta> by (by100 blast)
+      have h\<theta>_face_\<rho>: "geotop_is_face \<theta> \<rho>"
+        by (rule geotop_complex_subset_simplex_face_prefix
+            [OF hK h\<theta>K h\<rho>K h\<theta>_sub_\<rho>])
+      have "\<theta> = \<rho>"
+        by (rule geotop_complex_2simplex_face_eq_prefix
+            [OF hK h\<theta>K h\<rho>K h\<theta>_face_\<rho> h\<theta>2 h\<rho>2])
+      thus False
+        using h\<rho>_ne_\<theta> by (by100 blast)
+    qed
+    have "k = 0 \<or> k = 1"
+      using hk_le hk_ne2 by (by100 linarith)
+    thus ?thesis
+      using hI_dim by (by100 blast)
+  qed
+  have h\<rho>_\<theta>_inter_eq_x_if_dim0:
+      "geotop_simplex_dim (\<rho> \<inter> \<theta>) 0 \<Longrightarrow> \<rho> \<inter> \<theta> = {x}"
+  proof -
+    assume hI0: "geotop_simplex_dim (\<rho> \<inter> \<theta>) 0"
+    have hxI: "x \<in> \<rho> \<inter> \<theta>"
+      using hx\<rho> hx\<theta> by (by100 blast)
+    show "\<rho> \<inter> \<theta> = {x}"
+      by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF hI0 hxI])
+  qed
   have hthird_boundary_or_interior:
     "d \<subseteq> J \<or> \<not> d \<subseteq> J"
     by (by100 blast)
