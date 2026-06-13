@@ -35655,6 +35655,56 @@ proof -
     using hagree hx by (by100 blast)
 qed
 
+lemma geotop_frontier_four_segments_fix_from_linear_edges_prefix:
+  fixes P :: "(real^2) set" and h :: "real^2 \<Rightarrow> real^2"
+  assumes hfront:
+    "frontier P \<subseteq> closed_segment a b \<union> closed_segment b c
+      \<union> closed_segment c d \<union> closed_segment d a"
+  assumes hab: "a \<noteq> b"
+  assumes hbc: "b \<noteq> c"
+  assumes hcd: "c \<noteq> d"
+  assumes hda: "d \<noteq> a"
+  assumes hlin_ab: "geotop_linear_on (closed_segment a b) h"
+  assumes hlin_bc: "geotop_linear_on (closed_segment b c) h"
+  assumes hlin_cd: "geotop_linear_on (closed_segment c d) h"
+  assumes hlin_da: "geotop_linear_on (closed_segment d a) h"
+  assumes ha: "h a = a"
+  assumes hb: "h b = b"
+  assumes hc: "h c = c"
+  assumes hd: "h d = d"
+  shows "\<forall>x\<in>frontier P. h x = x"
+proof
+  fix x
+  assume hxP: "x \<in> frontier P"
+  have hx:
+    "x \<in> closed_segment a b \<union> closed_segment b c
+      \<union> closed_segment c d \<union> closed_segment d a"
+    using hfront hxP by (by100 blast)
+  show "h x = x"
+    using hx
+  proof (elim UnE)
+    assume hxab: "x \<in> closed_segment a b"
+    show ?thesis
+      by (rule geotop_linear_on_segment_fix_endpoints_prefix
+          [OF hab hlin_ab ha hb hxab])
+  next
+    assume hxbc: "x \<in> closed_segment b c"
+    show ?thesis
+      by (rule geotop_linear_on_segment_fix_endpoints_prefix
+          [OF hbc hlin_bc hb hc hxbc])
+  next
+    assume hxcd: "x \<in> closed_segment c d"
+    show ?thesis
+      by (rule geotop_linear_on_segment_fix_endpoints_prefix
+          [OF hcd hlin_cd hc hd hxcd])
+  next
+    assume hxda: "x \<in> closed_segment d a"
+    show ?thesis
+      by (rule geotop_linear_on_segment_fix_endpoints_prefix
+          [OF hda hlin_da hd ha hxda])
+  qed
+qed
+
 lemma geotop_three_noncollinear_convex_hull_simplex_vertices_prefix:
   fixes a b c :: "real^2"
   assumes hnc: "\<not> collinear {a, b, c}"
