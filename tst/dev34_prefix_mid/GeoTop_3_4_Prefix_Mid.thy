@@ -35087,6 +35087,71 @@ proof -
     show ?thesis
       using h01_sub h21_sub by (by100 blast)
   qed
+  have hB02K: "?B\<^sub>0\<^sub>2 \<in> K"
+    using heK hfigure33_boundary_support_package by (by100 simp)
+  have hB02_edge: "geotop_is_edge ?B\<^sub>0\<^sub>2"
+    using hboundary_one_edge_package hfigure33_boundary_support_package
+    by (by100 simp)
+  have hB02_ne_\<theta>: "?B\<^sub>0\<^sub>2 \<noteq> \<theta>"
+  proof
+    assume hB02_eq: "?B\<^sub>0\<^sub>2 = \<theta>"
+    have hB02_dim1: "geotop_simplex_dim ?B\<^sub>0\<^sub>2 1"
+      using hB02_edge unfolding geotop_is_edge_def by (by100 simp)
+    have "1 = (2::nat)"
+      by (rule geotop_simplex_dim_unique[OF hB02_dim1 h\<theta>2[folded hB02_eq]])
+    thus False by (by100 simp)
+  qed
+  have hB02Kd: "?B\<^sub>0\<^sub>2 \<in> ?K\<^sub>d"
+    using hB02K hB02_ne_\<theta> by (by100 simp)
+  have hB01_hull: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = ?B\<^sub>0\<^sub>1"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>1]
+      geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+  have hB21_hull: "geotop_convex_hull {v\<^sub>2, v\<^sub>1} = ?B\<^sub>2\<^sub>1"
+    using segment_convex_hull[of v\<^sub>2 v\<^sub>1]
+      geotop_convex_hull_eq_HOL[of "{v\<^sub>2, v\<^sub>1}"] by (by100 simp)
+  have hB01_face: "geotop_is_face ?B\<^sub>0\<^sub>1 \<theta>"
+    using h\<theta>other_edge_faces hB01_hull by (by100 simp)
+  have hB21_face: "geotop_is_face ?B\<^sub>2\<^sub>1 \<theta>"
+    using h\<theta>other_edge_faces hB21_hull by (by100 simp)
+  have hB01K: "?B\<^sub>0\<^sub>1 \<in> K"
+    using hK h\<theta>K hB01_face
+    unfolding geotop_is_complex_def by (by100 blast)
+  have hB21K: "?B\<^sub>2\<^sub>1 \<in> K"
+    using hK h\<theta>K hB21_face
+    unfolding geotop_is_complex_def by (by100 blast)
+  have hB01_edge: "geotop_is_edge ?B\<^sub>0\<^sub>1"
+    using h\<theta>other_edge_faces hB01_hull by (by100 simp)
+  have hB21_edge: "geotop_is_edge ?B\<^sub>2\<^sub>1"
+    using h\<theta>other_edge_faces hB21_hull by (by100 simp)
+  have hB01_ne_\<theta>: "?B\<^sub>0\<^sub>1 \<noteq> \<theta>"
+  proof
+    assume hB01_eq: "?B\<^sub>0\<^sub>1 = \<theta>"
+    have hB01_dim1: "geotop_simplex_dim ?B\<^sub>0\<^sub>1 1"
+      using hB01_edge unfolding geotop_is_edge_def by (by100 simp)
+    have "1 = (2::nat)"
+      by (rule geotop_simplex_dim_unique[OF hB01_dim1 h\<theta>2[folded hB01_eq]])
+    thus False by (by100 simp)
+  qed
+  have hB21_ne_\<theta>: "?B\<^sub>2\<^sub>1 \<noteq> \<theta>"
+  proof
+    assume hB21_eq: "?B\<^sub>2\<^sub>1 = \<theta>"
+    have hB21_dim1: "geotop_simplex_dim ?B\<^sub>2\<^sub>1 1"
+      using hB21_edge unfolding geotop_is_edge_def by (by100 simp)
+    have "1 = (2::nat)"
+      by (rule geotop_simplex_dim_unique[OF hB21_dim1 h\<theta>2[folded hB21_eq]])
+    thus False by (by100 simp)
+  qed
+  have hB01Kd: "?B\<^sub>0\<^sub>1 \<in> ?K\<^sub>d"
+    using hB01K hB01_ne_\<theta> by (by100 simp)
+  have hB21Kd: "?B\<^sub>2\<^sub>1 \<in> ?K\<^sub>d"
+    using hB21K hB21_ne_\<theta> by (by100 simp)
+  have hB012_sub_Kd_polyhedron:
+      "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> geotop_polyhedron ?K\<^sub>d"
+    using hB01Kd hB21Kd unfolding geotop_polyhedron_def by (by100 blast)
+  have htriangle_frontier_sub_Kd_polyhedron:
+      "?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> geotop_polyhedron ?K\<^sub>d"
+    using hB02Kd hB012_sub_Kd_polyhedron
+    unfolding geotop_polyhedron_def by (by100 blast)
   have h\<theta>_sub_U: "\<theta> \<subseteq> U"
     using hfigure33_boundary_support_package by (by100 blast)
   have hB012_sub_U: "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> U"
