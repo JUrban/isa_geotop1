@@ -124,6 +124,51 @@ proof -
     using h\<delta>_pos hgap by (by100 blast)
 qed
 
+lemma geotop_small_diameter_set_misses_one_of_separated_arcs_prefix:
+  fixes B A1 A2 :: "(real^2) set"
+  assumes hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+  assumes hBne: "B \<noteq> {}"
+  assumes hBbdd: "bounded B"
+  assumes hBdiam: "geotop_diameter (\<lambda>x y. norm (x - y)) B < \<delta>"
+  shows "B \<inter> A1 = {} \<or> B \<inter> A2 = {}"
+proof (rule ccontr)
+  assume hnot: "\<not> (B \<inter> A1 = {} \<or> B \<inter> A2 = {})"
+  obtain x where hxB: "x \<in> B" and hxA1: "x \<in> A1"
+    using hnot by (by100 blast)
+  obtain y where hyB: "y \<in> B" and hyA2: "y \<in> A2"
+    using hnot by (by100 blast)
+  have hdist_le_HOL: "dist x y \<le> diameter B"
+    by (rule diameter_bounded_bound[OF hBbdd hxB hyB])
+  have hHOL_le_geo: "diameter B \<le> geotop_diameter (\<lambda>x y. norm (x - y)) B"
+    by (rule geotop_diameter_ge_HOL_diameter[OF hBne hBbdd])
+  have hdist_lt: "dist x y < \<delta>"
+    using hdist_le_HOL hHOL_le_geo hBdiam by (by100 linarith)
+  have hgap_xy: "\<delta> \<le> dist x y"
+    using hgap hxA1 hyA2 by (by100 blast)
+  show False
+    using hgap_xy hdist_lt by (by100 linarith)
+qed
+
+lemma geotop_mesh_member_misses_one_of_separated_arcs_prefix:
+  fixes G :: "(real^2) set set"
+  assumes hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+  assumes hGfin: "finite G"
+  assumes hBG: "B \<in> G"
+  assumes hBne: "B \<noteq> {}"
+  assumes hBbdd: "bounded B"
+  assumes hmesh: "geotop_mesh (\<lambda>x y. norm (x - y)) G < \<delta>"
+  shows "B \<inter> A1 = {} \<or> B \<inter> A2 = {}"
+proof -
+  have hBdiam_le_mesh: "geotop_diameter (\<lambda>x y. norm (x - y)) B
+      \<le> geotop_mesh (\<lambda>x y. norm (x - y)) G"
+    by (rule geotop_diameter_le_mesh[OF hGfin hBG])
+  have hBdiam_lt: "geotop_diameter (\<lambda>x y. norm (x - y)) B < \<delta>"
+    using hBdiam_le_mesh hmesh by (by100 linarith)
+  show ?thesis
+    by (rule geotop_small_diameter_set_misses_one_of_separated_arcs_prefix
+        [OF hgap hBne hBbdd hBdiam_lt])
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
