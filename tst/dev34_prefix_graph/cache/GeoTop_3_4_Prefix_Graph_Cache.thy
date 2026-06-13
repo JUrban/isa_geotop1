@@ -13361,14 +13361,32 @@ proof -
                       \<or> (\<exists>D. N = D
                         \<and> W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p}))
-                    \<and> ((\<exists>D. N = D - {w}
-                        \<and> W = D - {w, p}
-                        \<and> y \<in> D - {p}
-                        \<and> w \<in> closure W)
-                      \<or> (\<exists>D. N = D
-                        \<and> W = D - {p, q\<^sub>1}
-                        \<and> y \<in> D - {p}
-                        \<and> q\<^sub>1 \<in> closure W))"
+	                    \<and> ((\<exists>D. N = D - {w}
+	                        \<and> W = D - {w, p}
+	                        \<and> y \<in> D - {p}
+	                        \<and> w \<in> closure W)
+	                      \<or> (\<exists>D. N = D
+	                        \<and> W = D - {p, q\<^sub>1}
+	                        \<and> y \<in> D - {p}
+	                        \<and> q\<^sub>1 \<in> closure W))
+	                    \<and> ((\<exists>D. N = D - {w}
+	                        \<and> W = D - {w, p}
+	                        \<and> y \<in> D - {p}
+	                        \<and> w \<in> closure W
+	                        \<and> top1_is_arc_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                        \<and> top1_arc_endpoints_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                            = {w, p})
+	                      \<or> (\<exists>D. N = D
+	                        \<and> W = D - {p, q\<^sub>1}
+	                        \<and> y \<in> D - {p}
+	                        \<and> q\<^sub>1 \<in> closure W
+	                        \<and> top1_is_arc_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                        \<and> top1_arc_endpoints_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                            = {p, q\<^sub>1}))"
               proof -
                 obtain D\<^sub>w D\<^sub>q where hN_side:
                     "(N = D\<^sub>w - {w}
@@ -13442,14 +13460,32 @@ proof -
                           \<or> (\<exists>D. N = D
                             \<and> ?W = D - {p, q\<^sub>1}
                             \<and> y \<in> D - {p}))
-                        \<and> ((\<exists>D. N = D - {w}
-                            \<and> ?W = D - {w, p}
-                            \<and> y \<in> D - {p}
-                            \<and> w \<in> closure ?W)
-                          \<or> (\<exists>D. N = D
-                            \<and> ?W = D - {p, q\<^sub>1}
-                            \<and> y \<in> D - {p}
-                            \<and> q\<^sub>1 \<in> closure ?W))"
+	                        \<and> ((\<exists>D. N = D - {w}
+	                            \<and> ?W = D - {w, p}
+	                            \<and> y \<in> D - {p}
+	                            \<and> w \<in> closure ?W)
+	                          \<or> (\<exists>D. N = D
+	                            \<and> ?W = D - {p, q\<^sub>1}
+	                            \<and> y \<in> D - {p}
+	                            \<and> q\<^sub>1 \<in> closure ?W))
+	                        \<and> ((\<exists>D. N = D - {w}
+	                            \<and> ?W = D - {w, p}
+	                            \<and> y \<in> D - {p}
+	                            \<and> w \<in> closure ?W
+	                            \<and> top1_is_arc_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                            \<and> top1_arc_endpoints_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                                = {w, p})
+	                          \<or> (\<exists>D. N = D
+	                            \<and> ?W = D - {p, q\<^sub>1}
+	                            \<and> y \<in> D - {p}
+	                            \<and> q\<^sub>1 \<in> closure ?W
+	                            \<and> top1_is_arc_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                            \<and> top1_arc_endpoints_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                                = {p, q\<^sub>1}))"
                   proof (intro conjI)
                     show "?W \<subseteq> N - {p}" by (rule hW_sub)
                     show "?W \<noteq> {}" by (rule hW_nonempty)
@@ -13465,18 +13501,37 @@ proof -
                         \<and> ?W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p})"
                       using hN_eq hy_side by (by100 blast)
-                    show "(\<exists>D. N = D - {w}
-                        \<and> ?W = D - {w, p}
-                        \<and> y \<in> D - {p}
-                        \<and> w \<in> closure ?W)
-                      \<or> (\<exists>D. N = D
-                        \<and> ?W = D - {p, q\<^sub>1}
-                        \<and> y \<in> D - {p}
-                        \<and> q\<^sub>1 \<in> closure ?W)"
-                      using hN_eq hy_side hwW_cl by (by100 blast)
-                  qed
-                  show ?thesis
-                    by (rule exI[where x="?W"], rule hbody)
+	                    show "(\<exists>D. N = D - {w}
+	                        \<and> ?W = D - {w, p}
+	                        \<and> y \<in> D - {p}
+	                        \<and> w \<in> closure ?W)
+	                      \<or> (\<exists>D. N = D
+	                        \<and> ?W = D - {p, q\<^sub>1}
+	                        \<and> y \<in> D - {p}
+	                        \<and> q\<^sub>1 \<in> closure ?W)"
+	                      using hN_eq hy_side hwW_cl by (by100 blast)
+	                    show "(\<exists>D. N = D - {w}
+	                        \<and> ?W = D - {w, p}
+	                        \<and> y \<in> D - {p}
+	                        \<and> w \<in> closure ?W
+	                        \<and> top1_is_arc_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                        \<and> top1_arc_endpoints_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                            = {w, p})
+	                      \<or> (\<exists>D. N = D
+	                        \<and> ?W = D - {p, q\<^sub>1}
+	                        \<and> y \<in> D - {p}
+	                        \<and> q\<^sub>1 \<in> closure ?W
+	                        \<and> top1_is_arc_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                        \<and> top1_arc_endpoints_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                            = {p, q\<^sub>1})"
+	                      using hN_eq hy_side hwW_cl hD_arc hD_ep by (by100 blast)
+	                  qed
+	                  show ?thesis
+	                    by (rule exI[where x="?W"], rule hbody)
                 next
                   assume hN_eq: "N = D\<^sub>q"
                   assume hy_side: "y \<in> D\<^sub>q - {p}"
@@ -13532,14 +13587,32 @@ proof -
                           \<or> (\<exists>D. N = D
                             \<and> ?W = D - {p, q\<^sub>1}
                             \<and> y \<in> D - {p}))
-                        \<and> ((\<exists>D. N = D - {w}
-                            \<and> ?W = D - {w, p}
-                            \<and> y \<in> D - {p}
-                            \<and> w \<in> closure ?W)
-                          \<or> (\<exists>D. N = D
-                            \<and> ?W = D - {p, q\<^sub>1}
-                            \<and> y \<in> D - {p}
-                            \<and> q\<^sub>1 \<in> closure ?W))"
+	                        \<and> ((\<exists>D. N = D - {w}
+	                            \<and> ?W = D - {w, p}
+	                            \<and> y \<in> D - {p}
+	                            \<and> w \<in> closure ?W)
+	                          \<or> (\<exists>D. N = D
+	                            \<and> ?W = D - {p, q\<^sub>1}
+	                            \<and> y \<in> D - {p}
+	                            \<and> q\<^sub>1 \<in> closure ?W))
+	                        \<and> ((\<exists>D. N = D - {w}
+	                            \<and> ?W = D - {w, p}
+	                            \<and> y \<in> D - {p}
+	                            \<and> w \<in> closure ?W
+	                            \<and> top1_is_arc_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                            \<and> top1_arc_endpoints_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                                = {w, p})
+	                          \<or> (\<exists>D. N = D
+	                            \<and> ?W = D - {p, q\<^sub>1}
+	                            \<and> y \<in> D - {p}
+	                            \<and> q\<^sub>1 \<in> closure ?W
+	                            \<and> top1_is_arc_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                            \<and> top1_arc_endpoints_on D
+	                              (subspace_topology UNIV geotop_euclidean_topology D)
+	                                = {p, q\<^sub>1}))"
                   proof (intro conjI)
                     show "?W \<subseteq> N - {p}" by (rule hW_sub)
                     show "?W \<noteq> {}" by (rule hW_nonempty)
@@ -13555,18 +13628,37 @@ proof -
                         \<and> ?W = D - {p, q\<^sub>1}
                         \<and> y \<in> D - {p})"
                       using hN_eq hy_side by (by100 blast)
-                    show "(\<exists>D. N = D - {w}
-                        \<and> ?W = D - {w, p}
-                        \<and> y \<in> D - {p}
-                        \<and> w \<in> closure ?W)
-                      \<or> (\<exists>D. N = D
-                        \<and> ?W = D - {p, q\<^sub>1}
-                        \<and> y \<in> D - {p}
-                        \<and> q\<^sub>1 \<in> closure ?W)"
-                      using hN_eq hy_side hqW_cl by (by100 blast)
-                  qed
-                  show ?thesis
-                    by (rule exI[where x="?W"], rule hbody)
+	                    show "(\<exists>D. N = D - {w}
+	                        \<and> ?W = D - {w, p}
+	                        \<and> y \<in> D - {p}
+	                        \<and> w \<in> closure ?W)
+	                      \<or> (\<exists>D. N = D
+	                        \<and> ?W = D - {p, q\<^sub>1}
+	                        \<and> y \<in> D - {p}
+	                        \<and> q\<^sub>1 \<in> closure ?W)"
+	                      using hN_eq hy_side hqW_cl by (by100 blast)
+	                    show "(\<exists>D. N = D - {w}
+	                        \<and> ?W = D - {w, p}
+	                        \<and> y \<in> D - {p}
+	                        \<and> w \<in> closure ?W
+	                        \<and> top1_is_arc_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                        \<and> top1_arc_endpoints_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                            = {w, p})
+	                      \<or> (\<exists>D. N = D
+	                        \<and> ?W = D - {p, q\<^sub>1}
+	                        \<and> y \<in> D - {p}
+	                        \<and> q\<^sub>1 \<in> closure ?W
+	                        \<and> top1_is_arc_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                        \<and> top1_arc_endpoints_on D
+	                          (subspace_topology UNIV geotop_euclidean_topology D)
+	                            = {p, q\<^sub>1})"
+	                      using hN_eq hy_side hqW_cl hD_arc hD_ep by (by100 blast)
+	                  qed
+	                  show ?thesis
+	                    by (rule exI[where x="?W"], rule hbody)
                 qed
               qed
               obtain W where hW_sub_Np: "W \<subseteq> N - {p}"
@@ -13582,16 +13674,35 @@ proof -
                     \<or> (\<exists>D. N = D
                       \<and> W = D - {p, q\<^sub>1}
                       \<and> y \<in> D - {p}))"
-                and hW_source_endpoint_closure_cases:
-                  "((\<exists>D. N = D - {w}
-                      \<and> W = D - {w, p}
-                      \<and> y \<in> D - {p}
-                      \<and> w \<in> closure W)
-                    \<or> (\<exists>D. N = D
-                      \<and> W = D - {p, q\<^sub>1}
-                      \<and> y \<in> D - {p}
-                      \<and> q\<^sub>1 \<in> closure W))"
-                using hN_source_punctured_arc_package by (elim exE conjE)
+	                and hW_source_endpoint_closure_cases:
+	                  "((\<exists>D. N = D - {w}
+	                      \<and> W = D - {w, p}
+	                      \<and> y \<in> D - {p}
+	                      \<and> w \<in> closure W)
+	                    \<or> (\<exists>D. N = D
+	                      \<and> W = D - {p, q\<^sub>1}
+	                      \<and> y \<in> D - {p}
+	                      \<and> q\<^sub>1 \<in> closure W))"
+	                and hW_source_arc_endpoint_cases:
+	                  "((\<exists>D. N = D - {w}
+	                      \<and> W = D - {w, p}
+	                      \<and> y \<in> D - {p}
+	                      \<and> w \<in> closure W
+	                      \<and> top1_is_arc_on D
+	                        (subspace_topology UNIV geotop_euclidean_topology D)
+	                      \<and> top1_arc_endpoints_on D
+	                        (subspace_topology UNIV geotop_euclidean_topology D)
+	                          = {w, p})
+	                    \<or> (\<exists>D. N = D
+	                      \<and> W = D - {p, q\<^sub>1}
+	                      \<and> y \<in> D - {p}
+	                      \<and> q\<^sub>1 \<in> closure W
+	                      \<and> top1_is_arc_on D
+	                        (subspace_topology UNIV geotop_euclidean_topology D)
+	                      \<and> top1_arc_endpoints_on D
+	                        (subspace_topology UNIV geotop_euclidean_topology D)
+	                          = {p, q\<^sub>1}))"
+	                using hN_source_punctured_arc_package by (elim exE conjE)
               have hW_sub_N: "W \<subseteq> N"
                 using hW_sub_Np by (by100 blast)
               have hW_conn_HOL: "connected W"
