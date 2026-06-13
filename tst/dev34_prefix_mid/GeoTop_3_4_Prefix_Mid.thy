@@ -36592,6 +36592,54 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_not_collinear_translated_pair_independent_prefix:
+  fixes p a b :: "real^2"
+  assumes hnot_col: "\<not> collinear {p, p + a, p + b}"
+  shows "a \<noteq> b \<and> independent {a, b}"
+  (**
+    A noncollinear translated triangle gives a genuine independent pair of
+    endpoint direction vectors. **)
+proof -
+  have ha0: "a \<noteq> 0"
+  proof
+    assume "a = 0"
+    hence "collinear {p, p + a, p + b}"
+      by (by100 simp)
+    thus False
+      using hnot_col by (by100 blast)
+  qed
+  have hb0: "b \<noteq> 0"
+  proof
+    assume "b = 0"
+    hence "collinear {p, p + a, p + b}"
+      by (by100 simp)
+    thus False
+      using hnot_col by (by100 blast)
+  qed
+  have hab: "a \<noteq> b"
+  proof
+    assume "a = b"
+    hence "collinear {p, p + a, p + b}"
+      by (by100 simp)
+    thus False
+      using hnot_col by (by100 blast)
+  qed
+  have hnot_affdep: "\<not> affine_dependent {p, p + a, p + b}"
+    using hnot_col collinear_3_eq_affine_dependent[of p "p + a" "p + b"]
+    by (by100 simp)
+  have hiff:
+      "affine_dependent {p, p + a, p + b} \<longleftrightarrow>
+        dependent ((\<lambda>x. - p + x) ` ({p, p + a, p + b} - {p}))"
+    by (rule affine_dependent_iff_dependent2) (by100 simp)
+  have himage:
+      "(\<lambda>x. - p + x) ` ({p, p + a, p + b} - {p}) = {a, b}"
+    using ha0 hb0 hab by (by100 auto)
+  have "independent {a, b}"
+    using hnot_affdep hiff himage by (by100 simp)
+  thus ?thesis
+    using hab by (by100 blast)
+qed
+
 lemma geotop_segment_germ_outside_triangle_negative_coordinate_prefix:
   fixes p a b q :: "real^2"
   assumes h\<rho>: "0 < \<rho>"
