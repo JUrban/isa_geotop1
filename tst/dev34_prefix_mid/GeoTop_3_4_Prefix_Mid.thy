@@ -41629,20 +41629,79 @@ proof -
 	          < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
 	      by (rule geotop_delete_2simplex_complex_count_prefix
 	          [OF hK hK_fin h\<theta>K h\<theta>2 hdelete])
-    have hfigure33_corner_inverse_boundary_carrier:
-        "\<exists>J' f.
-          geotop_is_polygon J'
-          \<and> geotop_polyhedron ?K\<^sub>d =
-              closure_on UNIV geotop_euclidean_topology
-                (geotop_polygon_interior J')
-          \<and> closure_on UNIV geotop_euclidean_topology
-                (geotop_polygon_interior J') \<subseteq> U
-          \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
-                UNIV geotop_euclidean_topology f
-          \<and> (\<forall>P\<in>UNIV - U. f P = P)
-          \<and> f ` J = J'"
-      sorry
-	    show "\<exists>J' K' f.
+	    have hfigure33_corner_forward_boundary_carrier:
+	        "\<exists>J' g.
+	          geotop_is_polygon J'
+	          \<and> geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J')
+	          \<and> closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J') \<subseteq> U
+	          \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+	                UNIV geotop_euclidean_topology g
+	          \<and> (\<forall>P\<in>UNIV - U. g P = P)
+	          \<and> g ` J' = J"
+	      sorry
+	    have hfigure33_corner_inverse_boundary_carrier:
+	        "\<exists>J' f.
+	          geotop_is_polygon J'
+	          \<and> geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J')
+	          \<and> closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J') \<subseteq> U
+	          \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+	                UNIV geotop_euclidean_topology f
+	          \<and> (\<forall>P\<in>UNIV - U. f P = P)
+	          \<and> f ` J = J'"
+	    proof -
+	      obtain J' g where hJ'_poly: "geotop_is_polygon J'"
+	        and hKd_poly:
+	          "geotop_polyhedron ?K\<^sub>d =
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior J')"
+	        and hJ'_support:
+	          "closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior J') \<subseteq> U"
+	        and hg_homeo:
+	          "top1_homeomorphism_on UNIV geotop_euclidean_topology
+	            UNIV geotop_euclidean_topology g"
+	        and hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
+	        and hgJ': "g ` J' = J"
+	        using hfigure33_corner_forward_boundary_carrier
+	        by (elim exE conjE)
+	      define f where "f = inv_into (UNIV::(real^2) set) g"
+	      have hf_homeo:
+	          "top1_homeomorphism_on UNIV geotop_euclidean_topology
+	            UNIV geotop_euclidean_topology f"
+	        using top1_homeomorphism_on_sym[OF hg_homeo] f_def
+	        by (by100 simp)
+	      have hf_fix_raw:
+	          "\<forall>P\<in>UNIV - U. inv_into UNIV g P = P"
+	        by (rule geotop_plane_homeomorphism_fixed_outside_inv_prefix
+	            [OF hg_homeo hg_fix])
+	      have hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+	        using hf_fix_raw unfolding f_def by (by100 simp)
+	      have hg_bij: "bij_betw g UNIV UNIV"
+	        using hg_homeo unfolding top1_homeomorphism_on_def
+	        by (by100 blast)
+	      have hg_inj: "inj_on g UNIV"
+	        using hg_bij bij_betw_imp_inj_on by (by100 blast)
+	      have hJ'_sub: "J' \<subseteq> UNIV"
+	        by (by100 simp)
+	      have hfJ: "f ` J = J'"
+	      proof -
+	        have "f ` (g ` J') = J'"
+	          unfolding f_def
+	          using inv_into_image_cancel[OF hg_inj hJ'_sub] .
+	        then show ?thesis
+	          using hgJ' by (by100 simp)
+	      qed
+	      show ?thesis
+	        using hJ'_poly hKd_poly hJ'_support hf_homeo hf_fix hfJ
+	        by (intro exI[of _ J'] exI[of _ f]) (by100 blast)
+	    qed
+		    show "\<exists>J' K' f.
 	      geotop_is_polygon J'
 	      \<and> geotop_is_complex K'
 	      \<and> finite K'
