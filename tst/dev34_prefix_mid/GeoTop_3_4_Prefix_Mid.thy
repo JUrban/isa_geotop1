@@ -41357,9 +41357,9 @@ proof -
 		              using hx_end hx_ne_v\<^sub>0 hx_ball_\<rho> hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0
 		              by (by100 blast)
 		          qed
-		          have hendpoint_germ_v\<^sub>2_theta_disj:
-		              "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
-		                  ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta> = {}"
+			          have hendpoint_germ_v\<^sub>2_theta_disj:
+			              "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                  ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta> = {}"
 		          proof (rule equals0I)
 		            fix x
 		            assume hx:
@@ -41380,11 +41380,61 @@ proof -
 		            have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
 		              using hxCO hx\<theta> hCO_theta_inter by (by100 blast)
 		            show False
-		              using hx_end hx_ne_v\<^sub>2 hx_ball_\<rho> hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2
-		              by (by100 blast)
-		          qed
-		          let ?C\<^sub>O_out_tiny =
-		            "C\<^sub>O - (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
+			              using hx_end hx_ne_v\<^sub>2 hx_ball_\<rho> hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2
+			              by (by100 blast)
+			          qed
+			          have hendpoint_germ_v\<^sub>0_sub_C\<^sub>O_arc:
+			              "(closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                  ball v\<^sub>0 \<rho>\<^sub>0
+			                \<subseteq> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+			          proof
+			            fix x
+			            assume hx:
+			              "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                ball v\<^sub>0 \<rho>\<^sub>0"
+			            have hx_seg: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+			              using hx by (by100 blast)
+			            have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+			              using hx by (by100 blast)
+			            have hx_ball_\<rho>: "x \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+			              using hx by (by100 blast)
+			            have hx_ball_\<delta>: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+			              using hx_ball_\<rho> h\<rho>\<^sub>0_lt_\<delta>\<^sub>0 by (by100 simp)
+			            have hxCO: "x \<in> C\<^sub>O"
+			              using hCO_local_v\<^sub>0 hx_ball_\<delta> hx_seg by (by100 blast)
+			            have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+			              using hx_ball_\<rho> hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0 by (by100 blast)
+			            show "x \<in> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+			              using hxCO hx_ne_v\<^sub>0 hx_ne_v\<^sub>2
+			              unfolding geotop_arc_interior_def by (by100 blast)
+			          qed
+			          have hendpoint_germ_v\<^sub>2_sub_C\<^sub>O_arc:
+			              "(closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                  ball v\<^sub>2 \<rho>\<^sub>2
+			                \<subseteq> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+			          proof
+			            fix x
+			            assume hx:
+			              "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                ball v\<^sub>2 \<rho>\<^sub>2"
+			            have hx_seg: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+			              using hx by (by100 blast)
+			            have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+			              using hx by (by100 blast)
+			            have hx_ball_\<rho>: "x \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+			              using hx by (by100 blast)
+			            have hx_ball_\<delta>: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+			              using hx_ball_\<rho> h\<rho>\<^sub>2_lt_\<delta>\<^sub>2 by (by100 simp)
+			            have hxCO: "x \<in> C\<^sub>O"
+			              using hCO_local_v\<^sub>2 hx_ball_\<delta> hx_seg by (by100 blast)
+			            have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+			              using hx_ball_\<rho> hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2 by (by100 blast)
+			            show "x \<in> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+			              using hxCO hx_ne_v\<^sub>0 hx_ne_v\<^sub>2
+			              unfolding geotop_arc_interior_def by (by100 blast)
+			          qed
+			          let ?C\<^sub>O_out_tiny =
+			            "C\<^sub>O - (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
 		          have hC\<^sub>O_out_tiny_compact: "compact ?C\<^sub>O_out_tiny"
 		          proof -
 		            have hopen: "open (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
@@ -41523,14 +41573,105 @@ proof -
 		                  geotop_polyhedron
 		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
 		                \<subseteq> {v\<^sub>0, v\<^sub>2}"
-		          (**
-		            Remaining straight-germ endpoint geometry for Moise Figure
-		            3.3.  After reducing \<open>C\<^sub>O\<close> near the endpoints to the two
-		            tiny local endpoint segments and disposing of the outer
-		            compact remainder by set-distance, prove that sufficiently
-		            thin source carriers meet those punctured endpoint germs
-		            only at the allowed old-edge endpoints. **)
-		            sorry
+			          (**
+			            Remaining straight-germ endpoint geometry for Moise Figure
+			            3.3.  After reducing \<open>C\<^sub>O\<close> near the endpoints to the two
+			            tiny local endpoint segments and disposing of the outer
+			            compact remainder by set-distance, prove that sufficiently
+			            thin source carriers meet those punctured endpoint germs
+			            only at the allowed old-edge endpoints. **)
+			          proof -
+			            have hfigure33_source_carrier_endpoint_germs_CR_side_scalar:
+			                "\<exists>\<eta>>0. \<forall>t>0.
+			                  t < \<eta> \<longrightarrow>
+			                  (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 \<rho>\<^sub>0)
+			                    \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                    geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                  \<subseteq>
+			                    geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                    geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			              sorry
+			            show ?thesis
+			            proof -
+			              obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
+			                and hCR_side:
+			                  "\<forall>t>0.
+			                    t < \<eta> \<longrightarrow>
+			                    (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0)
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                      geotop_polyhedron
+			                        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                    \<subseteq>
+			                      geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                      geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			                using hfigure33_source_carrier_endpoint_germs_CR_side_scalar
+			                by (elim exE conjE)
+			              have hsmall:
+			                  "\<forall>t>0.
+			                    t < \<eta> \<longrightarrow>
+			                    (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0)
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                      geotop_polyhedron
+			                        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                    \<subseteq> {v\<^sub>0, v\<^sub>2}"
+			              proof (intro allI impI subsetI)
+			                fix t :: real
+			                fix x :: "real^2"
+			                assume ht_pos: "0 < t"
+			                assume ht_lt: "t < \<eta>"
+			                assume hx:
+			                  "x \<in> (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 \<rho>\<^sub>0)
+			                    \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                    geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+			                have hx_CR_side:
+			                    "x \<in> geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                      geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			                  using hCR_side ht_pos ht_lt hx by (by100 blast)
+			                have hx_germ:
+			                    "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0)
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2)"
+			                  using hx by (by100 blast)
+			                have hx_CO_arc:
+			                    "x \<in> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+			                proof (rule UnE[OF hx_germ])
+			                  assume hx0:
+			                    "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 \<rho>\<^sub>0"
+			                  show ?thesis
+			                    using hendpoint_germ_v\<^sub>0_sub_C\<^sub>O_arc hx0 by (by100 blast)
+			                next
+			                  assume hx2:
+			                    "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 \<rho>\<^sub>2"
+			                  show ?thesis
+			                    using hendpoint_germ_v\<^sub>2_sub_C\<^sub>O_arc hx2 by (by100 blast)
+			                qed
+			                have hx_CO_side:
+			                    "x \<in> geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+			                      geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+			                  using hx_CO_arc by (by100 blast)
+			                have False
+			                  using hCR_CO_sides_disjoint hx_CR_side hx_CO_side
+			                  by (by100 blast)
+			                thus "x \<in> {v\<^sub>0, v\<^sub>2}"
+			                  by (by100 blast)
+			              qed
+			              show ?thesis
+			                using h\<eta>_pos hsmall by (by100 blast)
+			            qed
+			          qed
 		          have hfigure33_source_carrier_endpoint_contact_bound_scalar:
 		              "\<exists>\<eta>>0. \<forall>t>0.
 		                t < \<eta> \<longrightarrow>
