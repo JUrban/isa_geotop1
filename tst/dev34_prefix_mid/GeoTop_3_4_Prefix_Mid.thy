@@ -34756,6 +34756,48 @@ proof -
     using hC_simp hC_face hC_inter hC_local by (by100 blast)
 qed
 
+lemma geotop_simplex_face_closure_vertices_subset_prefix:
+  fixes S :: "(real^2) set set" and W :: "(real^2) set"
+  assumes hS_vertices:
+    "\<forall>\<sigma>\<in>S. \<exists>V. geotop_simplex_vertices \<sigma> V \<and> V \<subseteq> W"
+  shows "geotop_complex_vertices {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+    \<subseteq> W"
+proof
+  let ?C = "{\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  fix x
+  assume hx: "x \<in> geotop_complex_vertices ?C"
+  obtain \<tau> V where h\<tau>C: "\<tau> \<in> ?C"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> V"
+    and hxV: "x \<in> V"
+    unfolding geotop_complex_vertices_def using hx by (by100 blast)
+  obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S"
+    and h\<tau>\<sigma>: "\<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>"
+    using h\<tau>C by (by100 blast)
+  obtain V\<^sub>\<sigma> where h\<sigma>V: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    and hV\<^sub>\<sigma>W: "V\<^sub>\<sigma> \<subseteq> W"
+    using hS_vertices h\<sigma>S by (by100 blast)
+  show "x \<in> W"
+  proof (rule disjE[OF h\<tau>\<sigma>])
+    assume h\<tau>eq: "\<tau> = \<sigma>"
+    have hV_eq: "V = V\<^sub>\<sigma>"
+      by (rule geotop_simplex_vertices_unique[OF h\<tau>V h\<sigma>V[folded h\<tau>eq]])
+    show ?thesis
+      using hxV hV_eq hV\<^sub>\<sigma>W by (by100 blast)
+  next
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    obtain V' W' where h\<sigma>V': "geotop_simplex_vertices \<sigma> V'"
+      and hW'_sub: "W' \<subseteq> V'"
+      and h\<tau>W': "geotop_simplex_vertices \<tau> W'"
+      by (rule geotop_face_witness_simplex_vertices_prefix[OF hface])
+    have hV'_eq: "V' = V\<^sub>\<sigma>"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V])
+    have hV_eq: "V = W'"
+      by (rule geotop_simplex_vertices_unique[OF h\<tau>V h\<tau>W'])
+    show ?thesis
+      using hxV hV_eq hW'_sub hV'_eq hV\<^sub>\<sigma>W by (by100 blast)
+  qed
+qed
+
 lemma geotop_linear_on_vertex_segment_image_prefix:
   fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes hlin: "geotop_linear_on \<sigma> f"
@@ -37869,6 +37911,70 @@ proof -
                   [OF hncol041 hncol241 hncol013 hncol213 htarget041241
                     htarget041013 htarget041213 htarget241013
                     htarget241213 htarget013213])
+            have hsource_carrier_vertices_sub:
+                "geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                  \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+            proof -
+              have hsource_seed_vertices:
+                  "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    \<exists>V. geotop_simplex_vertices \<sigma> V
+                      \<and> V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+              proof
+                fix \<sigma>
+                assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                have hcases:
+                    "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                  using h\<sigma> by (by100 simp)
+                show "\<exists>V. geotop_simplex_vertices \<sigma> V
+                    \<and> V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                  using hcases hsource045_vertices hsource245_vertices
+                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                      [OF hncol053]
+                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                      [OF hncol253]
+                  by (by100 blast)
+              qed
+              show ?thesis
+                by (rule geotop_simplex_face_closure_vertices_subset_prefix
+                    [OF hsource_seed_vertices])
+            qed
+            have htarget_carrier_vertices_sub:
+                "geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)
+                  \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+            proof -
+              have htarget_seed_vertices:
+                  "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    \<exists>V. geotop_simplex_vertices \<sigma> V
+                      \<and> V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+              proof
+                fix \<sigma>
+                assume h\<sigma>: "\<sigma> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                have hcases:
+                    "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                  using h\<sigma> by (by100 simp)
+                show "\<exists>V. geotop_simplex_vertices \<sigma> V
+                    \<and> V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                  using hcases
+                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                      [OF hncol041]
+                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                      [OF hncol241]
+                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                      [OF hncol013]
+                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                      [OF hncol213]
+                  by (by100 blast)
+              qed
+              show ?thesis
+                by (rule geotop_simplex_face_closure_vertices_subset_prefix
+                    [OF htarget_seed_vertices])
+            qed
             have hfsimp:
                 "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
                   \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
