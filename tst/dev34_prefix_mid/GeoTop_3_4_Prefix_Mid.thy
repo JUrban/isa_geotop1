@@ -35428,6 +35428,108 @@ proof
   qed
 qed
 
+lemma geotop_opposite_side_shared_base_union_frontier_outer_edges_prefix:
+  fixes a b c d n :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hopp:
+    "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  shows "frontier
+      (geotop_convex_hull {a, b, c} \<union> geotop_convex_hull {a, b, d})
+    \<subseteq> closed_segment a c \<union> closed_segment c b
+      \<union> closed_segment b d \<union> closed_segment d a"
+proof -
+  let ?A = "geotop_convex_hull {a, b, c}"
+  let ?B = "geotop_convex_hull {a, b, d}"
+  let ?G = "closed_segment a b"
+  let ?E = "closed_segment a c \<union> closed_segment c b"
+  let ?F = "closed_segment a d \<union> closed_segment d b"
+  let ?P = "closed_segment a c \<union> closed_segment c b
+      \<union> closed_segment b d \<union> closed_segment d a"
+  have hc_ne_line: "n \<bullet> c \<noteq> r"
+    using hopp by (by100 linarith)
+  have hd_ne_line: "n \<bullet> d \<noteq> r"
+    using hopp by (by100 linarith)
+  have hc_off: "c \<notin> affine hull {a, b}"
+    using hline hc_ne_line by (by100 simp)
+  have hd_off: "d \<notin> affine hull {a, b}"
+    using hline hd_ne_line by (by100 simp)
+  have hc_not: "c \<notin> {a, b}"
+  proof
+    assume hc_ab: "c \<in> {a, b}"
+    have "c \<in> affine hull {a, b}"
+      by (rule hull_subset[THEN subsetD]) (use hc_ab in \<open>by (by100 simp)\<close>)
+    thus False
+      using hc_off by (by100 blast)
+  qed
+  have hd_not: "d \<notin> {a, b}"
+  proof
+    assume hd_ab: "d \<in> {a, b}"
+    have "d \<in> affine hull {a, b}"
+      by (rule hull_subset[THEN subsetD]) (use hd_ab in \<open>by (by100 simp)\<close>)
+    thus False
+      using hd_off by (by100 blast)
+  qed
+  have hnc_cab: "\<not> collinear {c, a, b}"
+    by (rule geotop_not_collinear_off_affine_hull_pair_prefix[OF hab hc_off])
+  have hnd_dab: "\<not> collinear {d, a, b}"
+    by (rule geotop_not_collinear_off_affine_hull_pair_prefix[OF hab hd_off])
+  have hnc: "\<not> collinear {a, b, c}"
+  proof -
+    have "{a, b, c} = {c, a, b}"
+      by (by100 blast)
+    thus ?thesis
+      using hnc_cab by (by100 simp)
+  qed
+  have hnd: "\<not> collinear {a, b, d}"
+  proof -
+    have "{a, b, d} = {d, a, b}"
+      by (by100 blast)
+    thus ?thesis
+      using hnd_dab by (by100 simp)
+  qed
+  have hA_vertices: "geotop_simplex_vertices ?A {a, b, c}"
+    by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hnc])
+  have hB_vertices: "geotop_simplex_vertices ?B {a, b, d}"
+    by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hnd])
+  have hA_front:
+      "frontier ?A = ?G \<union> (closed_segment a c \<union> closed_segment c b)"
+    by (rule geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix
+        [OF hA_vertices hab hc_not])
+  have hB_front:
+      "frontier ?B = ?G \<union> (closed_segment a d \<union> closed_segment d b)"
+    by (rule geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix
+        [OF hB_vertices hab hd_not])
+  have hA_sub: "frontier ?A \<subseteq> ?E \<union> ?G"
+    using hA_front by (by100 blast)
+  have hB_sub: "frontier ?B \<subseteq> ?F \<union> ?G"
+    using hB_front by (by100 blast)
+  have hG_hull: "?G = geotop_convex_hull {a, b}"
+    unfolding geotop_convex_hull_eq_HOL by (rule segment_convex_hull)
+  have hGint_hull:
+      "rel_interior (geotop_convex_hull {a, b}) \<subseteq> interior (?A \<union> ?B)"
+    by (rule geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+        [OF hab hc_not hd_not refl hA_vertices hB_vertices hline hopp])
+  have hGint: "rel_interior ?G \<subseteq> interior (?A \<union> ?B)"
+    using hG_hull hGint_hull by (by100 simp)
+  have hrelG: "rel_interior ?G = open_segment a b"
+    using hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have hGbd_endpoints: "?G - rel_interior ?G \<subseteq> {a, b}"
+    using hrelG unfolding open_segment_def by (by100 blast)
+  have hendpoints_P: "{a, b} \<subseteq> ?P"
+    by (by100 simp)
+  have hGbd: "?G - rel_interior ?G \<subseteq> ?P"
+    using hGbd_endpoints hendpoints_P by (by100 blast)
+  have hfront:
+      "frontier (?A \<union> ?B) \<subseteq> ?E \<union> ?F \<union> ?P"
+    by (rule geotop_frontier_Un_shared_rel_interior_subset_prefix
+        [OF hA_sub hB_sub hGint hGbd])
+  show ?thesis
+    using hfront closed_segment_commute[of a d]
+      closed_segment_commute[of d b]
+    by (by100 blast)
+qed
+
 lemma geotop_linear_on_vertex_segment_image_prefix:
   fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes hlin: "geotop_linear_on \<sigma> f"
