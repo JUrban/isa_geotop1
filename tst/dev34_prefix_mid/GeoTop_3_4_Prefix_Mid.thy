@@ -35313,6 +35313,69 @@ proof -
       qed
     qed
   qed
+  have hfigure33_boundary_through_old_edge_point_split:
+      "\<exists>R C\<^sub>R C\<^sub>O.
+        R \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> J = C\<^sub>R \<union> C\<^sub>O
+        \<and> geotop_is_broken_line C\<^sub>R
+        \<and> geotop_is_broken_line C\<^sub>O
+        \<and> geotop_arc_endpoints C\<^sub>R {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}
+        \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+  proof -
+    have hB02_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    obtain R where hR_B02_int:
+        "R \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using arc_interior_nonempty[OF hB02_arc] by (by100 blast)
+    have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
+      using hfigure33_boundary_support_package by (by100 blast)
+    have hR_B02: "R \<in> ?B\<^sub>0\<^sub>2"
+      using hR_B02_int unfolding geotop_arc_interior_def by (by100 blast)
+    have hR_not: "R \<notin> {v\<^sub>0, v\<^sub>2}"
+      using hR_B02_int unfolding geotop_arc_interior_def by (by100 blast)
+    have hRJ: "R \<in> J"
+      using hR_B02 hB02_sub_J by (by100 blast)
+    have hv\<^sub>0_B02: "v\<^sub>0 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>2_B02: "v\<^sub>2 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+      using hB02_sub_J hv\<^sub>0_B02 by (by100 blast)
+    have hv\<^sub>2J: "v\<^sub>2 \<in> J"
+      using hB02_sub_J hv\<^sub>2_B02 by (by100 blast)
+    obtain L where hL_linear: "geotop_is_linear_graph L"
+        and hL_fin: "finite L"
+        and hL_conn: "geotop_complex_connected L"
+        and hL_poly: "geotop_polyhedron L = J"
+        and hL_v\<^sub>0: "{v\<^sub>0} \<in> L"
+        and hL_v\<^sub>2: "{v\<^sub>2} \<in> L"
+      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ hv\<^sub>0J hv\<^sub>2J] by (by100 blast)
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+      using hJ hL_poly by (by100 simp)
+    have hR_poly: "R \<in> geotop_polyhedron L"
+      using hRJ hL_poly by (by100 simp)
+    obtain C\<^sub>R C\<^sub>O where hsplit:
+        "geotop_polyhedron L = C\<^sub>R \<union> C\<^sub>O
+        \<and> geotop_is_broken_line C\<^sub>R
+        \<and> geotop_is_broken_line C\<^sub>O
+        \<and> geotop_arc_endpoints C\<^sub>R {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}
+        \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hL_v\<^sub>0 hL_v\<^sub>2
+          hv\<^sub>0v\<^sub>2 hR_poly hR_not]
+      by (by100 blast)
+    have hJ_split: "J = C\<^sub>R \<union> C\<^sub>O"
+      using hsplit hL_poly by (by100 blast)
+    show ?thesis
+      using hR_B02_int hsplit hJ_split by (by100 blast)
+  qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
