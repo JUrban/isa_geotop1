@@ -49857,6 +49857,237 @@ proof -
 	          using hKr_poly_without_old_edges_rel
 	            hKd_poly_without_theta_rel_closed_disk
 	          by (by100 blast)
+	        have hcorner_triangle_frontier_eq:
+	            "frontier \<theta> = ?B\<^sub>c \<union> ?B\<^sub>n"
+	          using hcorner_frontier by (by100 blast)
+	        have hcorner_triangle_interior_eq:
+	            "geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) =
+	              rel_interior \<theta>"
+	        proof -
+	          have hfront_I:
+	              "geotop_polygon_interior (frontier \<theta>) = rel_interior \<theta>"
+	            by (rule geotop_2simplex_frontier_polygon_interior_eq_rel_interior_prefix
+	                [OF h\<theta>2])
+	          show ?thesis
+	            using hcorner_triangle_frontier_eq hfront_I by (by100 simp)
+	        qed
+	        have hcorner_triangle_polygon:
+	            "geotop_is_polygon (?B\<^sub>c \<union> ?B\<^sub>n)"
+	        proof -
+	          have hfront_poly: "geotop_is_polygon (frontier \<theta>)"
+	            by (rule geotop_2simplex_frontier_is_polygon_prefix[OF h\<theta>2])
+	          show ?thesis
+	            using hcorner_triangle_frontier_eq hfront_poly by (by100 simp)
+	        qed
+	        have hcorner_triangle_closure_eq:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n)) =
+	            rel_interior \<theta> \<union> (?B\<^sub>c \<union> ?B\<^sub>n)"
+	        proof -
+	          have hclosure_on:
+	              "closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n)) =
+	              closure (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n))"
+	            by (rule closure_on_geotop_UNIV_eq_closure)
+	          have hclosure:
+	              "closure (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n)) =
+	              geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union> (?B\<^sub>c \<union> ?B\<^sub>n)"
+	            by (rule polygon_interior_closure_eq[OF hcorner_triangle_polygon])
+	          show ?thesis
+	            using hclosure_on hclosure hcorner_triangle_interior_eq
+	            by (by100 simp)
+	        qed
+	        have hcorner_chord_decomposition:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior J) =
+	            (rel_interior \<theta> \<union> (?B\<^sub>c \<union> ?B\<^sub>n)) \<union>
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	        proof -
+	          have hchord_all:
+	              "geotop_is_polygon (?B\<^sub>c \<union> ?B\<^sub>n)
+	              \<and> geotop_is_polygon J
+	              \<and> geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)
+	              \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+	                      geotop_arc_interior ?B\<^sub>n {y, z}.
+	                     C = geotop_component_at UNIV geotop_euclidean_topology
+	                          (geotop_polygon_interior J -
+	                           geotop_arc_interior ?B\<^sub>n {y, z}) P}
+	                  =
+	                  {geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n),
+	                   geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)}
+	              \<and> closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J) =
+	                  closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n)) \<union>
+	                  closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))
+	              \<and> closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J) - ?B\<^sub>n =
+	                  (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	                   geotop_arc_interior ?B\<^sub>c {y, z}) \<union>
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                   geotop_arc_interior C\<^sub>O {y, z})
+	              \<and> top1_connected_on
+	                    (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	                     geotop_arc_interior ?B\<^sub>c {y, z})
+	                    (subspace_topology UNIV geotop_euclidean_topology
+	                      (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	                       geotop_arc_interior ?B\<^sub>c {y, z}))
+	              \<and> top1_connected_on
+	                    (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                     geotop_arc_interior C\<^sub>O {y, z})
+	                    (subspace_topology UNIV geotop_euclidean_topology
+	                      (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                       geotop_arc_interior C\<^sub>O {y, z}))
+	              \<and> geotop_separated UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	                     geotop_arc_interior ?B\<^sub>c {y, z})
+	                    (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                     geotop_arc_interior C\<^sub>O {y, z})"
+	            by (rule geotop_boundary_split_segment_chord_theta_decomposition_all_prefix
+	                [OF hyz hJ_split hB\<^sub>c_bl hCO_bl hB\<^sub>c_E hCO_E
+	                  hB\<^sub>c_CO_int_disj hB\<^sub>n_inter_J
+	                  hB\<^sub>n_arc_interior_subset_polygon_interior])
+	          have hclosure_decomp:
+	              "closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J) =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n)) \<union>
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	            using hchord_all by (by100 blast)
+	          show ?thesis
+	            using hclosure_decomp hcorner_triangle_closure_eq
+	            by (by100 simp)
+	        qed
+	        have hnew_disk_closure_eq:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) =
+	            geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union> (?B\<^sub>n \<union> C\<^sub>O)"
+	        proof -
+	          have hclosure_on:
+	              "closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) =
+	              closure (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	            by (rule closure_on_geotop_UNIV_eq_closure)
+	          have hclosure:
+	              "closure (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) =
+	              geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union> (?B\<^sub>n \<union> C\<^sub>O)"
+	            by (rule polygon_interior_closure_eq[OF hJ'_poly])
+	          show ?thesis
+	            using hclosure_on hclosure by (by100 simp)
+	        qed
+	        have hcorner_old_edge_order:
+	            "(e1 = closed_segment x y \<and> e2 = closed_segment x z)
+	            \<or> (e1 = closed_segment x z \<and> e2 = closed_segment x y)"
+	        proof -
+	          have he1e2_ne: "e1 \<noteq> e2"
+	            using hboundary_two_edge_package by (by100 blast)
+	          have he1_mem_old: "e1 \<in> {e1, e2}"
+	            by (by100 simp)
+	          have he2_mem_old: "e2 \<in> {e1, e2}"
+	            by (by100 simp)
+	          have he1_mem:
+	              "e1 \<in> {closed_segment x y, closed_segment x z}"
+	            using hcorner_edge_set he1_mem_old by (by100 simp)
+	          have he2_mem:
+	              "e2 \<in> {closed_segment x y, closed_segment x z}"
+	            using hcorner_edge_set he2_mem_old by (by100 simp)
+	          show ?thesis
+	          proof (cases "e1 = closed_segment x y")
+	            case True
+	            have "e2 = closed_segment x z"
+	              using he2_mem he1e2_ne True by (by100 auto)
+	            thus ?thesis
+	              using True by (by100 blast)
+	          next
+	            case False
+	            have he1_xz: "e1 = closed_segment x z"
+	              using he1_mem False by (by100 auto)
+	            have "e2 = closed_segment x y"
+	              using he2_mem he1e2_ne he1_xz by (by100 auto)
+	            thus ?thesis
+	              using he1_xz by (by100 blast)
+	          qed
+	        qed
+	        have hcorner_deleted_edges_sub_old_arc_int:
+	            "rel_interior e1 \<union> rel_interior e2 \<union> {x}
+	              \<subseteq> geotop_arc_interior ?B\<^sub>c {y, z}"
+	        proof -
+	          have hz_not_xy: "z \<notin> closed_segment x y"
+	          proof
+	            assume hz_xy: "z \<in> closed_segment x y"
+	            have hseg_col: "collinear (closed_segment x y)"
+	              by (rule collinear_closed_segment)
+	            have hxyz_sub: "{x, y, z} \<subseteq> closed_segment x y"
+	              using hz_xy by (by100 simp)
+	            have "collinear {x, y, z}"
+	              by (rule collinear_subset[OF hseg_col hxyz_sub])
+	            thus False
+	              using hnot_col_xyz by (by100 blast)
+	          qed
+	          have hy_not_xz: "y \<notin> closed_segment x z"
+	          proof
+	            assume hy_xz: "y \<in> closed_segment x z"
+	            have hseg_col: "collinear (closed_segment x z)"
+	              by (rule collinear_closed_segment)
+	            have hxyz_sub: "{x, y, z} \<subseteq> closed_segment x z"
+	              using hy_xz by (by100 simp)
+	            have "collinear {x, y, z}"
+	              by (rule collinear_subset[OF hseg_col hxyz_sub])
+	            thus False
+	              using hnot_col_xyz by (by100 blast)
+	          qed
+	          have hrel_xy_sub:
+	              "rel_interior (closed_segment x y)
+	                \<subseteq> geotop_arc_interior ?B\<^sub>c {y, z}"
+	          proof
+	            fix P
+	            assume hP: "P \<in> rel_interior (closed_segment x y)"
+	            have hP_seg: "P \<in> closed_segment x y"
+	              using hP rel_interior_subset by (by100 blast)
+	            have hrel_eq:
+	                "rel_interior (closed_segment x y) = open_segment x y"
+	              using hxy rel_interior_closed_segment[of x y] by (by100 simp)
+	            have hP_open: "P \<in> open_segment x y"
+	              using hP hrel_eq by (by100 simp)
+	            have hP_not_y: "P \<noteq> y"
+	              using hP_open unfolding open_segment_def by (by100 blast)
+	            have hP_not_z: "P \<noteq> z"
+	              using hP_seg hz_not_xy by (by100 blast)
+	            show "P \<in> geotop_arc_interior ?B\<^sub>c {y, z}"
+	              unfolding geotop_arc_interior_def
+	              using hP_seg hP_not_y hP_not_z by (by100 blast)
+	          qed
+	          have hrel_xz_sub:
+	              "rel_interior (closed_segment x z)
+	                \<subseteq> geotop_arc_interior ?B\<^sub>c {y, z}"
+	          proof
+	            fix P
+	            assume hP: "P \<in> rel_interior (closed_segment x z)"
+	            have hP_seg: "P \<in> closed_segment x z"
+	              using hP rel_interior_subset by (by100 blast)
+	            have hrel_eq:
+	                "rel_interior (closed_segment x z) = open_segment x z"
+	              using hxz rel_interior_closed_segment[of x z] by (by100 simp)
+	            have hP_open: "P \<in> open_segment x z"
+	              using hP hrel_eq by (by100 simp)
+	            have hP_not_y: "P \<noteq> y"
+	              using hP_seg hy_not_xz by (by100 blast)
+	            have hP_not_z: "P \<noteq> z"
+	              using hP_open unfolding open_segment_def by (by100 blast)
+	            show "P \<in> geotop_arc_interior ?B\<^sub>c {y, z}"
+	              unfolding geotop_arc_interior_def
+	              using hP_seg hP_not_y hP_not_z by (by100 blast)
+	          qed
+	          have hx_arc:
+	              "x \<in> geotop_arc_interior ?B\<^sub>c {y, z}"
+	            unfolding geotop_arc_interior_def using hxy hxz hyz by (by100 blast)
+	          show ?thesis
+	            using hcorner_old_edge_order hrel_xy_sub hrel_xz_sub hx_arc
+	            by (by100 blast)
+	        qed
 	        have hclosed_disk_minus_corner_eq_new:
 	            "closure_on UNIV geotop_euclidean_topology
 	              (geotop_polygon_interior J) -
