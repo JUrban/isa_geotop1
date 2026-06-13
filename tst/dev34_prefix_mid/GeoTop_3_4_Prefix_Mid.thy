@@ -43004,7 +43004,223 @@ proof -
 			                    Endpoint \<open>v\<^sub>2\<close> angular separation, symmetric to the
 			                    \<open>v\<^sub>0\<close> statement with basis
 			                    \<open>?v\<^sub>5 - v\<^sub>2\<close>, \<open>v\<^sub>1 - v\<^sub>2\<close>. **)
-			                  sorry
+			                  proof -
+			                    let ?a\<^sub>2 = "?v\<^sub>5 - v\<^sub>2"
+			                    let ?b\<^sub>2 = "v\<^sub>1 - v\<^sub>2"
+			                    have hnot_col_v\<^sub>2_mid_1:
+			                        "\<not> collinear {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}"
+			                      using hnot_col_1mid2 by (metis insert_commute)
+			                    have hspan_v\<^sub>2_mid_1:
+			                        "affine hull {v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2} = UNIV"
+			                      using hnot_col_v\<^sub>2_mid_1
+			                      by (simp add: geotop_not_collinear_affine_hull_UNIV_prefix)
+			                    obtain \<alpha>\<^sub>2 \<beta>\<^sub>2 where hp\<^sub>2_coords:
+			                        "p\<^sub>2 = v\<^sub>2 + \<alpha>\<^sub>2 *\<^sub>R ?a\<^sub>2 + \<beta>\<^sub>2 *\<^sub>R ?b\<^sub>2"
+			                      using geotop_affine_hull_UNIV_difference_coordinates_prefix
+			                          [OF hspan_v\<^sub>2_mid_1, of p\<^sub>2]
+			                      by (by100 blast)
+			                    have hbasis_v\<^sub>2:
+			                        "?a\<^sub>2 \<noteq> ?b\<^sub>2 \<and> independent {?a\<^sub>2, ?b\<^sub>2}"
+			                      using geotop_not_collinear_translated_pair_independent_prefix
+			                          [of v\<^sub>2 ?a\<^sub>2 ?b\<^sub>2] hnot_col_v\<^sub>2_mid_1
+			                      by (by100 simp)
+			                    have hsegment_germ_v\<^sub>2_old_angle_disj:
+			                        "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                          geotop_convex_hull {v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2}
+			                        = {}"
+			                    proof (rule equals0I)
+			                      fix x
+			                      assume hx:
+			                        "x \<in> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                          geotop_convex_hull {v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2}"
+			                      have h\<theta>_conv: "convex \<theta>"
+			                        by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
+			                      have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+			                        by (rule GeoTopBase0.geotop_simplex_vertices_subset[OF h\<theta>vertices])
+			                      have hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+			                        using hverts_sub by (by100 blast)
+			                      have hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+			                        using hverts_sub by (by100 blast)
+			                      have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+			                        using hverts_sub by (by100 blast)
+			                      have hv\<^sub>5_\<theta>: "?v\<^sub>5 \<in> \<theta>"
+			                      proof -
+			                        have hseg_sub: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
+			                          by (rule closed_segment_subset[OF hv\<^sub>0_\<theta> hv\<^sub>2_\<theta> h\<theta>_conv])
+			                        show ?thesis
+			                          using hseg_sub midpoint_in_closed_segment[of v\<^sub>0 v\<^sub>2]
+			                          by (by100 blast)
+			                      qed
+			                      have hold_sub:
+			                          "geotop_convex_hull {v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2} \<subseteq> \<theta>"
+			                      proof -
+			                        have hv\<^sub>2a_eq: "v\<^sub>2 + ?a\<^sub>2 = ?v\<^sub>5"
+			                          by (metis add.commute diff_add_cancel)
+			                        have hv\<^sub>2b_eq: "v\<^sub>2 + ?b\<^sub>2 = v\<^sub>1"
+			                          by (metis add.commute diff_add_cancel)
+			                        have hv\<^sub>2a_\<theta>: "v\<^sub>2 + ?a\<^sub>2 \<in> \<theta>"
+			                          by (subst hv\<^sub>2a_eq, rule hv\<^sub>5_\<theta>)
+			                        have hv\<^sub>2b_\<theta>: "v\<^sub>2 + ?b\<^sub>2 \<in> \<theta>"
+			                          by (subst hv\<^sub>2b_eq, rule hv\<^sub>1_\<theta>)
+			                        have hverts:
+			                            "{v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2} \<subseteq> \<theta>"
+			                          by (intro insert_subsetI empty_subsetI
+			                              hv\<^sub>2_\<theta> hv\<^sub>2a_\<theta> hv\<^sub>2b_\<theta>)
+			                        have "convex hull {v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2} \<subseteq> \<theta>"
+			                          by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
+			                        thus ?thesis
+			                          unfolding geotop_convex_hull_eq_HOL .
+			                      qed
+			                      have hx_germ:
+			                          "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2"
+			                        using hx by (by100 blast)
+			                      have hx_basis_old:
+			                          "x \<in> geotop_convex_hull {v\<^sub>2, v\<^sub>2 + ?a\<^sub>2, v\<^sub>2 + ?b\<^sub>2}"
+			                        using hx by (by100 blast)
+			                      have hx_\<theta>: "x \<in> \<theta>"
+			                        by (rule subsetD[OF hold_sub hx_basis_old])
+			                      have hx_inter: "x \<in> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                          ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta>"
+			                        by (rule IntI[OF hx_germ hx_\<theta>])
+			                      have hnot_inter:
+			                          "x \<notin> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta>"
+			                        using hendpoint_germ_v\<^sub>2_theta_disj by (metis empty_iff)
+			                      show False
+			                        by (rule notE[OF hnot_inter hx_inter])
+			                    qed
+			                    have hnegative_v\<^sub>2:
+			                        "\<alpha>\<^sub>2 < 0 \<or> \<beta>\<^sub>2 < 0"
+			                      by (rule geotop_segment_germ_outside_triangle_negative_coordinate_prefix
+			                          [OF h\<rho>\<^sub>2_pos hp\<^sub>2_coords hp\<^sub>2_ne
+			                            hsegment_germ_v\<^sub>2_old_angle_disj])
+			                    obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
+			                      and hgap:
+			                        "\<forall>t>0. t < \<eta> \<longrightarrow>
+			                          (\<forall>s u v. 0 < s \<longrightarrow> 0 \<le> u \<longrightarrow> 0 \<le> v \<longrightarrow>
+			                            s * \<alpha>\<^sub>2 = u * (1 + t) - v * t \<longrightarrow>
+			                            s * \<beta>\<^sub>2 = v * (1 + t) - u * t \<longrightarrow> False)"
+			                      using geotop_figure33_moving_cone_real_angular_gap_prefix
+			                          [OF hnegative_v\<^sub>2]
+			                      by blast
+			                    have hsmall:
+			                        "\<forall>t>0.
+			                          t < \<eta> \<longrightarrow>
+			                          ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                          = {}"
+			                    proof (intro allI impI)
+			                      fix t :: real
+			                      assume ht_pos: "0 < t"
+			                      assume ht_lt: "t < \<eta>"
+			                      show "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                          = {}"
+			                      proof (rule equals0I)
+			                        fix x :: "real^2"
+			                        assume hx:
+			                          "x \<in> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                            ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+			                        have hx_germ:
+			                            "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                              ball v\<^sub>2 \<rho>\<^sub>2"
+			                          using hx by (by100 blast)
+			                        have hx_tri:
+			                            "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+			                          using hx by (by100 blast)
+			                        obtain s where hs_nonneg: "0 \<le> s"
+			                          and hs_le: "s \<le> 1"
+			                          and hx_seg_eq: "x = v\<^sub>2 + s *\<^sub>R (p\<^sub>2 - v\<^sub>2)"
+			                          and hs_pos: "0 < s"
+			                        proof -
+			                          have hx_seg: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+			                            using hx_germ by (by100 blast)
+			                          have hx_ne: "x \<noteq> v\<^sub>2"
+			                            using hx_germ by (by100 blast)
+			                          obtain r where hr_nonneg: "0 \<le> r"
+			                            and hr_le: "r \<le> 1"
+			                            and hx_r: "x = (1 - r) *\<^sub>R v\<^sub>2 + r *\<^sub>R p\<^sub>2"
+			                            using hx_seg unfolding closed_segment_def by (by100 blast)
+			                          have hx_ray: "x = v\<^sub>2 + r *\<^sub>R (p\<^sub>2 - v\<^sub>2)"
+			                            using hx_r by (simp add: algebra_simps scaleR_diff_right)
+			                          have hr_pos: "0 < r"
+			                          proof (rule ccontr)
+			                            assume "\<not> 0 < r"
+			                            hence "r = 0"
+			                              using hr_nonneg by (by100 linarith)
+			                            hence "x = v\<^sub>2"
+			                              using hx_ray by (by100 simp)
+			                            thus False
+			                              using hx_ne by (by100 blast)
+			                          qed
+			                          show ?thesis
+			                            by (rule that[OF hr_nonneg hr_le hx_ray hr_pos])
+			                        qed
+			                        have hx_ray_coords:
+			                            "x = v\<^sub>2 + (s * \<alpha>\<^sub>2) *\<^sub>R ?a\<^sub>2
+			                              + (s * \<beta>\<^sub>2) *\<^sub>R ?b\<^sub>2"
+			                          using hx_seg_eq hp\<^sub>2_coords
+			                          by (simp add: algebra_simps scaleR_add_right)
+			                        have htri_basis:
+			                            "x \<in> geotop_convex_hull
+			                              {v\<^sub>2,
+			                                v\<^sub>2 + ((1 + t) *\<^sub>R ?a\<^sub>2 - t *\<^sub>R ?b\<^sub>2),
+			                                v\<^sub>2 + ((- t) *\<^sub>R ?a\<^sub>2 + (1 + t) *\<^sub>R ?b\<^sub>2)}"
+			                        proof -
+			                          have hv\<^sub>4_basis:
+			                              "v\<^sub>2 + ((1 + t) *\<^sub>R ?a\<^sub>2 - t *\<^sub>R ?b\<^sub>2) = ?v\<^sub>4_of t"
+			                            by (simp add: algebra_simps scaleR_diff_right)
+			                          have hv\<^sub>3_basis:
+			                              "v\<^sub>2 + ((- t) *\<^sub>R ?a\<^sub>2 + (1 + t) *\<^sub>R ?b\<^sub>2) = ?v\<^sub>3_of t"
+			                            by (simp add: algebra_simps scaleR_diff_right)
+			                          have hverts_eq:
+			                              "{v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+			                                = {v\<^sub>2,
+			                                    v\<^sub>2 + ((1 + t) *\<^sub>R ?a\<^sub>2 - t *\<^sub>R ?b\<^sub>2),
+			                                    v\<^sub>2 + ((- t) *\<^sub>R ?a\<^sub>2 + (1 + t) *\<^sub>R ?b\<^sub>2)}"
+			                            by (simp only: hv\<^sub>4_basis[symmetric] hv\<^sub>3_basis[symmetric])
+			                          show ?thesis
+			                            using hx_tri hverts_eq by (by100 simp)
+			                        qed
+			                        obtain u v where hu: "0 \<le> u"
+			                          and hv: "0 \<le> v"
+			                          and huv: "u + v \<le> 1"
+			                          and hx_moving:
+			                            "x = v\<^sub>2 + (u * (1 + t) - v * t) *\<^sub>R ?a\<^sub>2
+			                              + (v * (1 + t) - u * t) *\<^sub>R ?b\<^sub>2"
+			                          using geotop_triangle_moving_same_apex_affine_coords_prefix
+			                              [OF htri_basis]
+			                          by (by100 blast)
+			                        have hcoeff:
+			                            "s * \<alpha>\<^sub>2 = u * (1 + t) - v * t
+			                              \<and> s * \<beta>\<^sub>2 = v * (1 + t) - u * t"
+			                        proof -
+			                          have ha_ne_b: "?a\<^sub>2 \<noteq> ?b\<^sub>2"
+			                            using hbasis_v\<^sub>2 by (by100 blast)
+			                          have hind: "independent {?a\<^sub>2, ?b\<^sub>2}"
+			                            using hbasis_v\<^sub>2 by (by100 blast)
+			                          have heq:
+			                              "(s * \<alpha>\<^sub>2) *\<^sub>R ?a\<^sub>2 + (s * \<beta>\<^sub>2) *\<^sub>R ?b\<^sub>2
+			                                = (u * (1 + t) - v * t) *\<^sub>R ?a\<^sub>2
+			                                  + (v * (1 + t) - u * t) *\<^sub>R ?b\<^sub>2"
+			                            using hx_ray_coords hx_moving by (simp add: algebra_simps)
+			                          show ?thesis
+			                            by (rule geotop_independent_pair_coordinate_unique_prefix
+			                                [OF ha_ne_b hind heq])
+			                        qed
+			                        show False
+			                          using hgap ht_pos ht_lt hs_pos hu hv hcoeff by blast
+			                      qed
+			                    qed
+			                    show ?thesis
+			                      using h\<eta>_pos hsmall by (by100 blast)
+			                  qed
 			                obtain \<eta>\<^sub>0 where h\<eta>\<^sub>0_pos: "0 < \<eta>\<^sub>0"
 			                  and hempty0:
 			                    "\<forall>t>0.
