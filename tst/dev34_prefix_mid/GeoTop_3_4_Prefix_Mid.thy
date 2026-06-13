@@ -41294,8 +41294,10 @@ proof -
 		          have hfigure33_source_carrier_endpoint_segments_bound_scalar:
 		              "\<exists>\<eta>>0. \<forall>t>0.
 		                t < \<eta> \<longrightarrow>
-		                ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-		                  \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
+		                (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+		                    ball v\<^sub>0 (\<delta>\<^sub>0 / 2))
+		                  \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+		                    ball v\<^sub>2 (\<delta>\<^sub>2 / 2))) \<inter>
 		                  geotop_polyhedron
 		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
 		                \<subseteq> {v\<^sub>0, v\<^sub>2}"
@@ -41316,14 +41318,16 @@ proof -
 		                \<subseteq> {v\<^sub>0, v\<^sub>2}"
 		          proof -
 		            obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
-		              and hsegments_bound:
-		                "\<forall>t>0.
-		                  t < \<eta> \<longrightarrow>
-		                  ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-		                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
-		                    geotop_polyhedron
-		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
-		                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+			              and hsegments_bound:
+			                "\<forall>t>0.
+			                  t < \<eta> \<longrightarrow>
+			                  (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 (\<delta>\<^sub>0 / 2))
+			                    \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 (\<delta>\<^sub>2 / 2))) \<inter>
+			                    geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
 		              using hfigure33_source_carrier_endpoint_segments_bound_scalar
 		              by (elim exE conjE)
 		            have hsmall:
@@ -41336,14 +41340,16 @@ proof -
 		            proof (intro allI impI)
 		              fix t :: real
 		              assume ht_pos: "0 < t"
-		              assume ht_lt: "t < \<eta>"
-		              have hseg_t:
-		                  "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-		                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
-		                    geotop_polyhedron
-		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
-		                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
-		                using hsegments_bound ht_pos ht_lt by (by100 blast)
+			              assume ht_lt: "t < \<eta>"
+			              have hseg_t:
+			                  "(((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 (\<delta>\<^sub>0 / 2))
+			                    \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 (\<delta>\<^sub>2 / 2))) \<inter>
+			                    geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+			                using hsegments_bound ht_pos ht_lt by (by100 blast)
 		              show "C\<^sub>O \<inter>
 		                    (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)) \<inter>
 		                    geotop_polyhedron
@@ -41360,35 +41366,82 @@ proof -
 		                  "x \<in> C\<^sub>O \<inter>
 		                    (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
 		                  using hx by (by100 blast)
-		                have hxcarrier:
-		                  "x \<in> geotop_polyhedron
-		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		                  using hx by (by100 blast)
-			                have hx_local:
-			                  "x \<in> {v\<^sub>0, v\<^sub>2}
-			                    \<union> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-			                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
-			                  using hCO_endpoint_balls_sub_local_segments hxCO_ball
-			                  by (by100 blast)
+			                have hxcarrier:
+			                  "x \<in> geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+			                  using hx by (by100 blast)
 			                have hx_local_cases:
 			                  "x \<in> {v\<^sub>0, v\<^sub>2} \<or>
-			                   x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-			                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
-			                  using hx_local by (by100 blast)
+			                   x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 (\<delta>\<^sub>0 / 2))
+			                    \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+			                proof -
+			                  have hxCO: "x \<in> C\<^sub>O"
+			                    using hxCO_ball by (by100 blast)
+			                  have hx_ball_cases:
+			                    "x \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<or>
+			                     x \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+			                    using hxCO_ball by (by100 blast)
+			                  show ?thesis
+			                  proof (rule disjE[OF hx_ball_cases])
+			                    assume hx_ball0: "x \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2)"
+			                    have hx_ball0_big: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+			                      using hx_ball0 h\<delta>\<^sub>0_pos by (by100 simp)
+			                    have hx_seg0: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+			                      using hCO_local_v\<^sub>0 hxCO hx_ball0_big by (by100 blast)
+			                    show ?thesis
+			                    proof (cases "x = v\<^sub>0")
+			                      case True
+			                      show ?thesis
+			                        using True by (by100 simp)
+			                    next
+			                      case False
+			                      have "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+			                          \<inter> ball v\<^sub>0 (\<delta>\<^sub>0 / 2)"
+			                        using hx_seg0 hx_ball0 False by (by100 blast)
+			                      thus ?thesis
+			                        by (by100 blast)
+			                    qed
+			                  next
+			                    assume hx_ball2: "x \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+			                    have hx_ball2_big: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+			                      using hx_ball2 h\<delta>\<^sub>2_pos by (by100 simp)
+			                    have hx_seg2: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+			                      using hCO_local_v\<^sub>2 hxCO hx_ball2_big by (by100 blast)
+			                    show ?thesis
+			                    proof (cases "x = v\<^sub>2")
+			                      case True
+			                      show ?thesis
+			                        using True by (by100 simp)
+			                    next
+			                      case False
+			                      have "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})
+			                          \<inter> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+			                        using hx_seg2 hx_ball2 False by (by100 blast)
+			                      thus ?thesis
+			                        by (by100 blast)
+			                    qed
+			                  qed
+			                qed
 			                show "x \<in> {v\<^sub>0, v\<^sub>2}"
 			                proof (rule disjE[OF hx_local_cases])
 			                  assume hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
 			                  show ?thesis
 			                    by (rule hx_end)
-		                next
-		                  assume hx_seg:
-		                    "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-		                      \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
-		                  have "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
-		                      \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
-		                    geotop_polyhedron
-		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		                    using hx_seg hxcarrier by (by100 blast)
+			                next
+			                  assume hx_seg:
+			                    "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 (\<delta>\<^sub>0 / 2))
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+			                  have "x \<in> (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 (\<delta>\<^sub>0 / 2))
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 (\<delta>\<^sub>2 / 2))) \<inter>
+			                    geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+			                    using hx_seg hxcarrier by (by100 blast)
 		                  thus ?thesis
 		                    using hseg_t by (by100 blast)
 		                qed
