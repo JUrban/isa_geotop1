@@ -35056,6 +35056,52 @@ proof -
       by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
           [OF hJ hv\<^sub>0J hv\<^sub>2J hv\<^sub>0v\<^sub>2])
   qed
+  have hfigure33_boundary_broken_split_package:
+      "\<exists>C\<^sub>1 C\<^sub>2.
+        J = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+  proof -
+    have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
+      using hfigure33_boundary_support_package by (by100 blast)
+    have hv\<^sub>0_B02: "v\<^sub>0 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>2_B02: "v\<^sub>2 \<in> ?B\<^sub>0\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+      using hB02_sub_J hv\<^sub>0_B02 by (by100 blast)
+    have hv\<^sub>2J: "v\<^sub>2 \<in> J"
+      using hB02_sub_J hv\<^sub>2_B02 by (by100 blast)
+    obtain L where hL_linear: "geotop_is_linear_graph L"
+        and hL_fin: "finite L"
+        and hL_conn: "geotop_complex_connected L"
+        and hL_poly: "geotop_polyhedron L = J"
+        and hL_v\<^sub>0: "{v\<^sub>0} \<in> L"
+        and hL_v\<^sub>2: "{v\<^sub>2} \<in> L"
+      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ hv\<^sub>0J hv\<^sub>2J] by (by100 blast)
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+      using hJ hL_poly by (by100 simp)
+    obtain C\<^sub>1 C\<^sub>2 where hsplit:
+        "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hL_v\<^sub>0 hL_v\<^sub>2 hv\<^sub>0v\<^sub>2]
+      by (by100 blast)
+    have hJ_split: "J = C\<^sub>1 \<union> C\<^sub>2"
+      using hsplit hL_poly by (by100 blast)
+    show ?thesis
+      using hsplit hJ_split by (by100 blast)
+  qed
   have hfigure33_replacement_meets_boundary_only_endpoints:
       "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> J = {v\<^sub>0, v\<^sub>2}"
   proof -
@@ -35094,6 +35140,43 @@ proof -
       using hv\<^sub>0J hv\<^sub>2J hv\<^sub>0_B012 hv\<^sub>2_B012 by (by100 blast)
     show ?thesis
       using hB012_J_sub_endpoints hendpoints_sub by (by100 blast)
+  qed
+  have hfigure33_replacement_arc_interior_subset_polygon_interior:
+      "geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<subseteq> geotop_polygon_interior J"
+  proof
+    fix x
+    assume hxarc: "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+    have hxB012: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+      using hxarc unfolding geotop_arc_interior_def by (by100 blast)
+    have hx_not_endpoints: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+      using hxarc unfolding geotop_arc_interior_def by (by100 blast)
+    have h\<theta>_sub_poly: "\<theta> \<subseteq> geotop_polyhedron K"
+      using hfigure33_boundary_support_package by (by100 blast)
+    have hx\<theta>: "x \<in> \<theta>"
+      using hxB012 hB012_sub_\<theta> by (by100 blast)
+    have hx_poly: "x \<in> geotop_polyhedron K"
+      using hx\<theta> h\<theta>_sub_poly by (by100 blast)
+    have hx_closed_disk_on:
+        "x \<in> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+      using hx_poly hK_poly by (by100 simp)
+    have hclosure_on_eq:
+        "closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J) =
+        closure (geotop_polygon_interior J)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hx_closed: "x \<in> closure (geotop_polygon_interior J)"
+      using hx_closed_disk_on hclosure_on_eq by (by100 simp)
+    have hclosed_decomp:
+        "closure (geotop_polygon_interior J) =
+          geotop_polygon_interior J \<union> J"
+      by (rule polygon_interior_closure_eq[OF hJ])
+    have hx_not_J: "x \<notin> J"
+      using hxB012 hx_not_endpoints hfigure33_replacement_meets_boundary_only_endpoints
+      by (by100 blast)
+    show "x \<in> geotop_polygon_interior J"
+      using hx_closed hclosed_decomp hx_not_J by (by100 blast)
   qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
