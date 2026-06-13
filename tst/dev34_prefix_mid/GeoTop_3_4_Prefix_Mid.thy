@@ -50138,6 +50138,33 @@ proof -
 	            using hcorner_old_edge_order hrel_xy_sub hrel_xz_sub hx_arc
 	            by (by100 blast)
 	        qed
+	        have hcorner_delete_set_sub_left_side:
+	            "rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}
+	              \<subseteq>
+	              geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	              geotop_arc_interior ?B\<^sub>c {y, z}"
+	          using hcorner_triangle_interior_eq
+	            hcorner_deleted_edges_sub_old_arc_int
+	          by (by100 blast)
+	        have hcorner_chord_open_sides_disjoint:
+	            "(geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	              geotop_arc_interior ?B\<^sub>c {y, z})
+	             \<inter>
+	             (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	              geotop_arc_interior C\<^sub>O {y, z}) = {}"
+	        proof -
+	          let ?L = "geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	            geotop_arc_interior ?B\<^sub>c {y, z}"
+	          let ?R = "geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	            geotop_arc_interior C\<^sub>O {y, z}"
+	          have hL_clR: "?L \<inter> closure_on UNIV geotop_euclidean_topology ?R = {}"
+	            using hcorner_chord_sides_separated
+	            unfolding geotop_separated_def by (by100 simp)
+	          have hR_clR: "?R \<subseteq> closure_on UNIV geotop_euclidean_topology ?R"
+	            by (rule subset_closure_on)
+	          show ?thesis
+	            using hL_clR hR_clR by (by100 blast)
+	        qed
 	        have hclosed_disk_minus_corner_eq_new:
 	            "closure_on UNIV geotop_euclidean_topology
 	              (geotop_polygon_interior J) -
