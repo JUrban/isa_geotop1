@@ -34871,6 +34871,21 @@ proof -
     by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hfin hne hai])
 qed
 
+lemma geotop_three_noncollinear_convex_hull_subset_face_prefix:
+  fixes a b c :: "real^2" and W :: "(real^2) set"
+  assumes hnc: "\<not> collinear {a, b, c}"
+  assumes hWne: "W \<noteq> {}"
+  assumes hWsub: "W \<subseteq> {a, b, c}"
+  shows "geotop_is_face (geotop_convex_hull W)
+    (geotop_convex_hull {a, b, c})"
+proof -
+  have hvertices:
+      "geotop_simplex_vertices (geotop_convex_hull {a, b, c}) {a, b, c}"
+    by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hnc])
+  show ?thesis
+    by (rule geotop_is_face_of_subset[OF hvertices hWne hWsub])
+qed
+
 lemma geotop_three_noncollinear_convex_hull_is_simplex_prefix:
   fixes a b c :: "real^2"
   assumes hnc: "\<not> collinear {a, b, c}"
