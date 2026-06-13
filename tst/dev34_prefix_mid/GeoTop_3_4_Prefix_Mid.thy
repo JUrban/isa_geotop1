@@ -50165,13 +50165,310 @@ proof -
 	          show ?thesis
 	            using hL_clR hR_clR by (by100 blast)
 	        qed
+	        have hB\<^sub>c_arc_interior_disjoint_chord:
+	            "geotop_arc_interior ?B\<^sub>c {y, z} \<inter> ?B\<^sub>n = {}"
+	        proof -
+	          have hdisj:
+	              "geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	                geotop_arc_interior ?B\<^sub>n {y, z} = {}"
+	            using hB\<^sub>n_B\<^sub>c_int_disj by (by100 blast)
+	          show ?thesis
+	            by (rule arc_interior_disjoint_other_arc[OF hB\<^sub>c_E hB\<^sub>n_E hdisj])
+	        qed
+	        have hB\<^sub>n_disjoint_delete_set:
+	            "?B\<^sub>n \<inter>
+	              (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}) = {}"
+	        proof -
+	          have hfront_int_disj: "frontier \<theta> \<inter> interior \<theta> = {}"
+	          proof
+	            show "frontier \<theta> \<inter> interior \<theta> \<subseteq> {}"
+	            proof
+	              fix P
+	              assume hP: "P \<in> frontier \<theta> \<inter> interior \<theta>"
+	              have hPfront: "P \<in> frontier \<theta>"
+	                using hP by (by100 simp)
+	              have hPint: "P \<in> interior \<theta>"
+	                using hP by (by100 simp)
+	              have hPnotint: "P \<notin> interior \<theta>"
+	                using hPfront unfolding Elementary_Topology.frontier_def
+	                by (by100 simp)
+	              show "P \<in> {}"
+	                using hPint hPnotint by (by100 blast)
+	            qed
+	            show "{} \<subseteq> frontier \<theta> \<inter> interior \<theta>"
+	              by (by100 simp)
+	          qed
+	          have htheta_int_rel: "interior \<theta> = rel_interior \<theta>"
+	            by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF h\<theta>2])
+	          have hB\<^sub>n_rel_theta_disj: "?B\<^sub>n \<inter> rel_interior \<theta> = {}"
+	            using hB\<^sub>n_sub_frontier hfront_int_disj htheta_int_rel
+	            by (by100 blast)
+	          have hB\<^sub>n_old_corner_disj:
+	              "?B\<^sub>n \<inter> (rel_interior e1 \<union> rel_interior e2 \<union> {x}) = {}"
+	          proof -
+	            have hold_sub:
+	                "rel_interior e1 \<union> rel_interior e2 \<union> {x}
+	                \<subseteq> geotop_arc_interior ?B\<^sub>c {y, z}"
+	              by (rule hcorner_deleted_edges_sub_old_arc_int)
+	            show ?thesis
+	              using hold_sub hB\<^sub>c_arc_interior_disjoint_chord
+	              by (by100 blast)
+	          qed
+	          show ?thesis
+	            using hB\<^sub>n_rel_theta_disj hB\<^sub>n_old_corner_disj by (by100 blast)
+	        qed
 	        have hclosed_disk_minus_corner_eq_new:
 	            "closure_on UNIV geotop_euclidean_topology
 	              (geotop_polygon_interior J) -
 	              (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}) =
 	            closure_on UNIV geotop_euclidean_topology
 	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
-	          sorry
+	        proof -
+	          have hnew_subset_old_minus:
+	              "closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))
+	              \<subseteq>
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J) -
+	              (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	          proof
+	            fix P
+	            assume hPnew:
+	                "P \<in> closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	            have hPold:
+	                "P \<in> closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J)"
+	              using hcorner_chord_decomposition hPnew by (by100 blast)
+	            have hPcases:
+	                "P \<in> geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                  geotop_arc_interior C\<^sub>O {y, z}
+	                \<or> P \<in> ?B\<^sub>n"
+	              using hnew_disk_closure_as_side_union_chord hPnew
+	              by (by100 blast)
+	            have hPnot_delete:
+	                "P \<notin> rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}"
+	            proof (rule disjE[OF hPcases])
+	              assume hPright:
+	                  "P \<in> geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                    geotop_arc_interior C\<^sub>O {y, z}"
+	              show ?thesis
+	              proof
+	                assume hPdel:
+	                    "P \<in> rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}"
+	                have hPleft:
+	                    "P \<in> geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	                      geotop_arc_interior ?B\<^sub>c {y, z}"
+	                  using hcorner_delete_set_sub_left_side hPdel by (by100 blast)
+	                have "P \<in>
+	                    (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	                      geotop_arc_interior ?B\<^sub>c {y, z})
+	                    \<inter>
+	                    (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	                      geotop_arc_interior C\<^sub>O {y, z})"
+	                  using hPleft hPright by (by100 blast)
+	                thus False
+	                  using hcorner_chord_open_sides_disjoint by (by100 blast)
+	              qed
+	            next
+	              assume hPchord: "P \<in> ?B\<^sub>n"
+	              show ?thesis
+	              proof
+	                assume hPdel:
+	                    "P \<in> rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}"
+	                have "P \<in> ?B\<^sub>n \<inter>
+	                    (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	                  using hPchord hPdel by (by100 blast)
+	                thus False
+	                  using hB\<^sub>n_disjoint_delete_set by (by100 blast)
+	              qed
+	            qed
+	            show "P \<in>
+	                closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J) -
+	                (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	              using hPold hPnot_delete by (by100 blast)
+	          qed
+	          have hold_minus_subset_new:
+	              "closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J) -
+	              (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x})
+	              \<subseteq>
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	          proof -
+	            have hB\<^sub>n_sub_new:
+	                "?B\<^sub>n \<subseteq>
+	                closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	              using hnew_disk_closure_as_side_union_chord by (by100 blast)
+	            have hB\<^sub>c_minus_delete_sub_B\<^sub>n:
+	                "?B\<^sub>c -
+	                  (rel_interior e1 \<union> rel_interior e2 \<union> {x}) \<subseteq> ?B\<^sub>n"
+	            proof
+	              fix P
+	              assume hP:
+	                  "P \<in> ?B\<^sub>c -
+	                    (rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	              have hPB\<^sub>c: "P \<in> ?B\<^sub>c"
+	                using hP by (by100 blast)
+	              have hPnot_delete:
+	                  "P \<notin> rel_interior e1 \<union> rel_interior e2 \<union> {x}"
+	                using hP by (by100 blast)
+	              have hPold_edge:
+	                  "P \<in> closed_segment x y \<or> P \<in> closed_segment x z"
+	                using hPB\<^sub>c by (by100 blast)
+	              show "P \<in> ?B\<^sub>n"
+	              proof (rule disjE[OF hPold_edge])
+	                assume hPxy: "P \<in> closed_segment x y"
+	                have hrel_xy:
+	                    "rel_interior (closed_segment x y) = open_segment x y"
+	                  using hxy rel_interior_closed_segment[of x y] by (by100 simp)
+	                have hPnot_rel_xy:
+	                    "P \<notin> rel_interior (closed_segment x y)"
+	                proof
+	                  assume hPrel: "P \<in> rel_interior (closed_segment x y)"
+	                  show False
+	                  proof (rule disjE[OF hcorner_old_edge_order])
+	                    assume horder:
+	                        "e1 = closed_segment x y \<and>
+	                         e2 = closed_segment x z"
+	                    have "P \<in> rel_interior e1"
+	                      using hPrel horder by (by100 simp)
+	                    thus False
+	                      using hPnot_delete by (by100 blast)
+	                  next
+	                    assume horder:
+	                        "e1 = closed_segment x z \<and>
+	                         e2 = closed_segment x y"
+	                    have "P \<in> rel_interior e2"
+	                      using hPrel horder by (by100 simp)
+	                    thus False
+	                      using hPnot_delete by (by100 blast)
+	                  qed
+	                qed
+	                have hPnot_open_xy: "P \<notin> open_segment x y"
+	                  using hPnot_rel_xy hrel_xy by (by100 simp)
+	                have hP_open_or_end:
+	                    "P \<in> open_segment x y \<union> {x, y}"
+	                  using hPxy closed_segment_eq_open[of x y] by (by100 simp)
+	                have hPend: "P = x \<or> P = y"
+	                  using hP_open_or_end hPnot_open_xy by (by100 blast)
+	                show ?thesis
+	                proof (rule disjE[OF hPend])
+	                  assume hPx: "P = x"
+	                  have False
+	                    using hPx hPnot_delete by (by100 blast)
+	                  thus ?thesis
+	                    by (by100 blast)
+	                next
+	                  assume hPy: "P = y"
+	                  show ?thesis
+	                    using hPy by (by100 simp)
+	                qed
+	              next
+	                assume hPxz: "P \<in> closed_segment x z"
+	                have hrel_xz:
+	                    "rel_interior (closed_segment x z) = open_segment x z"
+	                  using hxz rel_interior_closed_segment[of x z] by (by100 simp)
+	                have hPnot_rel_xz:
+	                    "P \<notin> rel_interior (closed_segment x z)"
+	                proof
+	                  assume hPrel: "P \<in> rel_interior (closed_segment x z)"
+	                  show False
+	                  proof (rule disjE[OF hcorner_old_edge_order])
+	                    assume horder:
+	                        "e1 = closed_segment x y \<and>
+	                         e2 = closed_segment x z"
+	                    have "P \<in> rel_interior e2"
+	                      using hPrel horder by (by100 simp)
+	                    thus False
+	                      using hPnot_delete by (by100 blast)
+	                  next
+	                    assume horder:
+	                        "e1 = closed_segment x z \<and>
+	                         e2 = closed_segment x y"
+	                    have "P \<in> rel_interior e1"
+	                      using hPrel horder by (by100 simp)
+	                    thus False
+	                      using hPnot_delete by (by100 blast)
+	                  qed
+	                qed
+	                have hPnot_open_xz: "P \<notin> open_segment x z"
+	                  using hPnot_rel_xz hrel_xz by (by100 simp)
+	                have hP_open_or_end:
+	                    "P \<in> open_segment x z \<union> {x, z}"
+	                  using hPxz closed_segment_eq_open[of x z] by (by100 simp)
+	                have hPend: "P = x \<or> P = z"
+	                  using hP_open_or_end hPnot_open_xz by (by100 blast)
+	                show ?thesis
+	                proof (rule disjE[OF hPend])
+	                  assume hPx: "P = x"
+	                  have False
+	                    using hPx hPnot_delete by (by100 blast)
+	                  thus ?thesis
+	                    by (by100 blast)
+	                next
+	                  assume hPz: "P = z"
+	                  show ?thesis
+	                    using hPz by (by100 simp)
+	                qed
+	              qed
+	            qed
+	            show ?thesis
+	            proof
+	              fix P
+	              assume hP:
+	                  "P \<in> closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J) -
+	                  (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	              have hPold:
+	                  "P \<in> closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior J)"
+	                using hP by (by100 blast)
+	              have hPnot_delete:
+	                  "P \<notin> rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}"
+	                using hP by (by100 blast)
+	              have hPdecomp:
+	                  "P \<in> rel_interior \<theta> \<union> (?B\<^sub>c \<union> ?B\<^sub>n) \<or>
+	                   P \<in> closure_on UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	                using hcorner_chord_decomposition hPold by (by100 blast)
+	              show "P \<in> closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	              proof (rule disjE[OF hPdecomp])
+	                assume hPcorner: "P \<in> rel_interior \<theta> \<union> (?B\<^sub>c \<union> ?B\<^sub>n)"
+	                have hP_not_rel_theta: "P \<notin> rel_interior \<theta>"
+	                  using hPnot_delete by (by100 blast)
+	                have hPBc_or_Bn: "P \<in> ?B\<^sub>c \<or> P \<in> ?B\<^sub>n"
+	                  using hPcorner hP_not_rel_theta by (by100 blast)
+	                have hPBn: "P \<in> ?B\<^sub>n"
+	                proof (rule disjE[OF hPBc_or_Bn])
+	                  assume hPBc: "P \<in> ?B\<^sub>c"
+	                  have "P \<in> ?B\<^sub>c -
+	                    (rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	                    using hPBc hPnot_delete by (by100 blast)
+	                  thus ?thesis
+	                    using hB\<^sub>c_minus_delete_sub_B\<^sub>n by (by100 blast)
+	                next
+	                  assume hPBn: "P \<in> ?B\<^sub>n"
+	                  show ?thesis
+	                    by (rule hPBn)
+	                qed
+	                show ?thesis
+	                  using hB\<^sub>n_sub_new hPBn by (by100 blast)
+	              next
+	                assume hPnew:
+	                    "P \<in> closure_on UNIV geotop_euclidean_topology
+	                      (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	                show ?thesis
+	                  by (rule hPnew)
+	              qed
+	            qed
+	          qed
+	          show ?thesis
+	            using hnew_subset_old_minus hold_minus_subset_new by (by100 blast)
+	        qed
 	        show "geotop_polyhedron ?K\<^sub>r =
 	            closure_on UNIV geotop_euclidean_topology
 	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
