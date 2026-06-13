@@ -37108,14 +37108,13 @@ proof -
           have hfigure33_book_local_simplicial_extension_boundary_control:
               "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
                 collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
-                \<and> \<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}
-                \<and> \<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}
-                \<and> \<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}
-                \<and> \<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}
-                \<and> \<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}
-                \<and> \<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}
-                \<and> \<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}
-                \<and> \<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+                \<and> v\<^sub>1 \<noteq> v\<^sub>5
+                \<and> v\<^sub>4 \<noteq> v\<^sub>5
+                \<and> v\<^sub>5 \<noteq> v\<^sub>3
+                \<and> v\<^sub>4 \<noteq> v\<^sub>1
+                \<and> v\<^sub>1 \<noteq> v\<^sub>3
+                \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
+                \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
                 \<and> geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                 \<and> geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)
                 \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
@@ -37162,14 +37161,13 @@ proof -
           proof -
             obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcol:
                 "collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
-              and hncol045: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
-              and hncol245: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
-              and hncol053: "\<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
-              and hncol253: "\<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
-              and hncol041: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
-              and hncol241: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
-              and hncol013: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
-              and hncol213: "\<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+              and hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
+              and hv\<^sub>4v\<^sub>5: "v\<^sub>4 \<noteq> v\<^sub>5"
+              and hv\<^sub>5v\<^sub>3: "v\<^sub>5 \<noteq> v\<^sub>3"
+              and hv\<^sub>4v\<^sub>1: "v\<^sub>4 \<noteq> v\<^sub>1"
+              and hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> v\<^sub>3"
+              and hv\<^sub>0_off_line: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
+              and hv\<^sub>2_off_line: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
               and hsource_complex:
                 "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
               and htarget_complex:
@@ -37198,6 +37196,80 @@ proof -
                   \<subseteq> {v\<^sub>0, v\<^sub>2}"
               using hfigure33_book_local_simplicial_extension_boundary_control
               by (elim exE conjE)
+            have hv\<^sub>1_line: "v\<^sub>1 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+              by (rule hull_subset[THEN subsetD], by100 simp)
+            have hv\<^sub>5_line: "v\<^sub>5 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+              by (rule hull_subset[THEN subsetD], by100 simp)
+            have hv\<^sub>3_line: "v\<^sub>3 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+            proof -
+              have hcol153: "collinear {v\<^sub>1, v\<^sub>5, v\<^sub>3}"
+                by (rule collinear_subset[OF hcol], by100 blast)
+              show ?thesis
+                by (rule collinear_3_imp_in_affine_hull[OF hcol153 hv\<^sub>1v\<^sub>5])
+            qed
+            have hv\<^sub>4_line: "v\<^sub>4 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+            proof -
+              have hcol154: "collinear {v\<^sub>1, v\<^sub>5, v\<^sub>4}"
+                by (rule collinear_subset[OF hcol], by100 blast)
+              show ?thesis
+                by (rule collinear_3_imp_in_affine_hull[OF hcol154 hv\<^sub>1v\<^sub>5])
+            qed
+            have haff45:
+                "affine hull {v\<^sub>4, v\<^sub>5} = affine hull {v\<^sub>1, v\<^sub>5}"
+              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+                  [OF hv\<^sub>1v\<^sub>5 hv\<^sub>4v\<^sub>5 hv\<^sub>4_line hv\<^sub>5_line])
+            have haff53:
+                "affine hull {v\<^sub>5, v\<^sub>3} = affine hull {v\<^sub>1, v\<^sub>5}"
+              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+                  [OF hv\<^sub>1v\<^sub>5 hv\<^sub>5v\<^sub>3 hv\<^sub>5_line hv\<^sub>3_line])
+            have haff41:
+                "affine hull {v\<^sub>4, v\<^sub>1} = affine hull {v\<^sub>1, v\<^sub>5}"
+              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+                  [OF hv\<^sub>1v\<^sub>5 hv\<^sub>4v\<^sub>1 hv\<^sub>4_line hv\<^sub>1_line])
+            have haff13:
+                "affine hull {v\<^sub>1, v\<^sub>3} = affine hull {v\<^sub>1, v\<^sub>5}"
+              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+                  [OF hv\<^sub>1v\<^sub>5 hv\<^sub>1v\<^sub>3 hv\<^sub>1_line hv\<^sub>3_line])
+            have hv\<^sub>0_not_45: "v\<^sub>0 \<notin> affine hull {v\<^sub>4, v\<^sub>5}"
+              using haff45 hv\<^sub>0_off_line by (by100 simp)
+            have hv\<^sub>2_not_45: "v\<^sub>2 \<notin> affine hull {v\<^sub>4, v\<^sub>5}"
+              using haff45 hv\<^sub>2_off_line by (by100 simp)
+            have hv\<^sub>0_not_53: "v\<^sub>0 \<notin> affine hull {v\<^sub>5, v\<^sub>3}"
+              using haff53 hv\<^sub>0_off_line by (by100 simp)
+            have hv\<^sub>2_not_53: "v\<^sub>2 \<notin> affine hull {v\<^sub>5, v\<^sub>3}"
+              using haff53 hv\<^sub>2_off_line by (by100 simp)
+            have hv\<^sub>0_not_41: "v\<^sub>0 \<notin> affine hull {v\<^sub>4, v\<^sub>1}"
+              using haff41 hv\<^sub>0_off_line by (by100 simp)
+            have hv\<^sub>2_not_41: "v\<^sub>2 \<notin> affine hull {v\<^sub>4, v\<^sub>1}"
+              using haff41 hv\<^sub>2_off_line by (by100 simp)
+            have hv\<^sub>0_not_13: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>3}"
+              using haff13 hv\<^sub>0_off_line by (by100 simp)
+            have hv\<^sub>2_not_13: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>3}"
+              using haff13 hv\<^sub>2_off_line by (by100 simp)
+            have hncol045: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>4v\<^sub>5 hv\<^sub>0_not_45])
+            have hncol245: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>4v\<^sub>5 hv\<^sub>2_not_45])
+            have hncol053: "\<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>5v\<^sub>3 hv\<^sub>0_not_53])
+            have hncol253: "\<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>5v\<^sub>3 hv\<^sub>2_not_53])
+            have hncol041: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>4v\<^sub>1 hv\<^sub>0_not_41])
+            have hncol241: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>4v\<^sub>1 hv\<^sub>2_not_41])
+            have hncol013: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>1v\<^sub>3 hv\<^sub>0_not_13])
+            have hncol213: "\<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+              by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+                  [OF hv\<^sub>1v\<^sub>3 hv\<^sub>2_not_13])
             have hsource045_vertices:
                 "geotop_simplex_vertices
                   (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
