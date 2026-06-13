@@ -37855,6 +37855,111 @@ proof -
     using hhomeo hfix_U hfB hfC by (by100 blast)
 qed
 
+lemma geotop_figure33_chord_corner_triangle_package_prefix:
+  fixes \<theta> :: "(real^2) set" and x y z :: "real^2"
+  assumes hxy: "x \<noteq> y"
+  assumes hxz: "x \<noteq> z"
+  assumes hyz: "y \<noteq> z"
+  assumes hnot_col_xyz: "\<not> collinear {x, y, z}"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes hfront:
+    "frontier \<theta> =
+      closed_segment x y \<union> (closed_segment x z \<union> closed_segment y z)"
+  shows "y \<noteq> x
+      \<and> z \<noteq> x
+      \<and> \<not> collinear {y, x, z}
+      \<and> \<not> collinear {y, z, x}
+      \<and> frontier \<theta> = closed_segment y x \<union>
+          (closed_segment y z \<union> closed_segment z x)
+      \<and> geotop_is_polygon (frontier \<theta>)
+      \<and> geotop_arc_endpoints (closed_segment y z) {y, z}
+      \<and> geotop_arc_endpoints
+          (closed_segment y x \<union> closed_segment z x) {y, z}
+      \<and> geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+          geotop_arc_interior
+            (closed_segment y x \<union> closed_segment z x) {y, z} = {}"
+  (**
+    Figure 3.3 triangle bookkeeping in the book order: the old chord is
+    \<open>yz\<close> and the replacement corner arc is \<open>yx \<union> zx\<close>. **)
+proof -
+  have hyx: "y \<noteq> x"
+    using hxy by (by100 blast)
+  have hzx: "z \<noteq> x"
+    using hxz by (by100 blast)
+  have hnot_col_yxz: "\<not> collinear {y, x, z}"
+  proof -
+    have "{y, x, z} = {x, y, z}"
+      by (by100 blast)
+    thus ?thesis
+      using hnot_col_xyz by (by100 simp)
+  qed
+  have hnot_col_yzx: "\<not> collinear {y, z, x}"
+  proof -
+    have "{y, z, x} = {x, y, z}"
+      by (by100 blast)
+    thus ?thesis
+      using hnot_col_xyz by (by100 simp)
+  qed
+  have hfront_y:
+      "frontier \<theta> =
+        closed_segment y x \<union> (closed_segment y z \<union> closed_segment z x)"
+  proof -
+    have "frontier \<theta> =
+        closed_segment y x \<union> (closed_segment z x \<union> closed_segment y z)"
+      using hfront closed_segment_commute[of x y]
+        closed_segment_commute[of x z] by (by100 simp)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  have hfront_polygon: "geotop_is_polygon (frontier \<theta>)"
+    by (rule geotop_2simplex_frontier_is_polygon_prefix[OF h\<theta>2])
+  have hchord_endpoints:
+      "geotop_arc_endpoints (closed_segment y z) {y, z}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hyz])
+  have hcorner_endpoints_raw:
+      "geotop_arc_endpoints
+        (closed_segment y x \<union> closed_segment x z) {y, z}"
+    by (rule geotop_two_segment_join_arc_endpoints_prefix
+        [OF hyx hzx hnot_col_yxz])
+  have hcorner_endpoints:
+      "geotop_arc_endpoints
+        (closed_segment y x \<union> closed_segment z x) {y, z}"
+    using hcorner_endpoints_raw closed_segment_commute[of x z]
+    by (by100 simp)
+  have hdisjoint_raw:
+      "geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+        geotop_arc_interior
+          (closed_segment y x \<union> closed_segment x z) {y, z} = {}"
+    by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix
+        [OF hnot_col_yxz])
+  have hdisjoint:
+      "geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+        geotop_arc_interior
+          (closed_segment y x \<union> closed_segment z x) {y, z} = {}"
+    using hdisjoint_raw closed_segment_commute[of x z] by (by100 simp)
+  show ?thesis
+  proof (intro conjI)
+    show "y \<noteq> x" by (rule hyx)
+    show "z \<noteq> x" by (rule hzx)
+    show "\<not> collinear {y, x, z}" by (rule hnot_col_yxz)
+    show "\<not> collinear {y, z, x}" by (rule hnot_col_yzx)
+    show "frontier \<theta> =
+        closed_segment y x \<union> (closed_segment y z \<union> closed_segment z x)"
+      by (rule hfront_y)
+    show "geotop_is_polygon (frontier \<theta>)"
+      by (rule hfront_polygon)
+    show "geotop_arc_endpoints (closed_segment y z) {y, z}"
+      by (rule hchord_endpoints)
+    show "geotop_arc_endpoints
+        (closed_segment y x \<union> closed_segment z x) {y, z}"
+      by (rule hcorner_endpoints)
+    show "geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+        geotop_arc_interior
+          (closed_segment y x \<union> closed_segment z x) {y, z} = {}"
+      by (rule hdisjoint)
+  qed
+qed
+
 lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
   fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
@@ -38069,9 +38174,9 @@ proof -
     have hnot_col_012: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
       by (rule geotop_2simplex_vertices_not_collinear_prefix
           [OF h\<theta>vertices hv\<^sub>0v\<^sub>2 hv\<^sub>1_not])
-    have hnot_col_021: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    have hnot_col_102: "\<not> collinear {v\<^sub>1, v\<^sub>0, v\<^sub>2}"
     proof -
-      have "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      have "{v\<^sub>1, v\<^sub>0, v\<^sub>2} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
         by (by100 blast)
       thus ?thesis
         using hnot_col_012 by (by100 simp)
@@ -38085,50 +38190,22 @@ proof -
     have h21_seg: "geotop_convex_hull {v\<^sub>2, v\<^sub>1} = ?B\<^sub>2\<^sub>1"
       using segment_convex_hull[of v\<^sub>2 v\<^sub>1]
         geotop_convex_hull_eq_HOL[of "{v\<^sub>2, v\<^sub>1}"] by (by100 simp)
-    have hfrontier_segments:
-      "frontier \<theta> = ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)"
-      using h\<theta>frontier_named h02_seg h01_seg h21_seg by (by100 blast)
-    have hfrontier_polygon: "geotop_is_polygon (frontier \<theta>)"
-      by (rule geotop_triangle_frontier_is_polygon_from_vertices_prefix
-          [OF h\<theta>vertices hv\<^sub>0v\<^sub>2 hv\<^sub>1_not hnot_col_012])
-    have hB02_arc:
-      "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
-      by (rule geotop_closed_segment_arc_endpoints_prefix[OF hv\<^sub>0v\<^sub>2])
-    have hB012_arc_raw:
-      "geotop_arc_endpoints
-        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
-      by (rule geotop_two_segment_join_arc_endpoints_prefix
-          [OF hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 hnot_col_012])
-    have hB012_arc:
-      "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
-      using hB012_arc_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2] by (by100 simp)
-    have harc_interiors_disjoint_raw:
-      "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<inter>
-        geotop_arc_interior
-          (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2} =
-        {}"
-      by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix
-          [OF hnot_col_012])
-    have harc_interiors_disjoint:
-      "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
-        geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
-      using harc_interiors_disjoint_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2]
-      by (by100 simp)
+    have hfront_helper:
+        "frontier \<theta> =
+          closed_segment v\<^sub>1 v\<^sub>0 \<union>
+            (closed_segment v\<^sub>1 v\<^sub>2 \<union> closed_segment v\<^sub>0 v\<^sub>2)"
+      using h\<theta>frontier_named h02_seg h01_seg h21_seg
+        closed_segment_commute[of v\<^sub>0 v\<^sub>1]
+        closed_segment_commute[of v\<^sub>2 v\<^sub>1]
+      by (by100 blast)
+    have hv\<^sub>1v\<^sub>0: "v\<^sub>1 \<noteq> v\<^sub>0"
+      using hv\<^sub>0v\<^sub>1 by (by100 blast)
+    have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+      using hv\<^sub>2v\<^sub>1 by (by100 blast)
     show ?thesis
-    proof (intro conjI)
-      show "v\<^sub>0 \<noteq> v\<^sub>1" by (rule hv\<^sub>0v\<^sub>1)
-      show "v\<^sub>2 \<noteq> v\<^sub>1" by (rule hv\<^sub>2v\<^sub>1)
-      show "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}" by (rule hnot_col_012)
-      show "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}" by (rule hnot_col_021)
-      show "frontier \<theta> = ?B\<^sub>0\<^sub>1 \<union> (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>2\<^sub>1)"
-        by (rule hfrontier_segments)
-      show "geotop_is_polygon (frontier \<theta>)" by (rule hfrontier_polygon)
-      show "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}" by (rule hB02_arc)
-      show "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}" by (rule hB012_arc)
-      show "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
-          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
-        by (rule harc_interiors_disjoint)
-    qed
+      by (rule geotop_figure33_chord_corner_triangle_package_prefix
+          [OF hv\<^sub>1v\<^sub>0 hv\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2 hnot_col_102 h\<theta>2
+            hfront_helper])
   qed
   have hfigure33_boundary_support_package:
       "e = ?B\<^sub>0\<^sub>2
