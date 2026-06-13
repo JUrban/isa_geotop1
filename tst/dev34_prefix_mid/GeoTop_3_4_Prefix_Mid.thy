@@ -41303,6 +41303,86 @@ proof -
 		            unfolding \<rho>\<^sub>0_def using h\<delta>\<^sub>0_pos hv\<^sub>0v\<^sub>2_dist_pos by (by100 simp)
 		          have h\<rho>\<^sub>2_lt_\<delta>\<^sub>2: "\<rho>\<^sub>2 < \<delta>\<^sub>2"
 		            unfolding \<rho>\<^sub>2_def using h\<delta>\<^sub>2_pos hv\<^sub>0v\<^sub>2_dist_pos by (by100 simp)
+		          have h\<rho>\<^sub>0_le_v\<^sub>0v\<^sub>2_quarter:
+		              "\<rho>\<^sub>0 \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+		            unfolding \<rho>\<^sub>0_def by (by100 simp)
+		          have h\<rho>\<^sub>2_le_v\<^sub>0v\<^sub>2_quarter:
+		              "\<rho>\<^sub>2 \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+		            unfolding \<rho>\<^sub>2_def by (by100 simp)
+		          have hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0:
+		              "v\<^sub>2 \<notin> ball v\<^sub>0 \<rho>\<^sub>0"
+		          proof
+		            assume hv\<^sub>2_ball: "v\<^sub>2 \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+		            have "dist v\<^sub>0 v\<^sub>2 < \<rho>\<^sub>0"
+		              using hv\<^sub>2_ball by (by100 simp)
+		            also have "\<dots> \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+		              using h\<rho>\<^sub>0_le_v\<^sub>0v\<^sub>2_quarter .
+		            finally show False
+		              using hv\<^sub>0v\<^sub>2_dist_pos by (by100 linarith)
+		          qed
+		          have hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2:
+		              "v\<^sub>0 \<notin> ball v\<^sub>2 \<rho>\<^sub>2"
+		          proof
+		            assume hv\<^sub>0_ball: "v\<^sub>0 \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+		            have "dist v\<^sub>0 v\<^sub>2 < \<rho>\<^sub>2"
+		              using hv\<^sub>0_ball by (simp add: dist_commute)
+		            also have "\<dots> \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+		              using h\<rho>\<^sub>2_le_v\<^sub>0v\<^sub>2_quarter .
+		            finally show False
+		              using hv\<^sub>0v\<^sub>2_dist_pos by (by100 linarith)
+		          qed
+		          have hendpoint_germ_v\<^sub>0_theta_disj:
+		              "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+		                  ball v\<^sub>0 \<rho>\<^sub>0) \<inter> \<theta> = {}"
+		          proof (rule equals0I)
+		            fix x
+		            assume hx:
+		              "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+		                ball v\<^sub>0 \<rho>\<^sub>0) \<inter> \<theta>"
+		            have hx_seg: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+		              using hx by (by100 blast)
+		            have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+		              using hx by (by100 blast)
+		            have hx_ball_\<rho>: "x \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+		              using hx by (by100 blast)
+		            have hx_ball_\<delta>: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+		              using hx_ball_\<rho> h\<rho>\<^sub>0_lt_\<delta>\<^sub>0 by (by100 simp)
+		            have hxCO: "x \<in> C\<^sub>O"
+		              using hCO_local_v\<^sub>0 hx_ball_\<delta> hx_seg by (by100 blast)
+		            have hx\<theta>: "x \<in> \<theta>"
+		              using hx by (by100 blast)
+		            have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+		              using hxCO hx\<theta> hCO_theta_inter by (by100 blast)
+		            show False
+		              using hx_end hx_ne_v\<^sub>0 hx_ball_\<rho> hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0
+		              by (by100 blast)
+		          qed
+		          have hendpoint_germ_v\<^sub>2_theta_disj:
+		              "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+		                  ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta> = {}"
+		          proof (rule equals0I)
+		            fix x
+		            assume hx:
+		              "x \<in> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+		                ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta>"
+		            have hx_seg: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+		              using hx by (by100 blast)
+		            have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+		              using hx by (by100 blast)
+		            have hx_ball_\<rho>: "x \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+		              using hx by (by100 blast)
+		            have hx_ball_\<delta>: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+		              using hx_ball_\<rho> h\<rho>\<^sub>2_lt_\<delta>\<^sub>2 by (by100 simp)
+		            have hxCO: "x \<in> C\<^sub>O"
+		              using hCO_local_v\<^sub>2 hx_ball_\<delta> hx_seg by (by100 blast)
+		            have hx\<theta>: "x \<in> \<theta>"
+		              using hx by (by100 blast)
+		            have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+		              using hxCO hx\<theta> hCO_theta_inter by (by100 blast)
+		            show False
+		              using hx_end hx_ne_v\<^sub>2 hx_ball_\<rho> hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2
+		              by (by100 blast)
+		          qed
 		          let ?C\<^sub>O_out_tiny =
 		            "C\<^sub>O - (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
 		          have hC\<^sub>O_out_tiny_compact: "compact ?C\<^sub>O_out_tiny"
