@@ -40443,6 +40443,37 @@ proof -
 		                using hy\<theta> hdist by (by100 blast)
 		            qed
 		          qed
+		          have hfigure33_source_carrier_avoids_C\<^sub>O_middle_bound_scalar:
+		              "\<And>t. 0 < t \<Longrightarrow>
+		                t * norm (?v\<^sub>5 - v\<^sub>1) < setdist ?C\<^sub>O_mid \<theta> \<Longrightarrow>
+		                ?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                = {}"
+		          proof (rule equals0I)
+		            fix t :: real and x :: "real^2"
+		            assume ht_pos: "0 < t"
+		            assume ht_gap:
+		              "t * norm (?v\<^sub>5 - v\<^sub>1) < setdist ?C\<^sub>O_mid \<theta>"
+		            assume hx:
+		              "x \<in> ?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		            have hxmid: "x \<in> ?C\<^sub>O_mid"
+		              using hx by (by100 blast)
+		            have hxcarrier:
+		              "x \<in> geotop_polyhedron
+		                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		              using hx by (by100 blast)
+		            obtain y where hy\<theta>: "y \<in> \<theta>"
+		              and hdist_le:
+		                "dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
+		              using hfigure33_source_carrier_near_theta_scalar
+		                [OF ht_pos hxcarrier]
+		              by (by100 blast)
+		            have hgap_le: "setdist ?C\<^sub>O_mid \<theta> \<le> dist x y"
+		              by (rule setdist_le_dist[OF hxmid hy\<theta>])
+		            show False
+		              using hgap_le hdist_le ht_gap by (by100 linarith)
+		          qed
 		          have hfigure33_source_carrier_avoids_C\<^sub>O_middle_scalar:
 		              "\<exists>t>0.
 		                ?C\<^sub>O_mid \<inter> geotop_polyhedron
