@@ -35323,6 +35323,9 @@ proof -
         \<and> geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}
         \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
             geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}
+        \<and> C\<^sub>R \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>O = {}
+        \<and> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>R = {}
         \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}
         \<and> geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)
         \<and> geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)
@@ -35391,6 +35394,19 @@ proof -
         "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
           geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
       using hsplit by (by100 blast)
+    have hCR_CO_inter: "C\<^sub>R \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+          [OF hCR_E hCO_E hCR_CO_disj])
+    have hCR_int_CO_disj:
+        "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>O = {}"
+      by (rule arc_interior_disjoint_other_arc[OF hCR_E hCO_E hCR_CO_disj])
+    have hCO_CR_disj:
+        "geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} = {}"
+      using hCR_CO_disj by (by100 blast)
+    have hCO_int_CR_disj:
+        "geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>R = {}"
+      by (rule arc_interior_disjoint_other_arc[OF hCO_E hCR_E hCO_CR_disj])
     have hB_bl: "geotop_is_broken_line ?B\<^sub>0\<^sub>1\<^sub>2"
       using hfigure33_replacement_arc_package by (by100 blast)
     have hB_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
@@ -35474,6 +35490,7 @@ proof -
       using hclosure_decomp hI_sub_U by (by100 blast)
     show ?thesis
       using hR_B02_int hsplit hJ_split hpoly_CR_B hpoly_B_CO
+        hCR_CO_inter hCR_int_CO_disj hCO_int_CR_disj
         hclosure_CR_B_sub_U hclosure_B_CO_sub_U
       by (by100 blast)
   qed
@@ -35504,6 +35521,11 @@ proof -
       and hCR_CO_disj:
         "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
           geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
+      and hCR_CO_inter: "C\<^sub>R \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}"
+      and hCR_int_CO_disj:
+        "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>O = {}"
+      and hCO_int_CR_disj:
+        "geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>R = {}"
       and hR_CR_int: "R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
       and hCR_B_polygon: "geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
       and hB_CO_polygon: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
@@ -35513,7 +35535,8 @@ proof -
       and hB_CO_support:
         "closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)) \<subseteq> U"
-      using hfigure33_boundary_through_old_edge_point_split by (by100 blast)
+      using hfigure33_boundary_through_old_edge_point_split
+      by (elim exE conjE)
     let ?J' = "?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O"
     have hbook_oriented_PL_fold_core:
         "\<exists>K' f.
