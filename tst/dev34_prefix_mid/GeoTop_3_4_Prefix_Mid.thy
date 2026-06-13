@@ -36316,6 +36316,90 @@ proof -
           using hx_end hend_sub by (by100 blast)
       qed
     qed
+    have hsame_endpoint_arc_subset_eq:
+        "\<And>A B E :: (real^2) set.
+          geotop_arc_endpoints A E \<Longrightarrow>
+          geotop_arc_endpoints B E \<Longrightarrow>
+          A \<subseteq> B \<Longrightarrow> A = B"
+    proof -
+      fix A B E :: "(real^2) set"
+      assume hA: "geotop_arc_endpoints A E"
+      assume hB: "geotop_arc_endpoints B E"
+      assume hsub: "A \<subseteq> B"
+      obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>arc: "arc \<gamma>"
+          and h\<gamma>img: "path_image \<gamma> = B"
+          and hE\<gamma>: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+        using arc_endpoints_imp_arc_HOL[OF hB] by (by100 blast)
+      obtain \<alpha> :: "real \<Rightarrow> real^2" where h\<alpha>arc: "arc \<alpha>"
+          and h\<alpha>img: "path_image \<alpha> = A"
+        using arc_endpoints_imp_arc_HOL[OF hA] by (by100 blast)
+      have hA_conn: "connected A"
+      proof -
+        have h\<alpha>path: "path \<alpha>"
+          using h\<alpha>arc arc_imp_path by (by100 blast)
+        have "connected (path_image \<alpha>)"
+          by (rule connected_path_image[OF h\<alpha>path])
+        thus ?thesis
+          using h\<alpha>img by (by100 simp)
+      qed
+      have hA_sub_path: "A \<subseteq> path_image \<gamma>"
+        using hsub h\<gamma>img by (by100 simp)
+      let ?T = "{t\<in>{0..1::real}. \<gamma> t \<in> A}"
+      have hT_interval: "is_interval ?T"
+        by (rule geotop_arc_preimage_is_interval[OF h\<gamma>arc hA_sub_path hA_conn])
+      have hE_sub_A: "E \<subseteq> A"
+        using hA unfolding geotop_arc_endpoints_def by (by100 blast)
+      have h0T: "0 \<in> ?T"
+      proof -
+        have "\<gamma> 0 \<in> E"
+          using hE\<gamma> unfolding pathstart_def by (by100 simp)
+        hence "\<gamma> 0 \<in> A"
+          using hE_sub_A by (by100 blast)
+        thus ?thesis
+          by (by100 simp)
+      qed
+      have h1T: "1 \<in> ?T"
+      proof -
+        have "\<gamma> 1 \<in> E"
+          using hE\<gamma> unfolding pathfinish_def by (by100 simp)
+        hence "\<gamma> 1 \<in> A"
+          using hE_sub_A by (by100 blast)
+        thus ?thesis
+          by (by100 simp)
+      qed
+      have hB_sub_A: "B \<subseteq> A"
+      proof
+        fix x
+        assume hxB: "x \<in> B"
+        have hx_path: "x \<in> path_image \<gamma>"
+          using hxB h\<gamma>img by (by100 simp)
+        obtain t where ht01: "t \<in> {0..1::real}" and hx: "x = \<gamma> t"
+          using hx_path unfolding path_image_def by (by100 blast)
+        have htT: "t \<in> ?T"
+        proof -
+          have h0t: "0 \<le> t"
+            using ht01 by (by100 simp)
+          have ht1: "t \<le> 1"
+            using ht01 by (by100 simp)
+          show ?thesis
+            using hT_interval h0T h1T ht01 h0t ht1
+            unfolding is_interval_1 by (by100 blast)
+        qed
+        show "x \<in> A"
+          using htT hx by (by100 blast)
+      qed
+      show "A = B"
+        using hsub hB_sub_A by (by100 blast)
+    qed
+    have hCR_eq_old: "C\<^sub>R = ?B\<^sub>0\<^sub>2"
+    proof -
+      have hB02_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+        using hfigure33_replacement_arc_package by (by100 blast)
+      have "?B\<^sub>0\<^sub>2 = C\<^sub>R"
+        by (rule hsame_endpoint_arc_subset_eq[OF hB02_E hCR_E hB02_sub_CR])
+      thus ?thesis
+        by (by100 simp)
+    qed
     have hCR_eq_old_imp_left_triangle_interior:
         "C\<^sub>R = ?B\<^sub>0\<^sub>2 \<Longrightarrow>
           geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) = rel_interior \<theta>"
