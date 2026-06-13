@@ -36539,7 +36539,241 @@ proof -
           "geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2 =
               closure_on UNIV geotop_euclidean_topology
                 (geotop_polygon_interior ?J')"
-        sorry
+      proof -
+        have hretained_closure_subset_delete:
+            "closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J') \<subseteq>
+              geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+        proof -
+          have hB02_rel_eq_arc:
+              "rel_interior ?B\<^sub>0\<^sub>2 =
+                geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+            using hv\<^sub>0v\<^sub>2 rel_interior_closed_segment[of v\<^sub>0 v\<^sub>2]
+            unfolding geotop_arc_interior_def open_segment_def
+            by (by100 simp)
+          have hJ'_interior_sub_Kd:
+              "geotop_polygon_interior ?J' \<subseteq> geotop_polyhedron ?K\<^sub>d"
+          proof
+            fix x
+            assume hxI: "x \<in> geotop_polygon_interior ?J'"
+            have hx_target_cl:
+                "x \<in> closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior ?J')"
+              using hJ'_closure_decomp hxI by (by100 blast)
+            have hx_closed_disk:
+                "x \<in> closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J)"
+              using hclosure_decomp hx_target_cl by (by100 blast)
+            have hx_not_theta_rel: "x \<notin> rel_interior \<theta>"
+            proof
+              assume hx_theta: "x \<in> rel_interior \<theta>"
+              have hx_left:
+                  "x \<in> geotop_polygon_interior
+                    (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+                using hx_theta hCR_eq_old_imp_left_triangle_interior[OF hCR_eq_old]
+                by (by100 simp)
+              have "x \<in>
+                  (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+                   geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}) \<inter>
+                  (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+                   geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2})"
+                using hx_left hxI by (by100 blast)
+              thus False
+                using hCR_CO_sides_disjoint by (by100 blast)
+            qed
+            show "x \<in> geotop_polyhedron ?K\<^sub>d"
+              using hx_closed_disk hx_not_theta_rel
+                hKd_poly_without_theta_rel_interior_closed_disk
+              by (by100 blast)
+          qed
+          have hJ'_interior_old_edge_rel_disj:
+              "geotop_polygon_interior ?J' \<inter> rel_interior ?B\<^sub>0\<^sub>2 = {}"
+          proof (rule equals0I)
+            fix x
+            assume hx: "x \<in> geotop_polygon_interior ?J' \<inter> rel_interior ?B\<^sub>0\<^sub>2"
+            have hxI: "x \<in> geotop_polygon_interior ?J'"
+              using hx by (by100 blast)
+            have hx_arc: "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+              using hx hB02_rel_eq_arc by (by100 blast)
+            have hx_left:
+                "x \<in> geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+                  geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+              using hx_arc hB02_arc_interior_sub_CR_side by (by100 blast)
+            have hx_right:
+                "x \<in> geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+                  geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+              using hxI by (by100 blast)
+            show False
+              using hx_left hx_right hCR_CO_sides_disjoint by (by100 blast)
+          qed
+          have hJ'_old_edge_rel_disj:
+              "?J' \<inter> rel_interior ?B\<^sub>0\<^sub>2 = {}"
+          proof (rule equals0I)
+            fix x
+            assume hx: "x \<in> ?J' \<inter> rel_interior ?B\<^sub>0\<^sub>2"
+            have hxJ': "x \<in> ?J'"
+              using hx by (by100 blast)
+            have hx_rel: "x \<in> rel_interior ?B\<^sub>0\<^sub>2"
+              using hx by (by100 blast)
+            have hx_arc: "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+              using hx_rel hB02_rel_eq_arc by (by100 blast)
+            have hx_cases: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2 \<or> x \<in> C\<^sub>O"
+              using hxJ' by (by100 blast)
+            show False
+            proof (rule disjE[OF hx_cases])
+              assume hxB: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+              have "x \<in> geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+                  ?B\<^sub>0\<^sub>1\<^sub>2"
+                using hx_arc hxB by (by100 blast)
+              thus False
+                using hB02_arc_interior_disjoint_replacement by (by100 blast)
+            next
+              assume hxCO: "x \<in> C\<^sub>O"
+              have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+                using hx_rel rel_interior_subset by (by100 blast)
+              have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+                using hxB02 hxCO hB02_CO_inter by (by100 blast)
+              have hx_not_end: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+                using hx_arc unfolding geotop_arc_interior_def by (by100 blast)
+              show False
+                using hx_end hx_not_end by (by100 blast)
+            qed
+          qed
+          show ?thesis
+          proof
+            fix x
+            assume hx:
+              "x \<in> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')"
+            have hx_cases: "x \<in> geotop_polygon_interior ?J' \<or> x \<in> ?J'"
+              using hx hJ'_closure_decomp by (by100 blast)
+            show "x \<in> geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+            proof (rule disjE[OF hx_cases])
+              assume hxI: "x \<in> geotop_polygon_interior ?J'"
+              have hxKd: "x \<in> geotop_polyhedron ?K\<^sub>d"
+                using hJ'_interior_sub_Kd hxI by (by100 blast)
+              have hx_not_rel: "x \<notin> rel_interior ?B\<^sub>0\<^sub>2"
+                using hJ'_interior_old_edge_rel_disj hxI by (by100 blast)
+              show ?thesis
+                using hxKd hx_not_rel by (by100 blast)
+            next
+              assume hxJ': "x \<in> ?J'"
+              have hxKd: "x \<in> geotop_polyhedron ?K\<^sub>d"
+                using hJ'_sub_Kd_polyhedron hxJ' by (by100 blast)
+              have hx_not_rel: "x \<notin> rel_interior ?B\<^sub>0\<^sub>2"
+                using hJ'_old_edge_rel_disj hxJ' by (by100 blast)
+              show ?thesis
+                using hxKd hx_not_rel by (by100 blast)
+            qed
+          qed
+        qed
+        have hdelete_subset_retained_closure:
+            "geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2 \<subseteq>
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')"
+        proof -
+          have hclosed_disk_split_old:
+              "closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J) =
+                (rel_interior \<theta> \<union> (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) \<union>
+                closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior ?J')"
+            using hclosure_decomp hCR_eq_old_imp_left_triangle_closure[OF hCR_eq_old]
+            by (by100 simp)
+          have hB02_minus_rel_subset_J':
+              "?B\<^sub>0\<^sub>2 - rel_interior ?B\<^sub>0\<^sub>2 \<subseteq> ?J'"
+          proof
+            fix x
+            assume hx: "x \<in> ?B\<^sub>0\<^sub>2 - rel_interior ?B\<^sub>0\<^sub>2"
+            have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+              using hx by (by100 blast)
+            have hx_not_rel: "x \<notin> rel_interior ?B\<^sub>0\<^sub>2"
+              using hx by (by100 blast)
+            have hrel_eq: "rel_interior ?B\<^sub>0\<^sub>2 = open_segment v\<^sub>0 v\<^sub>2"
+              using hv\<^sub>0v\<^sub>2 rel_interior_closed_segment[of v\<^sub>0 v\<^sub>2]
+              by (by100 simp)
+            have hx_endpoint: "x = v\<^sub>0 \<or> x = v\<^sub>2"
+              using hxB02 hx_not_rel hrel_eq unfolding open_segment_def by (by100 blast)
+            have hend_sub_J': "{v\<^sub>0, v\<^sub>2} \<subseteq> ?J'"
+              using hCO_endpoints_sub by (by100 blast)
+            show "x \<in> ?J'"
+              using hx_endpoint hend_sub_J' by (by100 blast)
+          qed
+          show ?thesis
+          proof
+            fix x
+            assume hx:
+              "x \<in> geotop_polyhedron ?K\<^sub>d - rel_interior ?B\<^sub>0\<^sub>2"
+            have hxKd: "x \<in> geotop_polyhedron ?K\<^sub>d"
+              using hx by (by100 blast)
+            have hx_not_B02_rel: "x \<notin> rel_interior ?B\<^sub>0\<^sub>2"
+              using hx by (by100 blast)
+            have hx_closed_disk:
+                "x \<in> closure_on UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J)"
+              using hxKd hKd_poly_without_theta_rel_interior_closed_disk
+              by (by100 blast)
+            have hx_not_theta_rel: "x \<notin> rel_interior \<theta>"
+              using hxKd hKd_poly_without_theta_rel_interior_closed_disk
+              by (by100 blast)
+            have hx_split:
+                "x \<in> rel_interior \<theta> \<or>
+                 x \<in> C\<^sub>R \<or>
+                 x \<in> ?B\<^sub>0\<^sub>1\<^sub>2 \<or>
+                 x \<in> closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior ?J')"
+              using hx_closed_disk hclosed_disk_split_old by (by100 blast)
+            have hJ'_sub_closure:
+                "?J' \<subseteq>
+                  closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior ?J')"
+              using hJ'_closure_decomp by (by100 blast)
+            show "x \<in> closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')"
+            proof (rule disjE[OF hx_split])
+              assume hx_theta: "x \<in> rel_interior \<theta>"
+              show ?thesis
+                using hx_theta hx_not_theta_rel by (by100 blast)
+            next
+              assume hx_rest:
+                "x \<in> C\<^sub>R \<or>
+                 x \<in> ?B\<^sub>0\<^sub>1\<^sub>2 \<or>
+                 x \<in> closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior ?J')"
+              show ?thesis
+              proof (rule disjE[OF hx_rest])
+                assume hxCR: "x \<in> C\<^sub>R"
+                have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+                  using hxCR hCR_eq_old by (by100 simp)
+                have "x \<in> ?J'"
+                  using hxB02 hx_not_B02_rel hB02_minus_rel_subset_J' by (by100 blast)
+                thus ?thesis
+                  using hJ'_sub_closure by (by100 blast)
+              next
+                assume hx_rest2:
+                  "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2 \<or>
+                   x \<in> closure_on UNIV geotop_euclidean_topology
+                      (geotop_polygon_interior ?J')"
+                show ?thesis
+                proof (rule disjE[OF hx_rest2])
+                  assume hxB012: "x \<in> ?B\<^sub>0\<^sub>1\<^sub>2"
+                  have "x \<in> ?J'"
+                    using hxB012 by (by100 blast)
+                  thus ?thesis
+                    using hJ'_sub_closure by (by100 blast)
+                next
+                  assume "x \<in> closure_on UNIV geotop_euclidean_topology
+                    (geotop_polygon_interior ?J')"
+                  thus ?thesis .
+                qed
+              qed
+            qed
+          qed
+        qed
+        show ?thesis
+          using hretained_closure_subset_delete hdelete_subset_retained_closure
+          by (by100 blast)
+      qed
       have hbook_delete_triangle_carrier:
           "geotop_polyhedron ?K\<^sub>r =
               closure_on UNIV geotop_euclidean_topology
