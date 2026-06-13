@@ -35236,6 +35236,18 @@ proof -
       "?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> geotop_polyhedron ?K\<^sub>d"
     using hB02Kd hB012_sub_Kd_polyhedron
     unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<theta>_frontier_old_replacement:
+      "frontier \<theta> = ?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2"
+    using hfigure33_local_triangle_package by (by100 blast)
+  have h\<theta>_polygon_interior_frontier_rel:
+      "geotop_polygon_interior (frontier \<theta>) = rel_interior \<theta>"
+    by (rule geotop_2simplex_frontier_polygon_interior_eq_rel_interior_prefix
+        [OF h\<theta>2])
+  have h\<theta>_polygon_interior_old_replacement_rel:
+      "geotop_polygon_interior (?B\<^sub>0\<^sub>2 \<union> ?B\<^sub>0\<^sub>1\<^sub>2) =
+        rel_interior \<theta>"
+    using h\<theta>_frontier_old_replacement h\<theta>_polygon_interior_frontier_rel
+    by (by100 simp)
   have h\<theta>_sub_U: "\<theta> \<subseteq> U"
     using hfigure33_boundary_support_package by (by100 blast)
   have hB012_sub_U: "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> U"

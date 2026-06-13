@@ -3753,6 +3753,20 @@ proof -
     using hinside_poly hinside_int by (by100 simp)
 qed
 
+lemma geotop_2simplex_frontier_polygon_interior_eq_rel_interior_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_polygon_interior (frontier \<sigma>) = rel_interior \<sigma>"
+proof -
+  have hfront_int: "geotop_polygon_interior (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix
+        [OF h\<sigma>2])
+  have hint_rel: "interior \<sigma> = rel_interior \<sigma>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF h\<sigma>2])
+  show ?thesis
+    using hfront_int hint_rel by (by100 simp)
+qed
+
 lemma geotop_polygon_boundary_contact_triangle_interior_component_prefix:
   fixes J \<sigma> :: "(real^2) set"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
