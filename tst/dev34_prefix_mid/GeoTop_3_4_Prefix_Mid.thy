@@ -38314,6 +38314,26 @@ proof -
                 by (rule subset_antisym
                     [OF htarget_carrier_vertices_sub htarget_vertices_sup])
             qed
+            have htarget041_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}) {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+              by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                  [OF hncol041])
+            have htarget241_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}) {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+              by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                  [OF hncol241])
+            have htarget013_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}) {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+              by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                  [OF hncol013])
+            have htarget213_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}) {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+              by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                  [OF hncol213])
             let ?vertex_map = "\<lambda>x. if x = v\<^sub>5 then v\<^sub>1 else x"
             have hfigure33_vertex_map_bij:
                 "bij_betw ?vertex_map
@@ -39084,6 +39104,590 @@ proof -
                 assume "V \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
                 show ?thesis
                   by (rule hvertex_map_faces253_target[OF hVne \<open>V \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}\<close>])
+              qed
+            qed
+            have hsource_faces045_source:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5} \<Longrightarrow>
+                  geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              have hface:
+                  "geotop_is_face (geotop_convex_hull W)
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5})"
+                by (rule geotop_is_face_of_subset
+                    [OF hsource045_vertices hWne hWsub])
+              show "geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    geotop_convex_hull W = \<sigma>
+                    \<or> geotop_is_face (geotop_convex_hull W) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"])
+                  show "geotop_convex_hull W = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                      \<or> geotop_is_face (geotop_convex_hull W)
+                        (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5})"
+                    by (rule disjI2[OF hface])
+                  show "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                      \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                    by (by100 simp)
+                qed
+              qed
+            qed
+            have hsource_faces245_source:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5} \<Longrightarrow>
+                  geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+              have hface:
+                  "geotop_is_face (geotop_convex_hull W)
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5})"
+                by (rule geotop_is_face_of_subset
+                    [OF hsource245_vertices hWne hWsub])
+              show "geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    geotop_convex_hull W = \<sigma>
+                    \<or> geotop_is_face (geotop_convex_hull W) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"])
+                  show "geotop_convex_hull W = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                      \<or> geotop_is_face (geotop_convex_hull W)
+                        (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5})"
+                    by (rule disjI2[OF hface])
+                  show "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                      \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                    by (by100 simp)
+                qed
+              qed
+            qed
+            have hsource_faces053_source:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3} \<Longrightarrow>
+                  geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+              have hface:
+                  "geotop_is_face (geotop_convex_hull W)
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3})"
+                by (rule geotop_is_face_of_subset
+                    [OF hsource053_vertices hWne hWsub])
+              show "geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    geotop_convex_hull W = \<sigma>
+                    \<or> geotop_is_face (geotop_convex_hull W) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"])
+                  show "geotop_convex_hull W = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                      \<or> geotop_is_face (geotop_convex_hull W)
+                        (geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3})"
+                    by (rule disjI2[OF hface])
+                  show "geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                      \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                    by (by100 simp)
+                qed
+              qed
+            qed
+            have hsource_faces253_source:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3} \<Longrightarrow>
+                  geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+              have hface:
+                  "geotop_is_face (geotop_convex_hull W)
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3})"
+                by (rule geotop_is_face_of_subset
+                    [OF hsource253_vertices hWne hWsub])
+              show "geotop_convex_hull W \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              proof (rule CollectI)
+                show "\<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    geotop_convex_hull W = \<sigma>
+                    \<or> geotop_is_face (geotop_convex_hull W) \<sigma>"
+                proof (rule bexI[of _ "geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"])
+                  show "geotop_convex_hull W = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+                      \<or> geotop_is_face (geotop_convex_hull W)
+                        (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3})"
+                    by (rule disjI2[OF hface])
+                  show "geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+                      \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                    by (by100 simp)
+                qed
+              qed
+            qed
+            have htarget_hull_vertex_subset_cases:
+                "\<And>W. W \<subseteq> geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4) \<Longrightarrow>
+                  geotop_convex_hull W \<in> ?target_carrier v\<^sub>3 v\<^sub>4 \<Longrightarrow>
+                  W \<noteq> {} \<and>
+                  (W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<or> W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<or> W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<or> W \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWsub_vertices:
+                  "W \<subseteq> geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)"
+              assume hWhull_target:
+                  "geotop_convex_hull W \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              have hWfin: "finite W"
+              proof -
+                have hWsub_finite:
+                    "W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                  using hWsub_vertices htarget_carrier_vertices_eq by (by100 simp)
+                have hfinite: "finite {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                  by (by100 simp)
+                show ?thesis
+                  by (rule finite_subset[OF hWsub_finite hfinite])
+              qed
+              have hWne: "W \<noteq> {}"
+              proof
+                assume hWempty: "W = {}"
+                have hconv_empty: "geotop_convex_hull W = {}"
+                  using hWempty geotop_convex_hull_eq_HOL[of W] convex_hull_empty
+                  by (by100 simp)
+                have htarget_simplex_all:
+                    "\<forall>\<sigma>\<in>?target_carrier v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>"
+                  by (rule conjunct1[OF htarget_complex[unfolded geotop_is_complex_def]])
+                have hsimplex:
+                    "geotop_is_simplex (geotop_convex_hull W)"
+                  by (rule bspec[OF htarget_simplex_all hWhull_target])
+                have "geotop_convex_hull W \<noteq> {}"
+                  by (rule geotop_simplex_nonempty[OF hsimplex])
+                thus False
+                  using hconv_empty by (by100 simp)
+              qed
+              have hW_vertices:
+                  "geotop_simplex_vertices (geotop_convex_hull W) W"
+                by (rule geotop_V_subK_convhullK_is_simplex_vertices
+                    [OF htarget_complex hWfin hWne hWsub_vertices hWhull_target])
+              obtain \<sigma> where h\<sigma>target:
+                  "\<sigma> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                and hW\<sigma>:
+                  "geotop_convex_hull W = \<sigma>
+                    \<or> geotop_is_face (geotop_convex_hull W) \<sigma>"
+                using hWhull_target by (by100 blast)
+              have h\<sigma>cases:
+                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                using h\<sigma>target by (by100 simp)
+              have hW_top_case:
+                  "W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<or> W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<or> W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<or> W \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                using h\<sigma>cases
+              proof (elim disjE)
+                assume h\<sigma>eq: "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                have "W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                proof (rule disjE[OF hW\<sigma>])
+                  assume hsame: "geotop_convex_hull W = \<sigma>"
+                  have htop_vertices:
+                      "geotop_simplex_vertices (geotop_convex_hull W)
+                        {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                    using htarget041_vertices hsame h\<sigma>eq by (by100 simp)
+                  have "W = {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices htop_vertices])
+                  thus ?thesis
+                    by (by100 simp)
+                next
+                  assume hface: "geotop_is_face (geotop_convex_hull W) \<sigma>"
+                  obtain V\<^sub>\<sigma> W' where h\<sigma>V\<^sub>\<sigma>:
+                      "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+                    and hWsub: "W' \<subseteq> V\<^sub>\<sigma>"
+                    and hfaceW:
+                      "geotop_simplex_vertices (geotop_convex_hull W) W'"
+                    by (rule geotop_face_witness_simplex_vertices_prefix
+                        [OF hface])
+                  have htop_vertices:
+                      "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                    using htarget041_vertices h\<sigma>eq by (by100 simp)
+                  have hV\<^sub>\<sigma>eq: "V\<^sub>\<sigma> = {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF h\<sigma>V\<^sub>\<sigma> htop_vertices])
+                  have hWW': "W = W'"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices hfaceW])
+                  show ?thesis
+                    using hWW' hWsub hV\<^sub>\<sigma>eq by (by100 simp)
+                qed
+                thus ?thesis
+                  by (by100 blast)
+              next
+                assume h\<sigma>eq: "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                have "W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                proof (rule disjE[OF hW\<sigma>])
+                  assume hsame: "geotop_convex_hull W = \<sigma>"
+                  have htop_vertices:
+                      "geotop_simplex_vertices (geotop_convex_hull W)
+                        {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                    using htarget241_vertices hsame h\<sigma>eq by (by100 simp)
+                  have "W = {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices htop_vertices])
+                  thus ?thesis
+                    by (by100 simp)
+                next
+                  assume hface: "geotop_is_face (geotop_convex_hull W) \<sigma>"
+                  obtain V\<^sub>\<sigma> W' where h\<sigma>V\<^sub>\<sigma>:
+                      "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+                    and hWsub: "W' \<subseteq> V\<^sub>\<sigma>"
+                    and hfaceW:
+                      "geotop_simplex_vertices (geotop_convex_hull W) W'"
+                    by (rule geotop_face_witness_simplex_vertices_prefix
+                        [OF hface])
+                  have htop_vertices:
+                      "geotop_simplex_vertices \<sigma> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                    using htarget241_vertices h\<sigma>eq by (by100 simp)
+                  have hV\<^sub>\<sigma>eq: "V\<^sub>\<sigma> = {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF h\<sigma>V\<^sub>\<sigma> htop_vertices])
+                  have hWW': "W = W'"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices hfaceW])
+                  show ?thesis
+                    using hWW' hWsub hV\<^sub>\<sigma>eq by (by100 simp)
+                qed
+                thus ?thesis
+                  by (by100 blast)
+              next
+                assume h\<sigma>eq: "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                have "W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                proof (rule disjE[OF hW\<sigma>])
+                  assume hsame: "geotop_convex_hull W = \<sigma>"
+                  have htop_vertices:
+                      "geotop_simplex_vertices (geotop_convex_hull W)
+                        {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                    using htarget013_vertices hsame h\<sigma>eq by (by100 simp)
+                  have "W = {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices htop_vertices])
+                  thus ?thesis
+                    by (by100 simp)
+                next
+                  assume hface: "geotop_is_face (geotop_convex_hull W) \<sigma>"
+                  obtain V\<^sub>\<sigma> W' where h\<sigma>V\<^sub>\<sigma>:
+                      "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+                    and hWsub: "W' \<subseteq> V\<^sub>\<sigma>"
+                    and hfaceW:
+                      "geotop_simplex_vertices (geotop_convex_hull W) W'"
+                    by (rule geotop_face_witness_simplex_vertices_prefix
+                        [OF hface])
+                  have htop_vertices:
+                      "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                    using htarget013_vertices h\<sigma>eq by (by100 simp)
+                  have hV\<^sub>\<sigma>eq: "V\<^sub>\<sigma> = {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF h\<sigma>V\<^sub>\<sigma> htop_vertices])
+                  have hWW': "W = W'"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices hfaceW])
+                  show ?thesis
+                    using hWW' hWsub hV\<^sub>\<sigma>eq by (by100 simp)
+                qed
+                thus ?thesis
+                  by (by100 blast)
+              next
+                assume h\<sigma>eq: "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                have "W \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                proof (rule disjE[OF hW\<sigma>])
+                  assume hsame: "geotop_convex_hull W = \<sigma>"
+                  have htop_vertices:
+                      "geotop_simplex_vertices (geotop_convex_hull W)
+                        {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                    using htarget213_vertices hsame h\<sigma>eq by (by100 simp)
+                  have "W = {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices htop_vertices])
+                  thus ?thesis
+                    by (by100 simp)
+                next
+                  assume hface: "geotop_is_face (geotop_convex_hull W) \<sigma>"
+                  obtain V\<^sub>\<sigma> W' where h\<sigma>V\<^sub>\<sigma>:
+                      "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+                    and hWsub: "W' \<subseteq> V\<^sub>\<sigma>"
+                    and hfaceW:
+                      "geotop_simplex_vertices (geotop_convex_hull W) W'"
+                    by (rule geotop_face_witness_simplex_vertices_prefix
+                        [OF hface])
+                  have htop_vertices:
+                      "geotop_simplex_vertices \<sigma> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                    using htarget213_vertices h\<sigma>eq by (by100 simp)
+                  have hV\<^sub>\<sigma>eq: "V\<^sub>\<sigma> = {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF h\<sigma>V\<^sub>\<sigma> htop_vertices])
+                  have hWW': "W = W'"
+                    by (rule geotop_simplex_vertices_unique
+                        [OF hW_vertices hfaceW])
+                  show ?thesis
+                    using hWW' hWsub hV\<^sub>\<sigma>eq by (by100 simp)
+                qed
+                thus ?thesis
+                  by (by100 blast)
+              qed
+              show "W \<noteq> {} \<and>
+                  (W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<or> W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<or> W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<or> W \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+                using hWne hW_top_case by (by100 blast)
+            qed
+            have hvertex_map_target_to_source:
+                "\<And>V. V \<subseteq> geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<Longrightarrow>
+                  geotop_convex_hull (?vertex_map ` V)
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4 \<Longrightarrow>
+                  geotop_convex_hull V
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+            proof -
+              fix V :: "(real^2) set"
+              assume hVsub:
+                  "V \<subseteq> geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              assume hmap_hull:
+                  "geotop_convex_hull (?vertex_map ` V)
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              have hv\<^sub>1_not_source_vertices:
+                  "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                using hv\<^sub>1_not hv\<^sub>1v\<^sub>3 hv\<^sub>4v\<^sub>1 hv\<^sub>1v\<^sub>5 by (by100 simp)
+              have hsource_vertices:
+                  "geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    = {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                by (rule hsource_carrier_vertices_eq)
+              have htarget_vertices:
+                  "geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)
+                    = {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+                by (rule htarget_carrier_vertices_eq)
+              have hVsub_source_finite:
+                  "V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                using hVsub hsource_vertices by (by100 simp)
+              have hmap_vertices:
+                  "?vertex_map `
+                    geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                    = geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)"
+                using hfigure33_vertex_map_bij unfolding bij_betw_def by (by100 blast)
+              have hUsub_target:
+                  "?vertex_map ` V
+                    \<subseteq> geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)"
+              proof -
+                have "?vertex_map ` V
+                    \<subseteq> ?vertex_map `
+                      geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+                  using hVsub by (rule image_mono)
+                thus ?thesis
+                  using hmap_vertices by (by100 simp)
+              qed
+              have hUcases:
+                  "?vertex_map ` V \<noteq> {} \<and>
+                  (?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<or> ?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<or> ?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<or> ?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+                by (rule htarget_hull_vertex_subset_cases
+                    [OF hUsub_target hmap_hull])
+              have hVne: "V \<noteq> {}"
+                using hUcases by (by100 blast)
+              have hUcase:
+                  "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<or> ?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<or> ?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<or> ?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                by (rule conjunct2[OF hUcases])
+              have hpre041:
+                  "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1} \<Longrightarrow>
+                    V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              proof
+                fix x
+                assume himgsub: "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                assume hxV: "x \<in> V"
+                have hxsource: "x \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                  by (rule subsetD[OF hVsub_source_finite hxV])
+                have hximg: "?vertex_map x \<in> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                  using himgsub hxV by (by100 blast)
+                show "x \<in> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                proof (cases "x = v\<^sub>5")
+                  case True
+                  show ?thesis
+                    using True by (by100 simp)
+                next
+                  case False
+                  have "?vertex_map x = x"
+                    using False by (by100 simp)
+                  hence "x \<in> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                    using hximg by (by100 simp)
+                  thus ?thesis
+                    using hxsource hv\<^sub>1_not_source_vertices by (by100 blast)
+                qed
+              qed
+              have hpre241:
+                  "?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1} \<Longrightarrow>
+                    V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+              proof
+                fix x
+                assume himgsub: "?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                assume hxV: "x \<in> V"
+                have hxsource: "x \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                  by (rule subsetD[OF hVsub_source_finite hxV])
+                have hximg: "?vertex_map x \<in> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                  using himgsub hxV by (by100 blast)
+                show "x \<in> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                proof (cases "x = v\<^sub>5")
+                  case True
+                  show ?thesis
+                    using True by (by100 simp)
+                next
+                  case False
+                  have "?vertex_map x = x"
+                    using False by (by100 simp)
+                  hence "x \<in> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                    using hximg by (by100 simp)
+                  thus ?thesis
+                    using hxsource hv\<^sub>1_not_source_vertices by (by100 blast)
+                qed
+              qed
+              have hpre013:
+                  "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3} \<Longrightarrow>
+                    V \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+              proof
+                fix x
+                assume himgsub: "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                assume hxV: "x \<in> V"
+                have hxsource: "x \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                  by (rule subsetD[OF hVsub_source_finite hxV])
+                have hximg: "?vertex_map x \<in> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                  using himgsub hxV by (by100 blast)
+                show "x \<in> {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                proof (cases "x = v\<^sub>5")
+                  case True
+                  show ?thesis
+                    using True by (by100 simp)
+                next
+                  case False
+                  have "?vertex_map x = x"
+                    using False by (by100 simp)
+                  hence "x \<in> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                    using hximg by (by100 simp)
+                  thus ?thesis
+                    using hxsource hv\<^sub>1_not_source_vertices by (by100 blast)
+                qed
+              qed
+              have hpre213:
+                  "?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3} \<Longrightarrow>
+                    V \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+              proof
+                fix x
+                assume himgsub: "?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                assume hxV: "x \<in> V"
+                have hxsource: "x \<in> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+                  by (rule subsetD[OF hVsub_source_finite hxV])
+                have hximg: "?vertex_map x \<in> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                  using himgsub hxV by (by100 blast)
+                show "x \<in> {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                proof (cases "x = v\<^sub>5")
+                  case True
+                  show ?thesis
+                    using True by (by100 simp)
+                next
+                  case False
+                  have "?vertex_map x = x"
+                    using False by (by100 simp)
+                  hence "x \<in> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                    using hximg by (by100 simp)
+                  thus ?thesis
+                    using hxsource hv\<^sub>1_not_source_vertices by (by100 blast)
+                qed
+              qed
+              show "geotop_convex_hull V
+                  \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                using hUcase
+              proof (elim disjE)
+                assume hsub: "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                have "V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                  by (rule hpre041[OF hsub])
+                show ?thesis
+                  by (rule hsource_faces045_source[OF hVne \<open>V \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5}\<close>])
+              next
+                assume hsub: "?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                have "V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                  by (rule hpre241[OF hsub])
+                show ?thesis
+                  by (rule hsource_faces245_source[OF hVne \<open>V \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5}\<close>])
+              next
+                assume hsub: "?vertex_map ` V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                have "V \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                  by (rule hpre013[OF hsub])
+                show ?thesis
+                  by (rule hsource_faces053_source[OF hVne \<open>V \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3}\<close>])
+              next
+                assume hsub: "?vertex_map ` V \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                have "V \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                  by (rule hpre213[OF hsub])
+                show ?thesis
+                  by (rule hsource_faces253_source[OF hVne \<open>V \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}\<close>])
+              qed
+            qed
+            have hfigure33_carrier_membership_iff:
+                "\<And>V. V \<subseteq> geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<Longrightarrow>
+                  (geotop_convex_hull V
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5
+                  \<longleftrightarrow> geotop_convex_hull (?vertex_map ` V)
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4)"
+            proof
+              fix V :: "(real^2) set"
+              assume hVsub:
+                  "V \<subseteq> geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              assume hsource:
+                  "geotop_convex_hull V
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              show "geotop_convex_hull (?vertex_map ` V)
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule hvertex_map_source_to_target[OF hVsub hsource])
+            next
+              fix V :: "(real^2) set"
+              assume hVsub:
+                  "V \<subseteq> geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              assume htarget:
+                  "geotop_convex_hull (?vertex_map ` V)
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+              show "geotop_convex_hull V
+                  \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (rule hvertex_map_target_to_source[OF hVsub htarget])
+            qed
+            have hfigure33_carrier_isomorphism:
+                "geotop_isomorphism
+                  (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                  (?target_carrier v\<^sub>3 v\<^sub>4)
+                  ?vertex_map"
+              unfolding geotop_isomorphism_def
+            proof (intro conjI allI impI)
+              show "bij_betw ?vertex_map
+                  (geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5))
+                  (geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4))"
+                by (rule hfigure33_vertex_map_bij)
+              fix V :: "(real^2) set"
+              assume hVsub:
+                  "V \<subseteq> geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              show "(geotop_convex_hull V
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) =
+                  (geotop_convex_hull (?vertex_map ` V)
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4)"
+              proof
+                assume hsource:
+                    "geotop_convex_hull V
+                      \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                show "geotop_convex_hull (?vertex_map ` V)
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                  by (rule hvertex_map_source_to_target[OF hVsub hsource])
+              next
+                assume htarget:
+                    "geotop_convex_hull (?vertex_map ` V)
+                      \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                show "geotop_convex_hull V
+                    \<in> ?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                  by (rule hvertex_map_target_to_source[OF hVsub htarget])
               qed
             qed
             have hf_B05:
