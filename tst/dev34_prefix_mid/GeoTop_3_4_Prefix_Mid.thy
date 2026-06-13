@@ -47409,6 +47409,243 @@ proof -
 	    proof -
 	      let ?B\<^sub>c = "closed_segment x y \<union> closed_segment x z"
 	      let ?B\<^sub>n = "closed_segment y z"
+	      have hnot_col_yxz: "\<not> collinear {y, x, z}"
+	      proof -
+	        have "{y, x, z} = {x, y, z}"
+	          by (by100 blast)
+	        thus ?thesis
+	          using hnot_col_xyz by (by100 simp)
+	      qed
+	      have hB\<^sub>c_bl: "geotop_is_broken_line ?B\<^sub>c"
+	      proof -
+	        have hraw:
+	            "geotop_is_broken_line (closed_segment y x \<union> closed_segment x z)"
+	          by (rule geotop_two_segment_join_broken_line_prefix
+	              [OF not_sym[OF hxy] not_sym[OF hxz] hnot_col_yxz])
+	        thus ?thesis
+	          using closed_segment_commute[of y x] by (by100 simp)
+	      qed
+	      have hB\<^sub>c_E: "geotop_arc_endpoints ?B\<^sub>c {y, z}"
+	      proof -
+	        have hraw:
+	            "geotop_arc_endpoints
+	              (closed_segment y x \<union> closed_segment x z) {y, z}"
+	          by (rule geotop_two_segment_join_arc_endpoints_prefix
+	              [OF not_sym[OF hxy] not_sym[OF hxz] hnot_col_yxz])
+	        thus ?thesis
+	          using closed_segment_commute[of y x] by (by100 simp)
+	      qed
+	      have hB\<^sub>n_bl: "geotop_is_broken_line ?B\<^sub>n"
+	        by (rule geotop_closed_segment_is_broken_line[OF hyz])
+	      have hB\<^sub>n_E: "geotop_arc_endpoints ?B\<^sub>n {y, z}"
+	        by (rule geotop_closed_segment_arc_endpoints_prefix[OF hyz])
+	      have hB\<^sub>n_B\<^sub>c_int_disj:
+	          "geotop_arc_interior ?B\<^sub>n {y, z} \<inter>
+	            geotop_arc_interior ?B\<^sub>c {y, z} = {}"
+	      proof -
+	        have hraw:
+	            "geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+	              geotop_arc_interior
+	                (closed_segment y x \<union> closed_segment x z) {y, z} = {}"
+	          by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix
+	              [OF hnot_col_yxz])
+	        thus ?thesis
+	          using closed_segment_commute[of y x] by (by100 simp)
+	      qed
+	      have hB\<^sub>n_B\<^sub>c_inter: "?B\<^sub>n \<inter> ?B\<^sub>c = {y, z}"
+	        by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+	            [OF hB\<^sub>n_E hB\<^sub>c_E hB\<^sub>n_B\<^sub>c_int_disj])
+	      have hB\<^sub>c_sub_J: "?B\<^sub>c \<subseteq> J"
+	        using hcorner_contact by (by100 blast)
+	      have hyJ: "y \<in> J"
+	      proof -
+	        have "y \<in> ?B\<^sub>c"
+	          by (by100 simp)
+	        thus ?thesis
+	          using hB\<^sub>c_sub_J by (by100 blast)
+	      qed
+	      have hzJ: "z \<in> J"
+	      proof -
+	        have "z \<in> ?B\<^sub>c"
+	          by (by100 simp)
+	        thus ?thesis
+	          using hB\<^sub>c_sub_J by (by100 blast)
+	      qed
+	      have h\<theta>_simplex: "geotop_is_simplex \<theta>"
+	        by (rule geotop_simplex_dim_imp_is_simplex[OF h\<theta>2])
+	      have h\<theta>_compact: "compact \<theta>"
+	        by (rule GeoTopBase0.geotop_simplex_compact[OF h\<theta>_simplex])
+	      have h\<theta>_closed: "closed \<theta>"
+	        using h\<theta>_compact compact_imp_closed by (by100 blast)
+	      have hfrontier_sub_\<theta>: "frontier \<theta> \<subseteq> \<theta>"
+	        by (rule frontier_subset_closed[OF h\<theta>_closed])
+	      have hB\<^sub>n_sub_frontier: "?B\<^sub>n \<subseteq> frontier \<theta>"
+	        using hcorner_frontier by (by100 blast)
+	      have hB\<^sub>n_sub_\<theta>: "?B\<^sub>n \<subseteq> \<theta>"
+	        using hB\<^sub>n_sub_frontier hfrontier_sub_\<theta> by (by100 blast)
+	      have hB\<^sub>n_inter_J: "?B\<^sub>n \<inter> J = {y, z}"
+	      proof
+	        show "?B\<^sub>n \<inter> J \<subseteq> {y, z}"
+	        proof
+	          fix P
+	          assume hP: "P \<in> ?B\<^sub>n \<inter> J"
+	          have hP\<theta>: "P \<in> \<theta>"
+	            using hP hB\<^sub>n_sub_\<theta> by (by100 blast)
+	          have hPJ: "P \<in> J"
+	            using hP by (by100 blast)
+	          have "P \<in> ?B\<^sub>c"
+	            using hP\<theta> hPJ hcorner_contact by (by100 blast)
+	          thus "P \<in> {y, z}"
+	            using hP hB\<^sub>n_B\<^sub>c_inter by (by100 blast)
+	        qed
+	        show "{y, z} \<subseteq> ?B\<^sub>n \<inter> J"
+	          using hyJ hzJ by (by100 simp)
+	      qed
+	      have hB\<^sub>n_arc_interior_subset_polygon_interior:
+	          "geotop_arc_interior ?B\<^sub>n {y, z}
+	            \<subseteq> geotop_polygon_interior J"
+	      proof
+	        fix P
+	        assume hPint: "P \<in> geotop_arc_interior ?B\<^sub>n {y, z}"
+	        have hPBn: "P \<in> ?B\<^sub>n"
+	          using hPint unfolding geotop_arc_interior_def by (by100 blast)
+	        have hP_not_endpoint: "P \<notin> {y, z}"
+	          using hPint unfolding geotop_arc_interior_def by (by100 blast)
+	        have hP\<theta>: "P \<in> \<theta>"
+	          using hPBn hB\<^sub>n_sub_\<theta> by (by100 blast)
+	        have hPpoly: "P \<in> geotop_polyhedron K"
+	          using h\<theta>K hP\<theta> unfolding geotop_polyhedron_def by (by100 blast)
+	        have hPclosed_on:
+	            "P \<in> closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior J)"
+	          using hPpoly hK_poly by (by100 simp)
+	        have hclosure_on_eq:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior J) =
+	            closure (geotop_polygon_interior J)"
+	          by (rule closure_on_geotop_UNIV_eq_closure)
+	        have hPclosed: "P \<in> closure (geotop_polygon_interior J)"
+	          using hPclosed_on hclosure_on_eq by (by100 simp)
+	        have hclosed_decomp:
+	            "closure (geotop_polygon_interior J) =
+	              geotop_polygon_interior J \<union> J"
+	          by (rule polygon_interior_closure_eq[OF hJ])
+	        have hP_not_J: "P \<notin> J"
+	        proof
+	          assume hPJ: "P \<in> J"
+	          have "P \<in> {y, z}"
+	            using hPBn hPJ hB\<^sub>n_inter_J by (by100 blast)
+	          thus False
+	            using hP_not_endpoint by (by100 blast)
+	        qed
+	        show "P \<in> geotop_polygon_interior J"
+	          using hPclosed hclosed_decomp hP_not_J by (by100 blast)
+	      qed
+	      have hB\<^sub>n_boundary_chord_decomposition:
+	          "\<exists>C\<^sub>1 C\<^sub>2.
+	            J = C\<^sub>1 \<union> C\<^sub>2
+	            \<and> geotop_is_broken_line C\<^sub>1
+	            \<and> geotop_is_broken_line C\<^sub>2
+	            \<and> geotop_arc_endpoints C\<^sub>1 {y, z}
+	            \<and> geotop_arc_endpoints C\<^sub>2 {y, z}
+	            \<and> geotop_arc_interior C\<^sub>1 {y, z} \<inter>
+	                geotop_arc_interior C\<^sub>2 {y, z} = {}
+	            \<and> geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>n)
+	            \<and> geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>2)"
+	      proof -
+	        obtain L where hL_linear: "geotop_is_linear_graph L"
+	          and hL_fin: "finite L"
+	          and hL_conn: "geotop_complex_connected L"
+	          and hL_poly: "geotop_polyhedron L = J"
+	          and hL_y: "{y} \<in> L"
+	          and hL_z: "{z} \<in> L"
+	          using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+	            [OF hJ hyJ hzJ] by (by100 blast)
+	        have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+	          using hJ hL_poly by (by100 simp)
+	        obtain C\<^sub>1 C\<^sub>2 where hJ_split: "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2"
+	          and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+	          and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+	          and hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {y, z}"
+	          and hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {y, z}"
+	          and hC\<^sub>1C\<^sub>2:
+	            "geotop_arc_interior C\<^sub>1 {y, z} \<inter>
+	              geotop_arc_interior C\<^sub>2 {y, z} = {}"
+	          using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+	            [OF hL_linear hL_fin hL_conn hL_polygon hL_y hL_z hyz]
+	          by (by100 blast)
+	        have hJ_eq: "J = C\<^sub>1 \<union> C\<^sub>2"
+	          using hJ_split hL_poly by (by100 simp)
+	        have hchord_all:
+	            "geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>n)
+	            \<and> geotop_is_polygon J
+	            \<and> geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>2)
+	            \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+	                    geotop_arc_interior ?B\<^sub>n {y, z}.
+	                   C = geotop_component_at UNIV geotop_euclidean_topology
+	                        (geotop_polygon_interior J -
+	                         geotop_arc_interior ?B\<^sub>n {y, z}) P}
+	                =
+	                {geotop_polygon_interior (C\<^sub>1 \<union> ?B\<^sub>n),
+	                 geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>2)}
+	            \<and> closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J) =
+	                closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior (C\<^sub>1 \<union> ?B\<^sub>n)) \<union>
+	                closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>2))
+	            \<and> closure_on UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J) - ?B\<^sub>n =
+	                (geotop_polygon_interior (C\<^sub>1 \<union> ?B\<^sub>n) \<union>
+	                 geotop_arc_interior C\<^sub>1 {y, z}) \<union>
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>2) \<union>
+	                 geotop_arc_interior C\<^sub>2 {y, z})
+	            \<and> top1_connected_on
+	                  (geotop_polygon_interior (C\<^sub>1 \<union> ?B\<^sub>n) \<union>
+	                   geotop_arc_interior C\<^sub>1 {y, z})
+	                  (subspace_topology UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior (C\<^sub>1 \<union> ?B\<^sub>n) \<union>
+	                     geotop_arc_interior C\<^sub>1 {y, z}))
+	            \<and> top1_connected_on
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>2) \<union>
+	                   geotop_arc_interior C\<^sub>2 {y, z})
+	                  (subspace_topology UNIV geotop_euclidean_topology
+	                    (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>2) \<union>
+	                     geotop_arc_interior C\<^sub>2 {y, z}))
+	            \<and> geotop_separated UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior (C\<^sub>1 \<union> ?B\<^sub>n) \<union>
+	                   geotop_arc_interior C\<^sub>1 {y, z})
+	                  (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>2) \<union>
+	                   geotop_arc_interior C\<^sub>2 {y, z})"
+	          by (rule geotop_boundary_split_segment_chord_theta_decomposition_all_prefix
+	              [OF hyz hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E
+	                hC\<^sub>1C\<^sub>2 hB\<^sub>n_inter_J
+	                hB\<^sub>n_arc_interior_subset_polygon_interior])
+	        have hpoly_left: "geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>n)"
+	          using hchord_all by (by100 blast)
+	        have hpoly_right: "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>2)"
+	          using hchord_all by (by100 blast)
+	        show ?thesis
+	        proof (rule exI[of _ C\<^sub>1], rule exI[of _ C\<^sub>2], intro conjI)
+	          show "J = C\<^sub>1 \<union> C\<^sub>2"
+	            by (rule hJ_eq)
+	          show "geotop_is_broken_line C\<^sub>1"
+	            by (rule hC\<^sub>1_bl)
+	          show "geotop_is_broken_line C\<^sub>2"
+	            by (rule hC\<^sub>2_bl)
+	          show "geotop_arc_endpoints C\<^sub>1 {y, z}"
+	            by (rule hC\<^sub>1E)
+	          show "geotop_arc_endpoints C\<^sub>2 {y, z}"
+	            by (rule hC\<^sub>2E)
+	          show "geotop_arc_interior C\<^sub>1 {y, z} \<inter>
+	              geotop_arc_interior C\<^sub>2 {y, z} = {}"
+	            by (rule hC\<^sub>1C\<^sub>2)
+	          show "geotop_is_polygon (C\<^sub>1 \<union> ?B\<^sub>n)"
+	            by (rule hpoly_left)
+	          show "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>2)"
+	            by (rule hpoly_right)
+	        qed
+	      qed
 	      have hcorner_forward_boundary_split:
 	          "\<exists>C\<^sub>O.
 	            J = ?B\<^sub>c \<union> C\<^sub>O
