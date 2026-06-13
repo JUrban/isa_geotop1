@@ -47711,11 +47711,171 @@ proof -
 	      show ?thesis
 	        by (rule mp[OF himp hx_face_e1_for_delete])
 	    qed
+	    have hx_no_other_incident_edge_after_old_edge_delete:
+	        "\<not> (\<exists>d\<in>?K\<^sub>d.
+	          d \<noteq> e1 \<and> d \<noteq> e2 \<and> geotop_is_edge d \<and> x \<in> d)"
+	      sorry
 	    have hx_no_face_after_edge_delete:
 	        "\<And>\<sigma>. \<sigma> \<in> ?K\<^sub>d \<Longrightarrow> \<sigma> \<noteq> e1 \<Longrightarrow> \<sigma> \<noteq> e2 \<Longrightarrow>
 	          \<sigma> \<noteq> {x} \<Longrightarrow>
 	          geotop_is_face {x} \<sigma> \<Longrightarrow> False"
-	      sorry
+	    proof -
+	      fix \<sigma>
+	      assume h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+	      assume h\<sigma>ne_e1: "\<sigma> \<noteq> e1"
+	      assume h\<sigma>ne_e2: "\<sigma> \<noteq> e2"
+	      assume h\<sigma>ne_x: "\<sigma> \<noteq> {x}"
+	      assume hx_face_\<sigma>: "geotop_is_face {x} \<sigma>"
+	      have hx_sub_\<sigma>: "{x} \<subseteq> \<sigma>"
+	        by (rule geotop_is_face_imp_subset_prefix[OF hx_face_\<sigma>])
+	      have hx\<sigma>: "x \<in> \<sigma>"
+	        using hx_sub_\<sigma> by (by100 simp)
+	      obtain V where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+	        and hxV: "x \<in> V"
+	        using geotop_complex_singleton_point_is_simplex_vertex_prefix
+	          [OF hK_delete_complex hxKd_for_delete h\<sigma>Kd hx\<sigma>]
+	        by (by100 blast)
+	      have hV_ne_x: "V \<noteq> {x}"
+	      proof
+	        assume hV_eq: "V = {x}"
+	        obtain m n where h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+	          using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+	        have hsing_hull: "geotop_convex_hull {x} = {x}"
+	          using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+	        have "\<sigma> = {x}"
+	          using h\<sigma>_eq hV_eq hsing_hull by (by100 simp)
+	        thus False
+	          using h\<sigma>ne_x by (by100 simp)
+	      qed
+	      obtain w where hwV: "w \<in> V" and hxw: "x \<noteq> w"
+	        using hV_ne_x hxV by (by100 blast)
+	      obtain e where he_face_\<sigma>: "geotop_is_face e \<sigma>"
+	        and he_edge: "geotop_is_edge e"
+	        and hx_e: "x \<in> e"
+	        using geotop_simplex_vertices_pair_edge_face_prefix
+	          [OF h\<sigma>V hxV hwV hxw]
+	        by (by100 blast)
+	      have hface_closed:
+	          "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+	        by (rule geotop_is_complex_face_closed[OF hK_delete_complex])
+	      have heKd: "e \<in> ?K\<^sub>d"
+	        using hface_closed h\<sigma>Kd he_face_\<sigma> by (by100 blast)
+	      have he_old: "e = e1 \<or> e = e2"
+	      proof (rule ccontr)
+	        assume hnot: "\<not> (e = e1 \<or> e = e2)"
+	        have "\<exists>d\<in>?K\<^sub>d.
+	            d \<noteq> e1 \<and> d \<noteq> e2 \<and> geotop_is_edge d \<and> x \<in> d"
+	          using heKd he_edge hx_e hnot by (by100 blast)
+	        thus False
+	          using hx_no_other_incident_edge_after_old_edge_delete by (by100 blast)
+	      qed
+	      show False
+	      proof (rule disjE[OF he_old])
+	        assume he_eq: "e = e1"
+	        have he1_face_\<sigma>: "geotop_is_face e1 \<sigma>"
+	          using he_face_\<sigma> he_eq by (by100 simp)
+	        have he1_sub_\<sigma>: "e1 \<subseteq> \<sigma>"
+	          by (rule geotop_is_face_imp_subset_prefix[OF he1_face_\<sigma>])
+	        have h\<sigma>simp: "geotop_is_simplex \<sigma>"
+	          using hK_delete_complex h\<sigma>Kd
+	            geotop_is_complex_simplex by (by100 blast)
+	        obtain n where h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
+	          using h\<sigma>simp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+	          by (by100 blast)
+	        have he1_dim1: "geotop_simplex_dim e1 1"
+	          using he1_edge unfolding geotop_is_edge_def by (by100 simp)
+	        obtain k where hk_le: "k \<le> n" and he1_dim_k: "geotop_simplex_dim e1 k"
+	          using geotop_face_dim_le_prefix[OF h\<sigma>dim he1_face_\<sigma>]
+	          by (by100 blast)
+	        have hk_eq1: "k = 1"
+	          by (rule geotop_simplex_dim_unique[OF he1_dim_k he1_dim1])
+	        have h1_le_n: "1 \<le> n"
+	          using hk_le hk_eq1 by (by100 simp)
+	        show False
+	        proof (cases "n = 1")
+	          case True
+	          have h\<sigma>edge: "geotop_is_edge \<sigma>"
+	            using h\<sigma>dim True unfolding geotop_is_edge_def by (by100 simp)
+	          have "e1 = \<sigma>"
+	            by (rule geotop_edge_face_of_edge_eq_prefix
+	                [OF he1_edge h\<sigma>edge he1_face_\<sigma>])
+	          thus False
+	            using h\<sigma>ne_e1 by (by100 simp)
+	        next
+	          case False
+	          have h2_le_n: "2 \<le> n"
+	            using h1_le_n False by (by100 linarith)
+	          obtain \<rho> where h\<rho>Kd: "\<rho> \<in> ?K\<^sub>d"
+	            and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+	            and he1_sub_\<rho>: "e1 \<subseteq> \<rho>"
+	            using geotop_complex_edge_in_higher_simplex_has_2_simplex_prefix
+	              [OF hK_delete_complex he1Kd h\<sigma>Kd he1_edge he1_sub_\<sigma>
+	                h\<sigma>dim h2_le_n]
+	            by (by100 blast)
+	          have he1_face_\<rho>: "geotop_is_face e1 \<rho>"
+	            by (rule geotop_complex_subset_simplex_face_prefix
+	                [OF hK_delete_complex he1Kd h\<rho>Kd he1_sub_\<rho>])
+	          have "\<rho> \<in>
+	              {\<rho>\<in>?K\<^sub>d. geotop_simplex_dim \<rho> 2
+	                \<and> geotop_is_face e1 \<rho>}"
+	            using h\<rho>Kd h\<rho>2 he1_face_\<rho> by (by100 simp)
+	          thus False
+	            using he1_no_incident_after_delete by (by100 blast)
+	        qed
+	      next
+	        assume he_eq: "e = e2"
+	        have he2_face_\<sigma>: "geotop_is_face e2 \<sigma>"
+	          using he_face_\<sigma> he_eq by (by100 simp)
+	        have he2_sub_\<sigma>: "e2 \<subseteq> \<sigma>"
+	          by (rule geotop_is_face_imp_subset_prefix[OF he2_face_\<sigma>])
+	        have h\<sigma>simp: "geotop_is_simplex \<sigma>"
+	          using hK_delete_complex h\<sigma>Kd
+	            geotop_is_complex_simplex by (by100 blast)
+	        obtain n where h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
+	          using h\<sigma>simp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+	          by (by100 blast)
+	        have he2_dim1: "geotop_simplex_dim e2 1"
+	          using he2_edge unfolding geotop_is_edge_def by (by100 simp)
+	        obtain k where hk_le: "k \<le> n" and he2_dim_k: "geotop_simplex_dim e2 k"
+	          using geotop_face_dim_le_prefix[OF h\<sigma>dim he2_face_\<sigma>]
+	          by (by100 blast)
+	        have hk_eq1: "k = 1"
+	          by (rule geotop_simplex_dim_unique[OF he2_dim_k he2_dim1])
+	        have h1_le_n: "1 \<le> n"
+	          using hk_le hk_eq1 by (by100 simp)
+	        show False
+	        proof (cases "n = 1")
+	          case True
+	          have h\<sigma>edge: "geotop_is_edge \<sigma>"
+	            using h\<sigma>dim True unfolding geotop_is_edge_def by (by100 simp)
+	          have "e2 = \<sigma>"
+	            by (rule geotop_edge_face_of_edge_eq_prefix
+	                [OF he2_edge h\<sigma>edge he2_face_\<sigma>])
+	          thus False
+	            using h\<sigma>ne_e2 by (by100 simp)
+	        next
+	          case False
+	          have h2_le_n: "2 \<le> n"
+	            using h1_le_n False by (by100 linarith)
+	          obtain \<rho> where h\<rho>Kd: "\<rho> \<in> ?K\<^sub>d"
+	            and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+	            and he2_sub_\<rho>: "e2 \<subseteq> \<rho>"
+	            using geotop_complex_edge_in_higher_simplex_has_2_simplex_prefix
+	              [OF hK_delete_complex he2Kd h\<sigma>Kd he2_edge he2_sub_\<sigma>
+	                h\<sigma>dim h2_le_n]
+	            by (by100 blast)
+	          have he2_face_\<rho>: "geotop_is_face e2 \<rho>"
+	            by (rule geotop_complex_subset_simplex_face_prefix
+	                [OF hK_delete_complex he2Kd h\<rho>Kd he2_sub_\<rho>])
+	          have "\<rho> \<in>
+	              {\<rho>\<in>?K\<^sub>d. geotop_simplex_dim \<rho> 2
+	                \<and> geotop_is_face e2 \<rho>}"
+	            using h\<rho>Kd h\<rho>2 he2_face_\<rho> by (by100 simp)
+	          thus False
+	            using he2_no_incident_after_delete by (by100 blast)
+	        qed
+	      qed
+	    qed
 	    have hK_reduced_complex: "geotop_is_complex ?K\<^sub>r"
 	    proof (rule geotop_complex_subset_is_complex)
 	      show "?K\<^sub>r \<subseteq> ?K\<^sub>d"
