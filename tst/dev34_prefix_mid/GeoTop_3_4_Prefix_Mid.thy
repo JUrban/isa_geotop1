@@ -38634,6 +38634,182 @@ proof -
               show ?thesis
                 using hcarrier_mem hvertex_map_253 by (by100 simp)
             qed
+            have hvertex_map_faces045_target:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5} \<Longrightarrow>
+                  geotop_convex_hull (?vertex_map ` W) \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              have himg_ne: "?vertex_map ` W \<noteq> {}"
+                using hWne by (by100 blast)
+              have himg_sub:
+                  "?vertex_map ` W \<subseteq> {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+              proof -
+                have "?vertex_map ` W \<subseteq> ?vertex_map ` {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                  using hWsub by (rule image_mono)
+                thus ?thesis
+                  using hvertex_map_045 by (by100 simp)
+              qed
+              have hface:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})"
+                by (rule geotop_three_noncollinear_convex_hull_subset_face_prefix
+                    [OF hncol041 himg_ne himg_sub])
+              have htarget_seed:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                using hvertex_map_hull045_target hvertex_map_045 by (by100 simp)
+              have hclosed:
+                  "\<forall>\<sigma>\<in>?target_carrier v\<^sub>3 v\<^sub>4. \<forall>\<tau>.
+                    geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule geotop_is_complex_face_closed[OF htarget_complex])
+              have hclosed_seed:
+                  "\<forall>\<tau>. geotop_is_face \<tau> (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})
+                    \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule bspec[OF hclosed htarget_seed])
+              have hclosed_face:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1})
+                    \<longrightarrow> geotop_convex_hull (?vertex_map ` W)
+                      \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule spec[OF hclosed_seed])
+              show "geotop_convex_hull (?vertex_map ` W)
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule mp[OF hclosed_face hface])
+            qed
+            have hvertex_map_faces245_target:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5} \<Longrightarrow>
+                  geotop_convex_hull (?vertex_map ` W) \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+              have himg_ne: "?vertex_map ` W \<noteq> {}"
+                using hWne by (by100 blast)
+              have himg_sub:
+                  "?vertex_map ` W \<subseteq> {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+              proof -
+                have "?vertex_map ` W \<subseteq> ?vertex_map ` {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                  using hWsub by (rule image_mono)
+                thus ?thesis
+                  using hvertex_map_245 by (by100 simp)
+              qed
+              have hface:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})"
+                by (rule geotop_three_noncollinear_convex_hull_subset_face_prefix
+                    [OF hncol241 himg_ne himg_sub])
+              have htarget_seed:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                using hvertex_map_hull245_target hvertex_map_245 by (by100 simp)
+              have hclosed:
+                  "\<forall>\<sigma>\<in>?target_carrier v\<^sub>3 v\<^sub>4. \<forall>\<tau>.
+                    geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule geotop_is_complex_face_closed[OF htarget_complex])
+              have hclosed_seed:
+                  "\<forall>\<tau>. geotop_is_face \<tau> (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})
+                    \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule bspec[OF hclosed htarget_seed])
+              have hclosed_face:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1})
+                    \<longrightarrow> geotop_convex_hull (?vertex_map ` W)
+                      \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule spec[OF hclosed_seed])
+              show "geotop_convex_hull (?vertex_map ` W)
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule mp[OF hclosed_face hface])
+            qed
+            have hvertex_map_faces053_target:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3} \<Longrightarrow>
+                  geotop_convex_hull (?vertex_map ` W) \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+              have himg_ne: "?vertex_map ` W \<noteq> {}"
+                using hWne by (by100 blast)
+              have himg_sub:
+                  "?vertex_map ` W \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+              proof -
+                have "?vertex_map ` W \<subseteq> ?vertex_map ` {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                  using hWsub by (rule image_mono)
+                thus ?thesis
+                  using hvertex_map_053 by (by100 simp)
+              qed
+              have hface:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})"
+                by (rule geotop_three_noncollinear_convex_hull_subset_face_prefix
+                    [OF hncol013 himg_ne himg_sub])
+              have htarget_seed:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                using hvertex_map_hull053_target hvertex_map_053 by (by100 simp)
+              have hclosed:
+                  "\<forall>\<sigma>\<in>?target_carrier v\<^sub>3 v\<^sub>4. \<forall>\<tau>.
+                    geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule geotop_is_complex_face_closed[OF htarget_complex])
+              have hclosed_seed:
+                  "\<forall>\<tau>. geotop_is_face \<tau> (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})
+                    \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule bspec[OF hclosed htarget_seed])
+              have hclosed_face:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3})
+                    \<longrightarrow> geotop_convex_hull (?vertex_map ` W)
+                      \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule spec[OF hclosed_seed])
+              show "geotop_convex_hull (?vertex_map ` W)
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule mp[OF hclosed_face hface])
+            qed
+            have hvertex_map_faces253_target:
+                "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3} \<Longrightarrow>
+                  geotop_convex_hull (?vertex_map ` W) \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+            proof -
+              fix W :: "(real^2) set"
+              assume hWne: "W \<noteq> {}"
+              assume hWsub: "W \<subseteq> {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+              have himg_ne: "?vertex_map ` W \<noteq> {}"
+                using hWne by (by100 blast)
+              have himg_sub:
+                  "?vertex_map ` W \<subseteq> {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+              proof -
+                have "?vertex_map ` W \<subseteq> ?vertex_map ` {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                  using hWsub by (rule image_mono)
+                thus ?thesis
+                  using hvertex_map_253 by (by100 simp)
+              qed
+              have hface:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})"
+                by (rule geotop_three_noncollinear_convex_hull_subset_face_prefix
+                    [OF hncol213 himg_ne himg_sub])
+              have htarget_seed:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+                    \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                using hvertex_map_hull253_target hvertex_map_253 by (by100 simp)
+              have hclosed:
+                  "\<forall>\<sigma>\<in>?target_carrier v\<^sub>3 v\<^sub>4. \<forall>\<tau>.
+                    geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule geotop_is_complex_face_closed[OF htarget_complex])
+              have hclosed_seed:
+                  "\<forall>\<tau>. geotop_is_face \<tau> (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})
+                    \<longrightarrow> \<tau> \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule bspec[OF hclosed htarget_seed])
+              have hclosed_face:
+                  "geotop_is_face (geotop_convex_hull (?vertex_map ` W))
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3})
+                    \<longrightarrow> geotop_convex_hull (?vertex_map ` W)
+                      \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule spec[OF hclosed_seed])
+              show "geotop_convex_hull (?vertex_map ` W)
+                  \<in> ?target_carrier v\<^sub>3 v\<^sub>4"
+                by (rule mp[OF hclosed_face hface])
+            qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
