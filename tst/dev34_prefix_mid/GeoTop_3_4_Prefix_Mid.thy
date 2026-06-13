@@ -38486,6 +38486,38 @@ proof -
                   by (rule hvertex_map_image_carriers)
               qed
             qed
+            have hvertex_map_045:
+                "?vertex_map ` {v\<^sub>0, v\<^sub>4, v\<^sub>5} = {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+            proof -
+              have hv\<^sub>0v\<^sub>5: "v\<^sub>0 \<noteq> v\<^sub>5"
+                using hv\<^sub>0_off_line hv\<^sub>5_line by (by100 blast)
+              show ?thesis
+                using hv\<^sub>0v\<^sub>5 hv\<^sub>4v\<^sub>5 by (by100 auto)
+            qed
+            have hvertex_map_245:
+                "?vertex_map ` {v\<^sub>2, v\<^sub>4, v\<^sub>5} = {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+            proof -
+              have hv\<^sub>2v\<^sub>5: "v\<^sub>2 \<noteq> v\<^sub>5"
+                using hv\<^sub>2_off_line hv\<^sub>5_line by (by100 blast)
+              show ?thesis
+                using hv\<^sub>2v\<^sub>5 hv\<^sub>4v\<^sub>5 by (by100 auto)
+            qed
+            have hvertex_map_053:
+                "?vertex_map ` {v\<^sub>0, v\<^sub>5, v\<^sub>3} = {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+            proof -
+              have hv\<^sub>0v\<^sub>5: "v\<^sub>0 \<noteq> v\<^sub>5"
+                using hv\<^sub>0_off_line hv\<^sub>5_line by (by100 blast)
+              show ?thesis
+                using hv\<^sub>0v\<^sub>5 hv\<^sub>5v\<^sub>3 by (by100 auto)
+            qed
+            have hvertex_map_253:
+                "?vertex_map ` {v\<^sub>2, v\<^sub>5, v\<^sub>3} = {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+            proof -
+              have hv\<^sub>2v\<^sub>5: "v\<^sub>2 \<noteq> v\<^sub>5"
+                using hv\<^sub>2_off_line hv\<^sub>5_line by (by100 blast)
+              show ?thesis
+                using hv\<^sub>2v\<^sub>5 hv\<^sub>5v\<^sub>3 by (by100 auto)
+            qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
