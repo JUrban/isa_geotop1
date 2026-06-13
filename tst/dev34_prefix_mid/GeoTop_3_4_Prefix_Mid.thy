@@ -35054,6 +35054,52 @@ proof -
     by (rule finite_subset[OF hsub hfin_F])
 qed
 
+lemma geotop_simplex_face_closure_polyhedron_eq_union_prefix:
+  fixes S :: "(real^2) set set"
+  shows "geotop_polyhedron {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+    = \<Union>S"
+proof
+  show "geotop_polyhedron {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+      \<subseteq> \<Union>S"
+  proof
+    fix x
+    assume hx:
+      "x \<in> geotop_polyhedron {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+    obtain \<tau> where h\<tau>:
+        "\<tau> \<in> {\<rho>. \<exists>\<sigma>\<in>S. \<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>}"
+      and hx\<tau>: "x \<in> \<tau>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S"
+      and h\<tau>\<sigma>: "\<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>"
+      using h\<tau> by (by100 blast)
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+    proof (rule disjE[OF h\<tau>\<sigma>])
+      assume "\<tau> = \<sigma>"
+      thus ?thesis
+        by (by100 simp)
+    next
+      assume hface: "geotop_is_face \<tau> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_imp_subset_prefix[OF hface])
+    qed
+    show "x \<in> \<Union>S"
+      using h\<sigma>S h\<tau>sub\<sigma> hx\<tau> by (by100 blast)
+  qed
+  show "\<Union>S
+      \<subseteq> geotop_polyhedron {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  proof
+    fix x
+    assume hx: "x \<in> \<Union>S"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S" and hx\<sigma>: "x \<in> \<sigma>"
+      using hx by (by100 blast)
+    have h\<sigma>C: "\<sigma> \<in> {\<tau>. \<exists>\<rho>\<in>S. \<tau> = \<rho> \<or> geotop_is_face \<tau> \<rho>}"
+      using h\<sigma>S by (by100 blast)
+    show "x \<in> geotop_polyhedron {\<tau>. \<exists>\<sigma>\<in>S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+      unfolding geotop_polyhedron_def
+      using h\<sigma>C hx\<sigma> by (by100 blast)
+  qed
+qed
+
 lemma geotop_compatible_simplex_face_closure_is_complex_prefix:
   fixes S :: "(real^2) set set"
   assumes hS_fin: "finite S"
