@@ -35005,6 +35005,33 @@ proof -
       by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
           [OF hJ hv\<^sub>0J hv\<^sub>2J hv\<^sub>0v\<^sub>2])
   qed
+  have hfigure33_replacement_meets_boundary_only_endpoints:
+      "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> J = {v\<^sub>0, v\<^sub>2}"
+  proof -
+    have hB02_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hB012_arc: "geotop_arc_endpoints ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hdisj:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      using hfigure33_replacement_arc_package by (by100 blast)
+    have hB02_B012_inter: "?B\<^sub>0\<^sub>2 \<inter> ?B\<^sub>0\<^sub>1\<^sub>2 = {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+          [OF hB02_arc hB012_arc hdisj])
+    have htheta_J_B02: "\<theta> \<inter> J = ?B\<^sub>0\<^sub>2"
+      using hfigure33_boundary_support_package by (by100 blast)
+    have hB012_J_sub_B02: "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> J \<subseteq> ?B\<^sub>0\<^sub>2"
+      using hB012_sub_\<theta> htheta_J_B02 by (by100 blast)
+    have hB012_J_sub_endpoints: "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> J \<subseteq> {v\<^sub>0, v\<^sub>2}"
+      using hB012_J_sub_B02 hB02_B012_inter by (by100 blast)
+    have hB02_sub_J: "?B\<^sub>0\<^sub>2 \<subseteq> J"
+      using hfigure33_boundary_support_package by (by100 blast)
+    have hendpoints_sub: "{v\<^sub>0, v\<^sub>2} \<subseteq> ?B\<^sub>0\<^sub>1\<^sub>2 \<inter> J"
+      using hB02_sub_J by (by100 simp)
+    show ?thesis
+      using hB012_J_sub_endpoints hendpoints_sub by (by100 blast)
+  qed
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
