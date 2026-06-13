@@ -38999,6 +38999,149 @@ proof -
 		                  = geotop_convex_hull {?v\<^sub>5, ?v\<^sub>3_of t}"
 		              using hsource45 hsource53 by (by100 blast)
 		          qed
+		          have hfigure33_target_shared_base_intersections_scalar:
+		              "\<And>t. 0 < t \<Longrightarrow>
+		                geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  = geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t}"
+		          proof -
+		            fix t :: real
+		            assume ht: "0 < t"
+		            have hbasic:
+		                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		              by (rule hfigure33_book_line_scalar_basic[OF ht])
+		            have hv\<^sub>3_line:
+		                "?v\<^sub>3_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+		            proof -
+		              have "?v\<^sub>3_of t = v\<^sub>1 + (- t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+		                by (simp add: algebra_simps)
+		              thus ?thesis
+		                unfolding affine_hull_2_alt by (by100 blast)
+		            qed
+		            have hv\<^sub>4_line:
+		                "?v\<^sub>4_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+		            proof -
+		              have "?v\<^sub>4_of t = v\<^sub>1 + (1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+		                by (simp add: algebra_simps)
+		              thus ?thesis
+		                unfolding affine_hull_2_alt by (by100 blast)
+		            qed
+		            have hv\<^sub>1_line:
+		                "v\<^sub>1 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+		              by (rule hull_inc) (by100 simp)
+		            have hv\<^sub>5_line:
+		                "?v\<^sub>5 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+		              by (rule hull_inc) (by100 simp)
+		            have hv\<^sub>4v\<^sub>1: "?v\<^sub>4_of t \<noteq> v\<^sub>1"
+		              using hbasic by (by100 blast)
+		            have hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
+		              using hbasic by (by100 blast)
+		            have haff41:
+		                "affine hull {?v\<^sub>4_of t, v\<^sub>1}
+		                  = affine hull {v\<^sub>1, ?v\<^sub>5}"
+		              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+		                  [OF hv\<^sub>1_mid_ne hv\<^sub>4v\<^sub>1 hv\<^sub>4_line hv\<^sub>1_line])
+		            have haff13:
+		                "affine hull {v\<^sub>1, ?v\<^sub>3_of t}
+		                  = affine hull {v\<^sub>1, ?v\<^sub>5}"
+		              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+		                  [OF hv\<^sub>1_mid_ne hv\<^sub>1v\<^sub>3 hv\<^sub>1_line hv\<^sub>3_line])
+		            have hv\<^sub>0_off41:
+		                "v\<^sub>0 \<notin> affine hull {?v\<^sub>4_of t, v\<^sub>1}"
+		              using hv\<^sub>0_mid_off_line haff41 by (by100 simp)
+		            have hv\<^sub>0_off13:
+		                "v\<^sub>0 \<notin> affine hull {v\<^sub>1, ?v\<^sub>3_of t}"
+		              using hv\<^sub>0_mid_off_line haff13 by (by100 simp)
+		            obtain n41 r41 where hn41: "n41 \<noteq> 0"
+		              and hline41:
+		                "affine hull {?v\<^sub>4_of t, v\<^sub>1} = {x. n41 \<bullet> x = r41}"
+		              using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>4v\<^sub>1]
+		              by (by100 blast)
+		            have hv\<^sub>5_aff41: "?v\<^sub>5 \<in> affine hull {?v\<^sub>4_of t, v\<^sub>1}"
+		              using haff41 hv\<^sub>5_line by (by100 simp)
+		            have hmid41: "n41 \<bullet> ?v\<^sub>5 = r41"
+		              using hline41 hv\<^sub>5_aff41 by (by100 simp)
+		            have hv\<^sub>0_ne41: "n41 \<bullet> v\<^sub>0 \<noteq> r41"
+		              using hline41 hv\<^sub>0_off41 by (by100 simp)
+		            have hsides41:
+		                "(n41 \<bullet> v\<^sub>0 > r41 \<and> n41 \<bullet> v\<^sub>2 < r41)
+		                \<or> (n41 \<bullet> v\<^sub>0 < r41 \<and> n41 \<bullet> v\<^sub>2 > r41)"
+		              by (rule geotop_midpoint_on_line_opposite_sides_prefix
+		                  [OF hmid41 hv\<^sub>0_ne41])
+		            have htarget41:
+		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  = geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1}"
+		            proof -
+		              have hraw:
+		                  "geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1, v\<^sub>0}
+		                    \<inter> geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1, v\<^sub>2}
+		                    = geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1}"
+		                by (rule geotop_triangles_opposite_side_shared_base_inter_cases_prefix
+		                    [OF hv\<^sub>4v\<^sub>1 hline41 hsides41])
+		              have hset0: "{v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  = {?v\<^sub>4_of t, v\<^sub>1, v\<^sub>0}"
+		                by (by100 blast)
+		              have hset2: "{v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  = {?v\<^sub>4_of t, v\<^sub>1, v\<^sub>2}"
+		                by (by100 blast)
+		              show ?thesis
+		                using hraw hset0 hset2 by (by100 simp)
+		            qed
+		            obtain n13 r13 where hn13: "n13 \<noteq> 0"
+		              and hline13:
+		                "affine hull {v\<^sub>1, ?v\<^sub>3_of t} = {x. n13 \<bullet> x = r13}"
+		              using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>1v\<^sub>3]
+		              by (by100 blast)
+		            have hv\<^sub>5_aff13: "?v\<^sub>5 \<in> affine hull {v\<^sub>1, ?v\<^sub>3_of t}"
+		              using haff13 hv\<^sub>5_line by (by100 simp)
+		            have hmid13: "n13 \<bullet> ?v\<^sub>5 = r13"
+		              using hline13 hv\<^sub>5_aff13 by (by100 simp)
+		            have hv\<^sub>0_ne13: "n13 \<bullet> v\<^sub>0 \<noteq> r13"
+		              using hline13 hv\<^sub>0_off13 by (by100 simp)
+		            have hsides13:
+		                "(n13 \<bullet> v\<^sub>0 > r13 \<and> n13 \<bullet> v\<^sub>2 < r13)
+		                \<or> (n13 \<bullet> v\<^sub>0 < r13 \<and> n13 \<bullet> v\<^sub>2 > r13)"
+		              by (rule geotop_midpoint_on_line_opposite_sides_prefix
+		                  [OF hmid13 hv\<^sub>0_ne13])
+		            have htarget13:
+		                "geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t}"
+		            proof -
+		              have hraw:
+		                  "geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t, v\<^sub>0}
+		                    \<inter> geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t, v\<^sub>2}
+		                    = geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t}"
+		                by (rule geotop_triangles_opposite_side_shared_base_inter_cases_prefix
+		                    [OF hv\<^sub>1v\<^sub>3 hline13 hsides13])
+		              have hset0: "{v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = {v\<^sub>1, ?v\<^sub>3_of t, v\<^sub>0}"
+		                by (by100 blast)
+		              have hset2: "{v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = {v\<^sub>1, ?v\<^sub>3_of t, v\<^sub>2}"
+		                by (by100 blast)
+		              show ?thesis
+		                using hraw hset0 hset2 by (by100 simp)
+		            qed
+		            show "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  = geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t}"
+		              using htarget41 htarget13 by (by100 blast)
+		          qed
 		          have hfigure33_book_local_simplicial_extension_boundary_control_scalar:
 		              "\<exists>t>0.
 			                geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
