@@ -36067,6 +36067,16 @@ proof -
       by (by100 simp)
     have hJ'_sub_U: "?J' \<subseteq> U"
       using hJ'_closure_decomp hB_CO_support by (by100 blast)
+    have hCR_eq_old_imp_left_triangle_interior:
+        "C\<^sub>R = ?B\<^sub>0\<^sub>2 \<Longrightarrow>
+          geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) = rel_interior \<theta>"
+      using h\<theta>_polygon_interior_old_replacement_rel by (by100 simp)
+    have hCR_eq_old_imp_left_triangle_closure:
+        "C\<^sub>R = ?B\<^sub>0\<^sub>2 \<Longrightarrow>
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)) =
+          rel_interior \<theta> \<union> (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
+      using h\<theta>_old_replacement_closure_decomp by (by100 simp)
     have hbook_oriented_PL_fold_core:
         "\<exists>K' f.
           geotop_is_complex K'
