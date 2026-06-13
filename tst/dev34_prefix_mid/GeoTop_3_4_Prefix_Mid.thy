@@ -36077,6 +36077,99 @@ proof -
     using hcone hleft hright hmid by (by100 simp)
 qed
 
+lemma geotop_triangle_same_apex_base_split_union_prefix:
+  fixes a b c r :: "real^2"
+  assumes hr: "r \<in> closed_segment b c"
+  shows "geotop_convex_hull {a, b, r} \<union> geotop_convex_hull {a, r, c}
+      = geotop_convex_hull {a, b, c}"
+proof
+  show "geotop_convex_hull {a, b, r} \<union> geotop_convex_hull {a, r, c}
+      \<subseteq> geotop_convex_hull {a, b, c}"
+  proof -
+    have hr_hol: "r \<in> convex hull {b, c}"
+      using hr segment_convex_hull[of b c] by (by100 simp)
+    have hbc_sub: "convex hull {b, c} \<subseteq> convex hull {a, b, c}"
+      by (rule hull_mono) (by100 blast)
+    have hleft_verts: "{a, b, r} \<subseteq> convex hull {a, b, c}"
+      using hr_hol hbc_sub hull_inc[of a "{a, b, c}"] hull_inc[of b "{a, b, c}"]
+      by (by100 blast)
+    have hright_verts: "{a, r, c} \<subseteq> convex hull {a, b, c}"
+      using hr_hol hbc_sub hull_inc[of a "{a, b, c}"] hull_inc[of c "{a, b, c}"]
+      by (by100 blast)
+    have hleft:
+        "geotop_convex_hull {a, b, r} \<subseteq> geotop_convex_hull {a, b, c}"
+      unfolding geotop_convex_hull_eq_HOL
+      by (rule hull_minimal[OF hleft_verts convex_convex_hull])
+    have hright:
+        "geotop_convex_hull {a, r, c} \<subseteq> geotop_convex_hull {a, b, c}"
+      unfolding geotop_convex_hull_eq_HOL
+      by (rule hull_minimal[OF hright_verts convex_convex_hull])
+    show ?thesis
+      using hleft hright by (by100 blast)
+  qed
+  show "geotop_convex_hull {a, b, c}
+      \<subseteq> geotop_convex_hull {a, b, r} \<union> geotop_convex_hull {a, r, c}"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_convex_hull {a, b, c}"
+    have hbc_ne: "{b, c} \<noteq> {}"
+      by (by100 simp)
+    have hx_hol: "x \<in> convex hull (insert a {b, c})"
+      using hx unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    obtain u v y where hu: "0 \<le> u"
+      and hv: "0 \<le> v"
+      and huv: "u + v = 1"
+      and hy: "y \<in> convex hull {b, c}"
+      and hx_eq: "x = u *\<^sub>R a + v *\<^sub>R y"
+      using hx_hol unfolding convex_hull_insert[OF hbc_ne] by (by100 blast)
+    have hy_seg: "y \<in> closed_segment b c"
+      using hy segment_convex_hull[of b c] by (by100 simp)
+    have hseg_union: "closed_segment b r \<union> closed_segment r c = closed_segment b c"
+      by (rule Un_closed_segment[OF hr])
+    have hbr_ne: "closed_segment b r \<noteq> {}"
+      using closed_segment_eq_empty by (by100 blast)
+    have hrc_ne: "closed_segment r c \<noteq> {}"
+      using closed_segment_eq_empty by (by100 blast)
+    have hbr_seg: "closed_segment b r = geotop_convex_hull {b, r}"
+      unfolding geotop_convex_hull_eq_HOL by (rule segment_convex_hull)
+    have hrc_seg: "closed_segment r c = geotop_convex_hull {r, c}"
+      unfolding geotop_convex_hull_eq_HOL by (rule segment_convex_hull)
+    have hleft:
+        "geotop_convex_hull (insert a (closed_segment b r))
+          = geotop_convex_hull {a, b, r}"
+      using hbr_seg geotop_convex_hull_insert_geotop_convex_hull_eq_prefix
+        [of a "{b, r}"]
+      by (by100 simp)
+    have hright:
+        "geotop_convex_hull (insert a (closed_segment r c))
+          = geotop_convex_hull {a, r, c}"
+      using hrc_seg geotop_convex_hull_insert_geotop_convex_hull_eq_prefix
+        [of a "{r, c}"]
+      by (by100 simp)
+    show "x \<in> geotop_convex_hull {a, b, r}
+        \<union> geotop_convex_hull {a, r, c}"
+    proof (cases "y \<in> closed_segment b r")
+      case True
+      have hx_left:
+          "x \<in> convex hull (insert a (closed_segment b r))"
+        unfolding convex_hull_insert[OF hbr_ne]
+        using hu hv huv True hx_eq hull_inc[OF True] by (by100 blast)
+      show ?thesis
+        using hx_left hleft unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    next
+      case False
+      have hy_right: "y \<in> closed_segment r c"
+        using False hy_seg hseg_union by (by100 blast)
+      have hx_right:
+          "x \<in> convex hull (insert a (closed_segment r c))"
+        unfolding convex_hull_insert[OF hrc_ne]
+        using hu hv huv hy_right hx_eq hull_inc[OF hy_right] by (by100 blast)
+      show ?thesis
+        using hx_right hright unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_triangle_subset_closed_halfspace_ge_of_edge_line_prefix:
   fixes a b c n :: "real^2"
   assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
@@ -39538,6 +39631,103 @@ proof -
 		                  = geotop_convex_hull {v\<^sub>1}"
 		              using hsource_cross02 hsource_cross20 htarget_cross02 htarget_cross20
 		              by (by100 blast)
+		          qed
+		          have hfigure33_source_target_carrier_polyhedron_eq_scalar:
+		              "\<And>t. 0 < t \<Longrightarrow>
+		                geotop_polyhedron (?target_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t))
+		                  = geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		          proof -
+		            fix t :: real
+		            assume ht: "0 < t"
+		            have hbasic:
+		                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		              by (rule hfigure33_book_line_scalar_basic[OF ht])
+		            have hv\<^sub>1_closed43:
+		                "v\<^sub>1 \<in> closed_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
+		            proof -
+		              have hopen34:
+		                  "v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		                using hbasic by (by100 blast)
+		              have hcomm:
+		                  "open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                    = open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
+		                by (rule open_segment_commute)
+		              have "v\<^sub>1 \<in> open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
+		                using hopen34 hcomm by (by100 simp)
+		              thus ?thesis
+		                unfolding open_segment_def by (by100 blast)
+		            qed
+		            have hv\<^sub>5_closed43:
+		                "?v\<^sub>5 \<in> closed_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
+		            proof -
+		              have hopen34:
+		                  "?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		                using hbasic by (by100 blast)
+		              have hcomm:
+		                  "open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                    = open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
+		                by (rule open_segment_commute)
+		              have "?v\<^sub>5 \<in> open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
+		                using hopen34 hcomm by (by100 simp)
+		              thus ?thesis
+		                unfolding open_segment_def by (by100 blast)
+		            qed
+		            have hsource_poly:
+		                "geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                = \<Union>(?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		              by (rule geotop_simplex_face_closure_polyhedron_eq_union_prefix)
+		            have htarget_poly:
+		                "geotop_polyhedron (?target_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t))
+		                = \<Union>(?target_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t))"
+		              by (rule geotop_simplex_face_closure_polyhedron_eq_union_prefix)
+		            have hsource0:
+		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<union> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+		              by (rule geotop_triangle_same_apex_base_split_union_prefix
+		                  [OF hv\<^sub>5_closed43])
+		            have hsource2:
+		                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                = geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+		              by (rule geotop_triangle_same_apex_base_split_union_prefix
+		                  [OF hv\<^sub>5_closed43])
+		            have htarget0:
+		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<union> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+		              by (rule geotop_triangle_same_apex_base_split_union_prefix
+		                  [OF hv\<^sub>1_closed43])
+		            have htarget2:
+		                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<union> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                = geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+		              by (rule geotop_triangle_same_apex_base_split_union_prefix
+		                  [OF hv\<^sub>1_closed43])
+		            have hsource_union:
+		                "\<Union>(?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+		                  \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+		              using hsource0 hsource2 by (by100 auto)
+		            have htarget_union:
+		                "\<Union>(?target_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t))
+		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+		                  \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+		              using htarget0 htarget2 by (by100 auto)
+		            show "geotop_polyhedron (?target_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t))
+		                  = geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		              using hsource_poly htarget_poly hsource_union htarget_union
+		              by (by100 simp)
 		          qed
 		          have hfigure33_book_local_simplicial_extension_boundary_control_scalar:
 		              "\<exists>t>0.
