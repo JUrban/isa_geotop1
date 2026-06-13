@@ -34555,6 +34555,100 @@ proof -
     by (rule finite_subset[OF hsub hfin_F])
 qed
 
+lemma geotop_linear_on_vertex_segment_image_prefix:
+  fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes hlin: "geotop_linear_on \<sigma> f"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  assumes haV: "a \<in> V"
+  assumes hbV: "b \<in> V"
+  assumes hfab: "f a \<noteq> f b"
+  shows "f ` closed_segment a b = closed_segment (f a) (f b)"
+  (**
+    Barycentric edge-image helper for Figure 3.3.  A map that is linear on a
+    simplex sends the edge spanned by two vertices to the edge spanned by their
+    images; this packages the book phrase "extend simplicially" for the
+    boundary-segment calculations. **)
+proof -
+  have hab: "a \<noteq> b"
+    using hfab by (by100 blast)
+  obtain V' where hV': "geotop_simplex_vertices \<sigma> V'"
+    and hlin_prop:
+      "\<forall>\<alpha>. (\<forall>v\<in>V'. 0 \<le> \<alpha> v) \<and> sum \<alpha> V' = 1 \<longrightarrow>
+        f (\<Sum>v\<in>V'. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V'. \<alpha> v *\<^sub>R f v)"
+    using hlin unfolding geotop_linear_on_def by (by100 blast)
+  have hV'_eq: "V' = V"
+    by (rule geotop_simplex_vertices_unique[OF hV' hV])
+  have hV_fin: "finite V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hpair_bary:
+      "\<And>\<alpha>. (\<forall>v\<in>{a, b}. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> {a, b} = 1 \<Longrightarrow>
+        f (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R v) =
+          (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R f v)"
+  proof -
+    fix \<alpha> :: "real^2 \<Rightarrow> real"
+    assume h\<alpha>nn: "\<forall>v\<in>{a, b}. 0 \<le> \<alpha> v"
+    assume h\<alpha>sum: "sum \<alpha> {a, b} = 1"
+    define \<beta> :: "real^2 \<Rightarrow> real"
+      where "\<beta> v = (if v = a then \<alpha> a else if v = b then \<alpha> b else 0)"
+      for v
+    have h\<beta>nn: "\<forall>v\<in>V'. 0 \<le> \<beta> v"
+      unfolding \<beta>_def using h\<alpha>nn by (by100 simp)
+    have h\<beta>sum: "sum \<beta> V' = 1"
+    proof -
+      have "sum \<beta> V' = sum \<beta> V"
+        by (simp only: hV'_eq)
+      also have "... = sum \<alpha> {a, b}"
+        unfolding \<beta>_def using hV_fin haV hbV hab by (by100 simp)
+      also have "... = 1"
+        by (rule h\<alpha>sum)
+      finally show ?thesis .
+    qed
+    have hdomain_sum:
+        "(\<Sum>v\<in>V'. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R v)"
+    proof -
+      have "(\<Sum>v\<in>V'. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+        by (simp only: hV'_eq)
+      also have "... = (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R v)"
+        unfolding \<beta>_def using hV_fin haV hbV hab by (by100 simp)
+      finally show ?thesis .
+    qed
+    have himage_sum:
+        "(\<Sum>v\<in>V'. \<beta> v *\<^sub>R f v) = (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R f v)"
+    proof -
+      have "(\<Sum>v\<in>V'. \<beta> v *\<^sub>R f v) = (\<Sum>v\<in>V. \<beta> v *\<^sub>R f v)"
+        by (simp only: hV'_eq)
+      also have "... = (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R f v)"
+        unfolding \<beta>_def using hV_fin haV hbV hab by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hlin_beta:
+        "f (\<Sum>v\<in>V'. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>V'. \<beta> v *\<^sub>R f v)"
+      using hlin_prop h\<beta>nn h\<beta>sum by (by100 blast)
+    show
+      "f (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R v) =
+        (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R f v)"
+      using hlin_beta hdomain_sum himage_sum by (by100 simp)
+  qed
+  have hinj_pair: "inj_on f {a, b}"
+    using hfab by (by100 simp add: inj_on_def)
+  have h_hull_image:
+      "f ` (convex hull {a, b}) = convex hull (f ` {a, b})"
+    by (rule geotop_bary_lin_inj_image_hull_eq
+        [OF finite.emptyI[THEN finite.insertI, THEN finite.insertI]
+          hinj_pair hpair_bary])
+  have hsource_hull: "closed_segment a b = convex hull {a, b}"
+    by (rule segment_convex_hull)
+  have htarget_hull: "closed_segment (f a) (f b) = convex hull (f ` {a, b})"
+  proof -
+    have "f ` {a, b} = {f a, f b}"
+      by (by100 simp)
+    thus ?thesis
+      by (by100 simp add: segment_convex_hull)
+  qed
+  show ?thesis
+    using h_hull_image hsource_hull htarget_hull by (by100 simp)
+qed
+
 lemma geotop_polygon_disk_triangulation_2simplex_count_ge1_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -36940,12 +37034,14 @@ proof -
                 \<and> f v\<^sub>3 = v\<^sub>3
                 \<and> f v\<^sub>4 = v\<^sub>4
                 \<and> f v\<^sub>5 = v\<^sub>1
+                \<and> geotop_simplex_vertices
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                \<and> geotop_simplex_vertices
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) {v\<^sub>2, v\<^sub>4, v\<^sub>5}
                 \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
                       \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
                         geotop_simplicial_on \<sigma> f \<tau>)
                 \<and> ?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5
-                \<and> f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1
-                \<and> f ` closed_segment v\<^sub>2 v\<^sub>5 = closed_segment v\<^sub>2 v\<^sub>1
                 \<and> C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                     \<subseteq> {v\<^sub>0, v\<^sub>2}"
             sorry
@@ -36997,19 +37093,99 @@ proof -
               and hfv\<^sub>3: "f v\<^sub>3 = v\<^sub>3"
               and hfv\<^sub>4: "f v\<^sub>4 = v\<^sub>4"
               and hfv\<^sub>5: "f v\<^sub>5 = v\<^sub>1"
+              and hsource045_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              and hsource245_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
               and hfsimp:
                 "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
                   \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
                     geotop_simplicial_on \<sigma> f \<tau>"
               and hB02_split:
                 "?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5"
-              and hf_B05: "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
-              and hf_B25: "f ` closed_segment v\<^sub>2 v\<^sub>5 = closed_segment v\<^sub>2 v\<^sub>1"
               and hCO_carrier_inter:
                 "C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                   \<subseteq> {v\<^sub>0, v\<^sub>2}"
               using hfigure33_book_local_simplicial_extension_boundary_control
               by (elim exE conjE)
+            have hf_B05:
+                "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
+            proof -
+              have hsource045_mem:
+                  "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hex045:
+                  "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on
+                      (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f \<tau>"
+                by (rule bspec[OF hfsimp hsource045_mem])
+              obtain \<tau> where h\<tau>target:
+                  "\<tau> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                and hsimp045:
+                  "geotop_simplicial_on
+                    (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f \<tau>"
+                using hex045 by (elim bexE)
+              have hlin045:
+                  "geotop_linear_on (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) f"
+                using hsimp045 unfolding geotop_simplicial_on_def
+                by (elim exE conjE)
+              have hv\<^sub>1_ne_v\<^sub>0: "v\<^sub>1 \<noteq> v\<^sub>0"
+                using hv\<^sub>1_not by (by100 simp)
+              have hf_v\<^sub>0_v\<^sub>5_ne: "f v\<^sub>0 \<noteq> f v\<^sub>5"
+                using hfv\<^sub>0 hfv\<^sub>5 hv\<^sub>1_ne_v\<^sub>0 by (by100 simp)
+              have hv\<^sub>0_mem: "v\<^sub>0 \<in> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                by (by100 simp)
+              have hv\<^sub>5_mem: "v\<^sub>5 \<in> {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                by (by100 simp)
+              have "f ` closed_segment v\<^sub>0 v\<^sub>5 =
+                  closed_segment (f v\<^sub>0) (f v\<^sub>5)"
+                by (rule geotop_linear_on_vertex_segment_image_prefix
+                    [OF hlin045 hsource045_vertices hv\<^sub>0_mem hv\<^sub>5_mem
+                      hf_v\<^sub>0_v\<^sub>5_ne])
+              thus ?thesis
+                using hfv\<^sub>0 hfv\<^sub>5 by (by100 simp)
+            qed
+            have hf_B25:
+                "f ` closed_segment v\<^sub>2 v\<^sub>5 = closed_segment v\<^sub>2 v\<^sub>1"
+            proof -
+              have hsource245_mem:
+                  "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                    \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+                by (by100 simp)
+              have hex245:
+                  "\<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    geotop_simplicial_on
+                      (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f \<tau>"
+                by (rule bspec[OF hfsimp hsource245_mem])
+              obtain \<tau> where h\<tau>target:
+                  "\<tau> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+                and hsimp245:
+                  "geotop_simplicial_on
+                    (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f \<tau>"
+                using hex245 by (elim bexE)
+              have hlin245:
+                  "geotop_linear_on (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) f"
+                using hsimp245 unfolding geotop_simplicial_on_def
+                by (elim exE conjE)
+              have hv\<^sub>1_ne_v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+                using hv\<^sub>1_not by (by100 simp)
+              have hf_v\<^sub>2_v\<^sub>5_ne: "f v\<^sub>2 \<noteq> f v\<^sub>5"
+                using hfv\<^sub>2 hfv\<^sub>5 hv\<^sub>1_ne_v\<^sub>2 by (by100 simp)
+              have hv\<^sub>2_mem: "v\<^sub>2 \<in> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                by (by100 simp)
+              have hv\<^sub>5_mem: "v\<^sub>5 \<in> {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                by (by100 simp)
+              have "f ` closed_segment v\<^sub>2 v\<^sub>5 =
+                  closed_segment (f v\<^sub>2) (f v\<^sub>5)"
+                by (rule geotop_linear_on_vertex_segment_image_prefix
+                    [OF hlin245 hsource245_vertices hv\<^sub>2_mem hv\<^sub>5_mem
+                      hf_v\<^sub>2_v\<^sub>5_ne])
+              thus ?thesis
+                using hfv\<^sub>2 hfv\<^sub>5 by (by100 simp)
+            qed
             have hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
             proof -
               have "f ` ?B\<^sub>0\<^sub>2 =
