@@ -34896,6 +34896,47 @@ proof -
       "card {\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}
         < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
     using hK_delete_two_simplexes hdelete by (by100 simp)
+  have hK_delete_polyhedron_sub_U: "geotop_polyhedron ?K\<^sub>d \<subseteq> U"
+    using hclosed_disk_in_support unfolding geotop_polyhedron_def by (by100 blast)
+  have hJ_sub_U: "J \<subseteq> U"
+  proof -
+    have hclos_on:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+       = closure (geotop_polygon_interior J)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have hclosure:
+      "closure (geotop_polygon_interior J) =
+        geotop_polygon_interior J \<union> J"
+      by (rule polygon_interior_closure_eq[OF hJ])
+    have "J \<subseteq> geotop_polyhedron K"
+      using hK_poly hclos_on hclosure by (by100 blast)
+    thus ?thesis
+      using hclosed_disk_in_support by (by100 blast)
+  qed
+  let ?J\<^sub>d = "(J - ?B\<^sub>0\<^sub>2) \<union> ?B\<^sub>0\<^sub>1\<^sub>2"
+  have hB012_sub_\<theta>: "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> \<theta>"
+  proof -
+    have h01_seg: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = ?B\<^sub>0\<^sub>1"
+      using segment_convex_hull[of v\<^sub>0 v\<^sub>1]
+        geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+    have h21_seg: "geotop_convex_hull {v\<^sub>2, v\<^sub>1} = ?B\<^sub>2\<^sub>1"
+      using segment_convex_hull[of v\<^sub>2 v\<^sub>1]
+        geotop_convex_hull_eq_HOL[of "{v\<^sub>2, v\<^sub>1}"] by (by100 simp)
+    have h01_sub: "?B\<^sub>0\<^sub>1 \<subseteq> \<theta>"
+      using h\<theta>other_edge_faces h01_seg
+        geotop_is_face_imp_subset_prefix[of "geotop_convex_hull {v\<^sub>0, v\<^sub>1}" \<theta>]
+      by (by100 blast)
+    have h21_sub: "?B\<^sub>2\<^sub>1 \<subseteq> \<theta>"
+      using h\<theta>other_edge_faces h21_seg
+        geotop_is_face_imp_subset_prefix[of "geotop_convex_hull {v\<^sub>2, v\<^sub>1}" \<theta>]
+      by (by100 blast)
+    show ?thesis
+      using h01_sub h21_sub by (by100 blast)
+  qed
+  have hB012_sub_U: "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> U"
+    using hB012_sub_\<theta> hfigure33_boundary_support_package by (by100 blast)
+  have hJ_delete_replacement_sub_U: "?J\<^sub>d \<subseteq> U"
+    using hJ_sub_U hB012_sub_U by (by100 blast)
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
