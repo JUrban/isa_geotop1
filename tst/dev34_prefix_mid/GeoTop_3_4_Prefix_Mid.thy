@@ -35052,7 +35052,7 @@ proof -
   qed
   have hK_delete_polyhedron_sub_U: "geotop_polyhedron ?K\<^sub>d \<subseteq> U"
     using hclosed_disk_in_support unfolding geotop_polyhedron_def by (by100 blast)
-  have hJ_sub_U: "J \<subseteq> U"
+  have hJ_sub_K_polyhedron: "J \<subseteq> geotop_polyhedron K"
   proof -
     have hclos_on:
       "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
@@ -35064,9 +35064,10 @@ proof -
       by (rule polygon_interior_closure_eq[OF hJ])
     have "J \<subseteq> geotop_polyhedron K"
       using hK_poly hclos_on hclosure by (by100 blast)
-    thus ?thesis
-      using hclosed_disk_in_support by (by100 blast)
+    thus ?thesis .
   qed
+  have hJ_sub_U: "J \<subseteq> U"
+    using hJ_sub_K_polyhedron hclosed_disk_in_support by (by100 blast)
   let ?J\<^sub>d = "(J - ?B\<^sub>0\<^sub>2) \<union> ?B\<^sub>0\<^sub>1\<^sub>2"
   have hB012_sub_\<theta>: "?B\<^sub>0\<^sub>1\<^sub>2 \<subseteq> \<theta>"
   proof -
@@ -35735,8 +35736,35 @@ proof -
     let ?J' = "?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O"
     have hCO_sub_J: "C\<^sub>O \<subseteq> J"
       using hJ_oriented_split by (by100 blast)
+    have hCO_sub_Kd_polyhedron: "C\<^sub>O \<subseteq> geotop_polyhedron ?K\<^sub>d"
+    proof
+      fix x
+      assume hxCO: "x \<in> C\<^sub>O"
+      have hxJ: "x \<in> J"
+        using hCO_sub_J hxCO by (by100 blast)
+      show "x \<in> geotop_polyhedron ?K\<^sub>d"
+      proof (cases "x \<in> \<theta>")
+        case True
+        have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+          using True hxJ hfigure33_boundary_support_package by (by100 blast)
+        show ?thesis
+          using hB02Kd hxB02 unfolding geotop_polyhedron_def by (by100 blast)
+      next
+        case False
+        have hx_poly: "x \<in> geotop_polyhedron K"
+          using hJ_sub_K_polyhedron hxJ by (by100 blast)
+        obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+          using hx_poly unfolding geotop_polyhedron_def by (by100 blast)
+        have h\<sigma>d: "\<sigma> \<in> ?K\<^sub>d"
+          using h\<sigma>K False hx\<sigma> by (by100 blast)
+        show ?thesis
+          using h\<sigma>d hx\<sigma> unfolding geotop_polyhedron_def by (by100 blast)
+      qed
+    qed
     have hCO_endpoints_sub: "{v\<^sub>0, v\<^sub>2} \<subseteq> C\<^sub>O"
       using hCO_E unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hJ'_sub_Kd_polyhedron: "?J' \<subseteq> geotop_polyhedron ?K\<^sub>d"
+      using hB012_sub_Kd_polyhedron hCO_sub_Kd_polyhedron by (by100 blast)
     have hJ'_retained_old_boundary: "?J' \<inter> J = C\<^sub>O"
     proof
       show "?J' \<inter> J \<subseteq> C\<^sub>O"
