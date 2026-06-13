@@ -35187,6 +35187,119 @@ proof -
   qed
   have hB02Kd: "?B\<^sub>0\<^sub>2 \<in> ?K\<^sub>d"
     using hB02K hB02_ne_\<theta> by (by100 simp)
+  let ?K\<^sub>r = "?K\<^sub>d - {?B\<^sub>0\<^sub>2}"
+  have hK_reduced_finite: "finite ?K\<^sub>r"
+    using hK_delete_finite by (by100 simp)
+  have hK_reduced_complex: "geotop_is_complex ?K\<^sub>r"
+  proof (rule geotop_complex_subset_is_complex)
+    show "?K\<^sub>r \<subseteq> ?K\<^sub>d"
+      by (by100 blast)
+    have hKd_face_closed:
+        "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+      by (rule geotop_is_complex_face_closed[OF hK_delete_complex])
+    have hKd_simplex: "\<forall>\<sigma>\<in>?K\<^sub>d. geotop_is_simplex \<sigma>"
+      by (rule geotop_is_complex_simplex[OF hK_delete_complex])
+    show "\<forall>\<sigma>\<in>?K\<^sub>r. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>r"
+    proof (intro ballI allI impI)
+      fix \<sigma> \<tau>
+      assume h\<sigma>r: "\<sigma> \<in> ?K\<^sub>r"
+      assume h\<tau>face: "geotop_is_face \<tau> \<sigma>"
+      have h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+        using h\<sigma>r by (by100 blast)
+      have h\<tau>Kd: "\<tau> \<in> ?K\<^sub>d"
+        using hKd_face_closed h\<sigma>Kd h\<tau>face by (by100 blast)
+      have h\<tau>ne_B02: "\<tau> \<noteq> ?B\<^sub>0\<^sub>2"
+      proof
+        assume h\<tau>eq: "\<tau> = ?B\<^sub>0\<^sub>2"
+        have hB02_face_\<sigma>: "geotop_is_face ?B\<^sub>0\<^sub>2 \<sigma>"
+          using h\<tau>face h\<tau>eq by (by100 simp)
+        have hB02_sub_\<sigma>: "?B\<^sub>0\<^sub>2 \<subseteq> \<sigma>"
+          by (rule geotop_is_face_imp_subset_prefix[OF hB02_face_\<sigma>])
+        have h\<sigma>simp: "geotop_is_simplex \<sigma>"
+          using hKd_simplex h\<sigma>Kd by (by100 blast)
+        obtain n where h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
+          using h\<sigma>simp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+          by (by100 blast)
+        have hB02_dim1: "geotop_simplex_dim ?B\<^sub>0\<^sub>2 1"
+          using hB02_edge unfolding geotop_is_edge_def by (by100 simp)
+        obtain k where hk_le: "k \<le> n" and hB02_dim_k: "geotop_simplex_dim ?B\<^sub>0\<^sub>2 k"
+          using geotop_face_dim_le_prefix[OF h\<sigma>dim hB02_face_\<sigma>] by (by100 blast)
+        have hk_eq1: "k = 1"
+          by (rule geotop_simplex_dim_unique[OF hB02_dim_k hB02_dim1])
+        have h1_le_n: "1 \<le> n"
+          using hk_le hk_eq1 by (by100 simp)
+        have h\<sigma>ne_B02: "\<sigma> \<noteq> ?B\<^sub>0\<^sub>2"
+          using h\<sigma>r by (by100 simp)
+        show False
+        proof (cases "n = 1")
+          case True
+          have h\<sigma>edge: "geotop_is_edge \<sigma>"
+            using h\<sigma>dim True unfolding geotop_is_edge_def by (by100 simp)
+          have "?B\<^sub>0\<^sub>2 = \<sigma>"
+            by (rule geotop_edge_face_of_edge_eq_prefix
+                [OF hB02_edge h\<sigma>edge hB02_face_\<sigma>])
+          thus False
+            using h\<sigma>ne_B02 by (by100 simp)
+        next
+          case False
+          have h2_le_n: "2 \<le> n"
+            using h1_le_n False by (by100 linarith)
+          obtain \<rho> where h\<rho>Kd: "\<rho> \<in> ?K\<^sub>d"
+              and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+              and hB02_sub_\<rho>: "?B\<^sub>0\<^sub>2 \<subseteq> \<rho>"
+            using geotop_complex_edge_in_higher_simplex_has_2_simplex_prefix
+              [OF hK_delete_complex hB02Kd h\<sigma>Kd hB02_edge hB02_sub_\<sigma>
+                h\<sigma>dim h2_le_n]
+            by (by100 blast)
+          have hB02_face_\<rho>: "geotop_is_face ?B\<^sub>0\<^sub>2 \<rho>"
+            by (rule geotop_complex_subset_simplex_face_prefix
+                [OF hK_delete_complex hB02Kd h\<rho>Kd hB02_sub_\<rho>])
+          have "\<rho> \<in>
+              {\<rho>\<in>?K\<^sub>d. geotop_simplex_dim \<rho> 2
+                \<and> geotop_is_face ?B\<^sub>0\<^sub>2 \<rho>}"
+            using h\<rho>Kd h\<rho>2 hB02_face_\<rho> by (by100 simp)
+          thus False
+            using hB02_no_incident_after_delete by (by100 blast)
+        qed
+      qed
+      show "\<tau> \<in> ?K\<^sub>r"
+        using h\<tau>Kd h\<tau>ne_B02 by (by100 simp)
+    qed
+  qed (rule hK_delete_complex)
+  have hK_reduced_two_simplexes:
+      "{\<tau>\<in>?K\<^sub>r. geotop_simplex_dim \<tau> 2}
+        = {\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}"
+  proof
+    show "{\<tau>\<in>?K\<^sub>r. geotop_simplex_dim \<tau> 2}
+        \<subseteq> {\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}"
+      by (by100 blast)
+    show "{\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}
+        \<subseteq> {\<tau>\<in>?K\<^sub>r. geotop_simplex_dim \<tau> 2}"
+    proof
+      fix \<tau>
+      assume h\<tau>: "\<tau> \<in> {\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}"
+      have h\<tau>Kd: "\<tau> \<in> ?K\<^sub>d"
+        using h\<tau> by (by100 blast)
+      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        using h\<tau> by (by100 blast)
+      have hB02_dim1: "geotop_simplex_dim ?B\<^sub>0\<^sub>2 1"
+        using hB02_edge unfolding geotop_is_edge_def by (by100 simp)
+      have h\<tau>ne: "\<tau> \<noteq> ?B\<^sub>0\<^sub>2"
+      proof
+        assume h\<tau>eq: "\<tau> = ?B\<^sub>0\<^sub>2"
+        have "2 = (1::nat)"
+          by (rule geotop_simplex_dim_unique[OF h\<tau>2 hB02_dim1[folded h\<tau>eq]])
+        thus False
+          by (by100 simp)
+      qed
+      show "\<tau> \<in> {\<tau>\<in>?K\<^sub>r. geotop_simplex_dim \<tau> 2}"
+        using h\<tau>Kd h\<tau>2 h\<tau>ne by (by100 simp)
+    qed
+  qed
+  have hK_reduced_count_decreases:
+      "card {\<tau>\<in>?K\<^sub>r. geotop_simplex_dim \<tau> 2}
+        < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+    using hK_reduced_two_simplexes hK_delete_count_decreases by (by100 simp)
   have hB01_hull: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = ?B\<^sub>0\<^sub>1"
     using segment_convex_hull[of v\<^sub>0 v\<^sub>1]
       geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
@@ -36228,7 +36341,7 @@ proof -
           \<and> f ` J = ?J'"
     proof -
       have hbook_delete_triangle_geometry_and_map:
-          "geotop_polyhedron ?K\<^sub>d =
+          "geotop_polyhedron ?K\<^sub>r =
               closure_on UNIV geotop_euclidean_topology
                 (geotop_polygon_interior ?J')
           \<and> (\<exists>f.
@@ -36237,8 +36350,8 @@ proof -
               \<and> (\<forall>P\<in>UNIV - U. f P = P)
               \<and> f ` J = ?J')"
         sorry
-      have hKd_poly:
-          "geotop_polyhedron ?K\<^sub>d =
+      have hKr_poly:
+          "geotop_polyhedron ?K\<^sub>r =
             closure_on UNIV geotop_euclidean_topology
               (geotop_polygon_interior ?J')"
         using hbook_delete_triangle_geometry_and_map by (by100 blast)
@@ -36249,18 +36362,18 @@ proof -
         and hfJ: "f ` J = ?J'"
         using hbook_delete_triangle_geometry_and_map by (by100 blast)
       show ?thesis
-      proof (rule exI[of _ ?K\<^sub>d], rule exI[of _ f], intro conjI)
-        show "geotop_is_complex ?K\<^sub>d"
-          by (rule hK_delete_complex)
-        show "finite ?K\<^sub>d"
-          by (rule hK_delete_finite)
-        show "geotop_polyhedron ?K\<^sub>d =
+      proof (rule exI[of _ ?K\<^sub>r], rule exI[of _ f], intro conjI)
+        show "geotop_is_complex ?K\<^sub>r"
+          by (rule hK_reduced_complex)
+        show "finite ?K\<^sub>r"
+          by (rule hK_reduced_finite)
+        show "geotop_polyhedron ?K\<^sub>r =
             closure_on UNIV geotop_euclidean_topology
               (geotop_polygon_interior ?J')"
-          by (rule hKd_poly)
-        show "card {\<tau> \<in> ?K\<^sub>d. geotop_simplex_dim \<tau> 2}
+          by (rule hKr_poly)
+        show "card {\<tau> \<in> ?K\<^sub>r. geotop_simplex_dim \<tau> 2}
             < card {\<tau> \<in> K. geotop_simplex_dim \<tau> 2}"
-          by (rule hK_delete_count_decreases)
+          by (rule hK_reduced_count_decreases)
         show "top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology f"
           by (rule hf_homeo)
