@@ -41876,13 +41876,233 @@ proof -
 			            have "x \<in> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
 			                ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta>"
 			              using hx_germ hx\<theta> by (by100 blast)
-			            thus False
-			              using hendpoint_germ_v\<^sub>2_theta_disj by (by100 blast)
-			          qed
+				            thus False
+				              using hendpoint_germ_v\<^sub>2_theta_disj by (by100 blast)
+				          qed
+				          let ?G\<^sub>0 = "closed_segment v\<^sub>0 p\<^sub>0 \<inter> cball v\<^sub>0 \<rho>\<^sub>0"
+				          let ?G\<^sub>2 = "closed_segment v\<^sub>2 p\<^sub>2 \<inter> cball v\<^sub>2 \<rho>\<^sub>2"
+				          have hG\<^sub>0_compact: "compact ?G\<^sub>0"
+				            by (intro compact_Int compact_segment compact_cball)
+				          have hG\<^sub>2_compact: "compact ?G\<^sub>2"
+				            by (intro compact_Int compact_segment compact_cball)
+				          have hlimit_opposite_v\<^sub>0_closed:
+				              "closed (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1})"
+				          proof -
+				            have "compact (convex hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1})"
+				              by (intro compact_convex_hull finite_imp_compact) (by100 simp)
+				            thus ?thesis
+				              unfolding geotop_convex_hull_eq_HOL
+				              using compact_imp_closed by (by100 blast)
+				          qed
+				          have hlimit_opposite_v\<^sub>2_closed:
+				              "closed (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1})"
+				          proof -
+				            have "compact (convex hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1})"
+				              by (intro compact_convex_hull finite_imp_compact) (by100 simp)
+				            thus ?thesis
+				              unfolding geotop_convex_hull_eq_HOL
+				              using compact_imp_closed by (by100 blast)
+				          qed
+				          have hlimit_opposite_v\<^sub>0_nonempty:
+				              "geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<noteq> {}"
+				            unfolding geotop_convex_hull_eq_HOL
+				            using hull_inc[of v\<^sub>2 "{v\<^sub>2, ?v\<^sub>5, v\<^sub>1}" convex]
+				            by (by100 blast)
+				          have hlimit_opposite_v\<^sub>2_nonempty:
+				              "geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<noteq> {}"
+				            unfolding geotop_convex_hull_eq_HOL
+				            using hull_inc[of v\<^sub>0 "{v\<^sub>0, ?v\<^sub>5, v\<^sub>1}" convex]
+				            by (by100 blast)
+				          have hG\<^sub>0_nonempty: "?G\<^sub>0 \<noteq> {}"
+				          proof -
+				            have "v\<^sub>0 \<in> ?G\<^sub>0"
+				              using h\<rho>\<^sub>0_pos by (by100 simp)
+				            thus ?thesis by (by100 blast)
+				          qed
+				          have hG\<^sub>2_nonempty: "?G\<^sub>2 \<noteq> {}"
+				          proof -
+				            have "v\<^sub>2 \<in> ?G\<^sub>2"
+				              using h\<rho>\<^sub>2_pos by (by100 simp)
+				            thus ?thesis by (by100 blast)
+				          qed
+				          have hG\<^sub>0_opposite_gap:
+				              "0 < setdist ?G\<^sub>0
+				                (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1})"
+				            using setdist_gt_0_compact_closed
+				                [OF hG\<^sub>0_compact hlimit_opposite_v\<^sub>0_closed]
+				              hG\<^sub>0_nonempty hlimit_opposite_v\<^sub>0_nonempty
+				              hfigure33_endpoint_closed_germ_v\<^sub>0_limit_opposite_disj
+				            by (by100 simp)
+				          have hG\<^sub>2_opposite_gap:
+				              "0 < setdist ?G\<^sub>2
+				                (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1})"
+				            using setdist_gt_0_compact_closed
+				                [OF hG\<^sub>2_compact hlimit_opposite_v\<^sub>2_closed]
+				              hG\<^sub>2_nonempty hlimit_opposite_v\<^sub>2_nonempty
+				              hfigure33_endpoint_closed_germ_v\<^sub>2_limit_opposite_disj
+				            by (by100 simp)
+				          have hfigure33_endpoint_closed_germ_v\<^sub>0_avoids_opposite_outer_scalar:
+				              "\<exists>\<eta>>0. \<forall>t>0.
+				                t < \<eta> \<longrightarrow>
+				                ?G\<^sub>0 \<inter>
+				                  geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+				                = {}"
+				          proof -
+				            let ?D = "norm (?v\<^sub>5 - v\<^sub>1)"
+				            have hD_pos: "0 < ?D"
+				              using hv\<^sub>1_mid_ne by (simp add: norm_minus_commute)
+				            define \<eta> where
+				              "\<eta> = setdist ?G\<^sub>0
+				                (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}) / (2 * ?D)"
+				            have h\<eta>_pos: "0 < \<eta>"
+				              unfolding \<eta>_def using hG\<^sub>0_opposite_gap hD_pos by (by100 simp)
+				            have hsmall:
+				                "\<forall>t>0. t < \<eta> \<longrightarrow>
+				                  ?G\<^sub>0 \<inter>
+				                    geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+				                  = {}"
+				            proof (intro allI impI)
+				              fix t :: real
+				              assume ht_pos: "0 < t"
+				              assume ht_lt: "t < \<eta>"
+				              have ht_nonneg: "0 \<le> t"
+				                using ht_pos by (by100 simp)
+				              have htD_gap:
+				                  "t * ?D <
+				                    setdist ?G\<^sub>0
+				                      (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1})"
+				              proof -
+				                have "t * ?D < \<eta> * ?D"
+				                  using ht_lt hD_pos by (by100 simp)
+				                also have "\<dots> =
+				                    setdist ?G\<^sub>0
+				                      (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}) / 2"
+				                  unfolding \<eta>_def using hD_pos by (simp add: field_simps)
+				                also have "\<dots> <
+				                    setdist ?G\<^sub>0
+				                      (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1})"
+				                  using hG\<^sub>0_opposite_gap by (by100 simp)
+				                finally show ?thesis .
+				              qed
+				              show "?G\<^sub>0 \<inter>
+				                  geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+				                = {}"
+				              proof (rule equals0I)
+				                fix x
+				                assume hx:
+				                  "x \<in> ?G\<^sub>0 \<inter>
+				                    geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+				                have hxG: "x \<in> ?G\<^sub>0"
+				                  using hx by (by100 blast)
+				                have hxtri:
+				                    "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+				                  using hx by (by100 blast)
+				                have hnear:
+				                    "\<exists>y\<in>geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}.
+				                      norm (x - y) \<le> t * ?D"
+				                  by (rule geotop_triangle_two_base_vertices_scalar_near_limit_prefix
+				                      [OF ht_nonneg hxtri])
+				                obtain y where hy:
+				                    "y \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}"
+				                  and hy_norm: "norm (x - y) \<le> t * ?D"
+				                  using hnear by (by100 blast)
+				                have hdist: "dist x y \<le> t * ?D"
+				                  using hy_norm by (simp add: dist_norm)
+				                have hgap_le:
+				                    "setdist ?G\<^sub>0
+				                      (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}) \<le>
+				                     dist x y"
+				                  by (rule setdist_le_dist[OF hxG hy])
+				                show False
+				                  using hgap_le hdist htD_gap by (by100 linarith)
+				              qed
+				            qed
+				            show ?thesis
+				              using h\<eta>_pos hsmall by (by100 blast)
+				          qed
+				          have hfigure33_endpoint_closed_germ_v\<^sub>2_avoids_opposite_outer_scalar:
+				              "\<exists>\<eta>>0. \<forall>t>0.
+				                t < \<eta> \<longrightarrow>
+				                ?G\<^sub>2 \<inter>
+				                  geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+				                = {}"
+				          proof -
+				            let ?D = "norm (?v\<^sub>5 - v\<^sub>1)"
+				            have hD_pos: "0 < ?D"
+				              using hv\<^sub>1_mid_ne by (simp add: norm_minus_commute)
+				            define \<eta> where
+				              "\<eta> = setdist ?G\<^sub>2
+				                (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}) / (2 * ?D)"
+				            have h\<eta>_pos: "0 < \<eta>"
+				              unfolding \<eta>_def using hG\<^sub>2_opposite_gap hD_pos by (by100 simp)
+				            have hsmall:
+				                "\<forall>t>0. t < \<eta> \<longrightarrow>
+				                  ?G\<^sub>2 \<inter>
+				                    geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+				                  = {}"
+				            proof (intro allI impI)
+				              fix t :: real
+				              assume ht_pos: "0 < t"
+				              assume ht_lt: "t < \<eta>"
+				              have ht_nonneg: "0 \<le> t"
+				                using ht_pos by (by100 simp)
+				              have htD_gap:
+				                  "t * ?D <
+				                    setdist ?G\<^sub>2
+				                      (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1})"
+				              proof -
+				                have "t * ?D < \<eta> * ?D"
+				                  using ht_lt hD_pos by (by100 simp)
+				                also have "\<dots> =
+				                    setdist ?G\<^sub>2
+				                      (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}) / 2"
+				                  unfolding \<eta>_def using hD_pos by (simp add: field_simps)
+				                also have "\<dots> <
+				                    setdist ?G\<^sub>2
+				                      (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1})"
+				                  using hG\<^sub>2_opposite_gap by (by100 simp)
+				                finally show ?thesis .
+				              qed
+				              show "?G\<^sub>2 \<inter>
+				                  geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+				                = {}"
+				              proof (rule equals0I)
+				                fix x
+				                assume hx:
+				                  "x \<in> ?G\<^sub>2 \<inter>
+				                    geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+				                have hxG: "x \<in> ?G\<^sub>2"
+				                  using hx by (by100 blast)
+				                have hxtri:
+				                    "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+				                  using hx by (by100 blast)
+				                have hnear:
+				                    "\<exists>y\<in>geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}.
+				                      norm (x - y) \<le> t * ?D"
+				                  by (rule geotop_triangle_two_base_vertices_scalar_near_limit_prefix
+				                      [OF ht_nonneg hxtri])
+				                obtain y where hy:
+				                    "y \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}"
+				                  and hy_norm: "norm (x - y) \<le> t * ?D"
+				                  using hnear by (by100 blast)
+				                have hdist: "dist x y \<le> t * ?D"
+				                  using hy_norm by (simp add: dist_norm)
+				                have hgap_le:
+				                    "setdist ?G\<^sub>2
+				                      (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}) \<le>
+				                     dist x y"
+				                  by (rule setdist_le_dist[OF hxG hy])
+				                show False
+				                  using hgap_le hdist htD_gap by (by100 linarith)
+				              qed
+				            qed
+				            show ?thesis
+				              using h\<eta>_pos hsmall by (by100 blast)
+				          qed
 			          have hfigure33_source_carrier_endpoint_segments_bound_scalar:
 			              "\<exists>\<eta>>0. \<forall>t>0.
-		                t < \<eta> \<longrightarrow>
-		                (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                t < \<eta> \<longrightarrow>
+			                (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
 		                    ball v\<^sub>0 \<rho>\<^sub>0)
 		                  \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
 		                    ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
