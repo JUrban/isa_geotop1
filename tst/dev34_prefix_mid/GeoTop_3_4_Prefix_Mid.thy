@@ -37702,6 +37702,36 @@ proof -
     using hid_homeo h\<sigma>2 hJ_frontier hsupport by (by100 blast)
 qed
 
+lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
+  fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hxy: "x \<noteq> y"
+  assumes hxz: "x \<noteq> z"
+  assumes hyz: "y \<noteq> z"
+  assumes hnot_col_xyz: "\<not> collinear {x, y, z}"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_sub_U: "\<theta> \<subseteq> U"
+  assumes h\<theta>front:
+    "frontier \<theta> =
+      closed_segment x y \<union> (closed_segment x z \<union> closed_segment y z)"
+  assumes hCO_bl: "geotop_is_broken_line C\<^sub>O"
+  assumes hCO_E: "geotop_arc_endpoints C\<^sub>O {y, z}"
+  assumes hCO_\<theta>: "C\<^sub>O \<inter> \<theta> = {y, z}"
+  shows "\<exists>g.
+      top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology g
+      \<and> (\<forall>P\<in>UNIV - U. g P = P)
+      \<and> g ` (closed_segment y z) =
+        closed_segment x y \<union> closed_segment x z
+      \<and> g ` C\<^sub>O = C\<^sub>O"
+  (**
+    Local Moise Figure 3.3 map used by the corner/inverse case.  This is the
+    Case 1 supported PL construction with book order \<open>v\<^sub>0 = y\<close>,
+    \<open>v\<^sub>1 = x\<close>, \<open>v\<^sub>2 = z\<close>: choose the auxiliary vertices in a small carrier
+    contained in \<open>U\<close>, fix the retained outside arc \<open>C\<^sub>O\<close>, and send the
+    chord \<open>yz\<close> to the two-edge corner arc \<open>yx \<union> xz\<close>. **)
+  sorry
+
 lemma geotop_figure33_one_boundary_named_supported_fold_prefix:
   fixes J U \<theta> e :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
@@ -50508,7 +50538,78 @@ proof -
 	                UNIV geotop_euclidean_topology g
 	              \<and> (\<forall>P\<in>UNIV - U. g P = P)
 	              \<and> g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
-	        sorry
+	      proof -
+	        fix C\<^sub>O
+	        assume hJ_split: "J = ?B\<^sub>c \<union> C\<^sub>O"
+	        assume hCO_bl: "geotop_is_broken_line C\<^sub>O"
+	        assume hCO_E: "geotop_arc_endpoints C\<^sub>O {y, z}"
+	        assume hB\<^sub>c_CO_int_disj:
+	            "geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	              geotop_arc_interior C\<^sub>O {y, z} = {}"
+	        assume hB\<^sub>n_CO_inter: "?B\<^sub>n \<inter> C\<^sub>O = {y, z}"
+	        assume hJ'_poly: "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	        have hB\<^sub>c_CO_inter: "?B\<^sub>c \<inter> C\<^sub>O = {y, z}"
+	          by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+	              [OF hB\<^sub>c_E hCO_E hB\<^sub>c_CO_int_disj])
+	        have hCO_sub_J: "C\<^sub>O \<subseteq> J"
+	          using hJ_split by (by100 blast)
+	        have hCO_\<theta>_sub_end: "C\<^sub>O \<inter> \<theta> \<subseteq> {y, z}"
+	        proof
+	          fix P
+	          assume hP: "P \<in> C\<^sub>O \<inter> \<theta>"
+	          have hPJ: "P \<in> J"
+	            using hP hCO_sub_J by (by100 blast)
+	          have hP\<theta>: "P \<in> \<theta>"
+	            using hP by (by100 blast)
+	          have hPB\<^sub>c: "P \<in> ?B\<^sub>c"
+	            using hP\<theta> hPJ hcorner_contact by (by100 blast)
+	          have "P \<in> ?B\<^sub>c \<inter> C\<^sub>O"
+	            using hP hPB\<^sub>c by (by100 blast)
+	          thus "P \<in> {y, z}"
+	            using hB\<^sub>c_CO_inter by (by100 blast)
+	        qed
+	        have hend_sub_CO: "{y, z} \<subseteq> C\<^sub>O"
+	          using hCO_E unfolding geotop_arc_endpoints_def by (by100 blast)
+	        have hend_sub_\<theta>: "{y, z} \<subseteq> \<theta>"
+	        proof -
+	          have "{y, z} \<subseteq> ?B\<^sub>n"
+	            by (by100 simp)
+	          thus ?thesis
+	            using hB\<^sub>n_sub_\<theta> by (by100 blast)
+	        qed
+	        have hCO_\<theta>: "C\<^sub>O \<inter> \<theta> = {y, z}"
+	          using hCO_\<theta>_sub_end hend_sub_CO hend_sub_\<theta> by (by100 blast)
+	        have h\<theta>_sub_poly: "\<theta> \<subseteq> geotop_polyhedron K"
+	          using h\<theta>K unfolding geotop_polyhedron_def by (by100 blast)
+	        have h\<theta>_sub_U: "\<theta> \<subseteq> U"
+	          using h\<theta>_sub_poly hclosed_disk_in_support by (by100 blast)
+	        obtain g where hg_homeo:
+	            "top1_homeomorphism_on UNIV geotop_euclidean_topology
+	              UNIV geotop_euclidean_topology g"
+	          and hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
+	          and hg_B\<^sub>n: "g ` ?B\<^sub>n = ?B\<^sub>c"
+	          and hg_CO: "g ` C\<^sub>O = C\<^sub>O"
+	          using geotop_figure33_local_supported_chord_to_corner_arc_map_prefix
+	            [OF hU_open hxy hxz hyz hnot_col_xyz h\<theta>2 h\<theta>_sub_U
+	              hcorner_frontier hCO_bl hCO_E hCO_\<theta>]
+	          by (elim exE conjE)
+	        have hgJ: "g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
+	        proof -
+	          have "g ` (?B\<^sub>n \<union> C\<^sub>O) = g ` ?B\<^sub>n \<union> g ` C\<^sub>O"
+	            by (rule image_Un)
+	          also have "\<dots> = ?B\<^sub>c \<union> C\<^sub>O"
+	            using hg_B\<^sub>n hg_CO by (by100 simp)
+	          also have "\<dots> = J"
+	            using hJ_split by (by100 simp)
+	          finally show ?thesis .
+	        qed
+	        show "\<exists>g.
+	            top1_homeomorphism_on UNIV geotop_euclidean_topology
+	              UNIV geotop_euclidean_topology g
+	            \<and> (\<forall>P\<in>UNIV - U. g P = P)
+	            \<and> g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
+	          using hg_homeo hg_fix hgJ by (by100 blast)
+	      qed
 	      show ?thesis
 	      proof -
 	        obtain C\<^sub>O where hsplit_pack:
