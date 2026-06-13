@@ -47209,6 +47209,7 @@ proof -
         \<and> x \<noteq> z
         \<and> y \<noteq> z
         \<and> \<not> collinear {x, y, z}
+        \<and> {e1, e2} = {closed_segment x y, closed_segment x z}
         \<and> e1 \<union> e2 = closed_segment x y \<union> closed_segment x z
         \<and> frontier \<theta> =
           closed_segment x y \<union>
@@ -47294,13 +47295,26 @@ proof -
           a \<noteq> c \<and>
           b \<noteq> c \<and>
           \<not> collinear {a, b, c} \<and>
+          {e1, e2} = {closed_segment a b, closed_segment a c} \<and>
           e1 \<union> e2 = closed_segment a b \<union> closed_segment a c \<and>
           frontier \<theta> =
             closed_segment a b \<union> (closed_segment a c \<union> closed_segment b c) \<and>
           \<theta> \<inter> J = closed_segment a b \<union> closed_segment a c"
-          using hab hac hbc hnot_col_abc he1_segment he2_segment_ac hfrontier_segments_abc
-            hboundary_segments
-          by (by100 blast)
+        proof (intro conjI)
+          show "a \<noteq> b" by (rule hab)
+          show "a \<noteq> c" by (rule hac)
+          show "b \<noteq> c" by (rule hbc)
+          show "\<not> collinear {a, b, c}" by (rule hnot_col_abc)
+          show "{e1, e2} = {closed_segment a b, closed_segment a c}"
+            using he1_segment he2_segment_ac by (by100 simp)
+          show "e1 \<union> e2 = closed_segment a b \<union> closed_segment a c"
+            using he1_segment he2_segment_ac by (by100 simp)
+          show "frontier \<theta> =
+              closed_segment a b \<union> (closed_segment a c \<union> closed_segment b c)"
+            by (rule hfrontier_segments_abc)
+          show "\<theta> \<inter> J = closed_segment a b \<union> closed_segment a c"
+            by (rule hboundary_segments)
+        qed
       qed
     next
       assume hpq_bc: "{p, q} = {b, c}"
@@ -47333,13 +47347,28 @@ proof -
           b \<noteq> c \<and>
           a \<noteq> c \<and>
           \<not> collinear {b, a, c} \<and>
+          {e1, e2} = {closed_segment b a, closed_segment b c} \<and>
           e1 \<union> e2 = closed_segment b a \<union> closed_segment b c \<and>
           frontier \<theta> =
             closed_segment b a \<union> (closed_segment b c \<union> closed_segment a c) \<and>
           \<theta> \<inter> J = closed_segment b a \<union> closed_segment b c"
-          using hab hac hbc hnot_col_bac he1e2_segments hfrontier_segments_bac
-            hboundary_segments
-          by (by100 blast)
+        proof (intro conjI)
+          show "b \<noteq> a"
+            using hab by (by100 blast)
+          show "b \<noteq> c" by (rule hbc)
+          show "a \<noteq> c" by (rule hac)
+          show "\<not> collinear {b, a, c}" by (rule hnot_col_bac)
+          show "{e1, e2} = {closed_segment b a, closed_segment b c}"
+            using he1_segment he2_segment_bc closed_segment_commute[of a b]
+            by (by100 simp)
+          show "e1 \<union> e2 = closed_segment b a \<union> closed_segment b c"
+            by (rule he1e2_segments)
+          show "frontier \<theta> =
+              closed_segment b a \<union> (closed_segment b c \<union> closed_segment a c)"
+            by (rule hfrontier_segments_bac)
+          show "\<theta> \<inter> J = closed_segment b a \<union> closed_segment b c"
+            by (rule hboundary_segments)
+        qed
       qed
     qed
   qed
@@ -47349,6 +47378,7 @@ proof -
       x \<noteq> z \<Longrightarrow>
       y \<noteq> z \<Longrightarrow>
       \<not> collinear {x, y, z} \<Longrightarrow>
+      {e1, e2} = {closed_segment x y, closed_segment x z} \<Longrightarrow>
       e1 \<union> e2 = closed_segment x y \<union> closed_segment x z \<Longrightarrow>
       frontier \<theta> =
         closed_segment x y \<union>
@@ -47380,6 +47410,8 @@ proof -
 	    assume hxz: "x \<noteq> z"
 	    assume hyz: "y \<noteq> z"
 	    assume hnot_col_xyz: "\<not> collinear {x, y, z}"
+	    assume hcorner_edge_set:
+	      "{e1, e2} = {closed_segment x y, closed_segment x z}"
 	    assume hcorner_edges:
 	      "e1 \<union> e2 = closed_segment x y \<union> closed_segment x z"
 	    assume hcorner_frontier:
@@ -47767,6 +47799,150 @@ proof -
 	          < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
 	      using hK_reduced_complex hK_reduced_finite hK_reduced_count
 	      by (by100 blast)
+	    have he1_no_2simplex_over_delete:
+	        "\<not> (\<exists>\<sigma>\<in>?K\<^sub>d. geotop_simplex_dim \<sigma> 2 \<and> e1 \<subseteq> \<sigma>)"
+	    proof
+	      assume hbad: "\<exists>\<sigma>\<in>?K\<^sub>d. geotop_simplex_dim \<sigma> 2 \<and> e1 \<subseteq> \<sigma>"
+	      obtain \<sigma> where h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+	        and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+	        and he1_sub_\<sigma>: "e1 \<subseteq> \<sigma>"
+	        using hbad by (by100 blast)
+	      have he1_face_\<sigma>: "geotop_is_face e1 \<sigma>"
+	        by (rule geotop_complex_subset_simplex_face_prefix
+	            [OF hK_delete_complex he1Kd h\<sigma>Kd he1_sub_\<sigma>])
+	      have "\<sigma> \<in> {\<rho>\<in>?K\<^sub>d. geotop_simplex_dim \<rho> 2
+	          \<and> geotop_is_face e1 \<rho>}"
+	        using h\<sigma>Kd h\<sigma>2 he1_face_\<sigma> by (by100 simp)
+	      thus False
+	        using he1_no_incident_after_delete by (by100 blast)
+	    qed
+	    have he2_no_2simplex_over_delete:
+	        "\<not> (\<exists>\<sigma>\<in>?K\<^sub>d. geotop_simplex_dim \<sigma> 2 \<and> e2 \<subseteq> \<sigma>)"
+	    proof
+	      assume hbad: "\<exists>\<sigma>\<in>?K\<^sub>d. geotop_simplex_dim \<sigma> 2 \<and> e2 \<subseteq> \<sigma>"
+	      obtain \<sigma> where h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+	        and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+	        and he2_sub_\<sigma>: "e2 \<subseteq> \<sigma>"
+	        using hbad by (by100 blast)
+	      have he2_face_\<sigma>: "geotop_is_face e2 \<sigma>"
+	        by (rule geotop_complex_subset_simplex_face_prefix
+	            [OF hK_delete_complex he2Kd h\<sigma>Kd he2_sub_\<sigma>])
+	      have "\<sigma> \<in> {\<rho>\<in>?K\<^sub>d. geotop_simplex_dim \<rho> 2
+	          \<and> geotop_is_face e2 \<rho>}"
+	        using h\<sigma>Kd h\<sigma>2 he2_face_\<sigma> by (by100 simp)
+	      thus False
+	        using he2_no_incident_after_delete by (by100 blast)
+	    qed
+	    have hKr_poly_without_old_edges_rel:
+	        "geotop_polyhedron ?K\<^sub>r =
+	          geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2)"
+	    proof
+	      show "geotop_polyhedron ?K\<^sub>r \<subseteq>
+	          geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2)"
+	      proof
+	        fix P
+	        assume hP_Kr: "P \<in> geotop_polyhedron ?K\<^sub>r"
+	        obtain \<sigma> where h\<sigma>Kr: "\<sigma> \<in> ?K\<^sub>r" and hP\<sigma>: "P \<in> \<sigma>"
+	          using hP_Kr unfolding geotop_polyhedron_def by (by100 blast)
+	        have h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+	          using h\<sigma>Kr by (by100 blast)
+	        have hP_Kd: "P \<in> geotop_polyhedron ?K\<^sub>d"
+	          unfolding geotop_polyhedron_def using h\<sigma>Kd hP\<sigma> by (by100 blast)
+	        have h\<sigma>ne_e1: "\<sigma> \<noteq> e1"
+	          using h\<sigma>Kr by (by100 blast)
+	        have h\<sigma>ne_e2: "\<sigma> \<noteq> e2"
+	          using h\<sigma>Kr by (by100 blast)
+	        have hP_not_e1_rel: "P \<notin> rel_interior e1"
+	        proof
+	          assume hP_rel: "P \<in> rel_interior e1"
+	          have hcarrier_eq: "geotop_K_carrier ?K\<^sub>d P = e1"
+	            by (rule geotop_K_carrier_eq[OF hK_delete_complex he1Kd hP_rel])
+	          have hcarrier_sub_\<sigma>: "geotop_K_carrier ?K\<^sub>d P \<subseteq> \<sigma>"
+	            by (rule geotop_K_carrier_subset_containing_simplex
+	                [OF hK_delete_complex hK_delete_finite h\<sigma>Kd hP\<sigma>])
+	          have he1_sub_\<sigma>: "e1 \<subseteq> \<sigma>"
+	            using hcarrier_eq hcarrier_sub_\<sigma> by (by100 simp)
+	          have hmeet: "\<sigma> \<inter> rel_interior e1 \<noteq> {}"
+	            using hP\<sigma> hP_rel by (by100 blast)
+	          have h\<sigma>sub_e1: "\<sigma> \<subseteq> e1"
+	            by (rule geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset_prefix
+	                [OF hK_delete_complex he1Kd h\<sigma>Kd he1_edge hmeet
+	                  he1_no_2simplex_over_delete])
+	          have "\<sigma> = e1"
+	            using he1_sub_\<sigma> h\<sigma>sub_e1 by (by100 blast)
+	          thus False
+	            using h\<sigma>ne_e1 by (by100 blast)
+	        qed
+	        have hP_not_e2_rel: "P \<notin> rel_interior e2"
+	        proof
+	          assume hP_rel: "P \<in> rel_interior e2"
+	          have hcarrier_eq: "geotop_K_carrier ?K\<^sub>d P = e2"
+	            by (rule geotop_K_carrier_eq[OF hK_delete_complex he2Kd hP_rel])
+	          have hcarrier_sub_\<sigma>: "geotop_K_carrier ?K\<^sub>d P \<subseteq> \<sigma>"
+	            by (rule geotop_K_carrier_subset_containing_simplex
+	                [OF hK_delete_complex hK_delete_finite h\<sigma>Kd hP\<sigma>])
+	          have he2_sub_\<sigma>: "e2 \<subseteq> \<sigma>"
+	            using hcarrier_eq hcarrier_sub_\<sigma> by (by100 simp)
+	          have hmeet: "\<sigma> \<inter> rel_interior e2 \<noteq> {}"
+	            using hP\<sigma> hP_rel by (by100 blast)
+	          have h\<sigma>sub_e2: "\<sigma> \<subseteq> e2"
+	            by (rule geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset_prefix
+	                [OF hK_delete_complex he2Kd h\<sigma>Kd he2_edge hmeet
+	                  he2_no_2simplex_over_delete])
+	          have "\<sigma> = e2"
+	            using he2_sub_\<sigma> h\<sigma>sub_e2 by (by100 blast)
+	          thus False
+	            using h\<sigma>ne_e2 by (by100 blast)
+	        qed
+	        show "P \<in> geotop_polyhedron ?K\<^sub>d -
+	            (rel_interior e1 \<union> rel_interior e2)"
+	          using hP_Kd hP_not_e1_rel hP_not_e2_rel by (by100 blast)
+	      qed
+	      show "geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2)
+	          \<subseteq> geotop_polyhedron ?K\<^sub>r"
+	      proof
+	        fix P
+	        assume hP: "P \<in> geotop_polyhedron ?K\<^sub>d -
+	            (rel_interior e1 \<union> rel_interior e2)"
+	        have hP_Kd: "P \<in> geotop_polyhedron ?K\<^sub>d"
+	          using hP by (by100 blast)
+	        have hP_not_e1_rel: "P \<notin> rel_interior e1"
+	          using hP by (by100 blast)
+	        have hP_not_e2_rel: "P \<notin> rel_interior e2"
+	          using hP by (by100 blast)
+	        have hcarrierKd: "geotop_K_carrier ?K\<^sub>d P \<in> ?K\<^sub>d"
+	          by (rule geotop_K_carrier_in
+	              [OF hK_delete_complex hK_delete_finite hP_Kd])
+	        have hPcarrier: "P \<in> geotop_K_carrier ?K\<^sub>d P"
+	          by (rule geotop_K_carrier_contains_point
+	              [OF hK_delete_complex hK_delete_finite hP_Kd])
+	        have hcarrier_ne_e1: "geotop_K_carrier ?K\<^sub>d P \<noteq> e1"
+	        proof
+	          assume hcarrier_eq: "geotop_K_carrier ?K\<^sub>d P = e1"
+	          have "P \<in> rel_interior e1"
+	            using geotop_K_carrier_rel_interior
+	              [OF hK_delete_complex hK_delete_finite hP_Kd] hcarrier_eq
+	            by (by100 simp)
+	          thus False
+	            using hP_not_e1_rel by (by100 blast)
+	        qed
+	        have hcarrier_ne_e2: "geotop_K_carrier ?K\<^sub>d P \<noteq> e2"
+	        proof
+	          assume hcarrier_eq: "geotop_K_carrier ?K\<^sub>d P = e2"
+	          have "P \<in> rel_interior e2"
+	            using geotop_K_carrier_rel_interior
+	              [OF hK_delete_complex hK_delete_finite hP_Kd] hcarrier_eq
+	            by (by100 simp)
+	          thus False
+	            using hP_not_e2_rel by (by100 blast)
+	        qed
+	        have hcarrierKr: "geotop_K_carrier ?K\<^sub>d P \<in> ?K\<^sub>r"
+	          using hcarrierKd hcarrier_ne_e1 hcarrier_ne_e2 by (by100 simp)
+	        show "P \<in> geotop_polyhedron ?K\<^sub>r"
+	          unfolding geotop_polyhedron_def
+	          using hcarrierKr hPcarrier by (by100 blast)
+	      qed
+	    qed
 	    have hfigure33_corner_forward_boundary_carrier:
 	        "\<exists>J' K' g.
 	          geotop_is_polygon J'
@@ -48450,6 +48626,11 @@ proof -
 	      have hcorner_forward_delete_carrier:
 	          "\<And>C\<^sub>O.
 	            J = ?B\<^sub>c \<union> C\<^sub>O \<Longrightarrow>
+	            geotop_is_broken_line C\<^sub>O \<Longrightarrow>
+	            geotop_arc_endpoints C\<^sub>O {y, z} \<Longrightarrow>
+	            geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	              geotop_arc_interior C\<^sub>O {y, z} = {} \<Longrightarrow>
+	            ?B\<^sub>n \<inter> C\<^sub>O = {y, z} \<Longrightarrow>
 	            geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O) \<Longrightarrow>
 	            geotop_polyhedron ?K\<^sub>r =
 	              closure_on UNIV geotop_euclidean_topology
@@ -48477,6 +48658,11 @@ proof -
 	      have hcorner_forward_supported_PL_map:
 	          "\<And>C\<^sub>O.
 	            J = ?B\<^sub>c \<union> C\<^sub>O \<Longrightarrow>
+	            geotop_is_broken_line C\<^sub>O \<Longrightarrow>
+	            geotop_arc_endpoints C\<^sub>O {y, z} \<Longrightarrow>
+	            geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	              geotop_arc_interior C\<^sub>O {y, z} = {} \<Longrightarrow>
+	            ?B\<^sub>n \<inter> C\<^sub>O = {y, z} \<Longrightarrow>
 	            geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O) \<Longrightarrow>
 	            \<exists>g.
 	              top1_homeomorphism_on UNIV geotop_euclidean_topology
@@ -48486,14 +48672,40 @@ proof -
 	        sorry
 	      show ?thesis
 	      proof -
-	        obtain C\<^sub>O where hJ_split: "J = ?B\<^sub>c \<union> C\<^sub>O"
-	          and hJ'_poly: "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
-	          using hcorner_forward_boundary_split by (by100 blast)
+	        obtain C\<^sub>O where hsplit_pack:
+	            "J = ?B\<^sub>c \<union> C\<^sub>O
+	            \<and> geotop_is_broken_line ?B\<^sub>c
+	            \<and> geotop_is_broken_line ?B\<^sub>n
+	            \<and> geotop_is_broken_line C\<^sub>O
+	            \<and> geotop_arc_endpoints ?B\<^sub>c {y, z}
+	            \<and> geotop_arc_endpoints ?B\<^sub>n {y, z}
+	            \<and> geotop_arc_endpoints C\<^sub>O {y, z}
+	            \<and> geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	                geotop_arc_interior C\<^sub>O {y, z} = {}
+	            \<and> ?B\<^sub>n \<inter> C\<^sub>O = {y, z}
+	            \<and> geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	          using hcorner_forward_boundary_split by (elim exE)
+	        have hJ_split: "J = ?B\<^sub>c \<union> C\<^sub>O"
+	          using hsplit_pack by (by100 blast)
+	        have hCO_bl: "geotop_is_broken_line C\<^sub>O"
+	          using hsplit_pack by (by100 blast)
+	        have hCO_E: "geotop_arc_endpoints C\<^sub>O {y, z}"
+	          using hsplit_pack by (by100 blast)
+	        have hB\<^sub>c_CO_int_disj:
+	            "geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	              geotop_arc_interior C\<^sub>O {y, z} = {}"
+	          using hsplit_pack by (by100 blast)
+	        have hB\<^sub>n_CO_inter: "?B\<^sub>n \<inter> C\<^sub>O = {y, z}"
+	          using hsplit_pack by (by100 blast)
+	        have hJ'_poly: "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	          using hsplit_pack by (by100 blast)
 	        have hKd_poly:
 	            "geotop_polyhedron ?K\<^sub>r =
 	              closure_on UNIV geotop_euclidean_topology
 	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
-	          by (rule hcorner_forward_delete_carrier[OF hJ_split hJ'_poly])
+	          by (rule hcorner_forward_delete_carrier
+	              [OF hJ_split hCO_bl hCO_E hB\<^sub>c_CO_int_disj hB\<^sub>n_CO_inter
+	                hJ'_poly])
 	        have hJ'_support:
 	            "closure_on UNIV geotop_euclidean_topology
 	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) \<subseteq> U"
@@ -48503,7 +48715,9 @@ proof -
 	              UNIV geotop_euclidean_topology g"
 	          and hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
 	          and hgJ': "g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
-	          using hcorner_forward_supported_PL_map[OF hJ_split hJ'_poly]
+	          using hcorner_forward_supported_PL_map
+	            [OF hJ_split hCO_bl hCO_E hB\<^sub>c_CO_int_disj hB\<^sub>n_CO_inter
+	              hJ'_poly]
 	          by (elim exE conjE)
 	        have hKr_complex: "geotop_is_complex ?K\<^sub>r"
 	          using hK_reduced_package by (by100 blast)
@@ -48697,6 +48911,8 @@ proof -
       and hxz: "x \<noteq> z"
       and hyz: "y \<noteq> z"
       and hnot_col_xyz: "\<not> collinear {x, y, z}"
+      and hcorner_edge_set:
+        "{e1, e2} = {closed_segment x y, closed_segment x z}"
       and hcorner_edges:
         "e1 \<union> e2 = closed_segment x y \<union> closed_segment x z"
       and hcorner_frontier:
@@ -48708,7 +48924,8 @@ proof -
       using hfigure33_corner_edge_package by (elim exE conjE)
     show ?thesis
       by (rule hfigure33_corner_inverse_supported_PL_fold_core
-          [OF hxy hxz hyz hnot_col_xyz hcorner_edges hcorner_frontier hcorner_contact])
+          [OF hxy hxz hyz hnot_col_xyz hcorner_edge_set hcorner_edges
+            hcorner_frontier hcorner_contact])
   qed
   show ?thesis
     using hbook_supported_inverse_PL_fold by (by100 blast)
