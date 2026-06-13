@@ -36556,6 +36556,42 @@ proof -
     using hXa hXb hab by (by100 simp)
 qed
 
+lemma geotop_not_collinear_affine_hull_UNIV_prefix:
+  fixes a b c :: "real^2"
+  assumes hnot_col: "\<not> collinear {a, b, c}"
+  shows "affine hull {a, b, c} = UNIV"
+  (**
+    Noncollinear triples in the plane affinely span the whole plane. **)
+proof -
+  have hdim_ge: "2 \<le> aff_dim {a, b, c}"
+    using hnot_col collinear_aff_dim[of "{a, b, c}"] by (by100 linarith)
+  have hdim_le: "aff_dim {a, b, c} \<le> 2"
+    using aff_dim_le_DIM[of "{a, b, c}"] by (by100 simp)
+  have hdim: "aff_dim {a, b, c} = int (DIM(real^2))"
+    using hdim_ge hdim_le by (by100 simp)
+  show ?thesis
+    by (rule affine_hull_UNIV[OF hdim])
+qed
+
+lemma geotop_affine_hull_UNIV_difference_coordinates_prefix:
+  fixes p a b q :: "real^2"
+  assumes hUNIV: "affine hull {p, p + a, p + b} = UNIV"
+  shows "\<exists>\<alpha> \<beta>. q = p + \<alpha> *\<^sub>R a + \<beta> *\<^sub>R b"
+  (**
+    Affine coordinates in a translated two-vector basis, normalized with
+    apex coefficient absorbed into the base point. **)
+proof -
+  have hq_aff: "q \<in> affine hull {p, p + a, p + b}"
+    using hUNIV by (by100 simp)
+  obtain x y z where hsum: "x + y + z = 1"
+    and hq_eq: "q = x *\<^sub>R p + y *\<^sub>R (p + a) + z *\<^sub>R (p + b)"
+    using hq_aff affine_hull_3[of p "p + a" "p + b"] by (by100 blast)
+  have "q = p + y *\<^sub>R a + z *\<^sub>R b"
+    using hq_eq hsum by (simp add: algebra_simps scaleR_add_right)
+  thus ?thesis
+    by (by100 blast)
+qed
+
 lemma geotop_segment_germ_outside_triangle_negative_coordinate_prefix:
   fixes p a b q :: "real^2"
   assumes h\<rho>: "0 < \<rho>"
