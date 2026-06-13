@@ -35654,6 +35654,52 @@ proof -
     using hxy_hull_sub_ab hab_hull_sub_xy by (by100 blast)
 qed
 
+lemma geotop_figure33_scalar_outer_open_segment_order_prefix:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes ht: "0 < t"
+  defines "p \<equiv> a + t *\<^sub>R (a - b)"
+  defines "q \<equiv> b + t *\<^sub>R (b - a)"
+  shows "p \<noteq> q \<and> a \<in> open_segment p q \<and> b \<in> open_segment p q"
+proof -
+  let ?d = "a - b"
+  let ?F = "\<lambda>s::real. b + s *\<^sub>R ?d"
+  have hd_ne: "?d \<noteq> 0"
+    using hab by (by100 simp)
+  have hpF: "p = ?F (1 + t)"
+    unfolding p_def by (simp add: algebra_simps)
+  have hqF: "q = ?F (- t)"
+    unfolding q_def by (simp add: algebra_simps)
+  have haF: "a = ?F 1"
+    by (simp add: algebra_simps)
+  have hbF: "b = ?F 0"
+    by (by100 simp)
+  have hlin: "linear (\<lambda>s::real. s *\<^sub>R ?d)"
+    by (rule linear_scaleR)
+  have hinj: "inj (\<lambda>s::real. s *\<^sub>R ?d)"
+    by (rule injective_scaleR[OF hd_ne])
+  have hreal_a: "(1::real) \<in> open_segment (1 + t) (- t)"
+    using ht unfolding open_segment_def closed_segment_eq_real_ivl
+    by (by100 auto)
+  have hreal_b: "(0::real) \<in> open_segment (1 + t) (- t)"
+    using ht unfolding open_segment_def closed_segment_eq_real_ivl
+    by (by100 auto)
+  have himage:
+      "open_segment p q = ?F ` open_segment (1 + t) (- t)"
+    using open_segment_linear_image[OF hlin hinj, of "1 + t" "- t"]
+      open_segment_translation[of b "(1 + t) *\<^sub>R ?d" "(- t) *\<^sub>R ?d"]
+      hpF hqF
+    by (by100 simp)
+  have ha_open: "a \<in> open_segment p q"
+    using himage hreal_a haF by (by100 blast)
+  have hb_open: "b \<in> open_segment p q"
+    using himage hreal_b hbF by (by100 blast)
+  have hpq: "p \<noteq> q"
+    using ha_open in_segment(2)[of a p q] by (by100 blast)
+  show ?thesis
+    using hpq ha_open hb_open by (by100 blast)
+qed
+
 lemma geotop_not_collinear_off_affine_hull_pair_prefix:
   fixes p x y :: "real^2"
   assumes hxy: "x \<noteq> y"
@@ -38096,12 +38142,15 @@ proof -
 	              using closed_segment_commute[of v\<^sub>2 ?v\<^sub>5] by metis
 	          qed
 	          have hfigure33_book_line_scalar_basic:
-	              "\<And>t. 0 < t \<Longrightarrow>
-	                collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
-	                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
-	                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
-	                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
-	                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
+		              "\<And>t. 0 < t \<Longrightarrow>
+		                collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
 	          proof -
 	            fix t :: real
 	            assume ht: "0 < t"
@@ -38154,21 +38203,31 @@ proof -
 	              thus False
 	                using h1t_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 blast)
 	            qed
-	            have hv\<^sub>4_ne_v\<^sub>1: "?v\<^sub>4_of t \<noteq> v\<^sub>1"
-	            proof
-	              assume "?v\<^sub>4_of t = v\<^sub>1"
-	              hence "(1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1) = 0"
-	                by (simp add: algebra_simps)
-	              thus False
-	                using h1t_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 blast)
-	            qed
-	            show "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
-	                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
-	                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
-	                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
-	                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
-	              using hcol hv\<^sub>4_ne_v\<^sub>5 hv\<^sub>5_ne_v\<^sub>3 hv\<^sub>4_ne_v\<^sub>1 hv\<^sub>1_ne_v\<^sub>3
-	              by (by100 blast)
+		            have hv\<^sub>4_ne_v\<^sub>1: "?v\<^sub>4_of t \<noteq> v\<^sub>1"
+		            proof
+		              assume "?v\<^sub>4_of t = v\<^sub>1"
+		              hence "(1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1) = 0"
+		                by (simp add: algebra_simps)
+		              thus False
+		                using h1t_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 blast)
+		            qed
+		            have horder:
+		                "?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		              by (rule geotop_figure33_scalar_outer_open_segment_order_prefix
+		                  [OF hv\<^sub>1_mid_ne ht])
+		            show "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		              using hcol hv\<^sub>4_ne_v\<^sub>5 hv\<^sub>5_ne_v\<^sub>3 hv\<^sub>4_ne_v\<^sub>1 hv\<^sub>1_ne_v\<^sub>3
+		                horder
+		              by (by100 blast)
 	          qed
 	          have hfigure33_book_local_simplicial_extension_boundary_control_scalar:
 	              "\<exists>t>0.
@@ -38348,12 +38407,15 @@ proof -
 	              using hfigure33_book_local_simplicial_extension_boundary_control_scalar
 	              by (elim exE conjE)
 	            have hbasic:
-	                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
-	                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
-	                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
-	                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
-	                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
-	              by (rule hfigure33_book_line_scalar_basic[OF ht_pos])
+		                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+		              by (rule hfigure33_book_line_scalar_basic[OF ht_pos])
 	            show ?thesis
 	              using hbasic hsource045245 hsource045053 hsource045253
 	                hsource245053 hsource245253 hsource053253 htarget041241
