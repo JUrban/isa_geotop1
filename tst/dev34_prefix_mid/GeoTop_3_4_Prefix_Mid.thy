@@ -47337,6 +47337,44 @@ proof
       \<and> geotop_is_face (d \<inter> \<theta>) \<theta>"
     using geotop_is_complex_intersection[OF hK] hdK h\<theta>K
       hd_\<theta>_inter_nonempty by (by100 blast)
+  have hd_dim1: "geotop_simplex_dim d 1"
+    using hd_edge unfolding geotop_is_edge_def by (by100 simp)
+  have hd_\<theta>_inter_dim_cases:
+      "geotop_simplex_dim (d \<inter> \<theta>) 0
+      \<or> geotop_simplex_dim (d \<inter> \<theta>) 1"
+  proof -
+    have hI_face_d: "geotop_is_face (d \<inter> \<theta>) d"
+      using hd_\<theta>_inter_faces by (by100 blast)
+    obtain k where hk_le: "k \<le> 1"
+      and hI_dim: "geotop_simplex_dim (d \<inter> \<theta>) k"
+      using geotop_face_dim_le_prefix[OF hd_dim1 hI_face_d] by (by100 blast)
+    have "k = 0 \<or> k = 1"
+      using hk_le by (by100 linarith)
+    thus ?thesis
+      using hI_dim by (by100 blast)
+  qed
+  have hd_\<theta>_inter_eq_x_if_dim0:
+      "geotop_simplex_dim (d \<inter> \<theta>) 0 \<Longrightarrow> d \<inter> \<theta> = {x}"
+  proof -
+    assume hI0: "geotop_simplex_dim (d \<inter> \<theta>) 0"
+    have hxI: "x \<in> d \<inter> \<theta>"
+      using hxd hx\<theta> by (by100 blast)
+    show "d \<inter> \<theta> = {x}"
+      by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF hI0 hxI])
+  qed
+  have hd_\<theta>_inter_edge_case_sub_\<theta>:
+      "geotop_simplex_dim (d \<inter> \<theta>) 1 \<Longrightarrow> d \<subseteq> \<theta>"
+  proof -
+    assume hI1: "geotop_simplex_dim (d \<inter> \<theta>) 1"
+    have hI_face_d: "geotop_is_face (d \<inter> \<theta>) d"
+      using hd_\<theta>_inter_faces by (by100 blast)
+    have hI_edge: "geotop_is_edge (d \<inter> \<theta>)"
+      using hI1 unfolding geotop_is_edge_def by (by100 simp)
+    have hI_eq_d: "d \<inter> \<theta> = d"
+      by (rule geotop_edge_face_of_edge_eq_prefix[OF hI_edge hd_edge hI_face_d])
+    show "d \<subseteq> \<theta>"
+      using hI_eq_d by (by100 blast)
+  qed
   obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
     and h\<rho>2: "geotop_simplex_dim \<rho> 2"
     and hd_face_\<rho>: "geotop_is_face d \<rho>"
