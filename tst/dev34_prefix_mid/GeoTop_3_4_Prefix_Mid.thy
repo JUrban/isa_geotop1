@@ -35016,6 +35016,54 @@ lemma geotop_figure33_source_triangles_intersections_faces_prefix:
   by (by100 auto intro!: geotop_two_noncollinear_triangle_intersection_subset_faces_prefix
       simp: Int_commute)
 
+lemma geotop_figure33_target_triangles_intersections_faces_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>3 v\<^sub>4 :: "real^2"
+  assumes hn041: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+  assumes hn241: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+  assumes hn013: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+  assumes hn213: "\<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+  assumes h041241:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+      \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+      = geotop_convex_hull {v\<^sub>4, v\<^sub>1}"
+  assumes h041013:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+      \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+  assumes h041213:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+      \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>1}"
+  assumes h241013:
+    "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+      \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>1}"
+  assumes h241213:
+    "geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+      \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>2, v\<^sub>1}"
+  assumes h013213:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+      \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>1, v\<^sub>3}"
+  shows "\<forall>\<sigma>\<in>{
+      geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}.
+    \<forall>\<tau>\<in>{
+      geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}.
+      \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+        \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  using hn041 hn241 hn013 hn213 h041241 h041013 h041213 h241013
+    h241213 h013213
+  by (by100 auto intro!: geotop_two_noncollinear_triangle_intersection_subset_faces_prefix
+      simp: Int_commute)
+
 lemma geotop_three_noncollinear_convex_hull_is_simplex_prefix:
   fixes a b c :: "real^2"
   assumes hnc: "\<not> collinear {a, b, c}"
