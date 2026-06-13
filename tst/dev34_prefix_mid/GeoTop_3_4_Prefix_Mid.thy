@@ -34833,6 +34833,69 @@ proof -
       show "\<theta> \<subseteq> U" by (rule h\<theta>_sub_U)
     qed
   qed
+  let ?K\<^sub>d = "K - {\<theta>}"
+  have hK_delete_finite: "finite ?K\<^sub>d"
+    using hK_fin by (by100 simp)
+  have hK_delete_complex: "geotop_is_complex ?K\<^sub>d"
+  proof (rule geotop_complex_subset_is_complex)
+    show "?K\<^sub>d \<subseteq> K"
+      by (by100 blast)
+    show "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+    proof (intro ballI allI impI)
+      fix \<sigma> \<tau>
+      assume h\<sigma>d: "\<sigma> \<in> ?K\<^sub>d"
+      assume h\<tau>face: "geotop_is_face \<tau> \<sigma>"
+      have h\<sigma>K: "\<sigma> \<in> K"
+        using h\<sigma>d by (by100 simp)
+      have h\<sigma>ne: "\<sigma> \<noteq> \<theta>"
+        using h\<sigma>d by (by100 simp)
+      have h\<tau>K: "\<tau> \<in> K"
+        using hK h\<sigma>K h\<tau>face unfolding geotop_is_complex_def by (by100 blast)
+      have h\<tau>ne: "\<tau> \<noteq> \<theta>"
+      proof
+        assume h\<tau>eq: "\<tau> = \<theta>"
+        have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+          using hK h\<sigma>K unfolding geotop_is_complex_def by (by100 blast)
+        obtain n where h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
+          using h\<sigma>simplex
+          unfolding geotop_is_simplex_def geotop_simplex_dim_def
+          by (by100 blast)
+        have hn_le_2: "n \<le> 2"
+          by (rule geotop_simplex_dim_le_2_R2_prefix[OF h\<sigma>dim])
+        have h2_le_n: "2 \<le> n"
+        proof (rule ccontr)
+          assume hnot: "\<not> 2 \<le> n"
+          hence hn_lt_2: "n < 2"
+            by (by100 simp)
+          obtain k where hk_le: "k \<le> n" and h\<theta>dim_k: "geotop_simplex_dim \<theta> k"
+            using geotop_face_dim_le_dev34[OF h\<sigma>dim, of \<theta>] h\<tau>face h\<tau>eq
+            by (by100 blast)
+          have "k = 2"
+            using geotop_simplex_dim_unique[OF h\<theta>dim_k h\<theta>2] by (by100 simp)
+          thus False
+            using hk_le hn_lt_2 by (by100 linarith)
+        qed
+        have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+          using h\<sigma>dim h2_le_n hn_le_2 by (by100 simp)
+        have "\<theta> = \<sigma>"
+          by (rule geotop_complex_2simplex_face_eq_prefix
+              [OF hK h\<theta>K h\<sigma>K _ h\<theta>2 h\<sigma>2])
+             (use h\<tau>face h\<tau>eq in \<open>by (by100 simp)\<close>)
+        thus False
+          using h\<sigma>ne by (by100 simp)
+      qed
+      show "\<tau> \<in> ?K\<^sub>d"
+        using h\<tau>K h\<tau>ne by (by100 simp)
+    qed
+  qed (rule hK)
+  have hK_delete_two_simplexes:
+      "{\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}
+        = {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} - {\<theta>}"
+    using h\<theta>2 by (by100 blast)
+  have hK_delete_count_decreases:
+      "card {\<tau>\<in>?K\<^sub>d. geotop_simplex_dim \<tau> 2}
+        < card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+    using hK_delete_two_simplexes hdelete by (by100 simp)
   have hbook_supported_PL_fold:
       "\<exists>J' K' f.
         geotop_is_polygon J'
