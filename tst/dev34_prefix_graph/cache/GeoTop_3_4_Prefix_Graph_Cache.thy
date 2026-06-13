@@ -4077,6 +4077,21 @@ proof -
     using haG ha_cl by (by100 blast)
 qed
 
+lemma geotop_no_germ_contact_leaves_component_or_endpoint_prefix:
+  fixes G\<^sub>1 G\<^sub>2 G\<^sub>3 W U :: "'a::topological_space set"
+    and Q :: bool
+  assumes hcases:
+    "G\<^sub>1 \<inter> closure W \<noteq> {}
+      \<or> G\<^sub>2 \<inter> closure W \<noteq> {}
+      \<or> G\<^sub>3 \<inter> closure W \<noteq> {}
+      \<or> (\<exists>C. C \<in> components U \<and> W \<inter> closure C \<noteq> {})
+      \<or> Q"
+  assumes hG\<^sub>1_empty: "G\<^sub>1 \<inter> closure W = {}"
+  assumes hG\<^sub>2_empty: "G\<^sub>2 \<inter> closure W = {}"
+  assumes hG\<^sub>3_empty: "G\<^sub>3 \<inter> closure W = {}"
+  shows "(\<exists>C. C \<in> components U \<and> W \<inter> closure C \<noteq> {}) \<or> Q"
+  using hcases hG\<^sub>1_empty hG\<^sub>2_empty hG\<^sub>3_empty by (by100 blast)
+
 lemma geotop_trace_component_entry_closure_summary_prefix:
   fixes F :: "'a::topological_space set set"
     and U W V N\<^sub>loc C :: "'a set"
@@ -15403,9 +15418,18 @@ proof -
                     \<and> W = D - {p, q\<^sub>1}
                     \<and> y \<in> D - {p}
                     \<and> q\<^sub>1 \<in> closure W)"
-                  using hW_source_local_component_or_germ_closure_cases
-                    hS_empty hT_empty hU_empty
-                  by (by100 blast)
+                  by (rule geotop_no_germ_contact_leaves_component_or_endpoint_prefix
+                      [where G\<^sub>1="(S - {w}) \<inter> ball w r"
+                        and G\<^sub>2="(T - {w}) \<inter> ball w r"
+                        and G\<^sub>3="(U - {w}) \<inter> ball w r"
+                        and W=W
+                        and U="?Lcomp"
+                        and Q="\<exists>D. N = D
+                          \<and> W = D - {p, q\<^sub>1}
+                          \<and> y \<in> D - {p}
+                          \<and> q\<^sub>1 \<in> closure W",
+                       OF hW_source_local_component_or_germ_closure_cases
+                          hS_empty hT_empty hU_empty])
               qed
               have hlocal_connected_trace_component_upgrade:
                   "\<And>A C. C \<in> components ?Lcomp
