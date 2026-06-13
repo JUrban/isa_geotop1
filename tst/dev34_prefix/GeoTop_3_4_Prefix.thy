@@ -194,6 +194,74 @@ proof (rule ccontr)
     using hB_misses hB_A1 hB_A2_nonempty by (by100 blast)
 qed
 
+lemma geotop_finite_complex_iterated_Sd_mesh_lt_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<epsilon>: "0 < \<epsilon>"
+  shows "\<exists>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K) < \<epsilon>"
+proof -
+  have hlim: "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
+               (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
+    by (rule geotop_mesh_iterated_Sd_tends_to_zero[OF hK hKfin])
+  have hevent:
+      "eventually (\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
+               (geotop_iterated_Sd m K) < \<epsilon>) sequentially"
+    using order_tendstoD(2)[OF hlim h\<epsilon>] .
+  show ?thesis
+    using hevent unfolding eventually_sequentially by (by100 blast)
+qed
+
+lemma geotop_iterated_Sd_members_nonempty_bounded_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "\<forall>B\<in>geotop_iterated_Sd m K. B \<noteq> {} \<and> bounded B"
+proof
+  fix B
+  assume hB: "B \<in> geotop_iterated_Sd m K"
+  have hsub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hB_simplex: "geotop_is_simplex B"
+    using geotop_is_complex_simplex[OF hSd_comp] hB by (by100 blast)
+  have hB_ne: "B \<noteq> {}"
+    by (rule geotop_simplex_nonempty[OF hB_simplex])
+  have hB_compact: "compact B"
+    by (rule geotop_simplex_compact[OF hB_simplex])
+  have hB_bounded: "bounded B"
+    using hB_compact compact_imp_bounded by (by100 blast)
+  show "B \<noteq> {} \<and> bounded B"
+    using hB_ne hB_bounded by (by100 blast)
+qed
+
+lemma geotop_fine_iterated_Sd_carrier_meeting_first_arc_misses_second_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<delta>: "0 < \<delta>"
+  assumes hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+  shows "\<exists>m. (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+proof -
+  obtain m where hmesh:
+      "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K) < \<delta>"
+    using geotop_finite_complex_iterated_Sd_mesh_lt_prefix[OF hK hKfin h\<delta>]
+    by (by100 blast)
+  have hsub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hfin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hsub])
+  have hmembers: "\<forall>B\<in>geotop_iterated_Sd m K. B \<noteq> {} \<and> bounded B"
+    by (rule geotop_iterated_Sd_members_nonempty_bounded_prefix[OF hK hKfin])
+  have hmiss:
+      "(\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+    by (rule geotop_mesh_subfamily_meeting_first_arc_misses_second_prefix
+        [OF hgap hfin hmembers hmesh])
+  show ?thesis
+    using hmiss by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
