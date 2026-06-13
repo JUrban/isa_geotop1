@@ -34649,6 +34649,40 @@ proof -
     using h_hull_image hsource_hull htarget_hull by (by100 simp)
 qed
 
+lemma geotop_three_noncollinear_convex_hull_simplex_vertices_prefix:
+  fixes a b c :: "real^2"
+  assumes hnc: "\<not> collinear {a, b, c}"
+  shows "geotop_simplex_vertices (geotop_convex_hull {a, b, c}) {a, b, c}"
+proof -
+  have hfin: "finite {a, b, c}"
+    by (by100 simp)
+  have hne: "{a, b, c} \<noteq> {}"
+    by (by100 simp)
+  have hai: "\<not> affine_dependent {a, b, c}"
+  proof
+    assume hdep: "affine_dependent {a, b, c}"
+    have "collinear {a, b, c}"
+      using hdep collinear_3_eq_affine_dependent[of a b c] by (by100 simp)
+    thus False
+      using hnc by (by100 blast)
+  qed
+  show ?thesis
+    by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hfin hne hai])
+qed
+
+lemma geotop_three_noncollinear_convex_hull_is_simplex_prefix:
+  fixes a b c :: "real^2"
+  assumes hnc: "\<not> collinear {a, b, c}"
+  shows "geotop_is_simplex (geotop_convex_hull {a, b, c})"
+proof -
+  have hverts:
+      "geotop_simplex_vertices (geotop_convex_hull {a, b, c}) {a, b, c}"
+    by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hnc])
+  show ?thesis
+    using hverts unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_triangulation_2simplex_count_ge1_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -37018,10 +37052,14 @@ proof -
           have hfigure33_book_local_simplicial_extension_boundary_control:
               "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
                 collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
-                \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                      geotop_is_simplex \<sigma>)
-                \<and> (\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                      geotop_is_simplex \<sigma>)
+                \<and> \<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                \<and> \<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                \<and> \<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                \<and> \<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}
+                \<and> \<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                \<and> \<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                \<and> \<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                \<and> \<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}
                 \<and> geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                 \<and> geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)
                 \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
@@ -37034,10 +37072,6 @@ proof -
                 \<and> f v\<^sub>3 = v\<^sub>3
                 \<and> f v\<^sub>4 = v\<^sub>4
                 \<and> f v\<^sub>5 = v\<^sub>1
-                \<and> geotop_simplex_vertices
-                    (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) {v\<^sub>0, v\<^sub>4, v\<^sub>5}
-                \<and> geotop_simplex_vertices
-                    (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) {v\<^sub>2, v\<^sub>4, v\<^sub>5}
                 \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
                       \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
                         geotop_simplicial_on \<sigma> f \<tau>)
@@ -37072,10 +37106,14 @@ proof -
           proof -
             obtain v\<^sub>3 v\<^sub>4 v\<^sub>5 f where hcol:
                 "collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
-              and hsource_simp:
-                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5. geotop_is_simplex \<sigma>"
-              and htarget_simp:
-                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>"
+              and hncol045: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              and hncol245: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+              and hncol053: "\<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+              and hncol253: "\<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+              and hncol041: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+              and hncol241: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+              and hncol013: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+              and hncol213: "\<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
               and hsource_complex:
                 "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
               and htarget_complex:
@@ -37093,12 +37131,6 @@ proof -
               and hfv\<^sub>3: "f v\<^sub>3 = v\<^sub>3"
               and hfv\<^sub>4: "f v\<^sub>4 = v\<^sub>4"
               and hfv\<^sub>5: "f v\<^sub>5 = v\<^sub>1"
-              and hsource045_vertices:
-                "geotop_simplex_vertices
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
-              and hsource245_vertices:
-                "geotop_simplex_vertices
-                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
               and hfsimp:
                 "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
                   \<exists>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
@@ -37110,6 +37142,86 @@ proof -
                   \<subseteq> {v\<^sub>0, v\<^sub>2}"
               using hfigure33_book_local_simplicial_extension_boundary_control
               by (elim exE conjE)
+            have hsource045_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}) {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+              by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                  [OF hncol045])
+            have hsource245_vertices:
+                "geotop_simplex_vertices
+                  (geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}) {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+              by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+                  [OF hncol245])
+            have hsource_simp:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5. geotop_is_simplex \<sigma>"
+            proof
+              fix \<sigma>
+              assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
+              have hcases:
+                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                using h\<sigma> by (by100 simp)
+              show "geotop_is_simplex \<sigma>"
+                using hcases
+              proof (elim disjE)
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol045] by (by100 simp)
+              next
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol245] by (by100 simp)
+              next
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol053] by (by100 simp)
+              next
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol253] by (by100 simp)
+              qed
+            qed
+            have htarget_simp:
+                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>"
+            proof
+              fix \<sigma>
+              assume h\<sigma>: "\<sigma> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
+              have hcases:
+                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                using h\<sigma> by (by100 simp)
+              show "geotop_is_simplex \<sigma>"
+                using hcases
+              proof (elim disjE)
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol041] by (by100 simp)
+              next
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol241] by (by100 simp)
+              next
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol013] by (by100 simp)
+              next
+                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+                thus ?thesis
+                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
+                    [OF hncol213] by (by100 simp)
+              qed
+            qed
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
