@@ -36152,6 +36152,57 @@ proof -
       show ?thesis
         using hside_cases hR_B02_int hR_not_K by (by100 blast)
     qed
+    have hCR_CO_sides_disjoint:
+        "(geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}) \<inter>
+         (geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}) = {}"
+    proof -
+      let ?H = "geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+      let ?Kside = "geotop_polygon_interior (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O) \<union>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      have hH_clK: "?H \<inter> closure_on UNIV geotop_euclidean_topology ?Kside = {}"
+        using hsides_separated unfolding geotop_separated_def by (by100 simp)
+      have hK_cl: "?Kside \<subseteq> closure_on UNIV geotop_euclidean_topology ?Kside"
+        by (rule subset_closure_on)
+      show ?thesis
+        using hH_clK hK_cl by (by100 blast)
+    qed
+    have hB02_arc_interior_CO_disj:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
+      using hB02_arc_interior_sub_CR_side hCR_CO_sides_disjoint by (by100 blast)
+    have hB02_CO_inter: "?B\<^sub>0\<^sub>2 \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}"
+    proof -
+      have hB02_E: "geotop_arc_endpoints ?B\<^sub>0\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+        using hfigure33_replacement_arc_package by (by100 blast)
+      show ?thesis
+        by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+            [OF hB02_E hCO_E hB02_arc_interior_CO_disj])
+    qed
+    have hB02_sub_CR: "?B\<^sub>0\<^sub>2 \<subseteq> C\<^sub>R"
+    proof
+      fix x
+      assume hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+      have hxJ: "x \<in> J"
+        using hxB02 hfigure33_boundary_support_package by (by100 blast)
+      have hx_cases: "x \<in> C\<^sub>R \<or> x \<in> C\<^sub>O"
+        using hxJ hJ_oriented_split by (by100 blast)
+      show "x \<in> C\<^sub>R"
+      proof (rule disjE[OF hx_cases])
+        assume "x \<in> C\<^sub>R"
+        thus "x \<in> C\<^sub>R" .
+      next
+        assume hxCO: "x \<in> C\<^sub>O"
+        have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+          using hxB02 hxCO hB02_CO_inter by (by100 blast)
+        have hend_sub: "{v\<^sub>0, v\<^sub>2} \<subseteq> C\<^sub>R"
+          using hCR_E unfolding geotop_arc_endpoints_def by (by100 blast)
+        show "x \<in> C\<^sub>R"
+          using hx_end hend_sub by (by100 blast)
+      qed
+    qed
     have hCR_eq_old_imp_left_triangle_interior:
         "C\<^sub>R = ?B\<^sub>0\<^sub>2 \<Longrightarrow>
           geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) = rel_interior \<theta>"
