@@ -38750,6 +38750,53 @@ proof -
         by (rule geotop_same_endpoint_arcs_inter_eq_prefix
             [OF hB02_E hCO_E hB02_arc_interior_CO_disj])
     qed
+    have hCO_theta_inter: "C\<^sub>O \<inter> \<theta> = {v\<^sub>0, v\<^sub>2}"
+    proof
+      show "C\<^sub>O \<inter> \<theta> \<subseteq> {v\<^sub>0, v\<^sub>2}"
+      proof
+        fix x
+        assume hx: "x \<in> C\<^sub>O \<inter> \<theta>"
+        have hxCO: "x \<in> C\<^sub>O"
+          using hx by (by100 blast)
+        have hxJ: "x \<in> J"
+          using hCO_sub_J hxCO by (by100 blast)
+        have hx\<theta>: "x \<in> \<theta>"
+          using hx by (by100 blast)
+        have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+          using hxJ hx\<theta> hfigure33_boundary_support_package by (by100 blast)
+        show "x \<in> {v\<^sub>0, v\<^sub>2}"
+          using hxB02 hxCO hB02_CO_inter by (by100 blast)
+      qed
+      show "{v\<^sub>0, v\<^sub>2} \<subseteq> C\<^sub>O \<inter> \<theta>"
+      proof
+        fix x
+        assume hx: "x \<in> {v\<^sub>0, v\<^sub>2}"
+        have hxCO: "x \<in> C\<^sub>O"
+          using hCO_endpoints_sub hx by (by100 blast)
+        have hxB02: "x \<in> ?B\<^sub>0\<^sub>2"
+        proof -
+          have hx_cases: "x = v\<^sub>0 \<or> x = v\<^sub>2"
+            using hx by (by100 blast)
+          show ?thesis
+          proof (rule disjE[OF hx_cases])
+            assume "x = v\<^sub>0"
+            thus ?thesis
+              by (by100 simp)
+          next
+            assume "x = v\<^sub>2"
+            thus ?thesis
+              by (by100 simp)
+          qed
+        qed
+        have hx\<theta>: "x \<in> \<theta>"
+          using hxB02 hfigure33_boundary_support_package by (by100 blast)
+        show "x \<in> C\<^sub>O \<inter> \<theta>"
+          using hxCO hx\<theta> by (by100 blast)
+      qed
+    qed
+    have hCO_minus_endpoints_theta_disj:
+        "(C\<^sub>O - {v\<^sub>0, v\<^sub>2}) \<inter> \<theta> = {}"
+      using hCO_theta_inter by (by100 blast)
     have hB02_sub_CR: "?B\<^sub>0\<^sub>2 \<subseteq> C\<^sub>R"
     proof
       fix x
