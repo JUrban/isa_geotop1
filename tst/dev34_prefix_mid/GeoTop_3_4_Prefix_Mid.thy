@@ -34886,6 +34886,37 @@ proof -
     by (rule geotop_is_face_of_subset[OF hvertices hWne hWsub])
 qed
 
+lemma geotop_two_noncollinear_triangle_intersection_subset_faces_prefix:
+  fixes a b c d e f :: "real^2" and W :: "(real^2) set"
+  assumes habc: "\<not> collinear {a, b, c}"
+  assumes hdef: "\<not> collinear {d, e, f}"
+  assumes hWne: "W \<noteq> {}"
+  assumes hWabc: "W \<subseteq> {a, b, c}"
+  assumes hWdef: "W \<subseteq> {d, e, f}"
+  assumes hinter:
+    "geotop_convex_hull {a, b, c} \<inter> geotop_convex_hull {d, e, f}
+      = geotop_convex_hull W"
+  shows "geotop_is_face
+      (geotop_convex_hull {a, b, c} \<inter> geotop_convex_hull {d, e, f})
+      (geotop_convex_hull {a, b, c})
+    \<and> geotop_is_face
+      (geotop_convex_hull {a, b, c} \<inter> geotop_convex_hull {d, e, f})
+      (geotop_convex_hull {d, e, f})"
+proof -
+  have hface_abc:
+      "geotop_is_face (geotop_convex_hull W)
+        (geotop_convex_hull {a, b, c})"
+    by (rule geotop_three_noncollinear_convex_hull_subset_face_prefix
+        [OF habc hWne hWabc])
+  have hface_def:
+      "geotop_is_face (geotop_convex_hull W)
+        (geotop_convex_hull {d, e, f})"
+    by (rule geotop_three_noncollinear_convex_hull_subset_face_prefix
+        [OF hdef hWne hWdef])
+  show ?thesis
+    using hface_abc hface_def hinter by (by100 simp)
+qed
+
 lemma geotop_three_noncollinear_convex_hull_is_simplex_prefix:
   fixes a b c :: "real^2"
   assumes hnc: "\<not> collinear {a, b, c}"
