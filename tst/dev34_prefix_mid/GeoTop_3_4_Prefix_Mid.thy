@@ -36530,6 +36530,193 @@ proof -
     using hu hv huv hcoords by (by100 blast)
 qed
 
+lemma geotop_figure33_moving_cone_real_angular_gap_prefix:
+  fixes \<alpha> \<beta> :: real
+  assumes hneg: "\<alpha> < 0 \<or> \<beta> < 0"
+  shows "\<exists>\<eta>>0. \<forall>t>0. t < \<eta> \<longrightarrow>
+    (\<forall>s u v. 0 < s \<longrightarrow> 0 \<le> u \<longrightarrow> 0 \<le> v \<longrightarrow>
+      s * \<alpha> = u * (1 + t) - v * t \<longrightarrow>
+      s * \<beta> = v * (1 + t) - u * t \<longrightarrow> False)"
+  (**
+    Pure scalar angular gap for the Figure 3.3 moving cone.  A fixed direction
+    with one negative old-cone coordinate cannot have nonnegative moving-cone
+    coordinates once the shear parameter is sufficiently small. **)
+proof (rule disjE[OF hneg])
+  assume h\<alpha>_neg: "\<alpha> < 0"
+  show ?thesis
+  proof (cases "\<alpha> + \<beta> \<le> 0")
+    case True
+    let ?\<eta> = 1
+    have h\<eta>_pos: "0 < ?\<eta>"
+      by (by100 simp)
+    have hsmall:
+        "\<forall>t>0. t < ?\<eta> \<longrightarrow>
+          (\<forall>s u v. 0 < s \<longrightarrow> 0 \<le> u \<longrightarrow> 0 \<le> v \<longrightarrow>
+            s * \<alpha> = u * (1 + t) - v * t \<longrightarrow>
+            s * \<beta> = v * (1 + t) - u * t \<longrightarrow> False)"
+    proof (intro allI impI)
+      fix t s u v :: real
+      assume ht_pos: "0 < t"
+      assume "t < ?\<eta>"
+      assume hs_pos: "0 < s"
+      assume hu_nonneg: "0 \<le> u"
+      assume "0 \<le> v"
+      assume h\<alpha>eq: "s * \<alpha> = u * (1 + t) - v * t"
+      assume h\<beta>eq: "s * \<beta> = v * (1 + t) - u * t"
+      have hshear:
+          "s * (\<alpha> + t * (\<alpha> + \<beta>)) = u * (1 + 2 * t)"
+        using h\<alpha>eq h\<beta>eq by (simp add: algebra_simps)
+      have ht_sum_nonpos: "t * (\<alpha> + \<beta>) \<le> 0"
+        using ht_pos True by (by100 simp)
+      have hcoef_neg: "\<alpha> + t * (\<alpha> + \<beta>) < 0"
+        using h\<alpha>_neg ht_sum_nonpos by (by100 linarith)
+      have hleft_neg: "s * (\<alpha> + t * (\<alpha> + \<beta>)) < 0"
+        using hs_pos hcoef_neg by (by100 simp)
+      have hright_nonneg: "0 \<le> u * (1 + 2 * t)"
+        using hu_nonneg ht_pos by (by100 simp)
+      show False
+        using hshear hleft_neg hright_nonneg by (by100 linarith)
+    qed
+    show ?thesis
+      using h\<eta>_pos hsmall by (by100 blast)
+  next
+    case False
+    have hsum_pos: "0 < \<alpha> + \<beta>"
+      using False by (by100 simp)
+    define \<eta> where "\<eta> = min 1 ((-\<alpha>) / (2 * (\<alpha> + \<beta>)))"
+    have hgap_pos: "0 < (-\<alpha>) / (2 * (\<alpha> + \<beta>))"
+      using h\<alpha>_neg hsum_pos by (by100 simp)
+    have h\<eta>_pos: "0 < \<eta>"
+      unfolding \<eta>_def using hgap_pos by (by100 simp)
+    have hsmall:
+        "\<forall>t>0. t < \<eta> \<longrightarrow>
+          (\<forall>s u v. 0 < s \<longrightarrow> 0 \<le> u \<longrightarrow> 0 \<le> v \<longrightarrow>
+            s * \<alpha> = u * (1 + t) - v * t \<longrightarrow>
+            s * \<beta> = v * (1 + t) - u * t \<longrightarrow> False)"
+    proof (intro allI impI)
+      fix t s u v :: real
+      assume ht_pos: "0 < t"
+      assume ht_lt: "t < \<eta>"
+      assume hs_pos: "0 < s"
+      assume hu_nonneg: "0 \<le> u"
+      assume "0 \<le> v"
+      assume h\<alpha>eq: "s * \<alpha> = u * (1 + t) - v * t"
+      assume h\<beta>eq: "s * \<beta> = v * (1 + t) - u * t"
+      have hshear:
+          "s * (\<alpha> + t * (\<alpha> + \<beta>)) = u * (1 + 2 * t)"
+        using h\<alpha>eq h\<beta>eq by (simp add: algebra_simps)
+      have ht_gap: "t < (-\<alpha>) / (2 * (\<alpha> + \<beta>))"
+        using ht_lt unfolding \<eta>_def by (by100 simp)
+      have ht_scaled: "t * (\<alpha> + \<beta>) < (-\<alpha>) / 2"
+      proof -
+        have "t * (\<alpha> + \<beta>) <
+            ((-\<alpha>) / (2 * (\<alpha> + \<beta>))) * (\<alpha> + \<beta>)"
+          using mult_strict_right_mono[OF ht_gap hsum_pos] .
+        also have "\<dots> = (-\<alpha>) / 2"
+          using hsum_pos by (simp add: field_simps)
+        finally show ?thesis .
+      qed
+      have hcoef_neg: "\<alpha> + t * (\<alpha> + \<beta>) < 0"
+        using h\<alpha>_neg ht_scaled by (by100 linarith)
+      have hleft_neg: "s * (\<alpha> + t * (\<alpha> + \<beta>)) < 0"
+        using hs_pos hcoef_neg by (by100 simp)
+      have hright_nonneg: "0 \<le> u * (1 + 2 * t)"
+        using hu_nonneg ht_pos by (by100 simp)
+      show False
+        using hshear hleft_neg hright_nonneg by (by100 linarith)
+    qed
+    show ?thesis
+      using h\<eta>_pos hsmall by (by100 blast)
+  qed
+next
+  assume h\<beta>_neg: "\<beta> < 0"
+  show ?thesis
+  proof (cases "\<alpha> + \<beta> \<le> 0")
+    case True
+    let ?\<eta> = 1
+    have h\<eta>_pos: "0 < ?\<eta>"
+      by (by100 simp)
+    have hsmall:
+        "\<forall>t>0. t < ?\<eta> \<longrightarrow>
+          (\<forall>s u v. 0 < s \<longrightarrow> 0 \<le> u \<longrightarrow> 0 \<le> v \<longrightarrow>
+            s * \<alpha> = u * (1 + t) - v * t \<longrightarrow>
+            s * \<beta> = v * (1 + t) - u * t \<longrightarrow> False)"
+    proof (intro allI impI)
+      fix t s u v :: real
+      assume ht_pos: "0 < t"
+      assume "t < ?\<eta>"
+      assume hs_pos: "0 < s"
+      assume "0 \<le> u"
+      assume hv_nonneg: "0 \<le> v"
+      assume h\<alpha>eq: "s * \<alpha> = u * (1 + t) - v * t"
+      assume h\<beta>eq: "s * \<beta> = v * (1 + t) - u * t"
+      have hshear:
+          "s * (\<beta> + t * (\<alpha> + \<beta>)) = v * (1 + 2 * t)"
+        using h\<alpha>eq h\<beta>eq by (simp add: algebra_simps)
+      have ht_sum_nonpos: "t * (\<alpha> + \<beta>) \<le> 0"
+        using ht_pos True by (by100 simp)
+      have hcoef_neg: "\<beta> + t * (\<alpha> + \<beta>) < 0"
+        using h\<beta>_neg ht_sum_nonpos by (by100 linarith)
+      have hleft_neg: "s * (\<beta> + t * (\<alpha> + \<beta>)) < 0"
+        using hs_pos hcoef_neg by (by100 simp)
+      have hright_nonneg: "0 \<le> v * (1 + 2 * t)"
+        using hv_nonneg ht_pos by (by100 simp)
+      show False
+        using hshear hleft_neg hright_nonneg by (by100 linarith)
+    qed
+    show ?thesis
+      using h\<eta>_pos hsmall by (by100 blast)
+  next
+    case False
+    have hsum_pos: "0 < \<alpha> + \<beta>"
+      using False by (by100 simp)
+    define \<eta> where "\<eta> = min 1 ((-\<beta>) / (2 * (\<alpha> + \<beta>)))"
+    have hgap_pos: "0 < (-\<beta>) / (2 * (\<alpha> + \<beta>))"
+      using h\<beta>_neg hsum_pos by (by100 simp)
+    have h\<eta>_pos: "0 < \<eta>"
+      unfolding \<eta>_def using hgap_pos by (by100 simp)
+    have hsmall:
+        "\<forall>t>0. t < \<eta> \<longrightarrow>
+          (\<forall>s u v. 0 < s \<longrightarrow> 0 \<le> u \<longrightarrow> 0 \<le> v \<longrightarrow>
+            s * \<alpha> = u * (1 + t) - v * t \<longrightarrow>
+            s * \<beta> = v * (1 + t) - u * t \<longrightarrow> False)"
+    proof (intro allI impI)
+      fix t s u v :: real
+      assume ht_pos: "0 < t"
+      assume ht_lt: "t < \<eta>"
+      assume hs_pos: "0 < s"
+      assume "0 \<le> u"
+      assume hv_nonneg: "0 \<le> v"
+      assume h\<alpha>eq: "s * \<alpha> = u * (1 + t) - v * t"
+      assume h\<beta>eq: "s * \<beta> = v * (1 + t) - u * t"
+      have hshear:
+          "s * (\<beta> + t * (\<alpha> + \<beta>)) = v * (1 + 2 * t)"
+        using h\<alpha>eq h\<beta>eq by (simp add: algebra_simps)
+      have ht_gap: "t < (-\<beta>) / (2 * (\<alpha> + \<beta>))"
+        using ht_lt unfolding \<eta>_def by (by100 simp)
+      have ht_scaled: "t * (\<alpha> + \<beta>) < (-\<beta>) / 2"
+      proof -
+        have "t * (\<alpha> + \<beta>) <
+            ((-\<beta>) / (2 * (\<alpha> + \<beta>))) * (\<alpha> + \<beta>)"
+          using mult_strict_right_mono[OF ht_gap hsum_pos] .
+        also have "\<dots> = (-\<beta>) / 2"
+          using hsum_pos by (simp add: field_simps)
+        finally show ?thesis .
+      qed
+      have hcoef_neg: "\<beta> + t * (\<alpha> + \<beta>) < 0"
+        using h\<beta>_neg ht_scaled by (by100 linarith)
+      have hleft_neg: "s * (\<beta> + t * (\<alpha> + \<beta>)) < 0"
+        using hs_pos hcoef_neg by (by100 simp)
+      have hright_nonneg: "0 \<le> v * (1 + 2 * t)"
+        using hv_nonneg ht_pos by (by100 simp)
+      show False
+        using hshear hleft_neg hright_nonneg by (by100 linarith)
+    qed
+    show ?thesis
+      using h\<eta>_pos hsmall by (by100 blast)
+  qed
+qed
+
 lemma geotop_triangle_two_base_vertices_scalar_near_limit_prefix:
   fixes a b c x :: "real^2"
   assumes ht: "0 \<le> t"
