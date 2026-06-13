@@ -34917,6 +34917,57 @@ proof -
     using hface_abc hface_def hinter by (by100 simp)
 qed
 
+lemma geotop_triangle_set_intersections_faces_from_vertex_witnesses_prefix:
+  fixes S :: "(real^2) set set" and V :: "(real^2) set \<Rightarrow> (real^2) set"
+  assumes htri:
+    "\<And>\<sigma>. \<sigma> \<in> S \<Longrightarrow>
+      \<exists>a b c. V \<sigma> = {a, b, c}
+        \<and> \<not> collinear {a, b, c}
+        \<and> \<sigma> = geotop_convex_hull {a, b, c}"
+  assumes hinter:
+    "\<And>\<sigma> \<tau>. \<sigma> \<in> S \<Longrightarrow> \<tau> \<in> S \<Longrightarrow> \<sigma> \<inter> \<tau> \<noteq> {} \<Longrightarrow>
+      \<exists>W. W \<noteq> {} \<and> W \<subseteq> V \<sigma> \<and> W \<subseteq> V \<tau>
+        \<and> \<sigma> \<inter> \<tau> = geotop_convex_hull W"
+  shows "\<forall>\<sigma>\<in>S. \<forall>\<tau>\<in>S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+    \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+proof (intro ballI impI)
+  fix \<sigma> \<tau>
+  assume h\<sigma>S: "\<sigma> \<in> S"
+  assume h\<tau>S: "\<tau> \<in> S"
+  assume hmeet: "\<sigma> \<inter> \<tau> \<noteq> {}"
+  obtain a b c where hV\<sigma>: "V \<sigma> = {a, b, c}"
+    and hnc\<sigma>: "\<not> collinear {a, b, c}"
+    and h\<sigma>eq: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using htri[OF h\<sigma>S] by (by100 blast)
+  obtain d e f where hV\<tau>: "V \<tau> = {d, e, f}"
+    and hnc\<tau>: "\<not> collinear {d, e, f}"
+    and h\<tau>eq: "\<tau> = geotop_convex_hull {d, e, f}"
+    using htri[OF h\<tau>S] by (by100 blast)
+  obtain W where hWne: "W \<noteq> {}"
+    and hW\<sigma>: "W \<subseteq> V \<sigma>"
+    and hW\<tau>: "W \<subseteq> V \<tau>"
+    and hinter: "\<sigma> \<inter> \<tau> = geotop_convex_hull W"
+    using hinter[OF h\<sigma>S h\<tau>S hmeet] by (by100 blast)
+  have hWabc: "W \<subseteq> {a, b, c}"
+    using hW\<sigma> hV\<sigma> by (by100 simp)
+  have hWdef: "W \<subseteq> {d, e, f}"
+    using hW\<tau> hV\<tau> by (by100 simp)
+  have hfaces:
+      "geotop_is_face
+        (geotop_convex_hull {a, b, c} \<inter> geotop_convex_hull {d, e, f})
+        (geotop_convex_hull {a, b, c})
+      \<and> geotop_is_face
+        (geotop_convex_hull {a, b, c} \<inter> geotop_convex_hull {d, e, f})
+        (geotop_convex_hull {d, e, f})"
+    by (rule geotop_two_noncollinear_triangle_intersection_subset_faces_prefix
+        [OF hnc\<sigma> hnc\<tau> hWne hWabc hWdef])
+      (use h\<sigma>eq h\<tau>eq hinter in \<open>by (by100 simp)\<close>)
+  show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+    \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hfaces h\<sigma>eq h\<tau>eq by (by100 simp)
+qed
+
 lemma geotop_three_noncollinear_convex_hull_is_simplex_prefix:
   fixes a b c :: "real^2"
   assumes hnc: "\<not> collinear {a, b, c}"
