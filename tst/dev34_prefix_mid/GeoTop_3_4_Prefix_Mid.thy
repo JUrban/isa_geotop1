@@ -9160,6 +9160,89 @@ proof -
     unfolding geotop_polyhedron_def using hF_union by (by100 blast)
 qed
 
+lemma geotop_delete_2simplex_polyhedron_eq_without_rel_interior_prefix:
+  fixes K :: "(real^2) set set" and \<theta> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  shows "geotop_polyhedron (K - {\<theta>}) =
+    geotop_polyhedron K - rel_interior \<theta>"
+  (**
+    Carrier form of deleting a plane 2-simplex: a finite complex is the
+    disjoint union of the relative interiors of its simplexes, so removing the
+    2-simplex removes exactly its relative interior from the carrier.  The
+    boundary faces remain because the complex is face-closed. **)
+proof
+  show "geotop_polyhedron (K - {\<theta>}) \<subseteq>
+      geotop_polyhedron K - rel_interior \<theta>"
+  proof
+    fix x
+    assume hxKd: "x \<in> geotop_polyhedron (K - {\<theta>})"
+    obtain \<sigma> where h\<sigma>Kd: "\<sigma> \<in> K - {\<theta>}" and hx\<sigma>: "x \<in> \<sigma>"
+      using hxKd unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using h\<sigma>Kd by (by100 blast)
+    have h\<sigma>ne: "\<sigma> \<noteq> \<theta>"
+      using h\<sigma>Kd by (by100 blast)
+    have hxK: "x \<in> geotop_polyhedron K"
+      unfolding geotop_polyhedron_def using h\<sigma>K hx\<sigma> by (by100 blast)
+    have hx_not_rel: "x \<notin> rel_interior \<theta>"
+    proof
+      assume hxrel: "x \<in> rel_interior \<theta>"
+      have hcarrier_eq: "geotop_K_carrier K x = \<theta>"
+        by (rule geotop_K_carrier_eq[OF hK h\<theta>K hxrel])
+      have hcarrier_sub_\<sigma>: "geotop_K_carrier K x \<subseteq> \<sigma>"
+        by (rule geotop_K_carrier_subset_containing_simplex
+            [OF hK hK_fin h\<sigma>K hx\<sigma>])
+      have h\<theta>sub_\<sigma>: "\<theta> \<subseteq> \<sigma>"
+        using hcarrier_eq hcarrier_sub_\<sigma> by (by100 simp)
+      have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+        using hK h\<sigma>K unfolding geotop_is_complex_def by (by100 blast)
+      obtain n where h\<sigma>n: "geotop_simplex_dim \<sigma> n"
+        using h\<sigma>simplex unfolding geotop_is_simplex_def by (by100 blast)
+      have hn_le_2: "n \<le> 2"
+        by (rule geotop_simplex_dim_le_2_R2_prefix[OF h\<sigma>n])
+      have hproper: "\<theta> \<subset> \<sigma>"
+        using h\<theta>sub_\<sigma> h\<sigma>ne by (by100 blast)
+      have hlt: "2 < n"
+        by (rule geotop_complex_proper_subset_dim_less
+            [OF hK h\<theta>K h\<sigma>K hproper h\<theta>2 h\<sigma>n])
+      show False
+        using hlt hn_le_2 by (by100 linarith)
+    qed
+    show "x \<in> geotop_polyhedron K - rel_interior \<theta>"
+      using hxK hx_not_rel by (by100 blast)
+  qed
+  show "geotop_polyhedron K - rel_interior \<theta> \<subseteq>
+      geotop_polyhedron (K - {\<theta>})"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron K - rel_interior \<theta>"
+    have hxK: "x \<in> geotop_polyhedron K"
+      using hx by (by100 blast)
+    have hx_not_rel: "x \<notin> rel_interior \<theta>"
+      using hx by (by100 blast)
+    have hcarrierK: "geotop_K_carrier K x \<in> K"
+      by (rule geotop_K_carrier_in[OF hK hK_fin hxK])
+    have hxcarrier: "x \<in> geotop_K_carrier K x"
+      by (rule geotop_K_carrier_contains_point[OF hK hK_fin hxK])
+    have hcarrier_ne: "geotop_K_carrier K x \<noteq> \<theta>"
+    proof
+      assume hcarrier_eq: "geotop_K_carrier K x = \<theta>"
+      have hxrel: "x \<in> rel_interior \<theta>"
+        using geotop_K_carrier_rel_interior[OF hK hK_fin hxK] hcarrier_eq
+        by (by100 simp)
+      thus False
+        using hx_not_rel by (by100 blast)
+    qed
+    have hcarrierKd: "geotop_K_carrier K x \<in> K - {\<theta>}"
+      using hcarrierK hcarrier_ne by (by100 simp)
+    show "x \<in> geotop_polyhedron (K - {\<theta>})"
+      unfolding geotop_polyhedron_def using hcarrierKd hxcarrier by (by100 blast)
+  qed
+qed
+
 lemma geotop_complex_2simplex_face_eq_prefix:
   fixes K :: "(real^2) set set" and \<rho> \<theta> :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -35859,6 +35942,16 @@ proof -
       using hfigure33_boundary_through_old_edge_point_split
       by (elim exE conjE)
     let ?J' = "?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O"
+    have hKd_poly_without_theta_rel_interior:
+        "geotop_polyhedron ?K\<^sub>d =
+          geotop_polyhedron K - rel_interior \<theta>"
+      by (rule geotop_delete_2simplex_polyhedron_eq_without_rel_interior_prefix
+          [OF hK hK_fin h\<theta>K h\<theta>2])
+    have hKd_poly_without_theta_rel_interior_closed_disk:
+        "geotop_polyhedron ?K\<^sub>d =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - rel_interior \<theta>"
+      using hKd_poly_without_theta_rel_interior hK_poly by (by100 simp)
     have hCO_sub_J: "C\<^sub>O \<subseteq> J"
       using hJ_oriented_split by (by100 blast)
     have hCO_sub_Kd_polyhedron: "C\<^sub>O \<subseteq> geotop_polyhedron ?K\<^sub>d"
