@@ -38014,6 +38014,8 @@ proof -
 	            {\<tau>. \<exists>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
 	              \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
 	        let ?v\<^sub>5 = "midpoint v\<^sub>0 v\<^sub>2"
+	        let ?v\<^sub>3_of = "\<lambda>t::real. v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - ?v\<^sub>5)"
+	        let ?v\<^sub>4_of = "\<lambda>t::real. ?v\<^sub>5 + t *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
 	        have hfigure33_book_local_simplicial_extension:
             "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
               collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
@@ -38093,6 +38095,133 @@ proof -
 	            thus ?thesis
 	              using closed_segment_commute[of v\<^sub>2 ?v\<^sub>5] by metis
 	          qed
+	          have hfigure33_book_line_scalar_basic:
+	              "\<And>t. 0 < t \<Longrightarrow>
+	                collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+	                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+	                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+	                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
+	          proof -
+	            fix t :: real
+	            assume ht: "0 < t"
+	            have ht_ne: "t \<noteq> 0"
+	              using ht by (by100 simp)
+	            have h1t_ne: "1 + t \<noteq> 0"
+	              using ht by (by100 simp)
+	            have hv\<^sub>1v\<^sub>5_vec: "v\<^sub>1 - ?v\<^sub>5 \<noteq> 0"
+	              using hv\<^sub>1_mid_ne by (by100 simp)
+	            have hv\<^sub>5v\<^sub>1_vec: "?v\<^sub>5 - v\<^sub>1 \<noteq> 0"
+	              using hv\<^sub>1_mid_ne by (by100 simp)
+	            have hv\<^sub>3_line:
+	                "?v\<^sub>3_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+	            proof -
+	              have "?v\<^sub>3_of t = v\<^sub>1 + (- t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+	                by (simp add: algebra_simps)
+	              thus ?thesis
+	                unfolding affine_hull_2_alt by (by100 blast)
+	            qed
+	            have hv\<^sub>4_line:
+	                "?v\<^sub>4_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+	            proof -
+	              have "?v\<^sub>4_of t = v\<^sub>1 + (1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+	                by (simp add: algebra_simps)
+	              thus ?thesis
+	                unfolding affine_hull_2_alt by (by100 blast)
+	            qed
+	            have hcol3: "collinear {v\<^sub>1, ?v\<^sub>5, ?v\<^sub>3_of t}"
+	              by (rule affine_hull_3_imp_collinear[OF hv\<^sub>3_line])
+	            have hcol4: "collinear {v\<^sub>1, ?v\<^sub>5, ?v\<^sub>4_of t}"
+	              by (rule affine_hull_3_imp_collinear[OF hv\<^sub>4_line])
+	            have hcol: "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}"
+	            proof -
+	              have "collinear (insert v\<^sub>1 (insert ?v\<^sub>5 {?v\<^sub>3_of t, ?v\<^sub>4_of t}))"
+	                using hcol3 hcol4
+	                  collinear_triples[OF hv\<^sub>1_mid_ne, of "{?v\<^sub>3_of t, ?v\<^sub>4_of t}"]
+	                by (by100 simp)
+	              thus ?thesis
+	                by (simp add: insert_commute)
+	            qed
+	            have hv\<^sub>4_ne_v\<^sub>5: "?v\<^sub>4_of t \<noteq> ?v\<^sub>5"
+	              using ht_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 fastforce)
+	            have hv\<^sub>1_ne_v\<^sub>3: "v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
+	              using ht_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 fastforce)
+	            have hv\<^sub>5_ne_v\<^sub>3: "?v\<^sub>5 \<noteq> ?v\<^sub>3_of t"
+	            proof
+	              assume "?v\<^sub>5 = ?v\<^sub>3_of t"
+	              hence "(1 + t) *\<^sub>R (v\<^sub>1 - ?v\<^sub>5) = 0"
+	                by (simp add: algebra_simps)
+	              thus False
+	                using h1t_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 blast)
+	            qed
+	            have hv\<^sub>4_ne_v\<^sub>1: "?v\<^sub>4_of t \<noteq> v\<^sub>1"
+	            proof
+	              assume "?v\<^sub>4_of t = v\<^sub>1"
+	              hence "(1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1) = 0"
+	                by (simp add: algebra_simps)
+	              thus False
+	                using h1t_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 blast)
+	            qed
+	            show "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+	                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+	                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+	                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
+	              using hcol hv\<^sub>4_ne_v\<^sub>5 hv\<^sub>5_ne_v\<^sub>3 hv\<^sub>4_ne_v\<^sub>1 hv\<^sub>1_ne_v\<^sub>3
+	              by (by100 blast)
+	          qed
+	          have hfigure33_book_local_simplicial_extension_boundary_control_scalar:
+	              "\<exists>t>0.
+		                geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  = geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>5}
+		                \<and> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<inter> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>0, ?v\<^sub>5}
+		                \<and> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {?v\<^sub>5}
+		                \<and> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<inter> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {?v\<^sub>5}
+		                \<and> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>2, ?v\<^sub>5}
+		                \<and> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {?v\<^sub>5, ?v\<^sub>3_of t}
+		                \<and> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  = geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>2, v\<^sub>1}
+		                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+		                  = geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t}
+		                \<and> geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5) \<subseteq> U
+	                \<and> geotop_polyhedron (?target_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t))
+	                    = geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                \<and> (\<forall>h. (\<forall>v\<in>geotop_complex_vertices
+		                          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5).
+		                          h v = (if v = ?v\<^sub>5 then v\<^sub>1 else v))
+	                    \<longrightarrow> (\<forall>\<sigma>\<in>?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5.
+	                          geotop_linear_on \<sigma> h)
+		                      \<longrightarrow> (\<forall>x\<in>frontier
+		                          (geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)).
+		                          h x = x))
+		                \<and> C\<^sub>O \<inter> geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                    \<subseteq> {v\<^sub>0, v\<^sub>2}"
+	            sorry
 	          have hfigure33_book_local_simplicial_extension_boundary_control_midpoint:
 	              "\<exists>v\<^sub>3 v\<^sub>4.
 	                collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, ?v\<^sub>5}
@@ -38149,7 +38278,91 @@ proof -
 		                          h x = x))
 		                \<and> C\<^sub>O \<inter> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 ?v\<^sub>5)
 		                    \<subseteq> {v\<^sub>0, v\<^sub>2}"
-	            sorry
+	          proof -
+	            obtain t where ht_pos: "0 < t"
+	              and hsource045245:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                  = geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>5}"
+	              and hsource045053:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>0, ?v\<^sub>5}"
+	              and hsource045253:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {?v\<^sub>5}"
+	              and hsource245053:
+	                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {?v\<^sub>5}"
+	              and hsource245253:
+	                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>2, ?v\<^sub>5}"
+	              and hsource053253:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {?v\<^sub>5, ?v\<^sub>3_of t}"
+	              and htarget041241:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+	                  = geotop_convex_hull {?v\<^sub>4_of t, v\<^sub>1}"
+	              and htarget041013:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+	              and htarget041213:
+	                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>1}"
+	              and htarget241013:
+	                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>1}"
+	              and htarget241213:
+	                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>2, v\<^sub>1}"
+	              and htarget013213:
+	                "geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
+	                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
+	                  = geotop_convex_hull {v\<^sub>1, ?v\<^sub>3_of t}"
+	              and hcarrier_sub_U:
+	                "geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5) \<subseteq> U"
+	              and hcarrier_poly_eq:
+	                "geotop_polyhedron (?target_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t))
+	                  = geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+	              and hcarrier_frontier_fix_rule:
+	                "\<forall>h. (\<forall>v\<in>geotop_complex_vertices
+	                        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5).
+	                        h v = (if v = ?v\<^sub>5 then v\<^sub>1 else v))
+	                  \<longrightarrow> (\<forall>\<sigma>\<in>?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5.
+	                        geotop_linear_on \<sigma> h)
+	                  \<longrightarrow> (\<forall>x\<in>frontier
+	                        (geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)).
+	                        h x = x)"
+	              and hCO_carrier_inter:
+	                "C\<^sub>O \<inter> geotop_polyhedron (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+	              using hfigure33_book_local_simplicial_extension_boundary_control_scalar
+	              by (elim exE conjE)
+	            have hbasic:
+	                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+	                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+	                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+	                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+	                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
+	              by (rule hfigure33_book_line_scalar_basic[OF ht_pos])
+	            show ?thesis
+	              using hbasic hsource045245 hsource045053 hsource045253
+	                hsource245053 hsource245253 hsource053253 htarget041241
+	                htarget041013 htarget041213 htarget241013 htarget241213
+	                htarget013213 hcarrier_sub_U hcarrier_poly_eq
+	                hcarrier_frontier_fix_rule hCO_carrier_inter
+	              by (intro exI[of _ "?v\<^sub>3_of t"] exI[of _ "?v\<^sub>4_of t"])
+	                (by100 blast)
+	          qed
 	          have hfigure33_book_local_simplicial_extension_boundary_control:
 	              "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5.
 	                collinear {v\<^sub>1, v\<^sub>3, v\<^sub>4, v\<^sub>5}
