@@ -36410,7 +36410,7 @@ lemma geotop_triangle_same_apex_base_split_union_prefix:
   fixes a b c r :: "real^2"
   assumes hr: "r \<in> closed_segment b c"
   shows "geotop_convex_hull {a, b, r} \<union> geotop_convex_hull {a, r, c}
-      = geotop_convex_hull {a, b, c}"
+    = geotop_convex_hull {a, b, c}"
 proof
   show "geotop_convex_hull {a, b, r} \<union> geotop_convex_hull {a, r, c}
       \<subseteq> geotop_convex_hull {a, b, c}"
@@ -36497,6 +36497,37 @@ proof
         using hx_right hright unfolding geotop_convex_hull_eq_HOL by (by100 simp)
     qed
   qed
+qed
+
+lemma geotop_triangle_moving_same_apex_affine_coords_prefix:
+  fixes p a b x :: "real^2"
+  assumes hx:
+    "x \<in> geotop_convex_hull
+      {p, p + ((1 + t) *\<^sub>R a - t *\<^sub>R b),
+        p + ((- t) *\<^sub>R a + (1 + t) *\<^sub>R b)}"
+  shows "\<exists>u v. 0 \<le> u \<and> 0 \<le> v \<and> u + v \<le> 1
+    \<and> x = p + (u * (1 + t) - v * t) *\<^sub>R a
+      + (v * (1 + t) - u * t) *\<^sub>R b"
+  (**
+    Coordinate form of the Figure 3.3 same-apex moving triangle.  In endpoint
+    coordinates, the two moving rays have coefficients
+    \<open>((1+t), -t)\<close> and \<open>(-t, (1+t))\<close>. **)
+proof -
+  let ?A = "p + ((1 + t) *\<^sub>R a - t *\<^sub>R b)"
+  let ?B = "p + ((- t) *\<^sub>R a + (1 + t) *\<^sub>R b)"
+  have hx_HOL: "x \<in> convex hull {p, ?A, ?B}"
+    using hx unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+  obtain u v where hu: "0 \<le> u"
+    and hv: "0 \<le> v"
+    and huv: "u + v \<le> 1"
+    and hx_eq: "x = p + u *\<^sub>R (?A - p) + v *\<^sub>R (?B - p)"
+    using hx_HOL unfolding convex_hull_3_alt by (by100 blast)
+  have hcoords:
+      "x = p + (u * (1 + t) - v * t) *\<^sub>R a
+        + (v * (1 + t) - u * t) *\<^sub>R b"
+    using hx_eq by (simp add: algebra_simps scaleR_add_right scaleR_diff_right)
+  show ?thesis
+    using hu hv huv hcoords by (by100 blast)
 qed
 
 lemma geotop_triangle_two_base_vertices_scalar_near_limit_prefix:
