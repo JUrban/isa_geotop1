@@ -47093,7 +47093,70 @@ lemma geotop_polygon_disk_corner_two_boundary_edges_no_other_incident_edge_prefi
     contradicting the finite polygonal boundary graph, or an interior germ
     leaving the closed disk through the local corner wedge already occupied by
     \<open>\<theta>\<close>. **)
-  sorry
+proof
+  assume hbad:
+    "\<exists>d\<in>K - {\<theta>}.
+      d \<noteq> e1 \<and> d \<noteq> e2 \<and> geotop_is_edge d \<and> x \<in> d"
+  obtain d where hdKd: "d \<in> K - {\<theta>}"
+    and hd_ne_e1: "d \<noteq> e1"
+    and hd_ne_e2: "d \<noteq> e2"
+    and hd_edge: "geotop_is_edge d"
+    and hxd: "x \<in> d"
+    using hbad by (by100 blast)
+  have hdK: "d \<in> K"
+    using hdKd by (by100 blast)
+  have hd_ne_\<theta>: "d \<noteq> \<theta>"
+    using hdKd by (by100 blast)
+  have he1_edge: "geotop_is_edge e1"
+    using hboundary_two_edge_package by (by100 blast)
+  have he2_edge: "geotop_is_edge e2"
+    using hboundary_two_edge_package by (by100 blast)
+  have he1_face: "geotop_is_face e1 \<theta>"
+    using hboundary_two_edge_package by (by100 blast)
+  have he2_face: "geotop_is_face e2 \<theta>"
+    using hboundary_two_edge_package by (by100 blast)
+  have he1J: "e1 \<subseteq> J"
+    using hboundary_two_edge_package by (by100 blast)
+  have he2J: "e2 \<subseteq> J"
+    using hboundary_two_edge_package by (by100 blast)
+  have he1K: "e1 \<in> K"
+    using hK h\<theta>K he1_face unfolding geotop_is_complex_def by (by100 blast)
+  have he2K: "e2 \<in> K"
+    using hK h\<theta>K he2_face unfolding geotop_is_complex_def by (by100 blast)
+  have hxy_in_old: "closed_segment x y \<in> {e1, e2}"
+    using hcorner_edge_set by (by100 simp)
+  have hxz_in_old: "closed_segment x z \<in> {e1, e2}"
+    using hcorner_edge_set by (by100 simp)
+  have hxy_edge: "geotop_is_edge (closed_segment x y)"
+    using hxy_in_old he1_edge he2_edge by (by100 auto)
+  have hxz_edge: "geotop_is_edge (closed_segment x z)"
+    using hxz_in_old he1_edge he2_edge by (by100 auto)
+  have hxyJ: "closed_segment x y \<subseteq> J"
+    using hxy_in_old he1J he2J by (by100 auto)
+  have hxzJ: "closed_segment x z \<subseteq> J"
+    using hxz_in_old he1J he2J by (by100 auto)
+  obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+    and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    and hd_face_\<rho>: "geotop_is_face d \<rho>"
+    using geotop_polygon_disk_edge_owned_by_2simplex_prefix
+      [OF hJ hK hK_poly hdK hd_edge]
+    by (elim bexE conjE)
+  have hthird_boundary_or_interior:
+    "d \<subseteq> J \<or> \<not> d \<subseteq> J"
+    by (by100 blast)
+  have hcorner_wedge_excludes_third_edge: False
+    (**
+      Remaining Moise corner-wedge contradiction.  If \<open>d \<subseteq> J\<close>, use the
+      polygonal boundary graph split between \<open>y\<close> and \<open>z\<close> through the
+      interior of \<open>closed_segment x y \<union> closed_segment x z\<close> to rule out a
+      third boundary germ at \<open>x\<close>.  If \<open>\<not> d \<subseteq> J\<close>, use the owned
+      two-simplex \<open>\<rho>\<close> and the complex intersection with \<open>\<theta>\<close> to show the
+      non-boundary germ would have to leave the closed disk through the
+      corner wedge already filled by \<open>\<theta>\<close>. **)
+    sorry
+  show False
+    by (rule hcorner_wedge_excludes_third_edge)
+qed
 
 lemma geotop_figure33_two_boundary_named_supported_inverse_fold_prefix:
   fixes J U \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
