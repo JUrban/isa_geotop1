@@ -3882,6 +3882,20 @@ proof
     using hx by (by100 simp)
 qed
 
+lemma geotop_closure_point_meets_centered_ball_prefix:
+  fixes A :: "'a::metric_space set"
+  assumes hx: "x \<in> closure A"
+  assumes hr: "0 < r"
+  shows "A \<inter> ball x r \<noteq> {}"
+proof -
+  obtain a where haA: "a \<in> A" and hadist: "dist a x < r"
+    using hx hr unfolding closure_approachable by (by100 blast)
+  have hball: "a \<in> ball x r"
+    using hadist dist_commute by (by100 simp)
+  show ?thesis
+    using haA hball by (by100 blast)
+qed
+
 lemma geotop_connected_local_component_closure_touch_three_sets_prefix:
   fixes A U G\<^sub>1 G\<^sub>2 G\<^sub>3 :: "'a::real_normed_vector set" and x :: 'a
   assumes hA_conn: "connected A"
@@ -13635,20 +13649,7 @@ proof -
                 using hq\<^sub>1_not_ball by (by100 blast)
               have hW_ball_nonempty_if_w_endpoint:
                   "w \<in> closure W \<Longrightarrow> W \<inter> ball w r \<noteq> {}"
-              proof -
-                assume hwW_cl: "w \<in> closure W"
-                obtain a where haW: "a \<in> W" and hadist: "dist a w < r"
-                  using hwW_cl hr_pos unfolding closure_approachable
-                  by (by100 blast)
-                have hadist_eq: "dist w a = dist a w"
-                  by (rule dist_commute)
-                have hadist_sym: "dist w a < r"
-                  using hadist_eq hadist by (by100 simp)
-                have haball: "a \<in> ball w r"
-                  using hadist_sym by (by100 simp)
-                show "W \<inter> ball w r \<noteq> {}"
-                  using haW haball by (by100 blast)
-              qed
+                by (rule geotop_closure_point_meets_centered_ball_prefix[OF _ hr_pos])
               have hW_source_ball_entry_cases:
                   "((\<exists>D. N = D - {w}
                       \<and> W = D - {w, p}
