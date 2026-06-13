@@ -34555,6 +34555,207 @@ proof -
     by (rule finite_subset[OF hsub hfin_F])
 qed
 
+lemma geotop_compatible_simplex_face_closure_is_complex_prefix:
+  fixes S :: "(real^2) set set"
+  assumes hS_fin: "finite S"
+  assumes hS_simp: "\<forall>\<sigma>\<in>S. geotop_is_simplex \<sigma>"
+  assumes hS_inter:
+    "\<forall>\<sigma>\<in>S. \<forall>\<tau>\<in>S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  shows "geotop_is_complex {\<rho>. \<exists>\<sigma>\<in>S. \<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>}"
+proof -
+  let ?C = "{\<rho>. \<exists>\<sigma>\<in>S. \<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>}"
+  have hC_fin: "finite ?C"
+    by (rule geotop_finite_simplex_face_closure_prefix[OF hS_fin hS_simp])
+  have hC_simp: "\<forall>\<rho>\<in>?C. geotop_is_simplex \<rho>"
+  proof
+    fix \<rho>
+    assume h\<rho>C: "\<rho> \<in> ?C"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S"
+      and h\<rho>\<sigma>: "\<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>"
+      using h\<rho>C by (by100 blast)
+    show "geotop_is_simplex \<rho>"
+    proof (rule disjE[OF h\<rho>\<sigma>])
+      assume "\<rho> = \<sigma>"
+      thus ?thesis
+        using hS_simp h\<sigma>S by (by100 blast)
+    next
+      assume hface: "geotop_is_face \<rho> \<sigma>"
+      obtain V W where "geotop_simplex_vertices \<rho> W"
+        by (rule geotop_face_witness_simplex_vertices_prefix[OF hface])
+      thus ?thesis
+        unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+        by (by100 blast)
+    qed
+  qed
+  have hC_face: "\<forall>\<rho>\<in>?C. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> ?C"
+  proof (intro ballI allI impI)
+    fix \<rho> \<eta>
+    assume h\<rho>C: "\<rho> \<in> ?C"
+    assume h\<eta>\<rho>: "geotop_is_face \<eta> \<rho>"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S"
+      and h\<rho>\<sigma>: "\<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>"
+      using h\<rho>C by (by100 blast)
+    have h\<eta>\<sigma>: "\<eta> = \<sigma> \<or> geotop_is_face \<eta> \<sigma>"
+    proof (rule disjE[OF h\<rho>\<sigma>])
+      assume h\<rho>eq: "\<rho> = \<sigma>"
+      show ?thesis
+        using h\<eta>\<rho> h\<rho>eq by (by100 blast)
+    next
+      assume h\<rho>face: "geotop_is_face \<rho> \<sigma>"
+      have "geotop_is_face \<eta> \<sigma>"
+        by (rule geotop_is_face_trans_prefix[OF h\<eta>\<rho> h\<rho>face])
+      thus ?thesis
+        by (by100 blast)
+    qed
+    show "\<eta> \<in> ?C"
+      using h\<sigma>S h\<eta>\<sigma> by (by100 blast)
+  qed
+  have hface_or_eq_HOL:
+    "\<And>\<rho> \<sigma>. \<sigma> \<in> S \<Longrightarrow> \<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma> \<Longrightarrow>
+      \<rho> face_of \<sigma>"
+  proof -
+    fix \<rho> \<sigma>
+    assume h\<sigma>S: "\<sigma> \<in> S"
+    assume h\<rho>\<sigma>: "\<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>"
+    have h\<sigma>simp: "geotop_is_simplex \<sigma>"
+      using hS_simp h\<sigma>S by (by100 blast)
+    have h\<sigma>conv: "convex \<sigma>"
+      by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simp])
+    show "\<rho> face_of \<sigma>"
+    proof (rule disjE[OF h\<rho>\<sigma>])
+      assume "\<rho> = \<sigma>"
+      thus ?thesis
+        using face_of_refl[OF h\<sigma>conv] by (by100 simp)
+    next
+      assume hface: "geotop_is_face \<rho> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_imp_HOL_face_of_R2[OF hface])
+    qed
+  qed
+  have hface_or_eq_sub:
+    "\<And>\<rho> \<sigma>. \<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma> \<Longrightarrow> \<rho> \<subseteq> \<sigma>"
+  proof -
+    fix \<rho> \<sigma>
+    assume h\<rho>\<sigma>: "\<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>"
+    show "\<rho> \<subseteq> \<sigma>"
+    proof (rule disjE[OF h\<rho>\<sigma>])
+      assume "\<rho> = \<sigma>"
+      thus ?thesis by (by100 simp)
+    next
+      assume hface: "geotop_is_face \<rho> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_imp_subset_prefix[OF hface])
+    qed
+  qed
+  have hC_inter:
+    "\<forall>\<rho>\<in>?C. \<forall>\<eta>\<in>?C. \<rho> \<inter> \<eta> \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<rho> \<inter> \<eta>) \<rho> \<and> geotop_is_face (\<rho> \<inter> \<eta>) \<eta>"
+  proof (intro ballI impI)
+    fix \<rho> \<eta>
+    assume h\<rho>C: "\<rho> \<in> ?C"
+    assume h\<eta>C: "\<eta> \<in> ?C"
+    assume h\<rho>\<eta>ne: "\<rho> \<inter> \<eta> \<noteq> {}"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S"
+      and h\<rho>\<sigma>: "\<rho> = \<sigma> \<or> geotop_is_face \<rho> \<sigma>"
+      using h\<rho>C by (by100 blast)
+    obtain \<tau> where h\<tau>S: "\<tau> \<in> S"
+      and h\<eta>\<tau>: "\<eta> = \<tau> \<or> geotop_is_face \<eta> \<tau>"
+      using h\<eta>C by (by100 blast)
+    have h\<rho>sub\<sigma>: "\<rho> \<subseteq> \<sigma>"
+      by (rule hface_or_eq_sub[OF h\<rho>\<sigma>])
+    have h\<eta>sub\<tau>: "\<eta> \<subseteq> \<tau>"
+      by (rule hface_or_eq_sub[OF h\<eta>\<tau>])
+    have h\<sigma>\<tau>ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+      using h\<rho>\<eta>ne h\<rho>sub\<sigma> h\<eta>sub\<tau> by (by100 blast)
+    have h\<rho>HOL\<sigma>: "\<rho> face_of \<sigma>"
+      by (rule hface_or_eq_HOL[OF h\<sigma>S h\<rho>\<sigma>])
+    have h\<eta>HOL\<tau>: "\<eta> face_of \<tau>"
+      by (rule hface_or_eq_HOL[OF h\<tau>S h\<eta>\<tau>])
+    have h\<sigma>simp: "geotop_is_simplex \<sigma>"
+      using hS_simp h\<sigma>S by (by100 blast)
+    have h\<tau>simp: "geotop_is_simplex \<tau>"
+      using hS_simp h\<tau>S by (by100 blast)
+    have h\<rho>simp: "geotop_is_simplex \<rho>"
+      using hC_simp h\<rho>C by (by100 blast)
+    have h\<eta>simp: "geotop_is_simplex \<eta>"
+      using hC_simp h\<eta>C by (by100 blast)
+    have hseed_faces:
+      "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and>
+       geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hS_inter h\<sigma>S h\<tau>S h\<sigma>\<tau>ne by (by100 blast)
+    have hI_HOL\<sigma>: "(\<sigma> \<inter> \<tau>) face_of \<sigma>"
+      by (rule geotop_is_face_imp_HOL_face_of_R2[OF conjunct1[OF hseed_faces]])
+    have hI_HOL\<tau>: "(\<sigma> \<inter> \<tau>) face_of \<tau>"
+      by (rule geotop_is_face_imp_HOL_face_of_R2[OF conjunct2[OF hseed_faces]])
+    have h\<eta>I_HOL\<tau>: "(\<eta> \<inter> (\<sigma> \<inter> \<tau>)) face_of \<tau>"
+      by (rule face_of_Int[OF h\<eta>HOL\<tau> hI_HOL\<tau>])
+    have h\<eta>I_HOL_I: "(\<eta> \<inter> (\<sigma> \<inter> \<tau>)) face_of (\<sigma> \<inter> \<tau>)"
+      using face_of_face[OF hI_HOL\<tau>, of "\<eta> \<inter> (\<sigma> \<inter> \<tau>)"]
+        h\<eta>I_HOL\<tau> by (by100 blast)
+    have h\<eta>I_HOL\<sigma>: "(\<eta> \<inter> (\<sigma> \<inter> \<tau>)) face_of \<sigma>"
+      using face_of_face[OF hI_HOL\<sigma>, of "\<eta> \<inter> (\<sigma> \<inter> \<tau>)"]
+        h\<eta>I_HOL_I by (by100 blast)
+    have h\<rho>\<eta>I_HOL\<sigma>:
+      "(\<rho> \<inter> (\<eta> \<inter> (\<sigma> \<inter> \<tau>))) face_of \<sigma>"
+      by (rule face_of_Int[OF h\<rho>HOL\<sigma> h\<eta>I_HOL\<sigma>])
+    have h\<rho>\<eta>I_HOL\<rho>:
+      "(\<rho> \<inter> (\<eta> \<inter> (\<sigma> \<inter> \<tau>))) face_of \<rho>"
+      using face_of_face[OF h\<rho>HOL\<sigma>,
+          of "\<rho> \<inter> (\<eta> \<inter> (\<sigma> \<inter> \<tau>))"]
+        h\<rho>\<eta>I_HOL\<sigma> by (by100 blast)
+    have h\<rho>I_HOL\<sigma>: "(\<rho> \<inter> (\<sigma> \<inter> \<tau>)) face_of \<sigma>"
+      by (rule face_of_Int[OF h\<rho>HOL\<sigma> hI_HOL\<sigma>])
+    have h\<rho>I_HOL_I: "(\<rho> \<inter> (\<sigma> \<inter> \<tau>)) face_of (\<sigma> \<inter> \<tau>)"
+      using face_of_face[OF hI_HOL\<sigma>, of "\<rho> \<inter> (\<sigma> \<inter> \<tau>)"]
+        h\<rho>I_HOL\<sigma> by (by100 blast)
+    have h\<rho>I_HOL\<tau>: "(\<rho> \<inter> (\<sigma> \<inter> \<tau>)) face_of \<tau>"
+      using face_of_face[OF hI_HOL\<tau>, of "\<rho> \<inter> (\<sigma> \<inter> \<tau>)"]
+        h\<rho>I_HOL_I by (by100 blast)
+    have h\<eta>\<rho>I_HOL\<tau>:
+      "(\<eta> \<inter> (\<rho> \<inter> (\<sigma> \<inter> \<tau>))) face_of \<tau>"
+      by (rule face_of_Int[OF h\<eta>HOL\<tau> h\<rho>I_HOL\<tau>])
+    have h\<eta>\<rho>I_HOL\<eta>:
+      "(\<eta> \<inter> (\<rho> \<inter> (\<sigma> \<inter> \<tau>))) face_of \<eta>"
+      using face_of_face[OF h\<eta>HOL\<tau>,
+          of "\<eta> \<inter> (\<rho> \<inter> (\<sigma> \<inter> \<tau>))"]
+        h\<eta>\<rho>I_HOL\<tau> by (by100 blast)
+    have hinter_eq1: "\<rho> \<inter> (\<eta> \<inter> (\<sigma> \<inter> \<tau>)) = \<rho> \<inter> \<eta>"
+      using h\<rho>sub\<sigma> h\<eta>sub\<tau> by (by100 blast)
+    have hinter_eq2: "\<eta> \<inter> (\<rho> \<inter> (\<sigma> \<inter> \<tau>)) = \<rho> \<inter> \<eta>"
+      using h\<rho>sub\<sigma> h\<eta>sub\<tau> by (by100 blast)
+    have hHOL\<rho>: "(\<rho> \<inter> \<eta>) face_of \<rho>"
+      using h\<rho>\<eta>I_HOL\<rho> hinter_eq1 by (by100 simp)
+    have hHOL\<eta>: "(\<rho> \<inter> \<eta>) face_of \<eta>"
+      using h\<eta>\<rho>I_HOL\<eta> hinter_eq2 by (by100 simp)
+    have hgeo\<rho>: "geotop_is_face (\<rho> \<inter> \<eta>) \<rho>"
+      by (rule geotop_HOL_face_of_simplex_imp_geotop_is_face_R2
+          [OF h\<rho>simp hHOL\<rho> h\<rho>\<eta>ne])
+    have hgeo\<eta>: "geotop_is_face (\<rho> \<inter> \<eta>) \<eta>"
+      by (rule geotop_HOL_face_of_simplex_imp_geotop_is_face_R2
+          [OF h\<eta>simp hHOL\<eta> h\<rho>\<eta>ne])
+    show "geotop_is_face (\<rho> \<inter> \<eta>) \<rho> \<and>
+      geotop_is_face (\<rho> \<inter> \<eta>) \<eta>"
+      using hgeo\<rho> hgeo\<eta> by (by100 blast)
+  qed
+  have hC_local:
+    "\<forall>\<rho>\<in>?C. \<exists>U. open U \<and> \<rho> \<subseteq> U \<and>
+      finite {\<eta>\<in>?C. \<eta> \<inter> U \<noteq> {}}"
+  proof
+    fix \<rho>
+    assume h\<rho>C: "\<rho> \<in> ?C"
+    have hopen: "open (UNIV::(real^2) set)"
+      by (by100 simp)
+    have hfin_filter: "finite {\<eta>\<in>?C. \<eta> \<inter> (UNIV::(real^2) set) \<noteq> {}}"
+      using hC_fin by (by100 simp)
+    show "\<exists>U. open U \<and> \<rho> \<subseteq> U \<and> finite {\<eta>\<in>?C. \<eta> \<inter> U \<noteq> {}}"
+      using hopen hfin_filter by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def
+    using hC_simp hC_face hC_inter hC_local by (by100 blast)
+qed
+
 lemma geotop_linear_on_vertex_segment_image_prefix:
   fixes \<sigma> :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes hlin: "geotop_linear_on \<sigma> f"
@@ -37115,8 +37316,16 @@ proof -
                 \<and> v\<^sub>1 \<noteq> v\<^sub>3
                 \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
                 \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
-                \<and> geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
-                \<and> geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)
+                \<and> (\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                      \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+                          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)
+                \<and> (\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                      \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+                          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)
                 \<and> geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
                 \<and> (\<forall>P\<in>UNIV - geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5).
                       f P = P)
@@ -37168,10 +37377,18 @@ proof -
               and hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> v\<^sub>3"
               and hv\<^sub>0_off_line: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
               and hv\<^sub>2_off_line: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
-              and hsource_complex:
-                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
-              and htarget_complex:
-                "geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)"
+              and hsource_inter:
+                "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                  \<forall>\<tau>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+              and htarget_inter:
+                "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                  \<forall>\<tau>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
+                    \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+                      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
               and hcarrier_sub_U:
                 "geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U"
               and hf_fix_carrier:
@@ -37350,6 +37567,20 @@ proof -
                     [OF hncol213] by (by100 simp)
               qed
             qed
+            have hsource_triangles_fin:
+                "finite (?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              by (by100 simp)
+            have htarget_triangles_fin:
+                "finite (?target_triangles v\<^sub>3 v\<^sub>4)"
+              by (by100 simp)
+            have hsource_complex:
+                "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
+              by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
+                  [OF hsource_triangles_fin hsource_simp hsource_inter])
+            have htarget_complex:
+                "geotop_is_complex (?target_carrier v\<^sub>3 v\<^sub>4)"
+              by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
+                  [OF htarget_triangles_fin htarget_simp htarget_inter])
             have hf_B05:
                 "f ` closed_segment v\<^sub>0 v\<^sub>5 = closed_segment v\<^sub>0 v\<^sub>1"
             proof -
