@@ -40538,6 +40538,76 @@ proof -
 		            show ?thesis
 		              using ht_pos havoid by (by100 blast)
 		          qed
+		          have hfigure33_source_carrier_support_bound_scalar:
+		              "\<exists>\<eta>>0. \<forall>t>0.
+		                t < \<eta> \<longrightarrow>
+		                geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                \<subseteq> U"
+		          proof -
+		            have hU_open_HOL: "open U"
+		              using hU_open
+		              unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+		              by (by100 simp)
+		            have h\<theta>_sub_U: "\<theta> \<subseteq> U"
+		              using hfigure33_boundary_support_package by (by100 blast)
+		            obtain \<epsilon> where h\<epsilon>_pos: "0 < \<epsilon>"
+		              and h\<epsilon>_balls:
+		                "(\<Union>x\<in>\<theta>. ball x \<epsilon>) \<subseteq> U"
+		              by (rule compact_subset_open_imp_ball_epsilon_subset
+		                  [OF h\<theta>_compact hU_open_HOL h\<theta>_sub_U])
+		            let ?D = "norm (?v\<^sub>5 - v\<^sub>1)"
+		            have hD_pos: "0 < ?D"
+		              using hv\<^sub>1_mid_ne by (simp add: norm_minus_commute)
+		            define \<eta> where "\<eta> = \<epsilon> / (2 * ?D)"
+		            have h\<eta>_pos: "0 < \<eta>"
+		              unfolding \<eta>_def using h\<epsilon>_pos hD_pos by (by100 simp)
+		            have hsmall:
+		                "\<forall>t>0. t < \<eta> \<longrightarrow>
+		                  geotop_polyhedron
+		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                  \<subseteq> U"
+		            proof (intro allI impI)
+		              fix t :: real
+		              assume ht_pos: "0 < t"
+		              assume ht_lt: "t < \<eta>"
+		              have htD_eps: "t * ?D < \<epsilon>"
+		              proof -
+		                have "t * ?D < \<eta> * ?D"
+		                  using ht_lt hD_pos by (by100 simp)
+		                also have "\<dots> = \<epsilon> / 2"
+		                  unfolding \<eta>_def using hD_pos by (simp add: field_simps)
+		                also have "\<dots> < \<epsilon>"
+		                  using h\<epsilon>_pos by (by100 simp)
+		                finally show ?thesis .
+		              qed
+		              show "geotop_polyhedron
+		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                  \<subseteq> U"
+		              proof
+		                fix x
+		                assume hx:
+		                  "x \<in> geotop_polyhedron
+		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		                obtain y where hy\<theta>: "y \<in> \<theta>"
+		                  and hdist_le: "dist x y \<le> t * ?D"
+		                  using hfigure33_source_carrier_near_theta_scalar
+		                    [OF ht_pos hx]
+		                  by (by100 blast)
+		                have hdist_eps: "dist y x < \<epsilon>"
+		                  using hdist_le htD_eps by (simp add: dist_commute)
+		                have hx_ball: "x \<in> ball y \<epsilon>"
+		                  using hdist_eps by (by100 simp)
+		                have "x \<in> (\<Union>y\<in>\<theta>. ball y \<epsilon>)"
+		                  by (rule UN_I[where a=y and A=\<theta> and B="\<lambda>z. ball z \<epsilon>",
+		                      OF hy\<theta> hx_ball])
+		                thus "x \<in> U"
+		                  using h\<epsilon>_balls by (by100 blast)
+		              qed
+		            qed
+		            show ?thesis
+		              using h\<eta>_pos hsmall by (by100 blast)
+		          qed
 		          have hfigure33_source_carrier_support_scalar:
 		              "\<exists>t>0.
 		                geotop_polyhedron
