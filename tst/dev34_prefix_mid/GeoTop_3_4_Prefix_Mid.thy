@@ -35705,6 +35705,25 @@ proof -
         [OF hlin hV haV hbV hfab])
 qed
 
+lemma geotop_image_union_from_split_images_prefix:
+  fixes f :: "'a \<Rightarrow> 'b"
+  assumes hA: "A = B \<union> C"
+  assumes hfB: "f ` B = D"
+  assumes hfC: "f ` C = E"
+  shows "f ` A = D \<union> E"
+  (**
+    Set-image bookkeeping for Figure 3.3: after the two old chord pieces have
+    known images, assemble the image of their union. **)
+proof -
+  have "f ` A = f ` (B \<union> C)"
+    by (simp only: hA)
+  also have "... = f ` B \<union> f ` C"
+    by (rule image_Un)
+  also have "... = D \<union> E"
+    by (simp only: hfB hfC)
+  finally show ?thesis .
+qed
+
 lemma geotop_linear_on_segment_fix_endpoints_prefix:
   fixes h :: "real^2 \<Rightarrow> real^2"
   assumes hab: "a \<noteq> b"
@@ -46951,16 +46970,13 @@ proof -
             qed
             have hf_B02: "f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2"
             proof -
-              have "f ` ?B\<^sub>0\<^sub>2 =
-                  f ` (closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5)"
-                by (simp only: hB02_split)
-              also have "... =
-                  f ` closed_segment v\<^sub>0 v\<^sub>5 \<union> f ` closed_segment v\<^sub>2 v\<^sub>5"
-                by (rule image_Un)
-              also have "... = closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>2 v\<^sub>1"
-                by (simp only: hf_B05 hf_B25)
-              finally show ?thesis
-                by (by100 simp)
+              have hf_B02_raw:
+                  "f ` ?B\<^sub>0\<^sub>2 =
+                    closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>2 v\<^sub>1"
+                by (rule geotop_image_union_from_split_images_prefix
+                    [OF hB02_split hf_B05 hf_B25])
+              show ?thesis
+                using hf_B02_raw by (by100 simp)
             qed
             have hf_CO: "f ` C\<^sub>O = C\<^sub>O"
             proof -
