@@ -42287,7 +42287,175 @@ proof -
 			                  \<subseteq>
 			                    geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
 			                    geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
-			              sorry
+			          proof -
+			            have hfigure33_endpoint_same_outer_germs_CR_side_scalar:
+			                "\<exists>\<eta>>0. \<forall>t>0.
+			                  t < \<eta> \<longrightarrow>
+			                  ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                      geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                    \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                      geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                  \<subseteq>
+			                    geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                    geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			              (**
+			                Local Figure 3.3 endpoint-angle step.  After the
+			                opposite-apex outer triangle has been excluded by
+			                compactness, the only possible punctured retained
+			                boundary contact is in the same-apex outer triangle.
+			                The book picture gives the stronger angular fact
+			                below: for sufficiently small scalar displacement,
+			                those same-apex contacts are empty. **)
+			            proof -
+			              have hfigure33_endpoint_same_outer_germs_empty_scalar:
+			                  "\<exists>\<eta>>0. \<forall>t>0.
+			                    t < \<eta> \<longrightarrow>
+			                    ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                      \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                    = {}"
+			                (**
+			                  Moise Figure 3.3 local angular separation at the
+			                  two old endpoints.  In affine coordinates based at
+			                  \<open>v\<^sub>0\<close> (respectively \<open>v\<^sub>2\<close>), the retained boundary
+			                  germ has a fixed direction outside the closed old
+			                  triangle angle, while the moving same-apex source
+			                  triangle has only an \<open>O(t)\<close> outward tilt.  Choosing
+			                  \<open>t\<close> below that fixed angular gap makes the punctured
+			                  germ disjoint from the same-apex outer triangle. **)
+			                sorry
+			              obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
+			                and hempty:
+			                  "\<forall>t>0.
+			                    t < \<eta> \<longrightarrow>
+			                    ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                      \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                    = {}"
+			                using hfigure33_endpoint_same_outer_germs_empty_scalar
+			                by (elim exE conjE)
+			              have hsmall:
+			                  "\<forall>t>0.
+			                    t < \<eta> \<longrightarrow>
+			                    ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                      \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                    \<subseteq>
+			                      geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                      geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			                using hempty by (by100 blast)
+			              show ?thesis
+			                using h\<eta>_pos hsmall by (by100 blast)
+			            qed
+			            show ?thesis
+			            proof -
+			              obtain \<eta>\<^sub>o where h\<eta>\<^sub>o_pos: "0 < \<eta>\<^sub>o"
+			                and hsame_outer:
+			                  "\<forall>t>0.
+			                    t < \<eta>\<^sub>o \<longrightarrow>
+			                    (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0)
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                      geotop_polyhedron
+			                        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                    \<subseteq>
+			                      (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                          ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                      \<union>
+			                      (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                          ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+			                using hfigure33_source_carrier_endpoint_germs_same_outer_scalar
+			                by (elim exE conjE)
+			              obtain \<eta>\<^sub>s where h\<eta>\<^sub>s_pos: "0 < \<eta>\<^sub>s"
+			                and hsame_side:
+			                  "\<forall>t>0.
+			                    t < \<eta>\<^sub>s \<longrightarrow>
+			                    ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                        geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                      \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                        geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                    \<subseteq>
+			                      geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                      geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			                using hfigure33_endpoint_same_outer_germs_CR_side_scalar
+			                by (elim exE conjE)
+			              define \<eta> where "\<eta> = min \<eta>\<^sub>o \<eta>\<^sub>s"
+			              have h\<eta>_pos: "0 < \<eta>"
+			                unfolding \<eta>_def using h\<eta>\<^sub>o_pos h\<eta>\<^sub>s_pos by (by100 simp)
+			              have hsmall:
+			                  "\<forall>t>0.
+			                    t < \<eta> \<longrightarrow>
+			                    (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0)
+			                      \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                      geotop_polyhedron
+			                        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+			                    \<subseteq>
+			                      geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                      geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			              proof (intro allI impI subsetI)
+			                fix t :: real
+			                fix x :: "real^2"
+			                assume ht_pos: "0 < t"
+			                assume ht_lt: "t < \<eta>"
+			                assume hx:
+			                  "x \<in> (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 \<rho>\<^sub>0)
+			                    \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+			                    geotop_polyhedron
+			                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+			                have ht_lt_o: "t < \<eta>\<^sub>o"
+			                  using ht_lt unfolding \<eta>_def by (by100 simp)
+			                have ht_lt_s: "t < \<eta>\<^sub>s"
+			                  using ht_lt unfolding \<eta>_def by (by100 simp)
+			                have hx_same:
+			                  "x \<in>
+			                    (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                        ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                      geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                    \<union>
+			                    (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                        ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                      geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+			                  using hsame_outer ht_pos ht_lt_o hx by (by100 blast)
+			                have hside_t:
+			                  "((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+			                      ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+			                      geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+			                    \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+			                      ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+			                      geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+			                  \<subseteq>
+			                    geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                    geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			                  using hsame_side ht_pos ht_lt_s by (by100 blast)
+			                show "x \<in>
+			                    geotop_polygon_interior (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2) \<union>
+			                    geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
+			                  using hside_t hx_same by (by100 blast)
+			              qed
+			              show ?thesis
+			                using h\<eta>_pos hsmall by (by100 blast)
+			            qed
+			          qed
 			            show ?thesis
 			            proof -
 			              obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
