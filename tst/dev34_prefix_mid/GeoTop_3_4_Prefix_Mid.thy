@@ -35551,7 +35551,50 @@ proof -
                 UNIV geotop_euclidean_topology f
           \<and> (\<forall>P\<in>UNIV - U. f P = P)
           \<and> f ` J = ?J'"
-      sorry
+    proof -
+      have hbook_delete_triangle_geometry_and_map:
+          "geotop_polyhedron ?K\<^sub>d =
+              closure_on UNIV geotop_euclidean_topology
+                (geotop_polygon_interior ?J')
+          \<and> (\<exists>f.
+              top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology f
+              \<and> (\<forall>P\<in>UNIV - U. f P = P)
+              \<and> f ` J = ?J')"
+        sorry
+      have hKd_poly:
+          "geotop_polyhedron ?K\<^sub>d =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior ?J')"
+        using hbook_delete_triangle_geometry_and_map by (by100 blast)
+      obtain f where hf_homeo:
+          "top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology f"
+        and hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+        and hfJ: "f ` J = ?J'"
+        using hbook_delete_triangle_geometry_and_map by (by100 blast)
+      show ?thesis
+      proof (rule exI[of _ ?K\<^sub>d], rule exI[of _ f], intro conjI)
+        show "geotop_is_complex ?K\<^sub>d"
+          by (rule hK_delete_complex)
+        show "finite ?K\<^sub>d"
+          by (rule hK_delete_finite)
+        show "geotop_polyhedron ?K\<^sub>d =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior ?J')"
+          by (rule hKd_poly)
+        show "card {\<tau> \<in> ?K\<^sub>d. geotop_simplex_dim \<tau> 2}
+            < card {\<tau> \<in> K. geotop_simplex_dim \<tau> 2}"
+          by (rule hK_delete_count_decreases)
+        show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology f"
+          by (rule hf_homeo)
+        show "\<forall>P\<in>UNIV - U. f P = P"
+          by (rule hf_fix)
+        show "f ` J = ?J'"
+          by (rule hfJ)
+      qed
+    qed
     show ?thesis
     proof (rule exI[of _ ?J'])
       show "\<exists>K' f.
