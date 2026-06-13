@@ -36032,6 +36032,124 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_figure33_source_target_triangles_simplexes_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>3 v\<^sub>4 v\<^sub>5 :: "real^2"
+  assumes hn045: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+  assumes hn245: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+  assumes hn053: "\<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+  assumes hn253: "\<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+  assumes hn041: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+  assumes hn241: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+  assumes hn013: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+  assumes hn213: "\<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+  shows
+    "(\<forall>\<sigma>\<in>{
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}.
+        geotop_is_simplex \<sigma>)
+    \<and> (\<forall>\<sigma>\<in>{
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}.
+        geotop_is_simplex \<sigma>)"
+  (**
+    Figure 3.3 carrier setup: the four source triangles and four target
+    triangles are simplexes once the corresponding triples are non-collinear. **)
+proof
+  show "\<forall>\<sigma>\<in>{
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}.
+        geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma>
+    assume h\<sigma>:
+      "\<sigma> \<in> {
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}"
+    have hcases:
+        "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+      using h\<sigma> by (by100 simp)
+    show "geotop_is_simplex \<sigma>"
+      using hcases
+    proof (elim disjE)
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn045]
+        by (by100 simp)
+    next
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn245]
+        by (by100 simp)
+    next
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn053]
+        by (by100 simp)
+    next
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn253]
+        by (by100 simp)
+    qed
+  qed
+next
+  show "\<forall>\<sigma>\<in>{
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}.
+        geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma>
+    assume h\<sigma>:
+      "\<sigma> \<in> {
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}"
+    have hcases:
+        "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+      using h\<sigma> by (by100 simp)
+    show "geotop_is_simplex \<sigma>"
+      using hcases
+    proof (elim disjE)
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn041]
+        by (by100 simp)
+    next
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn241]
+        by (by100 simp)
+    next
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn013]
+        by (by100 simp)
+    next
+      assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+      thus ?thesis
+        using geotop_three_noncollinear_convex_hull_is_simplex_prefix[OF hn213]
+        by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix:
   fixes a b x y :: "real^2"
   assumes hab: "a \<noteq> b"
@@ -44808,76 +44926,18 @@ proof -
                   (geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}) {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
               by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
                   [OF hncol253])
+            have hsource_target_simp:
+                "(\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5. geotop_is_simplex \<sigma>)
+                \<and> (\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>)"
+              by (rule geotop_figure33_source_target_triangles_simplexes_prefix
+                  [OF hncol045 hncol245 hncol053 hncol253 hncol041
+                    hncol241 hncol013 hncol213])
             have hsource_simp:
                 "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5. geotop_is_simplex \<sigma>"
-            proof
-              fix \<sigma>
-              assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
-              have hcases:
-                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
-                using h\<sigma> by (by100 simp)
-              show "geotop_is_simplex \<sigma>"
-                using hcases
-              proof (elim disjE)
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol045] by (by100 simp)
-              next
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol245] by (by100 simp)
-              next
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol053] by (by100 simp)
-              next
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol253] by (by100 simp)
-              qed
-            qed
+              using hsource_target_simp by (by100 blast)
             have htarget_simp:
                 "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4. geotop_is_simplex \<sigma>"
-            proof
-              fix \<sigma>
-              assume h\<sigma>: "\<sigma> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
-              have hcases:
-                  "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
-                  \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
-                using h\<sigma> by (by100 simp)
-              show "geotop_is_simplex \<sigma>"
-                using hcases
-              proof (elim disjE)
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol041] by (by100 simp)
-              next
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol241] by (by100 simp)
-              next
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol013] by (by100 simp)
-              next
-                assume "\<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
-                thus ?thesis
-                  using geotop_three_noncollinear_convex_hull_is_simplex_prefix
-                    [OF hncol213] by (by100 simp)
-              qed
-            qed
+              using hsource_target_simp by (by100 blast)
             have hsource_triangles_fin:
                 "finite (?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5)"
               by (by100 simp)
