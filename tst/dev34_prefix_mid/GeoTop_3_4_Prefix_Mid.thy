@@ -47375,6 +47375,164 @@ proof
     show "d \<subseteq> \<theta>"
       using hI_eq_d by (by100 blast)
   qed
+  have hd_not_sub_\<theta>: "\<not> d \<subseteq> \<theta>"
+    (**
+      Remaining edge-dimensional subcase of the corner intersection.  If the
+      third edge were a face of the corner triangle, the two named corner
+      sides identify the triangle vertex set as \<open>{x,y,z}\<close>.  The edge-face
+      vertex witness then makes \<open>d\<close> one of the three triangle sides.  The
+      sides through \<open>x\<close> are excluded by \<open>hd_not_sub_xy\<close> and
+      \<open>hd_not_sub_xz\<close>; the opposite side \<open>closed_segment y z\<close> cannot
+      contain \<open>x\<close> because \<open>{x,y,z}\<close> is non-collinear. **)
+  proof
+    assume hd_sub_\<theta>: "d \<subseteq> \<theta>"
+    have hd_face_\<theta>: "geotop_is_face d \<theta>"
+      by (rule geotop_complex_subset_simplex_face_prefix
+          [OF hK hdK h\<theta>K hd_sub_\<theta>])
+    have h\<theta>vertices_xyz: "geotop_simplex_vertices \<theta> {x, y, z}"
+    proof -
+      obtain Vxy Wxy where h\<theta>Vxy: "geotop_simplex_vertices \<theta> Vxy"
+        and hWxy_sub: "Wxy \<subseteq> Vxy"
+        and hxyW: "geotop_simplex_vertices (closed_segment x y) Wxy"
+        by (metis geotop_edge_face_witness_card_two_prefix
+            hxy_edge hxy_face_\<theta>)
+      have hxy_segV: "geotop_simplex_vertices (closed_segment x y) {x, y}"
+        by (rule geotop_closed_segment_simplex_vertices[OF hxy])
+      have hWxy_eq: "Wxy = {x, y}"
+        by (rule geotop_simplex_vertices_unique[OF hxyW hxy_segV])
+      obtain Vxz Wxz where h\<theta>Vxz: "geotop_simplex_vertices \<theta> Vxz"
+        and hWxz_sub: "Wxz \<subseteq> Vxz"
+        and hxzW: "geotop_simplex_vertices (closed_segment x z) Wxz"
+        by (metis geotop_edge_face_witness_card_two_prefix
+            hxz_edge hxz_face_\<theta>)
+      have hxz_segV: "geotop_simplex_vertices (closed_segment x z) {x, z}"
+        by (rule geotop_closed_segment_simplex_vertices[OF hxz])
+      have hWxz_eq: "Wxz = {x, z}"
+        by (rule geotop_simplex_vertices_unique[OF hxzW hxz_segV])
+      have hVxy_eq_Vxz: "Vxy = Vxz"
+        by (rule geotop_simplex_vertices_unique[OF h\<theta>Vxy h\<theta>Vxz])
+      have hxyz_sub_Vxy: "{x, y, z} \<subseteq> Vxy"
+        using hWxy_sub hWxz_sub hWxy_eq hWxz_eq hVxy_eq_Vxz by (by100 blast)
+      obtain V2 m where hV2_fin: "finite V2"
+        and hV2_card: "card V2 = 2 + 1"
+        and h2_le_m: "2 \<le> m"
+        and hV2_gp: "geotop_general_position V2 m"
+        and h\<theta>_eq_V2: "\<theta> = geotop_convex_hull V2"
+        using h\<theta>2 unfolding geotop_simplex_dim_def by (by100 blast)
+      have h\<theta>V2: "geotop_simplex_vertices \<theta> V2"
+        unfolding geotop_simplex_vertices_def
+        using hV2_fin hV2_card h2_le_m hV2_gp h\<theta>_eq_V2 by (by100 blast)
+      have hVxy_eq_V2: "Vxy = V2"
+        by (rule geotop_simplex_vertices_unique[OF h\<theta>Vxy h\<theta>V2])
+      have hVxy_fin: "finite Vxy"
+        using hVxy_eq_V2 hV2_fin by (by100 simp)
+      have hVxy_card: "card Vxy = 3"
+        using hVxy_eq_V2 hV2_card by (by100 simp)
+      have hxyz_card: "card {x, y, z} = 3"
+        using hxy hxz hyz by (by100 simp)
+      have hVxy_eq_xyz: "Vxy = {x, y, z}"
+        using hxyz_sub_Vxy hVxy_fin hVxy_card hxyz_card
+        by (by100 (metis card_subset_eq))
+      show ?thesis
+        using h\<theta>Vxy hVxy_eq_xyz by (by100 simp)
+    qed
+    have hd_side_cases:
+        "d = closed_segment x y \<or>
+         d = closed_segment x z \<or>
+         d = closed_segment y z"
+    proof -
+      obtain Vd Wd where h\<theta>Vd: "geotop_simplex_vertices \<theta> Vd"
+        and hWd_sub: "Wd \<subseteq> Vd"
+        and hd_eq_hull: "d = geotop_convex_hull Wd"
+        and hWd_card: "card Wd = 2"
+        by (metis geotop_edge_face_witness_card_two_prefix
+            hd_edge hd_face_\<theta>)
+      have hVd_eq_xyz: "Vd = {x, y, z}"
+        by (rule geotop_simplex_vertices_unique[OF h\<theta>Vd h\<theta>vertices_xyz])
+      have hWd_sub_xyz: "Wd \<subseteq> {x, y, z}"
+        using hWd_sub hVd_eq_xyz by (by100 simp)
+      have hWd_cases:
+          "Wd = {x, y} \<or> Wd = {x, z} \<or> Wd = {y, z}"
+        using hWd_sub_xyz hWd_card hxy hxz hyz by (by100 blast)
+      show ?thesis
+      proof (rule disjE[OF hWd_cases])
+        assume hWd: "Wd = {x, y}"
+        have "d = closed_segment x y"
+          using hd_eq_hull hWd geotop_convex_hull_eq_HOL[of "{x, y}"]
+            segment_convex_hull[of x y]
+          by (by100 simp)
+        thus ?thesis by (by100 blast)
+      next
+        assume hcases: "Wd = {x, z} \<or> Wd = {y, z}"
+        show ?thesis
+        proof (rule disjE[OF hcases])
+          assume hWd: "Wd = {x, z}"
+          have "d = closed_segment x z"
+            using hd_eq_hull hWd geotop_convex_hull_eq_HOL[of "{x, z}"]
+              segment_convex_hull[of x z]
+            by (by100 simp)
+          thus ?thesis by (by100 blast)
+        next
+          assume hWd: "Wd = {y, z}"
+          have "d = closed_segment y z"
+            using hd_eq_hull hWd geotop_convex_hull_eq_HOL[of "{y, z}"]
+              segment_convex_hull[of y z]
+            by (by100 simp)
+          thus ?thesis by (by100 blast)
+        qed
+      qed
+    qed
+    have hx_not_yz: "x \<notin> closed_segment y z"
+    proof
+      assume hx_yz: "x \<in> closed_segment y z"
+      have hseg_col: "collinear (closed_segment y z)"
+        by (rule collinear_closed_segment)
+      have hxyz_sub: "{x, y, z} \<subseteq> closed_segment y z"
+        using hx_yz by (by100 simp)
+      have "collinear {x, y, z}"
+        by (rule collinear_subset[OF hseg_col hxyz_sub])
+      thus False
+        using hnot_col_xyz by (by100 blast)
+    qed
+    show False
+    proof (rule disjE[OF hd_side_cases])
+      assume hd_eq_xy: "d = closed_segment x y"
+      have "d \<subseteq> closed_segment x y"
+        using hd_eq_xy by (by100 simp)
+      thus False
+        using hd_not_sub_xy by (by100 blast)
+    next
+      assume hcases:
+        "d = closed_segment x z \<or>
+         d = closed_segment y z"
+      show False
+      proof (rule disjE[OF hcases])
+        assume hd_eq_xz: "d = closed_segment x z"
+        have "d \<subseteq> closed_segment x z"
+          using hd_eq_xz by (by100 simp)
+        thus False
+          using hd_not_sub_xz by (by100 blast)
+      next
+        assume hd_eq_yz: "d = closed_segment y z"
+        have "x \<in> closed_segment y z"
+          using hxd hd_eq_yz by (by100 simp)
+        thus False
+          using hx_not_yz by (by100 blast)
+      qed
+    qed
+  qed
+  have hd_\<theta>_inter_eq_x: "d \<inter> \<theta> = {x}"
+  proof (rule disjE[OF hd_\<theta>_inter_dim_cases])
+    assume hI0: "geotop_simplex_dim (d \<inter> \<theta>) 0"
+    show ?thesis
+      by (rule hd_\<theta>_inter_eq_x_if_dim0[OF hI0])
+  next
+    assume hI1: "geotop_simplex_dim (d \<inter> \<theta>) 1"
+    have "d \<subseteq> \<theta>"
+      by (rule hd_\<theta>_inter_edge_case_sub_\<theta>[OF hI1])
+    thus ?thesis
+      using hd_not_sub_\<theta> by (by100 blast)
+  qed
   obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
     and h\<rho>2: "geotop_simplex_dim \<rho> 2"
     and hd_face_\<rho>: "geotop_is_face d \<rho>"
