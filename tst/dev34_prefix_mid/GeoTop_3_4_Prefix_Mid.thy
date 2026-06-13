@@ -49978,6 +49978,56 @@ proof -
 	          show ?thesis
 	            using hclosure_on hclosure by (by100 simp)
 	        qed
+	        have hcorner_chord_sides_separated:
+	            "geotop_separated UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>c \<union> ?B\<^sub>n) \<union>
+	               geotop_arc_interior ?B\<^sub>c {y, z})
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {y, z})"
+	          using geotop_boundary_split_segment_chord_theta_decomposition_all_prefix
+	              [OF hyz hJ_split hB\<^sub>c_bl hCO_bl hB\<^sub>c_E hCO_E
+	                hB\<^sub>c_CO_int_disj hB\<^sub>n_inter_J
+	                hB\<^sub>n_arc_interior_subset_polygon_interior]
+	          by (by100 blast)
+	        have hnew_disk_closure_as_side_union_chord:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) =
+	            (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	             geotop_arc_interior C\<^sub>O {y, z}) \<union> ?B\<^sub>n"
+	        proof -
+	          have hCO_sub_int_or_end:
+	              "C\<^sub>O \<subseteq> geotop_arc_interior C\<^sub>O {y, z} \<union> {y, z}"
+	            unfolding geotop_arc_interior_def by (by100 blast)
+	          have hend_sub_B\<^sub>n: "{y, z} \<subseteq> ?B\<^sub>n"
+	            by (by100 simp)
+	          have hCO_sub_side_chord:
+	              "C\<^sub>O \<subseteq> geotop_arc_interior C\<^sub>O {y, z} \<union> ?B\<^sub>n"
+	            using hCO_sub_int_or_end hend_sub_B\<^sub>n by (by100 blast)
+	          have hright:
+	              "geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union> (?B\<^sub>n \<union> C\<^sub>O)
+	              \<subseteq>
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {y, z}) \<union> ?B\<^sub>n"
+	            using hCO_sub_side_chord by (by100 blast)
+	          have hleft:
+	              "(geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {y, z}) \<union> ?B\<^sub>n
+	              \<subseteq>
+	              geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union> (?B\<^sub>n \<union> C\<^sub>O)"
+	          proof -
+	            have hCO_int_sub: "geotop_arc_interior C\<^sub>O {y, z} \<subseteq> C\<^sub>O"
+	              unfolding geotop_arc_interior_def by (by100 blast)
+	            show ?thesis
+	              using hCO_int_sub by (by100 blast)
+	          qed
+	          have hboundary_rewrite:
+	              "geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union> (?B\<^sub>n \<union> C\<^sub>O) =
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O) \<union>
+	               geotop_arc_interior C\<^sub>O {y, z}) \<union> ?B\<^sub>n"
+	            using hleft hright by (by100 blast)
+	          show ?thesis
+	            using hnew_disk_closure_eq hboundary_rewrite by (by100 simp)
+	        qed
 	        have hcorner_old_edge_order:
 	            "(e1 = closed_segment x y \<and> e2 = closed_segment x z)
 	            \<or> (e1 = closed_segment x z \<and> e2 = closed_segment x y)"
