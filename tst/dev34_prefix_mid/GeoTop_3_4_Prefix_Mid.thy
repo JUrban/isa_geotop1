@@ -40443,6 +40443,70 @@ proof -
 		                using hy\<theta> hdist by (by100 blast)
 		            qed
 		          qed
+		          have hfigure33_source_carrier_avoids_C\<^sub>O_middle_scalar:
+		              "\<exists>t>0.
+		                ?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                = {}"
+		          proof (cases "?C\<^sub>O_mid = {}")
+		            case True
+		            have hmid_empty: "?C\<^sub>O_mid = {}"
+		              by (rule True)
+		            show ?thesis
+		            proof (intro exI[of _ 1] conjI)
+		              show "0 < (1::real)"
+		                by (by100 simp)
+		              show "?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of 1) (?v\<^sub>4_of 1) ?v\<^sub>5) =
+		                {}"
+		                using hmid_empty by (by100 blast)
+		            qed
+		          next
+		            case False
+		            have hgap_pos: "0 < setdist ?C\<^sub>O_mid \<theta>"
+		              using hC\<^sub>O_mid_setdist_gap False by (by100 blast)
+		            let ?D = "norm (?v\<^sub>5 - v\<^sub>1)"
+		            have hD_pos: "0 < ?D"
+		              using hv\<^sub>1_mid_ne by (simp add: norm_minus_commute)
+		            define t where "t = setdist ?C\<^sub>O_mid \<theta> / (2 * ?D)"
+		            have ht_pos: "0 < t"
+		              unfolding t_def using hgap_pos hD_pos by (by100 simp)
+		            have htD_gap: "t * ?D < setdist ?C\<^sub>O_mid \<theta>"
+		            proof -
+		              have "t * ?D = setdist ?C\<^sub>O_mid \<theta> / 2"
+		                unfolding t_def using hD_pos by (simp add: field_simps)
+		              also have "\<dots> < setdist ?C\<^sub>O_mid \<theta>"
+		                using hgap_pos by (by100 simp)
+		              finally show ?thesis .
+		            qed
+		            have havoid:
+		                "?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                = {}"
+		            proof (rule equals0I)
+		              fix x
+		              assume hx:
+		                "x \<in> ?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		              have hxmid: "x \<in> ?C\<^sub>O_mid"
+		                using hx by (by100 blast)
+		              have hxcarrier:
+		                "x \<in> geotop_polyhedron
+		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		                using hx by (by100 blast)
+		              obtain y where hy\<theta>: "y \<in> \<theta>"
+		                and hdist_le: "dist x y \<le> t * ?D"
+		                using hfigure33_source_carrier_near_theta_scalar
+		                  [OF ht_pos hxcarrier]
+		                by (by100 blast)
+		              have hgap_le: "setdist ?C\<^sub>O_mid \<theta> \<le> dist x y"
+		                by (rule setdist_le_dist[OF hxmid hy\<theta>])
+		              show False
+		                using hgap_le hdist_le htD_gap by (by100 linarith)
+		            qed
+		            show ?thesis
+		              using ht_pos havoid by (by100 blast)
+		          qed
 		          have hfigure33_source_carrier_support_scalar:
 		              "\<exists>t>0.
 		                geotop_polyhedron
