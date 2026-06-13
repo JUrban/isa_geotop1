@@ -36556,6 +36556,112 @@ proof -
     using hXa hXb hab by (by100 simp)
 qed
 
+lemma geotop_segment_germ_outside_triangle_negative_coordinate_prefix:
+  fixes p a b q :: "real^2"
+  assumes h\<rho>: "0 < \<rho>"
+  assumes hq: "q = p + \<alpha> *\<^sub>R a + \<beta> *\<^sub>R b"
+  assumes hpq: "q \<noteq> p"
+  assumes hdisj:
+    "((closed_segment p q - {p}) \<inter> ball p \<rho>) \<inter>
+      geotop_convex_hull {p, p + a, p + b} = {}"
+  shows "\<alpha> < 0 \<or> \<beta> < 0"
+  (**
+    A fixed endpoint ray that avoids the old closed triangle angle has at
+    least one negative coordinate in that angle basis.  The proof takes a
+    sufficiently small positive segment parameter so both nonnegative
+    coordinates would place the punctured point back inside the triangle. **)
+proof (rule ccontr)
+  assume hnot: "\<not> (\<alpha> < 0 \<or> \<beta> < 0)"
+  have h\<alpha>_nonneg: "0 \<le> \<alpha>"
+    using hnot by (by100 linarith)
+  have h\<beta>_nonneg: "0 \<le> \<beta>"
+    using hnot by (by100 linarith)
+  have hnorm_pos: "0 < norm (q - p)"
+    using hpq by (by100 simp)
+  let ?M = "max 1 (\<alpha> + \<beta>)"
+  define s where
+    "s = min (1 / 2)
+      (min (\<rho> / (2 * norm (q - p))) (1 / (2 * ?M)))"
+  have hM_pos: "0 < ?M"
+    by (by100 simp)
+  have hs_pos: "0 < s"
+    unfolding s_def using h\<rho> hnorm_pos hM_pos by (by100 simp)
+  have hs_nonneg: "0 \<le> s"
+    using hs_pos by (by100 simp)
+  have hs_le1: "s \<le> 1"
+    unfolding s_def by (by100 simp)
+  have hs_le_rho: "s \<le> \<rho> / (2 * norm (q - p))"
+    unfolding s_def by (by100 simp)
+  have hdist_small: "s * norm (q - p) < \<rho>"
+  proof -
+    have "s * norm (q - p) \<le>
+        (\<rho> / (2 * norm (q - p))) * norm (q - p)"
+      using mult_right_mono[OF hs_le_rho, of "norm (q - p)"] hnorm_pos
+      by (by100 simp)
+    also have "\<dots> = \<rho> / 2"
+      using hnorm_pos by (simp add: field_simps)
+    also have "\<dots> < \<rho>"
+      using h\<rho> by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hs_le_M: "s \<le> 1 / (2 * ?M)"
+    unfolding s_def by (by100 simp)
+  have hsum_nonneg: "0 \<le> \<alpha> + \<beta>"
+    using h\<alpha>_nonneg h\<beta>_nonneg by (by100 linarith)
+  have hsum_le_M: "\<alpha> + \<beta> \<le> ?M"
+    by (by100 simp)
+  have hs_sum_le: "s * (\<alpha> + \<beta>) \<le> 1"
+  proof -
+    have "s * (\<alpha> + \<beta>) \<le> (1 / (2 * ?M)) * ?M"
+      using hs_nonneg hs_le_M hsum_nonneg hsum_le_M hM_pos
+      by (intro mult_mono) (by100 simp_all)
+    also have "\<dots> = 1 / 2"
+      using hM_pos by (simp add: field_simps)
+    also have "\<dots> \<le> 1"
+      by (by100 simp)
+    finally show ?thesis .
+  qed
+  let ?x = "p + s *\<^sub>R (q - p)"
+  have hx_seg: "?x \<in> closed_segment p q"
+    unfolding closed_segment_def
+    using hs_nonneg hs_le1 by (auto simp: algebra_simps intro!: exI[where x=s])
+  have hx_ne_p: "?x \<noteq> p"
+  proof
+    assume hx: "?x = p"
+    hence "s *\<^sub>R (q - p) = 0"
+      by (by100 simp)
+    hence "q - p = 0"
+      using hs_pos by (by100 simp)
+    thus False
+      using hpq by (by100 simp)
+  qed
+  have hx_ball: "?x \<in> ball p \<rho>"
+  proof -
+    have "dist p ?x = s * norm (q - p)"
+      using hs_nonneg by (simp add: dist_norm norm_scaleR)
+    thus ?thesis
+      using hdist_small by (by100 simp)
+  qed
+  have hx_coords:
+      "?x = p + (s * \<alpha>) *\<^sub>R a + (s * \<beta>) *\<^sub>R b"
+    using hq by (simp add: algebra_simps scaleR_add_right)
+  have hx_hull:
+      "?x \<in> geotop_convex_hull {p, p + a, p + b}"
+  proof -
+    have "?x \<in> convex hull {p, p + a, p + b}"
+      unfolding convex_hull_3_alt
+      using h\<alpha>_nonneg h\<beta>_nonneg hs_nonneg hs_sum_le hx_coords
+      by (intro CollectI exI conjI) (by100 simp_all add: algebra_simps)
+    thus ?thesis
+      unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+  qed
+  have "?x \<in> ((closed_segment p q - {p}) \<inter> ball p \<rho>) \<inter>
+      geotop_convex_hull {p, p + a, p + b}"
+    using hx_seg hx_ne_p hx_ball hx_hull by (by100 blast)
+  thus False
+    using hdisj by (by100 blast)
+qed
+
 lemma geotop_figure33_moving_cone_real_angular_gap_prefix:
   fixes \<alpha> \<beta> :: real
   assumes hneg: "\<alpha> < 0 \<or> \<beta> < 0"
