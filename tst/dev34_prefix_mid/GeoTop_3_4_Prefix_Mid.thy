@@ -35326,6 +35326,12 @@ proof -
         \<and> C\<^sub>R \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}
         \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>O = {}
         \<and> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>R = {}
+        \<and> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}
+        \<and> geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}
+        \<and> C\<^sub>R \<inter> ?B\<^sub>0\<^sub>1\<^sub>2 = {v\<^sub>0, v\<^sub>2}
+        \<and> ?B\<^sub>0\<^sub>1\<^sub>2 \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}
         \<and> R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}
         \<and> geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)
         \<and> geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)
@@ -35459,6 +35465,12 @@ proof -
       thus False
         using hx_not_E by (by100 blast)
     qed
+    have hCR_B_inter: "C\<^sub>R \<inter> ?B\<^sub>0\<^sub>1\<^sub>2 = {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+          [OF hCR_E hB_E hCR_B_disj])
+    have hB_CO_inter: "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+          [OF hB_E hCO_E hB_CO_disj])
     have hpoly_CR_B: "geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
       by (rule geotop_boundary_arc_chord_theta_decomposition_prefix(1)
           [OF hJ_split hCR_bl hB_bl hCO_bl hCR_E hB_E hCO_E
@@ -35491,6 +35503,7 @@ proof -
     show ?thesis
       using hR_B02_int hsplit hJ_split hpoly_CR_B hpoly_B_CO
         hCR_CO_inter hCR_int_CO_disj hCO_int_CR_disj
+        hCR_B_disj hB_CO_disj hCR_B_inter hB_CO_inter
         hclosure_CR_B_sub_U hclosure_B_CO_sub_U
       by (by100 blast)
   qed
@@ -35526,6 +35539,14 @@ proof -
         "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>O = {}"
       and hCO_int_CR_disj:
         "geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} \<inter> C\<^sub>R = {}"
+      and hCR_B_disj:
+        "geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      and hB_CO_disj:
+        "geotop_arc_interior ?B\<^sub>0\<^sub>1\<^sub>2 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2} = {}"
+      and hCR_B_inter: "C\<^sub>R \<inter> ?B\<^sub>0\<^sub>1\<^sub>2 = {v\<^sub>0, v\<^sub>2}"
+      and hB_CO_inter: "?B\<^sub>0\<^sub>1\<^sub>2 \<inter> C\<^sub>O = {v\<^sub>0, v\<^sub>2}"
       and hR_CR_int: "R \<in> geotop_arc_interior C\<^sub>R {v\<^sub>0, v\<^sub>2}"
       and hCR_B_polygon: "geotop_is_polygon (C\<^sub>R \<union> ?B\<^sub>0\<^sub>1\<^sub>2)"
       and hB_CO_polygon: "geotop_is_polygon (?B\<^sub>0\<^sub>1\<^sub>2 \<union> C\<^sub>O)"
