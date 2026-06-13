@@ -169,6 +169,31 @@ proof -
         [OF hgap hBne hBbdd hBdiam_lt])
 qed
 
+lemma geotop_mesh_subfamily_meeting_first_arc_misses_second_prefix:
+  fixes G :: "(real^2) set set"
+  assumes hgap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta> \<le> dist x y"
+  assumes hGfin: "finite G"
+  assumes hG_nonempty_bounded: "\<forall>B\<in>G. B \<noteq> {} \<and> bounded B"
+  assumes hmesh: "geotop_mesh (\<lambda>x y. norm (x - y)) G < \<delta>"
+  shows "(\<Union>{B\<in>G. B \<inter> A1 \<noteq> {}}) \<inter> A2 = {}"
+proof (rule ccontr)
+  assume hnot: "(\<Union>{B\<in>G. B \<inter> A1 \<noteq> {}}) \<inter> A2 \<noteq> {}"
+  obtain y B where hyB: "y \<in> B" and hyA2: "y \<in> A2"
+    and hBG: "B \<in> G" and hB_A1: "B \<inter> A1 \<noteq> {}"
+    using hnot by (by100 blast)
+  have hBne: "B \<noteq> {}"
+    using hG_nonempty_bounded hBG by (by100 blast)
+  have hBbdd: "bounded B"
+    using hG_nonempty_bounded hBG by (by100 blast)
+  have hB_misses: "B \<inter> A1 = {} \<or> B \<inter> A2 = {}"
+    by (rule geotop_mesh_member_misses_one_of_separated_arcs_prefix
+        [OF hgap hGfin hBG hBne hBbdd hmesh])
+  have hB_A2_nonempty: "B \<inter> A2 \<noteq> {}"
+    using hyB hyA2 by (by100 blast)
+  show False
+    using hB_misses hB_A1 hB_A2_nonempty by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
