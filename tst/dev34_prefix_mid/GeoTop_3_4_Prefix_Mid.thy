@@ -35437,6 +35437,37 @@ proof -
     using h_hull_image hsource_hull htarget_hull by (by100 simp)
 qed
 
+lemma geotop_linear_on_segment_fix_endpoints_prefix:
+  fixes h :: "real^2 \<Rightarrow> real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlin: "geotop_linear_on (closed_segment a b) h"
+  assumes ha: "h a = a"
+  assumes hb: "h b = b"
+  assumes hx: "x \<in> closed_segment a b"
+  shows "h x = x"
+proof -
+  have hV: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hab])
+  have hid_linear: "geotop_linear_on (closed_segment a b) (\<lambda>x. x)"
+    unfolding geotop_linear_on_def
+  proof (intro exI[of _ "{a, b}"] conjI allI impI)
+    show "geotop_simplex_vertices (closed_segment a b) {a, b}"
+      by (rule hV)
+    fix \<alpha> :: "real^2 \<Rightarrow> real"
+    assume "(\<forall>v\<in>{a, b}. 0 \<le> \<alpha> v) \<and> sum \<alpha> {a, b} = 1"
+    show "(\<lambda>x. x) (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R v) =
+      (\<Sum>v\<in>{a, b}. \<alpha> v *\<^sub>R (\<lambda>x. x) v)"
+      by (by100 simp)
+  qed
+  have hagree_vertices: "\<forall>v\<in>{a, b}. h v = (\<lambda>x. x) v"
+    using ha hb by (by100 blast)
+  have hagree: "\<forall>x\<in>closed_segment a b. h x = x"
+    by (rule geotop_linear_on_eq_vertices
+        [OF hV hlin hid_linear hagree_vertices])
+  show ?thesis
+    using hagree hx by (by100 blast)
+qed
+
 lemma geotop_three_noncollinear_convex_hull_simplex_vertices_prefix:
   fixes a b c :: "real^2"
   assumes hnc: "\<not> collinear {a, b, c}"
