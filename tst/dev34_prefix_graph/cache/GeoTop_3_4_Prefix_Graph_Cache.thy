@@ -4065,6 +4065,18 @@ proof -
     using hC_conn hC_sub hxC hG\<^sub>1 hG\<^sub>2 hG\<^sub>3 by (intro exI conjI)
 qed
 
+lemma geotop_point_entry_gives_closure_touch_prefix:
+  fixes W G :: "'a::topological_space set"
+  assumes haW: "a \<in> W"
+  assumes haG: "a \<in> G"
+  shows "G \<inter> closure W \<noteq> {}"
+proof -
+  have ha_cl: "a \<in> closure W"
+    by (rule subsetD[OF closure_subset haW])
+  show ?thesis
+    using haG ha_cl by (by100 blast)
+qed
+
 lemma geotop_trace_component_entry_closure_summary_prefix:
   fixes F :: "'a::topological_space set set"
     and U W V N\<^sub>loc C :: "'a set"
@@ -15036,16 +15048,12 @@ proof -
                     and haW: "a \<in> W \<inter> ball w r"
                     and haS: "a \<in> ((S - {w}) \<inter> ball w r)"
                     by (elim exE conjE)
-                  have ha_clW: "a \<in> closure W"
-                  proof -
-                    have "a \<in> W"
-                      using haW by (by100 blast)
-                    thus ?thesis
-                      by (rule subsetD[OF closure_subset])
-                  qed
+                  have haW_mem: "a \<in> W"
+                    using haW by (by100 blast)
                   have htouch:
                       "((S - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {}"
-                    using haS ha_clW by (by100 blast)
+                    by (rule geotop_point_entry_gives_closure_touch_prefix
+                        [OF haW_mem haS])
                   show ?thesis
                   proof (rule disjI1)
                     show "\<exists>D. N = D - {w}
@@ -15070,16 +15078,12 @@ proof -
                     and haW: "a \<in> W \<inter> ball w r"
                     and haT: "a \<in> ((T - {w}) \<inter> ball w r)"
                     by (elim exE conjE)
-                  have ha_clW: "a \<in> closure W"
-                  proof -
-                    have "a \<in> W"
-                      using haW by (by100 blast)
-                    thus ?thesis
-                      by (rule subsetD[OF closure_subset])
-                  qed
+                  have haW_mem: "a \<in> W"
+                    using haW by (by100 blast)
                   have htouch:
                       "((T - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {}"
-                    using haT ha_clW by (by100 blast)
+                    by (rule geotop_point_entry_gives_closure_touch_prefix
+                        [OF haW_mem haT])
                   show ?thesis
                   proof (rule disjI2, rule disjI1)
                     show "\<exists>D. N = D - {w}
@@ -15104,16 +15108,12 @@ proof -
                     and haW: "a \<in> W \<inter> ball w r"
                     and haU: "a \<in> ((U - {w}) \<inter> ball w r)"
                     by (elim exE conjE)
-                  have ha_clW: "a \<in> closure W"
-                  proof -
-                    have "a \<in> W"
-                      using haW by (by100 blast)
-                    thus ?thesis
-                      by (rule subsetD[OF closure_subset])
-                  qed
+                  have haW_mem: "a \<in> W"
+                    using haW by (by100 blast)
                   have htouch:
                       "((U - {w}) \<inter> ball w r) \<inter> closure W \<noteq> {}"
-                    using haU ha_clW by (by100 blast)
+                    by (rule geotop_point_entry_gives_closure_touch_prefix
+                        [OF haW_mem haU])
                   show ?thesis
                   proof (rule disjI2, rule disjI2, rule disjI1)
                     show "\<exists>D. N = D - {w}
