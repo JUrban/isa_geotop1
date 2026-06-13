@@ -36530,6 +36530,32 @@ proof -
     using hu hv huv hcoords by (by100 blast)
 qed
 
+lemma geotop_independent_pair_coordinate_unique_prefix:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hind: "independent {a, b}"
+  assumes heq: "r *\<^sub>R a + s *\<^sub>R b = r' *\<^sub>R a + s' *\<^sub>R b"
+  shows "r = r' \<and> s = s'"
+  (**
+    Two-coordinate uniqueness for the endpoint bases used in Figure 3.3.
+    The explicit \<open>a \<noteq> b\<close> assumption matters because Isabelle sets erase
+    duplicate basis vectors. **)
+proof -
+  let ?X = "\<lambda>x. if x = a then r - r' else if x = b then s - s' else 0"
+  have hlin: "(r - r') *\<^sub>R a + (s - s') *\<^sub>R b = 0"
+    using heq by (simp add: algebra_simps)
+  have hsum: "(\<Sum>x\<in>{a, b}. ?X x *\<^sub>R x) = 0"
+    using hab hlin by (by100 simp)
+  have hXa: "?X a = 0"
+    by (rule independentD[OF hind, where t="{a, b}" and u="?X" and v=a])
+      (use hsum in \<open>by100 simp_all\<close>)
+  have hXb: "?X b = 0"
+    by (rule independentD[OF hind, where t="{a, b}" and u="?X" and v=b])
+      (use hsum in \<open>by100 simp_all\<close>)
+  show ?thesis
+    using hXa hXb hab by (by100 simp)
+qed
+
 lemma geotop_figure33_moving_cone_real_angular_gap_prefix:
   fixes \<alpha> \<beta> :: real
   assumes hneg: "\<alpha> < 0 \<or> \<beta> < 0"
