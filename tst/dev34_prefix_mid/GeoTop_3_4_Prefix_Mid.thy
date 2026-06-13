@@ -47673,11 +47673,69 @@ proof -
 	      show False
 	        using h\<rho>eq h\<rho>ne by (by100 blast)
 	    qed
+	    have hx_face_e1_for_delete: "geotop_is_face {x} e1"
+	    proof -
+	      have he1_cases: "e1 = closed_segment x y \<or> e1 = closed_segment x z"
+	      proof -
+	        have "e1 \<in> {closed_segment x y, closed_segment x z}"
+	          using hcorner_edge_set by (by100 blast)
+	        thus ?thesis by (by100 blast)
+	      qed
+	      show ?thesis
+	      proof (rule disjE[OF he1_cases])
+	        assume heq: "e1 = closed_segment x y"
+	        have "geotop_is_face {x} (closed_segment x y)"
+	          by (rule geotop_closed_segment_is_face_endpoint[OF hxy])
+	             (by100 simp)
+	        thus ?thesis
+	          using heq by (by100 simp)
+	      next
+	        assume heq: "e1 = closed_segment x z"
+	        have "geotop_is_face {x} (closed_segment x z)"
+	          by (rule geotop_closed_segment_is_face_endpoint[OF hxz])
+	             (by100 simp)
+	        thus ?thesis
+	          using heq by (by100 simp)
+	      qed
+	    qed
+	    have hxKd_for_delete: "{x} \<in> ?K\<^sub>d"
+	    proof -
+	      have hface_closed:
+	          "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+	        by (rule geotop_is_complex_face_closed[OF hK_delete_complex])
+	      have hfaces_e1:
+	          "\<forall>\<tau>. geotop_is_face \<tau> e1 \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+	        by (rule bspec[OF hface_closed he1Kd])
+	      have himp: "geotop_is_face {x} e1 \<longrightarrow> {x} \<in> ?K\<^sub>d"
+	        by (rule spec[OF hfaces_e1])
+	      show ?thesis
+	        by (rule mp[OF himp hx_face_e1_for_delete])
+	    qed
+	    have hx_no_incident_edge_after_edge_delete:
+	        "\<not> (\<exists>d\<in>?K\<^sub>d. geotop_is_edge d \<and> x \<in> d)"
+	      sorry
 	    have hx_no_face_after_edge_delete:
 	        "\<And>\<sigma>. \<sigma> \<in> ?K\<^sub>d \<Longrightarrow> \<sigma> \<noteq> e1 \<Longrightarrow> \<sigma> \<noteq> e2 \<Longrightarrow>
 	          \<sigma> \<noteq> {x} \<Longrightarrow>
 	          geotop_is_face {x} \<sigma> \<Longrightarrow> False"
-	      sorry
+	    proof -
+	      fix \<sigma>
+	      assume h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
+	      assume h\<sigma>ne_e1: "\<sigma> \<noteq> e1"
+	      assume h\<sigma>ne_e2: "\<sigma> \<noteq> e2"
+	      assume h\<sigma>ne_x: "\<sigma> \<noteq> {x}"
+	      assume hx_face_\<sigma>: "geotop_is_face {x} \<sigma>"
+	      have hx_sub_\<sigma>: "{x} \<subseteq> \<sigma>"
+	        by (rule geotop_is_face_imp_subset_prefix[OF hx_face_\<sigma>])
+	      have hx\<sigma>: "x \<in> \<sigma>"
+	        using hx_sub_\<sigma> by (by100 simp)
+	      have h\<sigma>eq_x: "\<sigma> = {x}"
+	        by (rule geotop_complex_no_incident_edge_simplex_containing_vertex_eq_singleton_prefix
+	            [OF hK_delete_complex hx_no_incident_edge_after_edge_delete
+	              hxKd_for_delete h\<sigma>Kd hx\<sigma>])
+	      show False
+	        using h\<sigma>eq_x h\<sigma>ne_x by (by100 simp)
+	    qed
 	    have hK_reduced_complex: "geotop_is_complex ?K\<^sub>r"
 	    proof (rule geotop_complex_subset_is_complex)
 	      show "?K\<^sub>r \<subseteq> ?K\<^sub>d"
