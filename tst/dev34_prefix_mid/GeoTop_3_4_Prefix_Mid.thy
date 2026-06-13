@@ -47208,6 +47208,7 @@ proof -
         x \<noteq> y
         \<and> x \<noteq> z
         \<and> y \<noteq> z
+        \<and> \<not> collinear {x, y, z}
         \<and> e1 \<union> e2 = closed_segment x y \<union> closed_segment x z
         \<and> frontier \<theta> =
           closed_segment x y \<union>
@@ -47220,6 +47221,8 @@ proof -
       using hc_not by (by100 blast)
     have hbc: "b \<noteq> c"
       using hc_not by (by100 blast)
+    have hnot_col_abc: "\<not> collinear {a, b, c}"
+      using hfigure33_two_boundary_triangle_package by (by100 blast)
     have he1_segment: "e1 = closed_segment a b"
       using he1_named segment_convex_hull[of a b]
         geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
@@ -47288,11 +47291,12 @@ proof -
         show "a \<noteq> b \<and>
           a \<noteq> c \<and>
           b \<noteq> c \<and>
+          \<not> collinear {a, b, c} \<and>
           e1 \<union> e2 = closed_segment a b \<union> closed_segment a c \<and>
           frontier \<theta> =
             closed_segment a b \<union> (closed_segment a c \<union> closed_segment b c) \<and>
           \<theta> \<inter> J = closed_segment a b \<union> closed_segment a c"
-          using hab hac hbc he1_segment he2_segment_ac hfrontier_segments_abc
+          using hab hac hbc hnot_col_abc he1_segment he2_segment_ac hfrontier_segments_abc
             hboundary_segments
           by (by100 blast)
       qed
@@ -47313,17 +47317,25 @@ proof -
         "e1 \<union> e2 = closed_segment b a \<union> closed_segment b c"
         using he1_segment he2_segment_bc closed_segment_commute[of a b]
         by (by100 simp)
+      have hnot_col_bac: "\<not> collinear {b, a, c}"
+      proof -
+        have "{b, a, c} = {a, b, c}"
+          by (by100 blast)
+        thus ?thesis
+          using hnot_col_abc by (by100 simp)
+      qed
       show ?thesis
       proof (rule exI[where x = b], rule exI[where x = a],
           rule exI[where x = c])
         show "b \<noteq> a \<and>
           b \<noteq> c \<and>
           a \<noteq> c \<and>
+          \<not> collinear {b, a, c} \<and>
           e1 \<union> e2 = closed_segment b a \<union> closed_segment b c \<and>
           frontier \<theta> =
             closed_segment b a \<union> (closed_segment b c \<union> closed_segment a c) \<and>
           \<theta> \<inter> J = closed_segment b a \<union> closed_segment b c"
-          using hab hac hbc he1e2_segments hfrontier_segments_bac
+          using hab hac hbc hnot_col_bac he1e2_segments hfrontier_segments_bac
             hboundary_segments
           by (by100 blast)
       qed
@@ -47331,12 +47343,13 @@ proof -
   qed
   have hfigure33_corner_inverse_supported_PL_fold_core:
       "\<And>x y z.
-        x \<noteq> y \<Longrightarrow>
-        x \<noteq> z \<Longrightarrow>
-        y \<noteq> z \<Longrightarrow>
-        e1 \<union> e2 = closed_segment x y \<union> closed_segment x z \<Longrightarrow>
-        frontier \<theta> =
-          closed_segment x y \<union>
+      x \<noteq> y \<Longrightarrow>
+      x \<noteq> z \<Longrightarrow>
+      y \<noteq> z \<Longrightarrow>
+      \<not> collinear {x, y, z} \<Longrightarrow>
+      e1 \<union> e2 = closed_segment x y \<union> closed_segment x z \<Longrightarrow>
+      frontier \<theta> =
+        closed_segment x y \<union>
           (closed_segment x z \<union> closed_segment y z) \<Longrightarrow>
         \<theta> \<inter> J = closed_segment x y \<union> closed_segment x z \<Longrightarrow>
         \<exists>J' K' f.
@@ -47364,6 +47377,7 @@ proof -
 	    assume hxy: "x \<noteq> y"
 	    assume hxz: "x \<noteq> z"
 	    assume hyz: "y \<noteq> z"
+	    assume hnot_col_xyz: "\<not> collinear {x, y, z}"
 	    assume hcorner_edges:
 	      "e1 \<union> e2 = closed_segment x y \<union> closed_segment x z"
 	    assume hcorner_frontier:
@@ -47392,7 +47406,102 @@ proof -
 	                UNIV geotop_euclidean_topology g
 	          \<and> (\<forall>P\<in>UNIV - U. g P = P)
 	          \<and> g ` J' = J"
-	      sorry
+	    proof -
+	      let ?B\<^sub>c = "closed_segment x y \<union> closed_segment x z"
+	      let ?B\<^sub>n = "closed_segment y z"
+	      have hcorner_forward_boundary_split:
+	          "\<exists>C\<^sub>O.
+	            J = ?B\<^sub>c \<union> C\<^sub>O
+	            \<and> geotop_is_broken_line ?B\<^sub>c
+	            \<and> geotop_is_broken_line ?B\<^sub>n
+	            \<and> geotop_is_broken_line C\<^sub>O
+	            \<and> geotop_arc_endpoints ?B\<^sub>c {y, z}
+	            \<and> geotop_arc_endpoints ?B\<^sub>n {y, z}
+	            \<and> geotop_arc_endpoints C\<^sub>O {y, z}
+	            \<and> geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	                geotop_arc_interior C\<^sub>O {y, z} = {}
+	            \<and> ?B\<^sub>n \<inter> C\<^sub>O = {y, z}
+	            \<and> geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	        sorry
+	      have hcorner_forward_delete_carrier:
+	          "\<And>C\<^sub>O.
+	            J = ?B\<^sub>c \<union> C\<^sub>O \<Longrightarrow>
+	            geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O) \<Longrightarrow>
+	            geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	        sorry
+	      have hcorner_forward_support:
+	          "\<And>C\<^sub>O.
+	            geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) \<Longrightarrow>
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) \<subseteq> U"
+	      proof -
+	        fix C\<^sub>O
+	        assume hKd_poly:
+	            "geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	        have hKd_sub_K: "geotop_polyhedron ?K\<^sub>d \<subseteq> geotop_polyhedron K"
+	          unfolding geotop_polyhedron_def by (by100 blast)
+	        show "closure_on UNIV geotop_euclidean_topology
+	            (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) \<subseteq> U"
+	          using hKd_poly hKd_sub_K hclosed_disk_in_support by (by100 blast)
+	      qed
+	      have hcorner_forward_supported_PL_map:
+	          "\<And>C\<^sub>O.
+	            J = ?B\<^sub>c \<union> C\<^sub>O \<Longrightarrow>
+	            geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O) \<Longrightarrow>
+	            \<exists>g.
+	              top1_homeomorphism_on UNIV geotop_euclidean_topology
+	                UNIV geotop_euclidean_topology g
+	              \<and> (\<forall>P\<in>UNIV - U. g P = P)
+	              \<and> g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
+	        sorry
+	      show ?thesis
+	      proof -
+	        obtain C\<^sub>O where hJ_split: "J = ?B\<^sub>c \<union> C\<^sub>O"
+	          and hJ'_poly: "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	          using hcorner_forward_boundary_split by (by100 blast)
+	        have hKd_poly:
+	            "geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	          by (rule hcorner_forward_delete_carrier[OF hJ_split hJ'_poly])
+	        have hJ'_support:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) \<subseteq> U"
+	          by (rule hcorner_forward_support[OF hKd_poly])
+	        obtain g where hg_homeo:
+	            "top1_homeomorphism_on UNIV geotop_euclidean_topology
+	              UNIV geotop_euclidean_topology g"
+	          and hg_fix: "\<forall>P\<in>UNIV - U. g P = P"
+	          and hgJ': "g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
+	          using hcorner_forward_supported_PL_map[OF hJ_split hJ'_poly]
+	          by (elim exE conjE)
+	        show ?thesis
+	        proof (rule exI[of _ "?B\<^sub>n \<union> C\<^sub>O"], rule exI[of _ g], intro conjI)
+	          show "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	            by (rule hJ'_poly)
+	          show "geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	            by (rule hKd_poly)
+	          show "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O)) \<subseteq> U"
+	            by (rule hJ'_support)
+	          show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+	              UNIV geotop_euclidean_topology g"
+	            by (rule hg_homeo)
+	          show "\<forall>P\<in>UNIV - U. g P = P"
+	            by (rule hg_fix)
+	          show "g ` (?B\<^sub>n \<union> C\<^sub>O) = J"
+	            by (rule hgJ')
+	        qed
+	      qed
+	    qed
 	    have hfigure33_corner_inverse_boundary_carrier:
 	        "\<exists>J' f.
 	          geotop_is_polygon J'
@@ -47540,6 +47649,7 @@ proof -
     obtain x y z where hxy: "x \<noteq> y"
       and hxz: "x \<noteq> z"
       and hyz: "y \<noteq> z"
+      and hnot_col_xyz: "\<not> collinear {x, y, z}"
       and hcorner_edges:
         "e1 \<union> e2 = closed_segment x y \<union> closed_segment x z"
       and hcorner_frontier:
@@ -47551,7 +47661,7 @@ proof -
       using hfigure33_corner_edge_package by (elim exE conjE)
     show ?thesis
       by (rule hfigure33_corner_inverse_supported_PL_fold_core
-          [OF hxy hxz hyz hcorner_edges hcorner_frontier hcorner_contact])
+          [OF hxy hxz hyz hnot_col_xyz hcorner_edges hcorner_frontier hcorner_contact])
   qed
   show ?thesis
     using hbook_supported_inverse_PL_fold by (by100 blast)
