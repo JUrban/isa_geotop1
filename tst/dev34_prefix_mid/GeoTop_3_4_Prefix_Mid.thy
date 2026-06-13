@@ -41291,6 +41291,21 @@ proof -
 		              qed
 		            qed
 		          qed
+		          have hfigure33_source_carrier_endpoint_segments_bound_scalar:
+		              "\<exists>\<eta>>0. \<forall>t>0.
+		                t < \<eta> \<longrightarrow>
+		                ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                  \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
+		                  geotop_polyhedron
+		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                \<subseteq> {v\<^sub>0, v\<^sub>2}"
+		          (**
+		            Remaining straight-germ endpoint geometry for Moise Figure
+		            3.3.  After reducing \<open>C\<^sub>O\<close> near the endpoints to the two
+		            local endpoint segments, prove that sufficiently thin source
+		            carriers meet those punctured endpoint germs only at the
+		            allowed old-edge endpoints. **)
+		            sorry
 		          have hfigure33_source_carrier_endpoint_contact_bound_scalar:
 		              "\<exists>\<eta>>0. \<forall>t>0.
 		                t < \<eta> \<longrightarrow>
@@ -41299,13 +41314,89 @@ proof -
 		                  geotop_polyhedron
 		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
 		                \<subseteq> {v\<^sub>0, v\<^sub>2}"
-		          (**
-		            Remaining Moise Figure 3.3 endpoint-contact bound.  The
-		            local broken-line models identify \<open>C\<^sub>O\<close> near \<open>v\<^sub>0\<close> and
-		            \<open>v\<^sub>2\<close> with single straight endpoint segments; this subclaim
-		            must show that sufficiently thin Figure 3.3 carriers meet
-		            those two endpoint neighborhoods only at the endpoints. **)
-		            sorry
+		          proof -
+		            obtain \<eta> where h\<eta>_pos: "0 < \<eta>"
+		              and hsegments_bound:
+		                "\<forall>t>0.
+		                  t < \<eta> \<longrightarrow>
+		                  ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
+		                    geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+		              using hfigure33_source_carrier_endpoint_segments_bound_scalar
+		              by (elim exE conjE)
+		            have hsmall:
+		                "\<forall>t>0. t < \<eta> \<longrightarrow>
+		                  C\<^sub>O \<inter>
+		                    (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)) \<inter>
+		                    geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+		            proof (intro allI impI)
+		              fix t :: real
+		              assume ht_pos: "0 < t"
+		              assume ht_lt: "t < \<eta>"
+		              have hseg_t:
+		                  "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
+		                    geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+		                using hsegments_bound ht_pos ht_lt by (by100 blast)
+		              show "C\<^sub>O \<inter>
+		                    (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)) \<inter>
+		                    geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                  \<subseteq> {v\<^sub>0, v\<^sub>2}"
+		              proof
+		                fix x
+		                assume hx:
+		                  "x \<in> C\<^sub>O \<inter>
+		                    (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)) \<inter>
+		                    geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		                have hxCO_ball:
+		                  "x \<in> C\<^sub>O \<inter>
+		                    (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+		                  using hx by (by100 blast)
+		                have hxcarrier:
+		                  "x \<in> geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		                  using hx by (by100 blast)
+			                have hx_local:
+			                  "x \<in> {v\<^sub>0, v\<^sub>2}
+			                    \<union> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+			                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+			                  using hCO_endpoint_balls_sub_local_segments hxCO_ball
+			                  by (by100 blast)
+			                have hx_local_cases:
+			                  "x \<in> {v\<^sub>0, v\<^sub>2} \<or>
+			                   x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+			                    \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+			                  using hx_local by (by100 blast)
+			                show "x \<in> {v\<^sub>0, v\<^sub>2}"
+			                proof (rule disjE[OF hx_local_cases])
+			                  assume hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+			                  show ?thesis
+			                    by (rule hx_end)
+		                next
+		                  assume hx_seg:
+		                    "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                      \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+		                  have "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+		                      \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})) \<inter>
+		                    geotop_polyhedron
+		                      (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+		                    using hx_seg hxcarrier by (by100 blast)
+		                  thus ?thesis
+		                    using hseg_t by (by100 blast)
+		                qed
+		              qed
+		            qed
+		            show ?thesis
+		              using h\<eta>_pos hsmall by (by100 blast)
+		          qed
 		          have hfigure33_source_carrier_support_contact_scalar:
 		              "\<exists>t>0.
 		                geotop_polyhedron
