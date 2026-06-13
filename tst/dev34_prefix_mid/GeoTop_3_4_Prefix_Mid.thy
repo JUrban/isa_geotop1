@@ -47250,9 +47250,9 @@ proof -
     have h\<theta>J_e12: "\<theta> \<inter> J = e1 \<union> e2"
       using hboundary_two_edge_package by (by100 blast)
     have hp_abc: "p \<in> {a, b, c}"
-      using hsame_vertices by (by100 blast)
+      using hsame_vertices by (by100 simp)
     have hq_abc: "q \<in> {a, b, c}"
-      using hsame_vertices by (by100 blast)
+      using hsame_vertices by (by100 simp)
     have hp_cases: "p = a \<or> p = b \<or> p = c"
       using hp_abc by (by100 simp)
     have hq_cases: "q = a \<or> q = b \<or> q = c"
@@ -47264,7 +47264,7 @@ proof -
     proof
       assume hpq_ab: "{p, q} = {a, b}"
       have hconv_eq: "geotop_convex_hull {p, q} = geotop_convex_hull {a, b}"
-        using hpq_ab by (by100 simp)
+        by (simp only: hpq_ab)
       have "e2 = e1"
         using he2_named he1_named hconv_eq by (by100 simp)
       thus False
@@ -47421,7 +47421,7 @@ proof -
 	    assume hcorner_contact:
 	      "\<theta> \<inter> J = closed_segment x y \<union> closed_segment x z"
 	    let ?K\<^sub>d = "K - {\<theta>}"
-	    let ?K\<^sub>r = "?K\<^sub>d - {e1, e2}"
+	    let ?K\<^sub>r = "?K\<^sub>d - {e1, e2, {x}}"
 	    have hK_delete_package:
 	        "geotop_is_complex ?K\<^sub>d
 	        \<and> finite ?K\<^sub>d
@@ -47459,6 +47459,15 @@ proof -
 	        by (rule geotop_simplex_dim_unique[OF he2_1 he2_2])
 	      thus False by (by100 simp)
 	    qed
+	    have hx_singleton_not_dim2: "\<not> geotop_simplex_dim {x} 2"
+	    proof
+	      assume hx2: "geotop_simplex_dim {x} 2"
+	      have hx0: "geotop_simplex_dim {x} 0"
+	        by (rule geotop_singleton_is_simplex)
+	      have "0 = (2::nat)"
+	        by (rule geotop_simplex_dim_unique[OF hx0 hx2])
+	      thus False by (by100 simp)
+	    qed
 	    have hK_reduced_finite: "finite ?K\<^sub>r"
 	      using hK_delete_finite by (by100 simp)
 	    have hK_reduced_two_simplexes:
@@ -47481,8 +47490,10 @@ proof -
 	          using h\<tau>2 he1_not_dim2 by (by100 blast)
 	        have h\<tau>ne2: "\<tau> \<noteq> e2"
 	          using h\<tau>2 he2_not_dim2 by (by100 blast)
+	        have h\<tau>ne_x: "\<tau> \<noteq> {x}"
+	          using h\<tau>2 hx_singleton_not_dim2 by (by100 blast)
 	        show "\<tau> \<in> {\<tau>\<in>?K\<^sub>r. geotop_simplex_dim \<tau> 2}"
-	          using h\<tau>Kd h\<tau>2 h\<tau>ne1 h\<tau>ne2 by (by100 simp)
+	          using h\<tau>Kd h\<tau>2 h\<tau>ne1 h\<tau>ne2 h\<tau>ne_x by (by100 simp)
 	      qed
 	    qed
 	    have hK_reduced_count:
@@ -47662,6 +47673,11 @@ proof -
 	      show False
 	        using h\<rho>eq h\<rho>ne by (by100 blast)
 	    qed
+	    have hx_no_face_after_edge_delete:
+	        "\<And>\<sigma>. \<sigma> \<in> ?K\<^sub>d \<Longrightarrow> \<sigma> \<noteq> e1 \<Longrightarrow> \<sigma> \<noteq> e2 \<Longrightarrow>
+	          \<sigma> \<noteq> {x} \<Longrightarrow>
+	          geotop_is_face {x} \<sigma> \<Longrightarrow> False"
+	      sorry
 	    have hK_reduced_complex: "geotop_is_complex ?K\<^sub>r"
 	    proof (rule geotop_complex_subset_is_complex)
 	      show "?K\<^sub>r \<subseteq> ?K\<^sub>d"
@@ -47788,8 +47804,23 @@ proof -
 	              using he2_no_incident_after_delete by (by100 blast)
 	          qed
 	        qed
+	        have h\<tau>ne_x: "\<tau> \<noteq> {x}"
+	        proof
+	          assume h\<tau>eq: "\<tau> = {x}"
+	          have h\<sigma>ne_e1: "\<sigma> \<noteq> e1"
+	            using h\<sigma>r by (by100 simp)
+	          have h\<sigma>ne_e2: "\<sigma> \<noteq> e2"
+	            using h\<sigma>r by (by100 simp)
+	          have h\<sigma>ne_x: "\<sigma> \<noteq> {x}"
+	            using h\<sigma>r by (by100 simp)
+	          have hx_face_\<sigma>: "geotop_is_face {x} \<sigma>"
+	            using h\<tau>face h\<tau>eq by (by100 simp)
+	          show False
+	            by (rule hx_no_face_after_edge_delete
+	                [OF h\<sigma>Kd h\<sigma>ne_e1 h\<sigma>ne_e2 h\<sigma>ne_x hx_face_\<sigma>])
+	        qed
 	        show "\<tau> \<in> ?K\<^sub>r"
-	          using h\<tau>Kd h\<tau>ne_e1 h\<tau>ne_e2 by (by100 simp)
+	          using h\<tau>Kd h\<tau>ne_e1 h\<tau>ne_e2 h\<tau>ne_x by (by100 simp)
 	      qed
 	    qed (rule hK_delete_complex)
 	    have hK_reduced_package:
@@ -47835,23 +47866,75 @@ proof -
 	    qed
 	    have hKr_poly_without_old_edges_rel:
 	        "geotop_polyhedron ?K\<^sub>r =
-	          geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2)"
+	          geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2 \<union> {x})"
 	    proof
+	      have hx_face_e1: "geotop_is_face {x} e1"
+	      proof -
+	        have he1_cases: "e1 = closed_segment x y \<or> e1 = closed_segment x z"
+	        proof -
+	          have "e1 \<in> {closed_segment x y, closed_segment x z}"
+	            using hcorner_edge_set by (by100 blast)
+	          thus ?thesis by (by100 blast)
+	        qed
+	        show ?thesis
+	        proof (rule disjE[OF he1_cases])
+	          assume heq: "e1 = closed_segment x y"
+	          have "geotop_is_face {x} (closed_segment x y)"
+	            by (rule geotop_closed_segment_is_face_endpoint[OF hxy])
+	               (by100 simp)
+	          thus ?thesis
+	            using heq by (by100 simp)
+	        next
+	          assume heq: "e1 = closed_segment x z"
+	          have "geotop_is_face {x} (closed_segment x z)"
+	            by (rule geotop_closed_segment_is_face_endpoint[OF hxz])
+	               (by100 simp)
+	          thus ?thesis
+	            using heq by (by100 simp)
+	        qed
+	      qed
+	      have hxKd: "{x} \<in> ?K\<^sub>d"
+	      proof -
+	        have hface_closed:
+	            "\<forall>\<sigma>\<in>?K\<^sub>d. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+	          by (rule geotop_is_complex_face_closed[OF hK_delete_complex])
+	        have hfaces_e1:
+	            "\<forall>\<tau>. geotop_is_face \<tau> e1 \<longrightarrow> \<tau> \<in> ?K\<^sub>d"
+	          by (rule bspec[OF hface_closed he1Kd])
+	        have himp: "geotop_is_face {x} e1 \<longrightarrow> {x} \<in> ?K\<^sub>d"
+	          by (rule spec[OF hfaces_e1])
+	        show ?thesis
+	          by (rule mp[OF himp hx_face_e1])
+	      qed
 	      show "geotop_polyhedron ?K\<^sub>r \<subseteq>
-	          geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2)"
+	          geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2 \<union> {x})"
 	      proof
 	        fix P
 	        assume hP_Kr: "P \<in> geotop_polyhedron ?K\<^sub>r"
 	        obtain \<sigma> where h\<sigma>Kr: "\<sigma> \<in> ?K\<^sub>r" and hP\<sigma>: "P \<in> \<sigma>"
-	          using hP_Kr unfolding geotop_polyhedron_def by (by100 blast)
+	        proof -
+	          have hPUnion: "P \<in> \<Union>?K\<^sub>r"
+	            using hP_Kr unfolding geotop_polyhedron_def .
+	          show ?thesis
+	          proof (rule UnionE[OF hPUnion])
+	            fix \<sigma>
+	            assume hP\<sigma>': "P \<in> \<sigma>"
+	            assume h\<sigma>Kr': "\<sigma> \<in> ?K\<^sub>r"
+	            show ?thesis
+	              by (rule that[OF h\<sigma>Kr' hP\<sigma>'])
+	          qed
+	        qed
 	        have h\<sigma>Kd: "\<sigma> \<in> ?K\<^sub>d"
-	          using h\<sigma>Kr by (by100 blast)
+	          using h\<sigma>Kr by (by100 simp)
 	        have hP_Kd: "P \<in> geotop_polyhedron ?K\<^sub>d"
-	          unfolding geotop_polyhedron_def using h\<sigma>Kd hP\<sigma> by (by100 blast)
+	          unfolding geotop_polyhedron_def
+	          by (rule UnionI[OF h\<sigma>Kd hP\<sigma>])
 	        have h\<sigma>ne_e1: "\<sigma> \<noteq> e1"
-	          using h\<sigma>Kr by (by100 blast)
+	          using h\<sigma>Kr by (by100 simp)
 	        have h\<sigma>ne_e2: "\<sigma> \<noteq> e2"
-	          using h\<sigma>Kr by (by100 blast)
+	          using h\<sigma>Kr by (by100 simp)
+	        have h\<sigma>ne_x: "\<sigma> \<noteq> {x}"
+	          using h\<sigma>Kr by (by100 simp)
 	        have hP_not_e1_rel: "P \<notin> rel_interior e1"
 	        proof
 	          assume hP_rel: "P \<in> rel_interior e1"
@@ -47894,21 +47977,36 @@ proof -
 	          thus False
 	            using h\<sigma>ne_e2 by (by100 blast)
 	        qed
+	        have hP_not_x: "P \<noteq> x"
+	        proof
+	          assume hPx: "P = x"
+	          have hx_sub_\<sigma>: "{x} \<subseteq> \<sigma>"
+	            using hP\<sigma> hPx by (by100 blast)
+	          have hx_face_\<sigma>: "geotop_is_face {x} \<sigma>"
+	            by (rule geotop_complex_subset_simplex_face_prefix
+	                [OF hK_delete_complex hxKd h\<sigma>Kd hx_sub_\<sigma>])
+	          show False
+	            by (rule hx_no_face_after_edge_delete
+	                [OF h\<sigma>Kd h\<sigma>ne_e1 h\<sigma>ne_e2 h\<sigma>ne_x hx_face_\<sigma>])
+	        qed
 	        show "P \<in> geotop_polyhedron ?K\<^sub>d -
-	            (rel_interior e1 \<union> rel_interior e2)"
-	          using hP_Kd hP_not_e1_rel hP_not_e2_rel by (by100 blast)
+	            (rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	          using hP_Kd hP_not_e1_rel hP_not_e2_rel hP_not_x by (by100 blast)
 	      qed
-	      show "geotop_polyhedron ?K\<^sub>d - (rel_interior e1 \<union> rel_interior e2)
+	      show "geotop_polyhedron ?K\<^sub>d -
+	          (rel_interior e1 \<union> rel_interior e2 \<union> {x})
 	          \<subseteq> geotop_polyhedron ?K\<^sub>r"
 	      proof
 	        fix P
 	        assume hP: "P \<in> geotop_polyhedron ?K\<^sub>d -
-	            (rel_interior e1 \<union> rel_interior e2)"
+	            (rel_interior e1 \<union> rel_interior e2 \<union> {x})"
 	        have hP_Kd: "P \<in> geotop_polyhedron ?K\<^sub>d"
 	          using hP by (by100 blast)
 	        have hP_not_e1_rel: "P \<notin> rel_interior e1"
 	          using hP by (by100 blast)
 	        have hP_not_e2_rel: "P \<notin> rel_interior e2"
+	          using hP by (by100 blast)
+	        have hP_not_x: "P \<noteq> x"
 	          using hP by (by100 blast)
 	        have hcarrierKd: "geotop_K_carrier ?K\<^sub>d P \<in> ?K\<^sub>d"
 	          by (rule geotop_K_carrier_in
@@ -47936,11 +48034,20 @@ proof -
 	          thus False
 	            using hP_not_e2_rel by (by100 blast)
 	        qed
+	        have hcarrier_ne_x: "geotop_K_carrier ?K\<^sub>d P \<noteq> {x}"
+	        proof
+	          assume hcarrier_eq: "geotop_K_carrier ?K\<^sub>d P = {x}"
+	          have "P = x"
+	            using hPcarrier hcarrier_eq by (by100 simp)
+	          thus False
+	            using hP_not_x by (by100 simp)
+	        qed
 	        have hcarrierKr: "geotop_K_carrier ?K\<^sub>d P \<in> ?K\<^sub>r"
-	          using hcarrierKd hcarrier_ne_e1 hcarrier_ne_e2 by (by100 simp)
+	          using hcarrierKd hcarrier_ne_e1 hcarrier_ne_e2 hcarrier_ne_x
+	          by (by100 simp)
 	        show "P \<in> geotop_polyhedron ?K\<^sub>r"
 	          unfolding geotop_polyhedron_def
-	          using hcarrierKr hPcarrier by (by100 blast)
+	          by (rule UnionI[OF hcarrierKr hPcarrier])
 	      qed
 	    qed
 	    have hfigure33_corner_forward_boundary_carrier:
@@ -48635,7 +48742,47 @@ proof -
 	            geotop_polyhedron ?K\<^sub>r =
 	              closure_on UNIV geotop_euclidean_topology
 	                (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
-	        sorry
+	      proof -
+	        fix C\<^sub>O
+	        assume hJ_split: "J = ?B\<^sub>c \<union> C\<^sub>O"
+	        assume hCO_bl: "geotop_is_broken_line C\<^sub>O"
+	        assume hCO_E: "geotop_arc_endpoints C\<^sub>O {y, z}"
+	        assume hB\<^sub>c_CO_int_disj:
+	          "geotop_arc_interior ?B\<^sub>c {y, z} \<inter>
+	            geotop_arc_interior C\<^sub>O {y, z} = {}"
+	        assume hB\<^sub>n_CO_inter: "?B\<^sub>n \<inter> C\<^sub>O = {y, z}"
+	        assume hJ'_poly: "geotop_is_polygon (?B\<^sub>n \<union> C\<^sub>O)"
+	        have hKd_poly_without_theta_rel:
+	            "geotop_polyhedron ?K\<^sub>d =
+	              geotop_polyhedron K - rel_interior \<theta>"
+	          by (rule geotop_delete_2simplex_polyhedron_eq_without_rel_interior_prefix
+	              [OF hK hK_fin h\<theta>K h\<theta>2])
+	        have hKd_poly_without_theta_rel_closed_disk:
+	            "geotop_polyhedron ?K\<^sub>d =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J) - rel_interior \<theta>"
+	          using hKd_poly_without_theta_rel hK_poly by (by100 simp)
+	        have hKr_as_closed_disk_minus_corner:
+	            "geotop_polyhedron ?K\<^sub>r =
+	              closure_on UNIV geotop_euclidean_topology
+	                (geotop_polygon_interior J) -
+	              (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x})"
+	          using hKr_poly_without_old_edges_rel
+	            hKd_poly_without_theta_rel_closed_disk
+	          by (by100 blast)
+	        have hclosed_disk_minus_corner_eq_new:
+	            "closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior J) -
+	              (rel_interior \<theta> \<union> rel_interior e1 \<union> rel_interior e2 \<union> {x}) =
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	          sorry
+	        show "geotop_polyhedron ?K\<^sub>r =
+	            closure_on UNIV geotop_euclidean_topology
+	              (geotop_polygon_interior (?B\<^sub>n \<union> C\<^sub>O))"
+	          using hKr_as_closed_disk_minus_corner hclosed_disk_minus_corner_eq_new
+	          by (by100 simp)
+	      qed
 	      have hcorner_forward_support:
 	          "\<And>C\<^sub>O.
 	            geotop_polyhedron ?K\<^sub>r =
