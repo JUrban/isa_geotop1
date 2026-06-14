@@ -861,6 +861,10 @@ proof -
       using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
     have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
       using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+    have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+      using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+    have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+      by (rule closed_subset_compact[OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
     have hFrN\<^sub>I_A2_QS_disj: "FrN\<^sub>I \<inter> (A2 \<union> {Q, S}) = {}"
       using hFrN\<^sub>I_sub_N hN_A2_QS by (by100 blast)
     have hQ_not_FrN\<^sub>I: "Q \<notin> FrN\<^sub>I"
@@ -938,6 +942,8 @@ proof -
       using hP_J\<^sub>N by (by100 blast)
     have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
       using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
+    have hJ\<^sub>N_compact: "compact J\<^sub>N"
+      by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
