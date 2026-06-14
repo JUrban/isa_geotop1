@@ -6471,6 +6471,46 @@ proof -
       by (rule hD44_connected_route_component_suffices
           [OF hW_sub hQ1_W hS1_W hW_conn])
   qed
+  have hD44_component_points_accumulate_at_S1_suffices:
+      "(\<forall>\<epsilon>>0. \<exists>Y.
+          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>)
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Ball-witness form of the same access closure.  This is the form expected
+      from the final regular-neighborhood argument: every upper access collar
+      around \<open>S1\<close> must meet the outside component already containing \<open>Q1\<close>. **)
+  proof -
+    assume hall:
+      "\<forall>\<epsilon>>0. \<exists>Y.
+        Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<and> Y \<in> ball S1 \<epsilon>"
+    have hS1_cl:
+        "S1 \<in> closure
+          (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
+      unfolding closure_approachable
+    proof (intro allI impI)
+      fix \<epsilon> :: real
+      assume h\<epsilon>_pos: "0 < \<epsilon>"
+      obtain Y where hY_comp:
+          "Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        and hY_ball: "Y \<in> ball S1 \<epsilon>"
+        using hall h\<epsilon>_pos by (by100 blast)
+      have hdist: "dist Y S1 < \<epsilon>"
+      proof -
+        have "dist S1 Y < \<epsilon>"
+          using hY_ball by (by100 simp)
+        thus ?thesis
+          by (simp add: dist_commute)
+      qed
+      show "\<exists>y\<in>geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1. dist y S1 < \<epsilon>"
+        using hY_comp hdist by (intro bexI)
+    qed
+    show ?thesis
+      by (rule hD44_component_closure_at_S1_suffices[OF hS1_cl])
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -6481,9 +6521,10 @@ proof -
       complementary frontier arc, then using the lower-to-upper subarc outside
       \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-  proof (rule hD44_component_closure_at_S1_suffices)
-    show "S1 \<in> closure
-        (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
+  proof (rule hD44_component_points_accumulate_at_S1_suffices)
+    show "\<forall>\<epsilon>>0. \<exists>Y.
+        Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<and> Y \<in> ball S1 \<epsilon>"
       (**
         Remaining literal Moise corridor construction.  Use the frontier
         component through \<open>P\<close>, choose the lower-to-upper complementary subarc
