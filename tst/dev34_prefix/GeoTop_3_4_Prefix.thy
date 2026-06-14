@@ -2937,6 +2937,40 @@ proof -
       show False
         using hBdJ\<^sub>N_poly_not_singleton[of w] hpoly_single by (by100 blast)
     qed
+    have hBdJ\<^sub>N_two_distinct_vertices:
+        "\<exists>u v. {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v"
+    proof -
+      obtain e where heBdJ: "e \<in> BdJ\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hP_e: "P \<in> e"
+        using hBdJ\<^sub>N_P_incident_edge by (by100 blast)
+      have he_dim: "geotop_simplex_dim e 1"
+        using hedge unfolding geotop_is_edge_def by (by100 simp)
+      obtain V m where hV_fin: "finite V"
+        and hV_card: "card V = 1 + 1"
+        and h1_le_m: "1 \<le> m"
+        and hgp_V: "geotop_general_position V m"
+        and he_eq: "e = geotop_convex_hull V"
+        using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+      have heV: "geotop_simplex_vertices e V"
+        unfolding geotop_simplex_vertices_def
+        using hV_fin hV_card h1_le_m hgp_V he_eq by (by100 blast)
+      have hV_card2: "card V = 2"
+        using hV_card by (by100 simp)
+      have hV_pair_ex:
+          "\<exists>u v. V = {u, v} \<and> u \<noteq> v"
+        by (rule iffD1[OF card_2_iff hV_card2])
+      obtain u v where hV_eq: "V = {u, v}"
+        and huv: "u \<noteq> v"
+        using hV_pair_ex by (elim exE conjE)
+      have huv_BdJ:
+          "{u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N"
+        by (fact geotop_subdivide_edge_vertices_in_K
+            [where K=BdJ\<^sub>N and e=e and V=V and v\<^sub>0=u and v\<^sub>1=v,
+             OF hBdJ\<^sub>N_complex heBdJ heV hV_eq])
+      show ?thesis
+        using huv_BdJ huv by (by100 blast)
+    qed
     have hBdJ\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
