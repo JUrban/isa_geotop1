@@ -38466,6 +38466,117 @@ proof -
     using hsource_poly hsource_union by (by100 simp)
 qed
 
+lemma geotop_figure33_source_carrier_near_convex_triangle_scalar_prefix:
+  fixes \<theta> :: "(real^2) set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>5 x :: "real^2"
+  assumes hv\<^sub>5_mid: "v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+  assumes hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
+  assumes h\<theta>_conv: "convex \<theta>"
+  assumes hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+  assumes hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+  assumes hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+  assumes ht: "0 < t"
+  assumes hx:
+    "x \<in> geotop_polyhedron
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  shows "\<exists>y\<in>\<theta>. dist x y \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+  (**
+    Figure 3.3 carrier-nearness estimate: every point of the small source
+    carrier is within the scalar displacement bound of the original triangle
+    \<open>\<theta>\<close>. **)
+proof -
+  let ?v\<^sub>3 = "v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)"
+  let ?v\<^sub>4 = "v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+  let ?source_triangles =
+    "{geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, v\<^sub>5},
+      geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, v\<^sub>5},
+      geotop_convex_hull {v\<^sub>0, v\<^sub>5, ?v\<^sub>3},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>5, ?v\<^sub>3}}"
+  let ?source_carrier =
+    "{\<tau>. \<exists>\<sigma>\<in>?source_triangles. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  have ht_nonneg: "0 \<le> t"
+    using ht by (by100 simp)
+  have hv\<^sub>5_\<theta>: "v\<^sub>5 \<in> \<theta>"
+  proof -
+    have hseg_sub: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
+      by (rule closed_segment_subset[OF hv\<^sub>0_\<theta> hv\<^sub>2_\<theta> h\<theta>_conv])
+    show ?thesis
+      using hseg_sub midpoint_in_closed_segment[of v\<^sub>0 v\<^sub>2] hv\<^sub>5_mid
+      by (by100 blast)
+  qed
+  have hlimit0_sub_\<theta>: "geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+  proof -
+    have hverts: "{v\<^sub>0, v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+      using hv\<^sub>0_\<theta> hv\<^sub>5_\<theta> hv\<^sub>1_\<theta> by (by100 blast)
+    have "convex hull {v\<^sub>0, v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+      by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
+    thus ?thesis
+      unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+  qed
+  have hlimit2_sub_\<theta>: "geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+  proof -
+    have hverts: "{v\<^sub>2, v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+      using hv\<^sub>2_\<theta> hv\<^sub>5_\<theta> hv\<^sub>1_\<theta> by (by100 blast)
+    have "convex hull {v\<^sub>2, v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
+      by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
+    thus ?thesis
+      unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+  qed
+  have houter:
+      "geotop_polyhedron ?source_carrier
+      = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, ?v\<^sub>3}
+        \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, ?v\<^sub>3}"
+    by (rule geotop_figure33_source_carrier_outer_union_scalar_prefix
+        [OF hv\<^sub>1v\<^sub>5 ht])
+  have hx_cases:
+      "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, ?v\<^sub>3}
+      \<or> x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, ?v\<^sub>3}"
+    using hx houter by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hx_cases])
+    assume hx0: "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, ?v\<^sub>3}"
+    have hnear:
+        "\<exists>y\<in>geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>1}.
+          norm (x - y) \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+      by (rule geotop_triangle_two_base_vertices_scalar_near_limit_prefix
+          [OF ht_nonneg hx0])
+    obtain y where hy_lim: "y \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>1}"
+      and hy_dist: "norm (x - y) \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+      using hnear by (by100 blast)
+    have hy\<theta>: "y \<in> \<theta>"
+      using hlimit0_sub_\<theta> hy_lim by (by100 blast)
+    have hdist: "dist x y \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+      using hy_dist by (simp add: dist_norm)
+    show ?thesis
+      using hy\<theta> hdist by (by100 blast)
+  next
+    assume hx2: "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, ?v\<^sub>3}"
+    have hnear:
+        "\<exists>y\<in>geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>1}.
+          norm (x - y) \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+      by (rule geotop_triangle_two_base_vertices_scalar_near_limit_prefix
+          [OF ht_nonneg hx2])
+    obtain y where hy_lim: "y \<in> geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>1}"
+      and hy_dist: "norm (x - y) \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+      using hnear by (by100 blast)
+    have hy\<theta>: "y \<in> \<theta>"
+      using hlimit2_sub_\<theta> hy_lim by (by100 blast)
+    have hdist: "dist x y \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+      using hy_dist by (simp add: dist_norm)
+    show ?thesis
+      using hy\<theta> hdist by (by100 blast)
+  qed
+qed
+
 lemma geotop_not_collinear_off_affine_hull_pair_prefix:
   fixes p x y :: "real^2"
   assumes hxy: "x \<noteq> y"
@@ -41611,8 +41722,6 @@ proof -
 		            assume hx:
 		              "x \<in> geotop_polyhedron
 		                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		            have ht_nonneg: "0 \<le> t"
-		              using ht by (by100 simp)
 		            have h\<theta>_conv: "convex \<theta>"
 		              by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
 		            have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
@@ -41623,84 +41732,12 @@ proof -
 		              using hverts_sub by (by100 blast)
 		            have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
 		              using hverts_sub by (by100 blast)
-		            have hv\<^sub>5_\<theta>: "?v\<^sub>5 \<in> \<theta>"
-		            proof -
-		              have hseg_sub: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> \<theta>"
-		                by (rule closed_segment_subset[OF hv\<^sub>0_\<theta> hv\<^sub>2_\<theta> h\<theta>_conv])
-		              show ?thesis
-		                using hseg_sub midpoint_in_closed_segment[of v\<^sub>0 v\<^sub>2]
-		                by (by100 blast)
-		            qed
-		            have hlimit0_sub_\<theta>:
-		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
-		            proof -
-		              have hverts: "{v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
-		                using hv\<^sub>0_\<theta> hv\<^sub>5_\<theta> hv\<^sub>1_\<theta> by (by100 blast)
-		              have "convex hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
-		                by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
-		              thus ?thesis
-		                unfolding geotop_convex_hull_eq_HOL by (by100 simp)
-		            qed
-		            have hlimit2_sub_\<theta>:
-		                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
-		            proof -
-		              have hverts: "{v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
-		                using hv\<^sub>2_\<theta> hv\<^sub>5_\<theta> hv\<^sub>1_\<theta> by (by100 blast)
-		              have "convex hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1} \<subseteq> \<theta>"
-		                by (rule hull_minimal[where S=convex, OF hverts h\<theta>_conv])
-		              thus ?thesis
-		                unfolding geotop_convex_hull_eq_HOL by (by100 simp)
-		            qed
-		            have houter:
-		                "geotop_polyhedron
-		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
-		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
-		                  \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              by (rule hfigure33_source_carrier_outer_union_scalar[OF ht])
-		            have hx_cases:
-		                "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
-		                \<or> x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              using hx houter by (by100 blast)
+		            have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+		              by (by100 simp)
 		            show "\<exists>y\<in>\<theta>. dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		            proof (rule disjE[OF hx_cases])
-		              assume hx0:
-		                "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              have hnear:
-		                "\<exists>y\<in>geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}.
-		                  norm (x - y) \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                by (rule geotop_triangle_two_base_vertices_scalar_near_limit_prefix
-		                    [OF ht_nonneg hx0])
-		              obtain y where hy_lim:
-		                "y \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, v\<^sub>1}"
-		                and hy_dist:
-		                "norm (x - y) \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                using hnear by (by100 blast)
-		              have hy\<theta>: "y \<in> \<theta>"
-		                using hlimit0_sub_\<theta> hy_lim by (by100 blast)
-		              have hdist: "dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                using hy_dist by (simp add: dist_norm)
-		              show ?thesis
-		                using hy\<theta> hdist by (by100 blast)
-		            next
-		              assume hx2:
-		                "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              have hnear:
-		                "\<exists>y\<in>geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}.
-		                  norm (x - y) \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                by (rule geotop_triangle_two_base_vertices_scalar_near_limit_prefix
-		                    [OF ht_nonneg hx2])
-		              obtain y where hy_lim:
-		                "y \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, v\<^sub>1}"
-		                and hy_dist:
-		                "norm (x - y) \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                using hnear by (by100 blast)
-		              have hy\<theta>: "y \<in> \<theta>"
-		                using hlimit2_sub_\<theta> hy_lim by (by100 blast)
-		              have hdist: "dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                using hy_dist by (simp add: dist_norm)
-		              show ?thesis
-		                using hy\<theta> hdist by (by100 blast)
-		            qed
+		              by (rule geotop_figure33_source_carrier_near_convex_triangle_scalar_prefix
+		                  [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne h\<theta>_conv hv\<^sub>0_\<theta>
+		                    hv\<^sub>1_\<theta> hv\<^sub>2_\<theta> ht hx])
 		          qed
 		          have hfigure33_source_carrier_avoids_C\<^sub>O_middle_bound_scalar:
 		              "\<And>t. 0 < t \<Longrightarrow>
