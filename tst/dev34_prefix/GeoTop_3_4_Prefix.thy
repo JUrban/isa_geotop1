@@ -1121,6 +1121,47 @@ proof -
         show ?thesis
           using hB\<^sub>0_bl hB\<^sub>0_Ncut hQ1_B\<^sub>0 hS1_B\<^sub>0 by (intro exI conjI)
       qed
+      have hD44_connected_route_component_suffices:
+          "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
+            top1_connected_on W
+              (subspace_topology UNIV geotop_euclidean_topology W) \<Longrightarrow>
+            S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        (**
+          Pure component bookkeeping for the Moise frontier route: once the
+          regular-neighborhood boundary analysis supplies a connected witness
+          in \<open>I - (N \<union> A2)\<close> through the two local access endpoints, the
+          endpoints are in the same ambient component. **)
+      proof -
+        fix W
+        assume hW_Ncut: "W \<subseteq> ?Ncut"
+          and hQ1_W: "Q1 \<in> W"
+          and hS1_W: "S1 \<in> W"
+          and hW_conn:
+            "top1_connected_on W
+              (subspace_topology UNIV geotop_euclidean_topology W)"
+        have hW_witness:
+            "W \<in> {C. C \<subseteq> ?Ncut \<and> Q1 \<in> C \<and>
+              top1_connected_on C
+                (subspace_topology UNIV geotop_euclidean_topology C)}"
+          using hW_Ncut hQ1_W hW_conn by (by100 simp)
+        show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+          unfolding geotop_component_at_def
+          using hW_witness hS1_W by (by100 blast)
+      qed
+      have hD44_central_frontier_route_exists:
+          "\<exists>W. W \<subseteq> ?Ncut
+            \<and> Q1 \<in> W
+            \<and> S1 \<in> W
+            \<and> top1_connected_on W
+              (subspace_topology UNIV geotop_euclidean_topology W)"
+        (**
+          Remaining book step in its frontier-route form.  Moise constructs
+          this connected witness from the component of the frontier of the
+          fine carrier \<open>N\<close> through \<open>P\<close>: after extracting the broken-line
+          subarc between the last lower and first upper boundary hits, the
+          subarc lies in \<open>I - (N \<union> A2)\<close> and connects the two access points
+          selected near \<open>Q\<close> and \<open>S\<close>. **)
+        sorry
       have hD44_central_same_component:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
         (**
@@ -1129,7 +1170,19 @@ proof -
           the outside boundary/frontier route in \<open>geotop_polygon_interior J -
           (N \<union> A2)\<close>, and show that the two near-boundary access endpoints
           \<open>Q1\<close> and \<open>S1\<close> are in the same outside-carrier component. **)
-        sorry
+      proof -
+        obtain W where hW_Ncut: "W \<subseteq> ?Ncut"
+          and hQ1_W: "Q1 \<in> W"
+          and hS1_W: "S1 \<in> W"
+          and hW_conn:
+            "top1_connected_on W
+              (subspace_topology UNIV geotop_euclidean_topology W)"
+          using hD44_central_frontier_route_exists
+          by (elim exE conjE)
+        show ?thesis
+          by (rule hD44_connected_route_component_suffices
+              [OF hW_Ncut hQ1_W hS1_W hW_conn])
+      qed
       obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
         and hB\<^sub>0_Ncut: "B\<^sub>0 \<subseteq> ?Ncut"
         and hQ1_B\<^sub>0: "Q1 \<in> B\<^sub>0"
