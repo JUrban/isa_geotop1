@@ -3539,6 +3539,97 @@ proof -
     using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
   have hD44_B\<^sub>1_Ncut_disj: "?B\<^sub>1 \<inter> ?Ncut = {}"
     using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  let ?B1P = "geotop_component_at UNIV geotop_euclidean_topology ?B\<^sub>1 P"
+  have hD44_B1P_sub_B\<^sub>1: "?B1P \<subseteq> ?B\<^sub>1"
+    by (rule geotop_component_at_UNIV_subset)
+  have hD44_B1P_conn:
+      "top1_connected_on ?B1P
+        (subspace_topology UNIV geotop_euclidean_topology ?B1P)"
+    by (rule geotop_component_at_UNIV_connected)
+  have hD44_P_B1P: "P \<in> ?B1P"
+    using hD44_P_B\<^sub>1
+      geotop_component_at_UNIV_eq_connected_component_set[of ?B\<^sub>1 P]
+    by (by100 simp)
+  have hD44_B1P_sub_boundary_arcs:
+      "?B1P \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_sub_boundary_arcs by (by100 blast)
+  have hD44_B1P_A2_QS_disj:
+      "?B1P \<inter> (A2 \<union> {Q, S}) = {}"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
+  have hD44_B1P_Ncut_disj: "?B1P \<inter> ?Ncut = {}"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_Ncut_disj by (by100 blast)
+  have hD44_B1P_R_notin: "R \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj hR_in_A2 by (by100 blast)
+  have hD44_B1P_Q_notin: "Q \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj by (by100 blast)
+  have hD44_B1P_S_notin: "S \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj by (by100 blast)
+  have hD44_F\<^sub>1_closed: "closed F\<^sub>1"
+    by (rule broken_line_closed[OF hD44_F\<^sub>1E])
+  have hD44_F\<^sub>2_closed: "closed F\<^sub>2"
+    by (rule broken_line_closed[OF hD44_F\<^sub>2E])
+  have hD44_UNIV_top:
+      "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets
+        top1_open_sets_is_topology_on_UNIV)
+  let ?F1o = "F\<^sub>1 - {Q, S}"
+  let ?F2o = "F\<^sub>2 - {Q, S}"
+  have hD44_F1o_F2o_separated:
+      "geotop_separated UNIV geotop_euclidean_topology ?F1o ?F2o"
+  proof -
+    have hF1o_closedin:
+        "closedin_on UNIV geotop_euclidean_topology F\<^sub>1"
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      using hD44_F\<^sub>1_closed by (by100 simp)
+    have hF2o_closedin:
+        "closedin_on UNIV geotop_euclidean_topology F\<^sub>2"
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      using hD44_F\<^sub>2_closed by (by100 simp)
+    have hcl_F1o_sub_F1:
+        "closure_on UNIV geotop_euclidean_topology ?F1o \<subseteq> F\<^sub>1"
+      by (rule closure_on_subset_of_closed[OF hF1o_closedin]) (by100 blast)
+    have hcl_F2o_sub_F2:
+        "closure_on UNIV geotop_euclidean_topology ?F2o \<subseteq> F\<^sub>2"
+      by (rule closure_on_subset_of_closed[OF hF2o_closedin]) (by100 blast)
+    have hcl_F1o_F2o_disj:
+        "closure_on UNIV geotop_euclidean_topology ?F1o \<inter> ?F2o = {}"
+      using hcl_F1o_sub_F1 hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+    have hF1o_cl_F2o_disj:
+        "?F1o \<inter> closure_on UNIV geotop_euclidean_topology ?F2o = {}"
+      using hcl_F2o_sub_F2 hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+    show ?thesis
+      unfolding geotop_separated_def
+      using hcl_F1o_F2o_disj hF1o_cl_F2o_disj by (by100 simp)
+  qed
+  have hD44_B1P_sub_F1_or_F2:
+      "?B1P \<subseteq> ?F1o \<or> ?B1P \<subseteq> ?F2o"
+  proof -
+    have hB1P_sub_F1oF2o: "?B1P \<subseteq> ?F1o \<union> ?F2o"
+      using hD44_B1P_sub_boundary_arcs hD44_B1P_Q_notin hD44_B1P_S_notin
+      by (by100 blast)
+    show ?thesis
+      by (rule Theorem_GT_1_10
+          [OF hD44_UNIV_top hD44_F1o_F2o_separated
+            hB1P_sub_F1oF2o hD44_B1P_conn])
+  qed
+  have hD44_P_F1o: "P \<in> ?F1o"
+    using hD44_P_F\<^sub>1 unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_not_F2o: "P \<notin> ?F2o"
+    using hD44_P_not_F\<^sub>2_set by (by100 blast)
+  have hD44_B1P_sub_F1o: "?B1P \<subseteq> ?F1o"
+  proof (rule ccontr)
+    assume hnot: "\<not> ?B1P \<subseteq> ?F1o"
+    have hsub_F2o: "?B1P \<subseteq> ?F2o"
+      using hD44_B1P_sub_F1_or_F2 hnot by (by100 blast)
+    have "P \<in> ?F2o"
+      using hsub_F2o hD44_P_B1P by (by100 blast)
+    thus False
+      using hD44_P_not_F2o by (by100 blast)
+  qed
+  have hD44_B1P_sub_F\<^sub>1: "?B1P \<subseteq> F\<^sub>1"
+    using hD44_B1P_sub_F1o by (by100 blast)
+  have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
+    using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
