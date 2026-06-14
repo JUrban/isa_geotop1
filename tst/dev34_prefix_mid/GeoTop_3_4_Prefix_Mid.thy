@@ -53782,6 +53782,38 @@ proof -
     using hsub hB_sub_A by (by100 blast)
 qed
 
+lemma geotop_edge_rel_interior_point_neq_prefix:
+  fixes e :: "(real^2) set" and x :: "real^2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hx: "x \<in> e"
+  shows "\<exists>p\<in>rel_interior e. p \<noteq> x"
+proof -
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  let ?p\<^sub>1 = "(2 / 3) *\<^sub>R a + (1 / 3) *\<^sub>R b"
+  let ?p\<^sub>2 = "(1 / 3) *\<^sub>R a + (2 / 3) *\<^sub>R b"
+  have hp\<^sub>1_open: "?p\<^sub>1 \<in> open_segment a b"
+    using hab by (by100 simp add: in_segment)
+  have hp\<^sub>2_open: "?p\<^sub>2 \<in> open_segment a b"
+    using hab by (by100 simp add: in_segment)
+  have hp\<^sub>12_ne: "?p\<^sub>1 \<noteq> ?p\<^sub>2"
+    using hab by (by100 simp add: algebra_simps)
+  have hrel_eq: "rel_interior e = open_segment a b"
+    using he_seg hab rel_interior_closed_segment[of a b] by (by100 simp)
+  show ?thesis
+  proof (cases "?p\<^sub>1 = x")
+    case True
+    have "?p\<^sub>2 \<noteq> x"
+      using hp\<^sub>12_ne True by (by100 blast)
+    thus ?thesis
+      using hp\<^sub>2_open hrel_eq by (by100 blast)
+  next
+    case False
+    thus ?thesis
+      using hp\<^sub>1_open hrel_eq by (by100 blast)
+  qed
+qed
+
 lemma geotop_polygon_disk_corner_two_boundary_edges_no_other_incident_edge_prefix:
   fixes J \<theta> e1 e2 :: "(real^2) set" and K :: "(real^2) set set"
     and x y z :: "real^2"
@@ -54606,6 +54638,38 @@ proof
       using hnobranch by (by100 linarith)
   next
     assume hd_notJ: "\<not> d \<subseteq> J"
+    obtain p where hp_rel: "p \<in> rel_interior d" and hp_ne_x: "p \<noteq> x"
+      using geotop_edge_rel_interior_point_neq_prefix[OF hd_edge hxd]
+      by (by100 blast)
+    have hp_d: "p \<in> d"
+      using hp_rel rel_interior_subset by (by100 blast)
+    have hrel_d_sub_I:
+      "rel_interior d \<subseteq> geotop_polygon_interior J"
+      by (rule geotop_polygon_disk_nonboundary_edge_rel_interior_subset_polygon_interior_prefix
+          [OF hJ hK hK_poly hdK hd_edge h\<rho>K h\<rho>2 hd_face_\<rho> hd_notJ])
+    have hpI: "p \<in> geotop_polygon_interior J"
+      using hp_rel hrel_d_sub_I by (by100 blast)
+    have hp_not_\<theta>: "p \<notin> \<theta>"
+    proof
+      assume hp\<theta>: "p \<in> \<theta>"
+      have "p \<in> d \<inter> \<theta>"
+        using hp_d hp\<theta> by (by100 blast)
+      hence "p = x"
+        using hd_\<theta>_inter_eq_x by (by100 simp)
+      thus False
+        using hp_ne_x by (by100 blast)
+    qed
+    have hp_not_old_sides:
+      "p \<notin> closed_segment x y \<union> closed_segment x z"
+    proof
+      assume hpold: "p \<in> closed_segment x y \<union> closed_segment x z"
+      have "p \<in> d \<inter> (closed_segment x y \<union> closed_segment x z)"
+        using hp_d hpold by (by100 blast)
+      hence "p = x"
+        using hd_old_sides_inter_eq_x by (by100 simp)
+      thus False
+        using hp_ne_x by (by100 blast)
+    qed
     show False
       sorry
   qed
