@@ -4370,6 +4370,21 @@ proof -
     using hNcut_open_HOL
     unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
     by (by100 simp)
+  have hD44_Q1_local_Ncut_ball:
+      "\<exists>\<epsilon>>0. ball Q1 \<epsilon> \<subseteq> ?Ncut"
+    (**
+      Local access hygiene for the final Moise frontier-route attachment:
+      the chosen point near \<open>Q\<close> is not merely in the outside-carrier region;
+      it has a genuine Euclidean collar inside
+      \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
+    using hNcut_open_HOL hQ1_Ncut open_contains_ball by (by100 blast)
+  have hD44_S1_local_Ncut_ball:
+      "\<exists>\<epsilon>>0. ball S1 \<epsilon> \<subseteq> ?Ncut"
+    (**
+      Symmetric local access collar near \<open>S\<close>, used to attach the endpoint
+      chosen in the small boundary ball to the same outside component once the
+      regular-neighborhood frontier subarc has been constructed. **)
+    using hNcut_open_HOL hS1_Ncut open_contains_ball by (by100 blast)
   have hD44_same_component_in_Ncut_suffices:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> \<exists>B. geotop_is_broken_line B
