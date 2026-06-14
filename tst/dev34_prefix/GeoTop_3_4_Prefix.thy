@@ -5803,6 +5803,68 @@ proof -
       by (rule geotop_open_component_complement_split_prefix
           [OF hNcut_open hQ1_Ncut hS1_Ncut hcomp_neq])
   qed
+  have hD44_Ncut_open_split_access_balls_if_not_same_component:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>\<epsilon>\<^sub>Q>0. \<exists>\<epsilon>\<^sub>S>0.
+          ball Q1 \<epsilon>\<^sub>Q \<subseteq>
+            geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> ball S1 \<epsilon>\<^sub>S \<subseteq>
+            ?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Local-collar version of the contradiction split.  If \<open>Q1\<close> and \<open>S1\<close>
+      were on different outside-carrier components, then the two sides of the
+      split would contain genuine Euclidean balls around the access points.
+      These are the open collars that the final frontier subarc must connect
+      through Moise's lower-to-upper construction. **)
+  proof -
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?W = "?Ncut - ?CQ"
+    have hsplit:
+        "?Ncut = ?CQ \<union> ?W
+        \<and> ?CQ \<inter> ?W = {}
+        \<and> ?CQ \<in> geotop_euclidean_topology
+        \<and> ?W \<in> geotop_euclidean_topology
+        \<and> Q1 \<in> ?CQ
+        \<and> S1 \<in> ?W"
+      by (rule hD44_Ncut_open_split_if_not_same_component[OF hnot])
+    have hCQ_open_top: "?CQ \<in> geotop_euclidean_topology"
+      using hsplit by (by100 blast)
+    have hW_open_top: "?W \<in> geotop_euclidean_topology"
+      using hsplit by (by100 blast)
+    have hQ1_CQ: "Q1 \<in> ?CQ"
+      using hsplit by (by100 blast)
+    have hS1_W: "S1 \<in> ?W"
+      using hsplit by (by100 blast)
+    have hCQ_open_HOL: "open ?CQ"
+      by (metis hCQ_open_top geotop_euclidean_topology_eq_open_sets
+          mem_Collect_eq top1_open_sets_def)
+    have hW_open_HOL: "open ?W"
+      by (metis hW_open_top geotop_euclidean_topology_eq_open_sets
+          mem_Collect_eq top1_open_sets_def)
+    have hQ_ball_ex: "\<exists>\<epsilon>>0. ball Q1 \<epsilon> \<subseteq> ?CQ"
+      using hCQ_open_HOL hQ1_CQ unfolding open_contains_ball by (by100 simp)
+    have hS_ball_ex: "\<exists>\<epsilon>>0. ball S1 \<epsilon> \<subseteq> ?W"
+      using hW_open_HOL hS1_W unfolding open_contains_ball by (by100 simp)
+    obtain \<epsilon>\<^sub>Q where h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      and hball_Q1_CQ: "ball Q1 \<epsilon>\<^sub>Q \<subseteq> ?CQ"
+      using hQ_ball_ex by (elim exE conjE)
+    obtain \<epsilon>\<^sub>S where h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      and hball_S1_W: "ball S1 \<epsilon>\<^sub>S \<subseteq> ?W"
+      using hS_ball_ex by (elim exE conjE)
+    show ?thesis
+    proof (rule exI[where x=\<epsilon>\<^sub>Q], intro conjI)
+      show "0 < \<epsilon>\<^sub>Q" by (rule h\<epsilon>\<^sub>Q_pos)
+      show "\<exists>\<epsilon>\<^sub>S>0.
+          ball Q1 \<epsilon>\<^sub>Q \<subseteq> ?CQ \<and> ball S1 \<epsilon>\<^sub>S \<subseteq> ?W"
+      proof (rule exI[where x=\<epsilon>\<^sub>S], intro conjI)
+        show "0 < \<epsilon>\<^sub>S" by (rule h\<epsilon>\<^sub>S_pos)
+        show "ball Q1 \<epsilon>\<^sub>Q \<subseteq> ?CQ" by (rule hball_Q1_CQ)
+        show "ball S1 \<epsilon>\<^sub>S \<subseteq> ?W" by (rule hball_S1_W)
+      qed
+    qed
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
