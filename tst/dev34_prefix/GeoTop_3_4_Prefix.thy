@@ -2339,6 +2339,35 @@ proof -
       show "p \<in> geotop_polyhedron BdJ\<^sub>N"
         by (rule hJ\<^sub>N_carrier_edge_point_in_BdJ\<^sub>N_poly[OF hpJ hdim1])
     qed
+    have hJ\<^sub>N_uncovered_sub_vertices:
+        "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N
+          \<subseteq> geotop_complex_vertices K\<^sub>N"
+    proof
+      fix p
+      assume hp: "p \<in> J\<^sub>N - geotop_polyhedron BdJ\<^sub>N"
+      have hpJ: "p \<in> J\<^sub>N"
+        using hp by (by100 simp)
+      have hp_not_BdJ: "p \<notin> geotop_polyhedron BdJ\<^sub>N"
+        using hp by (by100 simp)
+      show "p \<in> geotop_complex_vertices K\<^sub>N"
+      proof (rule ccontr)
+        assume hp_not_vertex: "p \<notin> geotop_complex_vertices K\<^sub>N"
+        have "p \<in> geotop_polyhedron BdJ\<^sub>N"
+          by (rule hJ\<^sub>N_nonvertex_point_in_BdJ\<^sub>N_poly
+              [OF hpJ hp_not_vertex])
+        thus False
+          using hp_not_BdJ by (by100 blast)
+      qed
+    qed
+    have hJ\<^sub>N_uncovered_finite:
+        "finite (J\<^sub>N - geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      have hverts_fin: "finite (geotop_complex_vertices K\<^sub>N)"
+        by (rule geotop_finite_complex_vertices_finite_prefix
+            [OF hK\<^sub>N_complex hK\<^sub>N_fin])
+      show ?thesis
+        by (rule finite_subset[OF hJ\<^sub>N_uncovered_sub_vertices hverts_fin])
+    qed
     have hJ\<^sub>N_carrier_vertex_edge_germ_point_in_BdJ\<^sub>N_poly:
         "\<And>p e q. p \<in> J\<^sub>N \<Longrightarrow>
           geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 0
