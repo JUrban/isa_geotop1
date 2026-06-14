@@ -7458,11 +7458,41 @@ proof -
           "S1 \<in> closure
             (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
         (**
-          Literal adjacent-component form of Moise 4.4.  The component of
-          \<open>I - (N \<union> A2)\<close> lying next to the complementary frontier subarc is
-          the lower access component; the upper access point is in its
-          ordinary closure. **)
-        sorry
+          Consequence of the literal Moise collar-crossing step.  The
+          complementary frontier subarc supplies connected lower-to-upper
+          crossings in \<open>I - (N \<union> A2)\<close>; the existing collar/component bridge
+          converts those crossings into accumulation of the lower access
+          component at the upper access point. **)
+      proof -
+        have hD44_moise_boundary_arc_access_ball_crossings_book_step:
+            "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+              \<exists>Z. Z \<subseteq> ?Ncut
+                \<and> top1_connected_on Z
+                    (subspace_topology UNIV geotop_euclidean_topology Z)
+                \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          (**
+            Literal Moise 4.4 collar-crossing construction.  After the fine
+            carrier of \<open>A1\<close> is chosen, the book restricts it to the closed
+            disk, analyzes the frontier component through \<open>P\<close>, splits that
+            polygonal 1-sphere into the boundary arc and complementary
+            frontier arc, and uses the adjacent outside side of the
+            complementary arc to cross every prescribed pair of access collars
+            around \<open>Q1\<close> and \<open>S1\<close>. **)
+          sorry
+        have hS1_witnesses:
+            "\<forall>\<epsilon>>0. \<exists>Y.
+              Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+              \<and> Y \<in> ball S1 \<epsilon>"
+          by (rule hD44_arbitrary_access_ball_crossings_give_S1_ball_witnesses
+              [OF hD44_moise_boundary_arc_access_ball_crossings_book_step])
+        have hS1_comp:
+            "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+          by (rule hD44_component_points_accumulate_at_S1_suffices
+              [OF hS1_witnesses])
+        show ?thesis
+          using hS1_comp closure_subset by (by100 blast)
+      qed
       show ?thesis
         by (rule geotop_component_at_closure_gives_component_closure_pair_prefix
             [OF hQ1_Ncut hD44_moise_Q1_component_accumulates_at_S1_book_step])
