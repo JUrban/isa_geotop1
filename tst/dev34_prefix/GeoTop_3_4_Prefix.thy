@@ -5249,7 +5249,7 @@ proof -
         "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
       using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
         [OF hdegree hwBdJ]
-      by (by100 blast)
+      by (elim exE conjE)
     have hexhaust:
         "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
           \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
@@ -5713,6 +5713,48 @@ proof -
         ?Ncut Q1"
       by (rule hD44_connected_route_component_suffices
           [OF hB_sub hQ1_B hS1_B hB_conn])
+  qed
+  have hD44_Q1_Ncut_component_package:
+      "\<exists>C. C = geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1
+        \<and> C \<subseteq> ?Ncut
+        \<and> Q1 \<in> C
+        \<and> C \<in> geotop_euclidean_topology
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)"
+    (**
+      Names the outside-carrier component that Moise's lower-to-upper
+      frontier subarc must enter.  The final book step is now precisely to
+      show that the access point near \<open>S\<close> lies in this open connected
+      component of \<open>I - (N \<union> A2)\<close>. **)
+  proof -
+    let ?C = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    have hC_open: "?C \<in> geotop_euclidean_topology"
+      by (rule geotop_component_at_open_in_euclidean[OF hNcut_open hQ1_Ncut])
+    have hC_eq: "?C = connected_component_set ?Ncut Q1"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hC_sub: "?C \<subseteq> ?Ncut"
+      using hC_eq connected_component_subset by (by100 simp)
+    have hQ1_C: "Q1 \<in> ?C"
+      using hC_eq hQ1_Ncut connected_component_refl by (by100 simp)
+    have hC_conn_HOL: "connected ?C"
+      using hC_eq connected_connected_component by (by100 simp)
+    have hC_conn:
+        "top1_connected_on ?C
+          (subspace_topology UNIV geotop_euclidean_topology ?C)"
+      using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+    show ?thesis
+    proof (rule exI[where x="?C"], intro conjI)
+      show "?C = geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+        by (by100 simp)
+      show "?C \<subseteq> ?Ncut" by (rule hC_sub)
+      show "Q1 \<in> ?C" by (rule hQ1_C)
+      show "?C \<in> geotop_euclidean_topology" by (rule hC_open)
+      show "top1_connected_on ?C
+          (subspace_topology UNIV geotop_euclidean_topology ?C)"
+        by (rule hC_conn)
+    qed
   qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
