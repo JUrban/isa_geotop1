@@ -1149,6 +1149,42 @@ proof -
         by (rule geotop_polygon_disk_edge_owned_by_2simplex_prefix
             [OF hJ hSd_complex hSd_poly_disk heSd hedge])
     qed
+    have hK\<^sub>N_Sd_owner_meeting_A1_count_ge1:
+        "\<And>e \<sigma>. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          \<sigma> \<in> geotop_iterated_Sd m K \<Longrightarrow>
+          geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+          geotop_is_face e \<sigma> \<Longrightarrow>
+          \<sigma> \<inter> A1 \<noteq> {} \<Longrightarrow>
+          card {\<tau>\<in>K\<^sub>N. geotop_simplex_dim \<tau> 2
+            \<and> geotop_is_face e \<tau>} \<ge> 1"
+    proof -
+      fix e \<sigma>
+      assume heK\<^sub>N: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and h\<sigma>Sd: "\<sigma> \<in> geotop_iterated_Sd m K"
+        and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        and heface\<sigma>: "geotop_is_face e \<sigma>"
+        and h\<sigma>A1: "\<sigma> \<inter> A1 \<noteq> {}"
+      have h\<sigma>subN: "\<sigma> \<subseteq> N"
+        unfolding hN_def using h\<sigma>Sd h\<sigma>A1 by (by100 blast)
+      have h\<sigma>K\<^sub>N: "\<sigma> \<in> K\<^sub>N"
+        unfolding K\<^sub>N_def using h\<sigma>Sd h\<sigma>subN by (by100 simp)
+      let ?F = "{\<tau>\<in>K\<^sub>N. geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>}"
+      have hF_sub: "?F \<subseteq> K\<^sub>N"
+        by (by100 blast)
+      have hF_fin: "finite ?F"
+        by (rule finite_subset[OF hF_sub hK\<^sub>N_fin])
+      have h\<sigma>F: "\<sigma> \<in> ?F"
+        using h\<sigma>K\<^sub>N h\<sigma>2 heface\<sigma> by (by100 blast)
+      have hF_ne: "?F \<noteq> {}"
+        using h\<sigma>F by (by100 blast)
+      have hcard_pos_iff: "(0 < card ?F) = (?F \<noteq> {} \<and> finite ?F)"
+        by (rule card_gt_0_iff)
+      have hcard_pos: "0 < card ?F"
+        using hcard_pos_iff hF_fin hF_ne by (by100 blast)
+      show "card ?F \<ge> 1"
+        using hcard_pos by (by100 linarith)
+    qed
     have hK\<^sub>N_edge_incident_2faces_card_le2:
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
