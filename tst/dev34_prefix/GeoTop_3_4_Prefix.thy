@@ -7353,7 +7353,96 @@ proof -
         \<open>I - (N \<union> A2)\<close> adjacent to \<open>C\<^sub>F\<close> is the connected corridor \<open>Z\<close>;
         its closure contains the two access witnesses chosen near \<open>Q\<close> and
         \<open>S\<close>. **)
-      sorry
+    proof -
+      have hD44_moise_exact_two_incidence_adjacent_corridor_book_step:
+          "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+              (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+                geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+                \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+                \<and> e\<^sub>1 \<noteq> e\<^sub>2
+                \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                    \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+          \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Q1 \<in> closure Z
+            \<and> S1 \<in> closure Z)"
+        (**
+          Sharper remaining book obligation.  Moise's "then \<open>J\<close> is a
+          1-sphere" is represented here as exact two incident frontier edges at
+          every vertex of \<open>BdJ\<^sub>N\<close>; the already proved graph package converts
+          that incidence statement into the boundary arc \<open>C\<close> and complementary
+          frontier arc \<open>C\<^sub>F\<close>.  The second conjunct is the adjacent outside
+          component/corridor along \<open>C\<^sub>F\<close>. **)
+        sorry
+      have htwo:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+              geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+              \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+              \<and> e\<^sub>1 \<noteq> e\<^sub>2
+              \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                  \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+        using hD44_moise_exact_two_incidence_adjacent_corridor_book_step
+        by (rule conjunct1)
+      have hZ_ex:
+          "\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Q1 \<in> closure Z
+            \<and> S1 \<in> closure Z"
+        using hD44_moise_exact_two_incidence_adjacent_corridor_book_step
+        by (rule conjunct2)
+      obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+        and hZ_conn:
+          "top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)"
+        and hQ1_cl: "Q1 \<in> closure Z"
+        and hS1_cl: "S1 \<in> closure Z"
+        using hZ_ex by (elim exE conjE)
+      obtain X C L C\<^sub>F where hX_B1P: "X \<in> ?B1P"
+        and hX_ne: "X \<noteq> P"
+        and hC_bl: "geotop_is_broken_line C"
+        and hC_sub_B1P: "C \<subseteq> ?B1P"
+        and hC_sub_F\<^sub>1: "C \<subseteq> F\<^sub>1"
+        and hC_sub_J\<^sub>N: "C \<subseteq> J\<^sub>N"
+        and hC_sub_FrN\<^sub>I: "C \<subseteq> FrN\<^sub>I"
+        and hC_F\<^sub>2_disj: "C \<inter> F\<^sub>2 = {}"
+        and hC_A2_QS_disj: "C \<inter> (A2 \<union> {Q, S}) = {}"
+        and hC_Ncut_disj: "C \<inter> ?Ncut = {}"
+        and hP_C: "P \<in> C"
+        and hX_C: "X \<in> C"
+        and hC_end: "geotop_arc_endpoints C {P, X}"
+        and hC_int_conn: "connected (geotop_arc_interior C {P, X})"
+        and hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
+        and hL_complex: "geotop_is_complex L"
+        and hL_1dim: "geotop_complex_is_1dim L"
+        and hL_fin: "finite L"
+        and hL_poly: "geotop_polyhedron L = C"
+        and hP_L: "{P} \<in> L"
+        and hX_L: "{X} \<in> L"
+        and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F"
+        and hC\<^sub>F_bl: "geotop_is_broken_line C\<^sub>F"
+        and hC\<^sub>F_end: "geotop_arc_endpoints C\<^sub>F {P, X}"
+        and hC_int_C\<^sub>F_int_disj:
+          "geotop_arc_interior C {P, X} \<inter>
+            geotop_arc_interior C\<^sub>F {P, X} = {}"
+        and hC_inter_C\<^sub>F: "C \<inter> C\<^sub>F = {P, X}"
+        and hP_C\<^sub>F: "P \<in> C\<^sub>F"
+        and hX_C\<^sub>F: "X \<in> C\<^sub>F"
+        and hC\<^sub>F_sub_J\<^sub>N: "C\<^sub>F \<subseteq> J\<^sub>N"
+        and hC\<^sub>F_sub_FrN\<^sub>I: "C\<^sub>F \<subseteq> FrN\<^sub>I"
+        and hC\<^sub>F_A2_QS_disj: "C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}"
+        and hC\<^sub>F_Ncut_disj: "C\<^sub>F \<inter> ?Ncut = {}"
+        using hD44_BdJ\<^sub>N_exact_two_boundary_subarc_complement_split[OF htwo]
+        by (elim exE conjE)
+      show ?thesis
+        using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_J\<^sub>N hC_sub_FrN\<^sub>I
+          hP_C hX_C hC_end hBdJ_split hC\<^sub>F_bl hC\<^sub>F_end
+          hC_inter_C\<^sub>F hP_C\<^sub>F hX_C\<^sub>F hC\<^sub>F_sub_J\<^sub>N hC\<^sub>F_sub_FrN\<^sub>I
+          hC\<^sub>F_A2_QS_disj hC\<^sub>F_Ncut_disj hZ_sub hZ_conn hQ1_cl hS1_cl
+        by (intro exI conjI)
+    qed
     obtain X C C\<^sub>F Z where hZ_sub: "Z \<subseteq> ?Ncut"
       and hZ_conn:
         "top1_connected_on Z
