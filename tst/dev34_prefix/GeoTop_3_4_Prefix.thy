@@ -7246,6 +7246,17 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_frontier_component_forbids_Ncut_split:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> False"
+    (**
+      Final Moise split contradiction.  If the lower and upper access points
+      were in different components of \<open>?Ncut\<close>, the already proved open
+      component split of \<open>?Ncut\<close> would separate the lower and upper collars.
+      The frontier component through \<open>P\<close>, split into the boundary arc and the
+      complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, supplies the crossing that
+      contradicts that separation. **)
+    sorry
   have hD44_moise_same_component_direct:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -7253,7 +7264,15 @@ proof -
       \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close>; the adjacent component of
       \<open>I - (N \<union> A2)\<close> along that arc contains the lower and upper access
       points in the same outside-carrier component. **)
-    sorry
+  proof (rule ccontr)
+    assume hnot:
+      "\<not> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    have hsplit:
+        "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      using hnot by (by100 simp)
+    show False
+      by (rule hD44_frontier_component_forbids_Ncut_split[OF hsplit])
+  qed
   have hD44_moise_closed_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
