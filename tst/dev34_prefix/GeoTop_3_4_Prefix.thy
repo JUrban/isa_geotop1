@@ -963,6 +963,21 @@ proof -
       show ?thesis
         using hsd_iff hJ\<^sub>N_nonempty hF_nonempty hJ\<^sub>N_A2_QS_disj by (by100 blast)
     qed
+    obtain \<delta>\<^sub>J\<^sub>N where h\<delta>\<^sub>J\<^sub>N_pos: "0 < \<delta>\<^sub>J\<^sub>N"
+      and h\<delta>\<^sub>J\<^sub>N_gap:
+        "\<forall>x\<in>J\<^sub>N. \<forall>y\<in>A2 \<union> {Q, S}. \<delta>\<^sub>J\<^sub>N \<le> dist x y"
+    proof -
+      define \<delta>\<^sub>J\<^sub>N where "\<delta>\<^sub>J\<^sub>N = setdist J\<^sub>N (A2 \<union> {Q, S}) / 2"
+      have hpos: "0 < \<delta>\<^sub>J\<^sub>N"
+        unfolding \<delta>\<^sub>J\<^sub>N_def using hJ\<^sub>N_forbidden_setdist_pos by (by100 simp)
+      have hle: "\<delta>\<^sub>J\<^sub>N \<le> setdist J\<^sub>N (A2 \<union> {Q, S})"
+        unfolding \<delta>\<^sub>J\<^sub>N_def using hJ\<^sub>N_forbidden_setdist_pos by (by100 simp)
+      have hgap:
+          "\<forall>x\<in>J\<^sub>N. \<forall>y\<in>A2 \<union> {Q, S}. \<delta>\<^sub>J\<^sub>N \<le> dist x y"
+        using hle le_setdist_iff[of \<delta>\<^sub>J\<^sub>N J\<^sub>N "A2 \<union> {Q, S}"] by (by100 blast)
+      show ?thesis
+        using hpos hgap by (rule that)
+    qed
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
