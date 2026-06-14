@@ -842,6 +842,15 @@ proof -
     have hN_closed: "closed N"
       unfolding hN_def
       by (rule closed_Union[OF hN_index_fin hN_index_closed])
+    define N\<^sub>I where
+        "N\<^sub>I = N \<inter> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+    have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+      unfolding N\<^sub>I_def using hN_sub_disk by (by100 blast)
+    have hN\<^sub>I_compact: "compact N\<^sub>I"
+      using hN\<^sub>I_eq_N hN_compact by (by100 simp)
+    have hN\<^sub>I_closed: "closed N\<^sub>I"
+      using hN\<^sub>I_eq_N hN_closed by (by100 simp)
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
@@ -884,6 +893,8 @@ proof -
       show ?thesis
         using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
     qed
+    have hK\<^sub>N_poly_N\<^sub>I: "geotop_polyhedron K\<^sub>N = N\<^sub>I"
+      using hK\<^sub>N_poly hN\<^sub>I_eq_N by (by100 simp)
     have hA1_K\<^sub>N_poly: "A1 \<subseteq> geotop_polyhedron K\<^sub>N"
       using hA1_N hK\<^sub>N_poly by (by100 simp)
     have hP_K\<^sub>N_poly: "P \<in> geotop_polyhedron K\<^sub>N"
