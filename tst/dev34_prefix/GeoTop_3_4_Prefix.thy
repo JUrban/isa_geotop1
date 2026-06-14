@@ -4366,140 +4366,14 @@ proof -
   have hD44_Q1S1_same_component_in_Ncut:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Remaining Moise frontier-component extraction in its exact component
-      form.  The frontier component \<open>J\<^sub>N\<close> through \<open>P\<close> is analyzed as the
-      boundary of the regular neighborhood of \<open>A1\<close>; the outside boundary
-      route then places the two access points in one component of
+      The single remaining Moise 4.4 regular-neighborhood/frontier-route
+      step.  The fine carrier \<open>N\<close> plays the role of the brick neighborhood of
+      \<open>A1\<close>.  The book proves that the frontier component through \<open>P\<close> is a
+      polygonal 1-sphere, splits off the boundary piece on \<open>J\<close>, takes the
+      complementary lower-to-upper frontier subarc, and attaches it to the
+      chosen access positions \<open>Q1\<close> and \<open>S1\<close> in
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-  proof -
-    have hD44_frontier_subarc_connected_witness:
-        "\<exists>W. W \<subseteq> ?Ncut
-          \<and> Q1 \<in> W
-          \<and> S1 \<in> W
-          \<and> top1_connected_on W
-              (subspace_topology UNIV geotop_euclidean_topology W)"
-      (**
-        Remaining Moise regular-neighborhood subarc step.  The component
-        \<open>J\<^sub>N\<close> of the frontier of \<open>N \<inter> cl I\<close> through \<open>P\<close> is a polygonal
-        1-sphere.  Splitting it into the boundary piece through \<open>P\<close> and the
-        complementary frontier arc gives the book's subarc between the last
-        lower and first upper boundary hits; after trimming off its boundary
-        endpoints and attaching the chosen local access positions, one obtains
-        this connected witness inside \<open>I - (N \<union> A2)\<close>. **)
-    proof -
-      have hD44_BdJ\<^sub>N_polygon_book_step:
-          "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-        (**
-          Moise's regular-neighborhood boundary assertion for the chosen fine
-          carrier: the frontier component through \<open>P\<close> is a polygonal
-          1-sphere.  In the finite boundary complex already constructed above
-          this is exactly the local valence-two assertion at every vertex of
-          \<open>BdJ\<^sub>N\<close>; the proved graph-cycle machinery then turns that valence
-          statement into the required polygon. **)
-      proof -
-        have hD44_BdJ\<^sub>N_vertex_degree_two_book_step:
-            "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-          (**
-            Regular-neighborhood 1-sphere package, in Moise's finite frontier
-            graph form.  At a vertex of the component \<open>J\<^sub>N\<close> of
-            \<open>Fr(N \<inter> cl I)\<close>, the fine carrier has exactly the two boundary
-            germs of the regular neighborhood: no branch vertex and no terminal
-            endpoint.  This is the local star calculation corresponding to the
-            book sentence that the relevant frontier component is a 1-sphere. **)
-          sorry
-        show ?thesis
-          by (rule hBdJ\<^sub>N_polygon_from_degree_two
-              [OF hD44_BdJ\<^sub>N_vertex_degree_two_book_step])
-      qed
-      note hD44_BdJ\<^sub>N_split_ready =
-        hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint
-          [OF hD44_BdJ\<^sub>N_polygon_book_step]
-      obtain X C L C\<^sub>B C\<^sub>O where hD44_X_B1P: "X \<in> ?B1P"
-        and hD44_X_ne_P: "X \<noteq> P"
-        and hD44_C_bl: "geotop_is_broken_line C"
-        and hD44_C_sub_B1P: "C \<subseteq> ?B1P"
-        and hD44_C_sub_F\<^sub>1: "C \<subseteq> F\<^sub>1"
-        and hD44_C_sub_J\<^sub>N: "C \<subseteq> J\<^sub>N"
-        and hD44_C_sub_FrN\<^sub>I: "C \<subseteq> FrN\<^sub>I"
-        and hD44_C_F\<^sub>2_disj: "C \<inter> F\<^sub>2 = {}"
-        and hD44_C_A2_QS_disj: "C \<inter> (A2 \<union> {Q, S}) = {}"
-        and hD44_C_Ncut_disj: "C \<inter> ?Ncut = {}"
-        and hD44_P_C: "P \<in> C"
-        and hD44_X_C: "X \<in> C"
-        and hD44_C_end: "geotop_arc_endpoints C {P, X}"
-        and hD44_L_complex: "geotop_is_complex L"
-        and hD44_L_1dim: "geotop_complex_is_1dim L"
-        and hD44_L_fin: "finite L"
-        and hD44_L_poly_C: "geotop_polyhedron L = C"
-        and hD44_P_L: "{P} \<in> L"
-        and hD44_X_L: "{X} \<in> L"
-        and hD44_BdJ_split:
-          "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
-        and hD44_C\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
-        and hD44_C\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
-        and hD44_C\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
-        and hD44_C\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
-        and hD44_C\<^sub>B_C\<^sub>O_int_disj:
-          "geotop_arc_interior C\<^sub>B {P, X} \<inter>
-              geotop_arc_interior C\<^sub>O {P, X} = {}"
-        using hD44_BdJ\<^sub>N_split_ready by (elim exE conjE)
-      have hD44_C\<^sub>O_sub_BdJ_poly:
-          "C\<^sub>O \<subseteq> geotop_polyhedron BdJ\<^sub>N"
-        using hD44_BdJ_split by (by100 blast)
-      have hD44_C\<^sub>O_sub_J\<^sub>N: "C\<^sub>O \<subseteq> J\<^sub>N"
-        using hD44_C\<^sub>O_sub_BdJ_poly hBdJ\<^sub>N_poly_sub_J\<^sub>N
-        by (by100 blast)
-      have hD44_C\<^sub>O_sub_FrN\<^sub>I: "C\<^sub>O \<subseteq> FrN\<^sub>I"
-        using hD44_C\<^sub>O_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
-      have hD44_C\<^sub>O_sub_N: "C\<^sub>O \<subseteq> N"
-        using hD44_C\<^sub>O_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
-      have hD44_C\<^sub>O_A2_QS_disj: "C\<^sub>O \<inter> (A2 \<union> {Q, S}) = {}"
-        using hD44_C\<^sub>O_sub_BdJ_poly hBdJ\<^sub>N_poly_A2_QS_disj
-        by (by100 blast)
-      have hD44_C\<^sub>O_connected:
-          "top1_connected_on C\<^sub>O
-            (subspace_topology UNIV geotop_euclidean_topology C\<^sub>O)"
-        by (rule geotop_broken_line_connected_on_prefix[OF hD44_C\<^sub>O_bl])
-      have hD44_P_C\<^sub>O: "P \<in> C\<^sub>O"
-        using hD44_C\<^sub>O_end unfolding geotop_arc_endpoints_def
-        by (by100 blast)
-      have hD44_X_C\<^sub>O: "X \<in> C\<^sub>O"
-        using hD44_C\<^sub>O_end unfolding geotop_arc_endpoints_def
-        by (by100 blast)
-      have hD44_C\<^sub>O_nonempty: "C\<^sub>O \<noteq> {}"
-        using hD44_P_C\<^sub>O by (by100 blast)
-      have hD44_complementary_frontier_arc_access_connected_witness:
-          "\<exists>W. W \<subseteq> ?Ncut
-            \<and> Q1 \<in> W
-            \<and> S1 \<in> W
-            \<and> top1_connected_on W
-                (subspace_topology UNIV geotop_euclidean_topology W)"
-        (**
-          Moise's lower-to-upper complementary-arc step.  Use the split of
-          \<open>J\<^sub>N = geotop_polyhedron BdJ\<^sub>N\<close> at the endpoint \<open>X\<close> of the
-          boundary component \<open>B1P\<close>.  The arc containing the already-packaged
-          boundary subarc is represented above by \<open>C\<^sub>B\<close>; the other arc
-          \<open>C\<^sub>O\<close> is the book's \<open>B\<^sub>2\<close>.
-          Choosing the last lower and first following upper boundary hits on
-          that complementary arc, then taking the open subarc between them and
-          attaching the local access positions \<open>Q1,S1\<close>, gives the connected
-          witness in \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-        sorry
-      show ?thesis
-        using hD44_complementary_frontier_arc_access_connected_witness .
-    qed
-    obtain W where hW_Ncut: "W \<subseteq> ?Ncut"
-      and hQ1_W: "Q1 \<in> W"
-      and hS1_W: "S1 \<in> W"
-      and hW_conn:
-        "top1_connected_on W
-          (subspace_topology UNIV geotop_euclidean_topology W)"
-      using hD44_frontier_subarc_connected_witness by (elim exE conjE)
-    show ?thesis
-      by (rule hD44_connected_route_component_suffices
-          [OF hW_Ncut hQ1_W hS1_W hW_conn])
-  qed
+    sorry
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
