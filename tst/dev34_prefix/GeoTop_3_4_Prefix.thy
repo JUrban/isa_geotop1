@@ -884,6 +884,58 @@ proof -
       show ?thesis
         using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
     qed
+    have hA1_K\<^sub>N_poly: "A1 \<subseteq> geotop_polyhedron K\<^sub>N"
+      using hA1_N hK\<^sub>N_poly by (by100 simp)
+    have hP_K\<^sub>N_poly: "P \<in> geotop_polyhedron K\<^sub>N"
+      using hP_in_A1 hA1_K\<^sub>N_poly by (by100 blast)
+    have hQ_not_K\<^sub>N_poly: "Q \<notin> geotop_polyhedron K\<^sub>N"
+      using hQ_not_N hK\<^sub>N_poly by (by100 simp)
+    have hS_not_K\<^sub>N_poly: "S \<notin> geotop_polyhedron K\<^sub>N"
+      using hS_not_N hK\<^sub>N_poly by (by100 simp)
+    have hR_not_K\<^sub>N_poly: "R \<notin> geotop_polyhedron K\<^sub>N"
+      using hR_in_A2 hN_A2_only hK\<^sub>N_poly by (by100 blast)
+    define BdK\<^sub>N where "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+    have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
+    proof
+      fix \<rho>
+      assume h\<rho>: "\<rho> \<in> BdK\<^sub>N"
+      let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+          card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+            geotop_is_face \<tau> \<sigma>} = 1}"
+      have hface_closed:
+          "\<forall>\<sigma>\<in>K\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>N"
+        by (rule geotop_is_complex_face_closed[OF hK\<^sub>N_complex])
+      have h\<rho>_cases:
+          "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+        using h\<rho> unfolding BdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+      show "\<rho> \<in> K\<^sub>N"
+      proof (rule UnE[OF h\<rho>_cases])
+        assume "\<rho> \<in> ?S"
+        thus "\<rho> \<in> K\<^sub>N"
+          by (by100 blast)
+      next
+        assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+        then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+          by (by100 blast)
+        have h\<tau>K\<^sub>N: "\<tau> \<in> K\<^sub>N"
+          using h\<tau>S by (by100 blast)
+        show "\<rho> \<in> K\<^sub>N"
+          using hface_closed h\<tau>K\<^sub>N h\<rho>\<tau> by (by100 blast)
+      qed
+    qed
+    have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+      by (rule finite_subset[OF hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_fin])
+    have hBdK\<^sub>N_poly_sub_N: "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
+      using hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_poly unfolding geotop_polyhedron_def by (by100 blast)
+    have hBdK\<^sub>N_poly_A2_QS_disj:
+        "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+      using hBdK\<^sub>N_poly_sub_N hN_A2_QS by (by100 blast)
+    have hQ_not_BdK\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdK\<^sub>N"
+      using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    have hS_not_BdK\<^sub>N_poly: "S \<notin> geotop_polyhedron BdK\<^sub>N"
+      using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
+      using hR_in_A2 hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
     obtain r\<^sub>Q\<^sub>N where hr\<^sub>Q\<^sub>N_pos: "0 < r\<^sub>Q\<^sub>N"
       and hball_Q_N: "ball Q r\<^sub>Q\<^sub>N \<inter> N = {}"
     proof -
@@ -1160,6 +1212,14 @@ proof -
         using hQ1_not_N hA1_N by (by100 blast)
       have hS1_not_A1: "S1 \<notin> A1"
         using hS1_not_N hA1_N by (by100 blast)
+      have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
+        using hQ1_not_N hK\<^sub>N_poly by (by100 simp)
+      have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
+        using hS1_not_N hK\<^sub>N_poly by (by100 simp)
+      have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
+        using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+      have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+        using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
       have hD44_central_component_chord_suffices:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
             \<Longrightarrow> \<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
