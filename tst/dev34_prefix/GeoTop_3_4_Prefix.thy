@@ -4395,6 +4395,31 @@ proof -
     show ?thesis
       by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
   qed
+  have hD44_BdJ\<^sub>N_simple_closed_curve_has_book_two_arc_split:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Direct formal form of Moise's sentence "Then J is a 1-sphere" for the
+      extracted frontier graph: a simple closed curve carrier is enough to
+      recover the two broken-line arcs used by the book proof. **)
+  proof -
+    assume hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+        (geotop_polyhedron BdJ\<^sub>N)"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_simple_closed_curve[OF hSCC])
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
