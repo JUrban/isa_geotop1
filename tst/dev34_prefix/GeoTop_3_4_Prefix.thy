@@ -3335,6 +3335,56 @@ proof -
       show ?thesis
         using huBdJ hvBdJ huv hsplit by (by100 blast)
     qed
+    have hBdJ\<^sub>N_cycle_split_from_card_bounds:
+        "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2) \<Longrightarrow>
+          \<exists>u v C\<^sub>1 C\<^sub>2.
+            {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v
+            \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+            \<and> geotop_is_broken_line C\<^sub>1
+            \<and> geotop_is_broken_line C\<^sub>2
+            \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+            \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+            \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+                geotop_arc_interior C\<^sub>2 {u, v} = {}"
+    proof -
+      assume hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      assume hge2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+        by (rule hBdJ\<^sub>N_polygon_from_card_bounds[OF hle2 hge2])
+      show ?thesis
+        by (rule hBdJ\<^sub>N_cycle_split_from_polygon[OF hpolygon])
+    qed
+    have hBdJ\<^sub>N_cycle_split_from_card_le2_no_endpoint:
+        "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+          \<exists>u v C\<^sub>1 C\<^sub>2.
+            {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v
+            \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+            \<and> geotop_is_broken_line C\<^sub>1
+            \<and> geotop_is_broken_line C\<^sub>2
+            \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+            \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+            \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+                geotop_arc_interior C\<^sub>2 {u, v} = {}"
+    proof -
+      assume hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      assume hnoend:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+        by (rule hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint[OF hle2 hnoend])
+      show ?thesis
+        by (rule hBdJ\<^sub>N_cycle_split_from_polygon[OF hpolygon])
+    qed
     have hBdJ\<^sub>N_cycle_split_from_simple_closed_curve:
         "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
           (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
