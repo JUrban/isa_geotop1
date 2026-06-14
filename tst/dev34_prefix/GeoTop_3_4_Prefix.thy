@@ -7246,6 +7246,19 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_arbitrary_access_ball_crossings_core:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Positive Moise corridor target.  The complementary frontier arc
+      \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close>, together with the adjacent outside-carrier component,
+      must supply a connected subset of \<open>?Ncut\<close> meeting every prescribed lower
+      and upper access collar. **)
+    sorry
   have hD44_frontier_component_forbids_Ncut_split:
       "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> False"
@@ -7256,7 +7269,72 @@ proof -
       The frontier component through \<open>P\<close>, split into the boundary arc and the
       complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, supplies the crossing that
       contradicts that separation. **)
-    sorry
+  proof -
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    obtain \<epsilon>\<^sub>Q \<epsilon>\<^sub>S where h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      and h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      and hforbid:
+        "\<forall>Z. Z \<subseteq> ?Ncut
+          \<longrightarrow> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+          \<longrightarrow> False"
+      using hD44_Ncut_open_split_forbids_connected_access_ball_crossing[OF hnot]
+      by (elim exE conjE)
+    have hZ_ex:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have hQ_spec:
+          "\<forall>\<epsilon>\<^sub>S>0. \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      proof -
+        have hQ_imp:
+            "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0. \<exists>Z. Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+          by (rule spec[OF hD44_moise_arbitrary_access_ball_crossings_core])
+        show ?thesis
+          by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+      qed
+      have hS_imp:
+          "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+        by (rule spec[OF hQ_spec])
+      show ?thesis
+        by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
+    qed
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hZ_Q: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      and hZ_S: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hZ_ex by (elim exE conjE)
+    have hZ_forbid:
+        "Z \<subseteq> ?Ncut
+          \<longrightarrow> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+          \<longrightarrow> False"
+      by (rule spec[OF hforbid])
+    show False
+      using hZ_forbid hZ_sub hZ_conn hZ_Q hZ_S by (by100 blast)
+  qed
   have hD44_moise_same_component_direct:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
