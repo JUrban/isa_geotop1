@@ -7246,6 +7246,15 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_Q1_component_accumulates_core:
+      "S1 \<in> closure
+        (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
+    (**
+      Sharp remaining Moise component-frontier statement.  The outside component
+      of \<open>I - (N \<union> A2)\<close> reached from the lower access point accumulates at the
+      upper access point via the complementary frontier arc \<open>C\<^sub>F\<close> / book
+      \<open>B\<^sub>2\<close>. **)
+    sorry
   have hD44_moise_closed_corridor_core:
       "\<exists>C. C \<subseteq> ?Ncut
         \<and> top1_connected_on C
@@ -7256,7 +7265,23 @@ proof -
       Closure form of the Moise adjacent-corridor step.  The outside component
       next to the complementary frontier arc \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> lies in
       \<open>I - (N \<union> A2)\<close> and has the lower and upper access points in its closure. **)
-    sorry
+  proof -
+    obtain C where hC_eq:
+        "C = geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      and hC_sub: "C \<subseteq> ?Ncut"
+      and hQ1_C: "Q1 \<in> C"
+      and hC_open: "C \<in> geotop_euclidean_topology"
+      and hC_conn:
+        "top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+      using hD44_Q1_Ncut_component_package by (elim exE conjE)
+    have hQ1_cl: "Q1 \<in> closure C"
+      using hQ1_C closure_subset by (by100 blast)
+    have hS1_cl: "S1 \<in> closure C"
+      using hD44_moise_Q1_component_accumulates_core hC_eq by (by100 simp)
+    show ?thesis
+      using hC_sub hC_conn hQ1_cl hS1_cl by (intro exI conjI)
+  qed
   have hD44_moise_accumulating_connected_corridor_core:
       "\<exists>C. C \<subseteq> ?Ncut
         \<and> top1_connected_on C
