@@ -1104,6 +1104,23 @@ proof -
       show ?thesis
         using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
     qed
+    have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
+    proof -
+      have hK\<^sub>N_poly_connected:
+          "top1_connected_on (geotop_polyhedron K\<^sub>N)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron K\<^sub>N))"
+        using hN_connected hK\<^sub>N_poly by (by100 simp)
+      have hK\<^sub>N_poly_path_connected:
+          "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron K\<^sub>N))"
+        by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
+              hK\<^sub>N_poly_connected])
+      show ?thesis
+        by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
+              hK\<^sub>N_poly_path_connected])
+    qed
     have hK\<^sub>N_poly_N\<^sub>I: "geotop_polyhedron K\<^sub>N = N\<^sub>I"
       using hK\<^sub>N_poly hN\<^sub>I_eq_N by (by100 simp)
     have hFrN\<^sub>I_frontier_K\<^sub>N_poly:
