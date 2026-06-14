@@ -4741,55 +4741,9 @@ proof -
   proof -
     assume hS1_comp:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    let ?C = "connected_component_set ?Ncut Q1"
-    have hC_eq:
-        "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 = ?C"
-      by (rule geotop_component_at_UNIV_eq_connected_component_set)
-    have hC_comp: "?C \<in> components ?Ncut"
-      by (rule componentsI[OF hQ1_Ncut])
-    have hC_conn_HOL: "connected ?C"
-      using hC_comp in_components_connected by (by100 blast)
-    have hC_conn:
-        "top1_connected_on ?C
-          (subspace_topology UNIV geotop_euclidean_topology ?C)"
-      using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
-    have hC_open_HOL: "open ?C"
-      using hC_comp hNcut_open_HOL open_components by (by100 blast)
-    have hC_open: "?C \<in> geotop_euclidean_topology"
-      using hC_open_HOL
-      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
-      by (by100 simp)
-    have hC_broken_connected: "geotop_broken_line_connected ?C"
-      by (rule Theorem_GT_1_13[OF hC_open hC_conn])
-    have hQ1_C: "Q1 \<in> ?C"
-    proof -
-      have "connected_component ?Ncut Q1 Q1"
-        by (rule connected_component_refl[OF hQ1_Ncut])
-      thus ?thesis
-        by (simp only: mem_Collect_eq)
-    qed
-    have hS1_C: "S1 \<in> ?C"
-      using hS1_comp hC_eq by (by100 simp)
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_sub_C: "B \<subseteq> ?C"
-      and hQ1_B: "Q1 \<in> B"
-      and hS1_B: "S1 \<in> B"
-      using hC_broken_connected hQ1_C hS1_C
-      unfolding geotop_broken_line_connected_def
-      by (by100 blast)
-    have hC_sub_Ncut: "?C \<subseteq> ?Ncut"
-      using hC_comp in_components_subset by (by100 blast)
-    have hB_sub_Ncut: "B \<subseteq> ?Ncut"
-      using hB_sub_C hC_sub_Ncut by (by100 blast)
     show ?thesis
-      apply (rule exI[where x=B])
-      using hB_bl hB_sub_Ncut hQ1_B hS1_B
-      apply (intro conjI)
-      apply assumption
-      apply assumption
-      apply assumption
-      apply assumption
-      done
+      by (rule geotop_open_component_broken_line_between_prefix
+          [OF hNcut_open hQ1_Ncut hS1_comp])
   qed
   have hD44_connected_route_component_suffices:
       "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
