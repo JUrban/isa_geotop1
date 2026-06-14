@@ -5865,6 +5865,119 @@ proof -
       qed
     qed
   qed
+  have hD44_Ncut_open_split_forbids_connected_crossing:
+      "\<And>Z. S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> Z \<subseteq> ?Ncut
+        \<Longrightarrow> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<Longrightarrow> Z \<inter> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<noteq> {}
+        \<Longrightarrow> Z \<inter>
+              (?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+              \<noteq> {}
+        \<Longrightarrow> False"
+    (**
+      Separation form of the remaining contradiction.  Once the negation of the
+      desired component relation has split \<open>Ncut\<close>, no connected set contained
+      in \<open>Ncut\<close> can meet both the \<open>Q1\<close> side and the complementary \<open>S1\<close> side.
+      The unfinished Moise frontier subarc should supply exactly such a
+      connected crossing, thereby closing the central route step. **)
+  proof -
+    fix Z
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    assume hZ_sub: "Z \<subseteq> ?Ncut"
+    assume hZ_conn:
+      "top1_connected_on Z
+        (subspace_topology UNIV geotop_euclidean_topology Z)"
+    assume hZ_CQ:
+      "Z \<inter> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<noteq> {}"
+    assume hZ_rest:
+      "Z \<inter>
+        (?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+        \<noteq> {}"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?R = "?Ncut - ?CQ"
+    have hsplit:
+        "?Ncut = ?CQ \<union> ?R
+        \<and> ?CQ \<inter> ?R = {}
+        \<and> ?CQ \<in> geotop_euclidean_topology
+        \<and> ?R \<in> geotop_euclidean_topology
+        \<and> Q1 \<in> ?CQ
+        \<and> S1 \<in> ?R"
+      by (rule hD44_Ncut_open_split_if_not_same_component[OF hnot])
+    have hNcut_union: "?Ncut = ?CQ \<union> ?R"
+      using hsplit by (by100 blast)
+    have hdisj: "?CQ \<inter> ?R = {}"
+      using hsplit by (by100 blast)
+    have hCQ_open_top: "?CQ \<in> geotop_euclidean_topology"
+      using hsplit by (by100 blast)
+    have hR_open_top: "?R \<in> geotop_euclidean_topology"
+      using hsplit by (by100 blast)
+    have hQ1_CQ: "Q1 \<in> ?CQ"
+      using hsplit by (by100 blast)
+    have hS1_R: "S1 \<in> ?R"
+      using hsplit by (by100 blast)
+    have hCQ_sub_Ncut: "?CQ \<subseteq> ?Ncut"
+      unfolding geotop_component_at_def by (by100 blast)
+    have hR_sub_Ncut: "?R \<subseteq> ?Ncut"
+      by (by100 blast)
+    have hCQ_open_sub:
+        "?CQ \<in> subspace_topology UNIV geotop_euclidean_topology ?Ncut"
+      unfolding subspace_topology_def
+      using hCQ_open_top hCQ_sub_Ncut by (by100 blast)
+    have hR_open_sub:
+        "?R \<in> subspace_topology UNIV geotop_euclidean_topology ?Ncut"
+      unfolding subspace_topology_def
+      using hR_open_top hR_sub_Ncut by (by100 blast)
+    have hsep:
+        "top1_is_separation_on ?Ncut
+          (subspace_topology UNIV geotop_euclidean_topology ?Ncut) ?CQ ?R"
+      unfolding top1_is_separation_on_def
+      using hCQ_open_sub hR_open_sub hQ1_CQ hS1_R hdisj hNcut_union
+      by (by100 blast)
+    have hUNIV_top:
+        "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets
+          top1_open_sets_is_topology_on_UNIV)
+    have htop_Ncut:
+        "is_topology_on ?Ncut
+          (subspace_topology UNIV geotop_euclidean_topology ?Ncut)"
+      by (rule subspace_topology_is_topology_on[OF hUNIV_top subset_UNIV])
+    have hZ_subspace:
+        "subspace_topology ?Ncut
+          (subspace_topology UNIV geotop_euclidean_topology ?Ncut) Z =
+         subspace_topology UNIV geotop_euclidean_topology Z"
+      by (rule subspace_topology_trans[OF hZ_sub])
+    have hZ_conn_Ncut:
+        "top1_connected_on Z
+          (subspace_topology ?Ncut
+            (subspace_topology UNIV geotop_euclidean_topology ?Ncut) Z)"
+      using hZ_conn hZ_subspace by (by100 simp)
+    have hZ_side: "Z \<subseteq> ?CQ \<or> Z \<subseteq> ?R"
+      by (rule Lemma_23_2[OF htop_Ncut hsep hZ_sub hZ_conn_Ncut])
+    from hZ_side show False
+    proof
+      assume hZ_CQ_sub: "Z \<subseteq> ?CQ"
+      obtain x where hxZ: "x \<in> Z" and hxR: "x \<in> ?R"
+        using hZ_rest by (by100 blast)
+      have hxCQ: "x \<in> ?CQ"
+        using hZ_CQ_sub hxZ by (by100 blast)
+      have "x \<in> ?CQ \<inter> ?R"
+        by (rule IntI[OF hxCQ hxR])
+      thus False
+        using hdisj by (by100 blast)
+    next
+      assume hZ_R: "Z \<subseteq> ?R"
+      obtain x where hxZ: "x \<in> Z" and hxCQ: "x \<in> ?CQ"
+        using hZ_CQ by (by100 blast)
+      have hxR: "x \<in> ?R"
+        using hZ_R hxZ by (by100 blast)
+      have "x \<in> ?CQ \<inter> ?R"
+        by (rule IntI[OF hxCQ hxR])
+      thus False
+        using hdisj by (by100 blast)
+    qed
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
