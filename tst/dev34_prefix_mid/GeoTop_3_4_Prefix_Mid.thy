@@ -40999,6 +40999,164 @@ proof -
 	    show ?thesis
 	      using h\<eta>_pos hsmall by (by100 blast)
 	  qed
+	  have hfigure33_source_carrier_endpoint_germs_same_outer_scalar:
+	      "\<exists>\<eta>>0. \<forall>t>0.
+	        t < \<eta> \<longrightarrow>
+	        (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	            ball v\<^sub>0 \<rho>\<^sub>0)
+	          \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	            ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	          geotop_polyhedron
+	            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	        \<subseteq>
+	          (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	          \<union>
+	          (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+	  proof -
+	    obtain \<eta>\<^sub>0 where h\<eta>\<^sub>0_pos: "0 < \<eta>\<^sub>0"
+	      and havoid0:
+	        "\<forall>t>0.
+	          t < \<eta>\<^sub>0 \<longrightarrow>
+	          ?G\<^sub>0 \<inter>
+	            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+	          = {}"
+	      using hfigure33_endpoint_closed_germ_v\<^sub>0_avoids_opposite_outer_scalar
+	      by (elim exE conjE)
+	    obtain \<eta>\<^sub>2 where h\<eta>\<^sub>2_pos: "0 < \<eta>\<^sub>2"
+	      and havoid2:
+	        "\<forall>t>0.
+	          t < \<eta>\<^sub>2 \<longrightarrow>
+	          ?G\<^sub>2 \<inter>
+	            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+	          = {}"
+	      using hfigure33_endpoint_closed_germ_v\<^sub>2_avoids_opposite_outer_scalar
+	      by (elim exE conjE)
+	    define \<eta> where "\<eta> = min \<eta>\<^sub>0 \<eta>\<^sub>2"
+	    have h\<eta>_pos: "0 < \<eta>"
+	      unfolding \<eta>_def using h\<eta>\<^sub>0_pos h\<eta>\<^sub>2_pos by (by100 simp)
+	    have hsmall:
+	        "\<forall>t>0. t < \<eta> \<longrightarrow>
+	          (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0)
+	            \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	            geotop_polyhedron
+	              (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	          \<subseteq>
+	            (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	                ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	              geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	            \<union>
+	            (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	                ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	              geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+	    proof (intro allI impI subsetI)
+	      fix t :: real
+	      fix x :: "real^2"
+	      assume ht_pos: "0 < t"
+	      assume ht_lt: "t < \<eta>"
+	      assume hx:
+	        "x \<in> (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	            ball v\<^sub>0 \<rho>\<^sub>0)
+	          \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	            ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	          geotop_polyhedron
+	            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+	      have ht_lt0: "t < \<eta>\<^sub>0"
+	        using ht_lt unfolding \<eta>_def by (by100 simp)
+	      have ht_lt2: "t < \<eta>\<^sub>2"
+	        using ht_lt unfolding \<eta>_def by (by100 simp)
+	      have havoid0_t:
+	          "?G\<^sub>0 \<inter>
+	            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+	          = {}"
+	        using havoid0 ht_pos ht_lt0 by (by100 blast)
+	      have havoid2_t:
+	          "?G\<^sub>2 \<inter>
+	            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+	          = {}"
+	        using havoid2 ht_pos ht_lt2 by (by100 blast)
+	      have hxgerm:
+	          "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0)
+	            \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2)"
+	        using hx by (by100 blast)
+	      have hxcarrier:
+	          "x \<in> geotop_polyhedron
+	            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+	        using hx by (by100 blast)
+	      have houter:
+	          "geotop_polyhedron
+	            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	          = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+	            \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	        by (rule hfigure33_source_carrier_outer_union_scalar[OF ht_pos])
+	      have hxouter:
+	          "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+	            \<or> x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	        using hxcarrier houter by (by100 blast)
+	      show "x \<in>
+	            (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	                ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	              geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	            \<union>
+	            (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	                ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	              geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+	      proof (rule UnE[OF hxgerm])
+	        assume hx0:
+	          "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	            ball v\<^sub>0 \<rho>\<^sub>0"
+	        have hxG0: "x \<in> ?G\<^sub>0"
+	          using hx0 by (by100 auto)
+	        show ?thesis
+	        proof (rule disjE[OF hxouter])
+	          assume hxT0:
+	            "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	          show ?thesis
+	            using hx0 hxT0 by (by100 blast)
+	        next
+	          assume hxT2:
+	            "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	          have "x \<in> ?G\<^sub>0 \<inter>
+	            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	            using hxG0 hxT2 by (by100 blast)
+	          hence False
+	            using havoid0_t by (by100 blast)
+	          thus ?thesis by (by100 blast)
+	        qed
+	      next
+	        assume hx2:
+	          "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	            ball v\<^sub>2 \<rho>\<^sub>2"
+	        have hxG2: "x \<in> ?G\<^sub>2"
+	          using hx2 by (by100 auto)
+	        show ?thesis
+	        proof (rule disjE[OF hxouter])
+	          assume hxT0:
+	            "x \<in> geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	          have "x \<in> ?G\<^sub>2 \<inter>
+	            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	            using hxG2 hxT0 by (by100 blast)
+	          hence False
+	            using havoid2_t by (by100 blast)
+	          thus ?thesis by (by100 blast)
+	        next
+	          assume hxT2:
+	            "x \<in> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+	          show ?thesis
+	            using hx2 hxT2 by (by100 blast)
+	        qed
+	      qed
+	    qed
+	    show ?thesis
+	      using h\<eta>_pos hsmall by (by100 blast)
+	  qed
 	  have hfigure33_source_carrier_support_bound_scalar:
 	      "\<exists>\<eta>>0. \<forall>t>0.
 	        t < \<eta> \<longrightarrow>
