@@ -38177,6 +38177,78 @@ proof -
   qed
 qed
 
+lemma geotop_figure33_midpoint_chord_split_off_line_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+  assumes hncol: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  shows
+    "let v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2 in
+      v\<^sub>0 \<noteq> v\<^sub>5
+      \<and> v\<^sub>2 \<noteq> v\<^sub>5
+      \<and> v\<^sub>1 \<noteq> v\<^sub>5
+      \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
+      \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, v\<^sub>5}
+      \<and> closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>5 \<union> closed_segment v\<^sub>2 v\<^sub>5"
+  (**
+    Figure 3.3 midpoint package: the old chord splits at its midpoint, and
+    the two old endpoints are off the line through the opposite vertex and
+    that midpoint. **)
+proof -
+  let ?v\<^sub>5 = "midpoint v\<^sub>0 v\<^sub>2"
+  have hv\<^sub>0_mid_ne: "v\<^sub>0 \<noteq> ?v\<^sub>5"
+    using hv\<^sub>0v\<^sub>2 midpoint_eq_endpoint(1) by metis
+  have hv\<^sub>2_mid_ne: "v\<^sub>2 \<noteq> ?v\<^sub>5"
+    using hv\<^sub>0v\<^sub>2 midpoint_eq_endpoint(2) by metis
+  have hv\<^sub>1_mid_ne: "v\<^sub>1 \<noteq> ?v\<^sub>5"
+  proof
+    assume hv\<^sub>1_mid: "v\<^sub>1 = ?v\<^sub>5"
+    have "collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+      using collinear_midpoint[of v\<^sub>0 v\<^sub>2] hv\<^sub>1_mid
+      by (metis insert_commute)
+    thus False
+      using hncol by (by100 blast)
+  qed
+  have hnot_col_1mid0: "\<not> collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>0}"
+    by (metis (full_types) hv\<^sub>0_mid_ne collinear_3_trans
+        collinear_midpoint insert_commute hncol)
+  have hnot_col_1mid2: "\<not> collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>2}"
+    by (metis (full_types) hv\<^sub>2_mid_ne collinear_3_trans
+        collinear_midpoint insert_commute hncol)
+  have hv\<^sub>0_mid_off_line: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}"
+  proof
+    assume "v\<^sub>0 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+    hence "collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>0}"
+      by (rule affine_hull_3_imp_collinear)
+    thus False
+      using hnot_col_1mid0 by (by100 blast)
+  qed
+  have hv\<^sub>2_mid_off_line: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}"
+  proof
+    assume "v\<^sub>2 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+    hence "collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>2}"
+      by (rule affine_hull_3_imp_collinear)
+    thus False
+      using hnot_col_1mid2 by (by100 blast)
+  qed
+  have hB02_mid_split:
+      "closed_segment v\<^sub>0 v\<^sub>2 =
+        closed_segment v\<^sub>0 ?v\<^sub>5 \<union> closed_segment v\<^sub>2 ?v\<^sub>5"
+  proof -
+    have hmid_seg: "?v\<^sub>5 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      by (rule midpoint_in_closed_segment)
+    have "closed_segment v\<^sub>0 ?v\<^sub>5 \<union> closed_segment ?v\<^sub>5 v\<^sub>2 =
+        closed_segment v\<^sub>0 v\<^sub>2"
+      by (rule Un_closed_segment[OF hmid_seg])
+    thus ?thesis
+      using closed_segment_commute[of v\<^sub>2 ?v\<^sub>5] by metis
+  qed
+  show ?thesis
+    using hv\<^sub>0_mid_ne hv\<^sub>2_mid_ne hv\<^sub>1_mid_ne hv\<^sub>0_mid_off_line
+      hv\<^sub>2_mid_off_line hB02_mid_split
+    by (by100 simp)
+qed
+
 lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
   fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
@@ -40455,19 +40527,23 @@ proof -
 	          have hfigure33_not_col_012:
 	              "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
 	            using hfigure33_local_triangle_package by (by100 blast)
+	          have hmidpoint_chord_package:
+	              "v\<^sub>0 \<noteq> ?v\<^sub>5
+	              \<and> v\<^sub>2 \<noteq> ?v\<^sub>5
+	              \<and> v\<^sub>1 \<noteq> ?v\<^sub>5
+	              \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}
+	              \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}
+	              \<and> ?B\<^sub>0\<^sub>2 =
+	                closed_segment v\<^sub>0 ?v\<^sub>5 \<union> closed_segment v\<^sub>2 ?v\<^sub>5"
+	            using geotop_figure33_midpoint_chord_split_off_line_prefix
+	              [OF hv\<^sub>0v\<^sub>2 hfigure33_not_col_021]
+	            unfolding Let_def by (by100 simp)
 	          have hv\<^sub>0_mid_ne: "v\<^sub>0 \<noteq> ?v\<^sub>5"
-	            using hv\<^sub>0v\<^sub>2 midpoint_eq_endpoint(1) by metis
+	            using hmidpoint_chord_package by (by100 blast)
 	          have hv\<^sub>2_mid_ne: "v\<^sub>2 \<noteq> ?v\<^sub>5"
-	            using hv\<^sub>0v\<^sub>2 midpoint_eq_endpoint(2) by metis
+	            using hmidpoint_chord_package by (by100 blast)
 	          have hv\<^sub>1_mid_ne: "v\<^sub>1 \<noteq> ?v\<^sub>5"
-	          proof
-	            assume hv\<^sub>1_mid: "v\<^sub>1 = ?v\<^sub>5"
-	            have "collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
-	              using collinear_midpoint[of v\<^sub>0 v\<^sub>2] hv\<^sub>1_mid
-	              by (metis insert_commute)
-	            thus False
-	              using hfigure33_not_col_021 by (by100 blast)
-	          qed
+	            using hmidpoint_chord_package by (by100 blast)
 	          have hnot_col_1mid0: "\<not> collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>0}"
 	            by (metis (full_types) hv\<^sub>0_mid_ne collinear_3_trans
 	                collinear_midpoint insert_commute hfigure33_not_col_021)
@@ -40475,32 +40551,12 @@ proof -
 	            by (metis (full_types) hv\<^sub>2_mid_ne collinear_3_trans
 	                collinear_midpoint insert_commute hfigure33_not_col_021)
 	          have hv\<^sub>0_mid_off_line: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}"
-	          proof
-	            assume "v\<^sub>0 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-	            hence "collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>0}"
-	              by (rule affine_hull_3_imp_collinear)
-	            thus False
-	              using hnot_col_1mid0 by (by100 blast)
-	          qed
+	            using hmidpoint_chord_package by (by100 blast)
 	          have hv\<^sub>2_mid_off_line: "v\<^sub>2 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}"
-	          proof
-	            assume "v\<^sub>2 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-	            hence "collinear {v\<^sub>1, ?v\<^sub>5, v\<^sub>2}"
-	              by (rule affine_hull_3_imp_collinear)
-	            thus False
-	              using hnot_col_1mid2 by (by100 blast)
-	          qed
+	            using hmidpoint_chord_package by (by100 blast)
 	          have hB02_mid_split:
 	              "?B\<^sub>0\<^sub>2 = closed_segment v\<^sub>0 ?v\<^sub>5 \<union> closed_segment v\<^sub>2 ?v\<^sub>5"
-	          proof -
-	            have hmid_seg: "?v\<^sub>5 \<in> closed_segment v\<^sub>0 v\<^sub>2"
-	              by (rule midpoint_in_closed_segment)
-	            have "closed_segment v\<^sub>0 ?v\<^sub>5 \<union> closed_segment ?v\<^sub>5 v\<^sub>2 =
-	                closed_segment v\<^sub>0 v\<^sub>2"
-	              by (rule Un_closed_segment[OF hmid_seg])
-	            thus ?thesis
-	              using closed_segment_commute[of v\<^sub>2 ?v\<^sub>5] by metis
-	          qed
+	            using hmidpoint_chord_package by (by100 blast)
 	          have hfigure33_book_line_scalar_basic:
 		              "\<And>t. 0 < t \<Longrightarrow>
 		                collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
