@@ -7306,6 +7306,21 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_boundary_arc_closed_corridor_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    (**
+      Direct Moise 4.4 frontier-corridor target.  After the fine carrier of
+      \<open>A1\<close> is chosen, the book analyzes the frontier component through \<open>P\<close>,
+      proves it is the required 1-sphere/frontier broken line, and takes the
+      complementary outside corridor.  Formally, the remaining construction
+      should produce one connected subset of
+      \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
+      access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
+    sorry
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
@@ -7320,7 +7335,8 @@ proof -
       the complementary outside corridor.  In formal terms the needed output is
       that every pair of small access collars around \<open>Q1\<close> and \<open>S1\<close> is met by
       one connected subset of \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-    sorry
+    by (rule hD44_closed_corridor_gives_arbitrary_access_ball_crossings
+        [OF hD44_moise_boundary_arc_closed_corridor_book_step])
   have hD44_moise_regular_neighborhood_component_core:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -7341,8 +7357,7 @@ proof -
       regular-neighborhood argument puts the two access points in the same
       outside component, the existing component-to-corridor bookkeeping gives
       the connected set whose closure contains both access points. **)
-    by (rule hD44_same_component_gives_closed_corridor
-        [OF hD44_moise_regular_neighborhood_component_core])
+    by (rule hD44_moise_boundary_arc_closed_corridor_book_step)
   have hD44_moise_boundary_arc_same_component_core:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
