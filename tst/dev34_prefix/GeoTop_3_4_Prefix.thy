@@ -762,6 +762,8 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_p
   assumes hA1_N: "A1 \<subseteq> N"
   assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
   assumes hr: "0 < r"
+  assumes hball_Q_N: "ball Q r \<inter> N = {}"
+  assumes hball_S_N: "ball S r \<inter> N = {}"
   assumes hQ1_ball: "Q1 \<in> ball Q r"
   assumes hS1_ball: "S1 \<in> ball S r"
   assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
@@ -773,7 +775,8 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_p
   (**
     Exact remaining Moise 4.4 frontier-route theorem.  Starting from the fine
     subdivided carrier regular neighborhood \<open>N\<close> of \<open>A1\<close>, with \<open>N\<close> avoiding
-    \<open>A2,Q,S\<close>, analyze the frontier component through \<open>P\<close>.  Moise proves this
+    \<open>A2\<close> and with the chosen access balls at \<open>Q\<close> and \<open>S\<close> disjoint from
+    \<open>N\<close>, analyze the frontier component through \<open>P\<close>.  Moise proves this
     component is a polygonal 1-sphere; its lower-to-upper boundary subarc,
     chosen between the last lower and first upper intersections with \<open>J\<close>, is
     a broken line in \<open>geotop_polygon_interior J - (N \<union> A2)\<close> attaching the
@@ -4481,6 +4484,8 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_pr
   assumes hA1_N: "A1 \<subseteq> N"
   assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
   assumes hr: "0 < r"
+  assumes hball_Q_N: "ball Q r \<inter> N = {}"
+  assumes hball_S_N: "ball S r \<inter> N = {}"
   assumes hQ1_ball: "Q1 \<in> ball Q r"
   assumes hS1_ball: "S1 \<in> ball S r"
   assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
@@ -4493,8 +4498,8 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_pr
     The hypotheses are the book setup after choosing the fine carrier
     neighborhood of \<open>A1\<close>: the carrier comes from a sufficiently fine
     subdivision of the closed polygonal disk, contains \<open>A1\<close>, avoids
-    \<open>A2,Q,S\<close>, and the two local access points have been chosen near the
-    boundary points \<open>Q,S\<close> in the outside-carrier complement.
+    \<open>A2\<close>, and the two local access balls near \<open>Q,S\<close> are disjoint from the
+    carrier so the access points lie in the outside-carrier complement.
 
     The proof follows Moise's brick-neighborhood paragraph: restrict the
     carrier to the closed disk, take the frontier component through \<open>P\<close>,
@@ -4568,7 +4573,7 @@ proof -
     by (rule geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_prefix
         [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
           hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-          hr hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut])
+          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut])
   obtain B where hB_bl: "geotop_is_broken_line B"
     and hB_Ncut: "B \<subseteq> ?Ncut"
     and hQ1_B: "Q1 \<in> B"
@@ -7551,6 +7556,8 @@ proof -
           \<and> U\<^sub>Q \<subseteq> ball Q r
           \<and> U\<^sub>S \<subseteq> ball S r
           \<and> ball Q r \<inter> ball S r = {}
+          \<and> ball Q r \<inter> N = {}
+          \<and> ball S r \<inter> N = {}
           \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
           \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
           \<and> Q' \<in> U\<^sub>Q
@@ -7592,7 +7599,8 @@ proof -
       show ?thesis
         using hr_pos hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
           hU\<^sub>Q_sub hU\<^sub>S_sub hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj
-          hQ_front hS_front hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+          hball_Q_r_N hball_S_r_N hQ_front hS_front
+          hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
           hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
         by (intro exI conjI)
     qed
@@ -7607,6 +7615,8 @@ proof -
         and hU\<^sub>Q_ball: "U\<^sub>Q \<subseteq> ball Q r"
         and hU\<^sub>S_ball: "U\<^sub>S \<subseteq> ball S r"
         and hr_disj: "ball Q r \<inter> ball S r = {}"
+        and hball_Q_r_N: "ball Q r \<inter> N = {}"
+        and hball_S_r_N: "ball S r \<inter> N = {}"
         and hQ_front:
           "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
         and hS_front:
@@ -7842,7 +7852,8 @@ proof -
         by (rule geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_prefix
             [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
               hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS
-              hr_pos hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut])
+              hr_pos hball_Q_r_N hball_S_r_N hQ1_ball hS1_ball
+              hQ1_Ncut hS1_Ncut])
       have hD44_central_frontier_broken_line_route_exists:
           "\<exists>B\<^sub>c. geotop_is_broken_line B\<^sub>c
             \<and> B\<^sub>c \<subseteq> ?Ncut
