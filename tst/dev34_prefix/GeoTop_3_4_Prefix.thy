@@ -1078,6 +1078,41 @@ proof -
     have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
       by (rule geotop_complex_subset_is_complex
           [OF hK\<^sub>N_complex hBdK\<^sub>N_sub_K\<^sub>N hBdK\<^sub>N_face_closed])
+    have hBdK\<^sub>N_1dim: "geotop_complex_is_1dim BdK\<^sub>N"
+    proof -
+      let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+          card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+            geotop_is_face \<tau> \<sigma>} = 1}"
+      show ?thesis
+        unfolding geotop_complex_is_1dim_def
+      proof
+        fix \<rho>
+        assume h\<rho>Bd: "\<rho> \<in> BdK\<^sub>N"
+        have h\<rho>_cases:
+            "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+          using h\<rho>Bd unfolding BdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+        show "\<exists>n\<le>1. geotop_simplex_dim \<rho> n"
+        proof (rule UnE[OF h\<rho>_cases])
+          assume h\<rho>S: "\<rho> \<in> ?S"
+          have h\<rho>1: "geotop_simplex_dim \<rho> 1"
+            using h\<rho>S by (by100 simp)
+          show "\<exists>n\<le>1. geotop_simplex_dim \<rho> n"
+            using h\<rho>1 by (by100 blast)
+        next
+          assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+          then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S"
+            and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+            by (by100 blast)
+          have h\<tau>1: "geotop_simplex_dim \<tau> 1"
+            using h\<tau>S by (by100 simp)
+          obtain k where hk_le: "k \<le> 1"
+            and h\<rho>k: "geotop_simplex_dim \<rho> k"
+            using geotop_face_dim_le_prefix[OF h\<tau>1 h\<rho>\<tau>] by (by100 blast)
+          show "\<exists>n\<le>1. geotop_simplex_dim \<rho> n"
+            using hk_le h\<rho>k by (by100 blast)
+        qed
+      qed
+    qed
     have hBdK\<^sub>N_poly_compact: "compact (geotop_polyhedron BdK\<^sub>N)"
       by (rule geotop_complex_polyhedron_compact[OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
     have hBdK\<^sub>N_poly_closed: "closed (geotop_polyhedron BdK\<^sub>N)"
