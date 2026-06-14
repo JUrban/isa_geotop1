@@ -3699,6 +3699,31 @@ proof -
       using heBdJ hedge hP_e heJ he_sub_B1P
       by (intro bexI[where x=e] conjI)
   qed
+  have hD44_B1P_nontrivial: "\<exists>x\<in>?B1P. x \<noteq> P"
+  proof -
+    obtain e where hedge: "geotop_is_edge e"
+      and hP_e: "P \<in> e"
+      and he_sub_B1P: "e \<subseteq> ?B1P"
+      using hD44_P_boundary_edge_sub_B1P by (by100 blast)
+    have hex_other: "\<exists>x\<in>e. x \<noteq> P"
+    proof (rule ccontr)
+      assume hnot: "\<not> (\<exists>x\<in>e. x \<noteq> P)"
+      have he_sub_single: "e \<subseteq> {P}"
+        using hnot by (by100 blast)
+      have he_eq_single: "e = {P}"
+        using hP_e he_sub_single by (by100 blast)
+      have "geotop_is_edge {P}"
+        using hedge he_eq_single by (by100 simp)
+      thus False
+        using geotop_singleton_not_edge_prefix by (by100 blast)
+    qed
+    obtain x where hx_e: "x \<in> e" and hx_ne: "x \<noteq> P"
+      using hex_other by (by100 blast)
+    have hx_B1P: "x \<in> ?B1P"
+      using he_sub_B1P hx_e by (by100 blast)
+    show ?thesis
+      using hx_B1P hx_ne by (by100 blast)
+  qed
   have hD44_B1P_eq_connected_component:
       "?B1P = connected_component_set ?B\<^sub>1 P"
     by (rule geotop_component_at_UNIV_eq_connected_component_set)
@@ -3793,6 +3818,47 @@ proof -
     using hD44_B1P_sub_F1o unfolding geotop_arc_interior_def by (by100 simp)
   have hD44_B1P_sub_F\<^sub>1: "?B1P \<subseteq> F\<^sub>1"
     using hD44_B1P_sub_F1o by (by100 blast)
+  have hD44_B1P_other_F\<^sub>1_arc_interior:
+      "\<exists>X. X \<in> ?B1P
+        \<and> X \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<and> X \<noteq> P"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P" and hX_ne: "X \<noteq> P"
+      using hD44_B1P_nontrivial by (by100 blast)
+    have hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      using hD44_B1P_sub_F\<^sub>1_arc_interior hX_B1P by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_F1int hX_ne by (intro exI conjI)
+  qed
+  have hD44_F\<^sub>1_boundary_subarc_from_P_to_B1P:
+      "\<exists>X C. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> F\<^sub>1
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P"
+      and hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      and hX_ne: "X \<noteq> P"
+      using hD44_B1P_other_F\<^sub>1_arc_interior by (elim exE conjE)
+    have hP_F1: "P \<in> F\<^sub>1"
+      using hD44_P_F\<^sub>1 unfolding geotop_arc_interior_def by (by100 blast)
+    have hX_F1: "X \<in> F\<^sub>1"
+      using hX_F1int unfolding geotop_arc_interior_def by (by100 blast)
+    obtain C where hC_bl: "geotop_is_broken_line C"
+      and hC_sub: "C \<subseteq> F\<^sub>1"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      using geotop_broken_line_subarc_with_endpoints_prefix
+        [OF hD44_F\<^sub>1_bl hP_F1 hX_F1 hX_ne]
+      by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
+      by (intro exI conjI)
+  qed
   have hD44_B1P_inter_F\<^sub>1: "?B1P \<inter> F\<^sub>1 = ?B1P"
     using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
   have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
