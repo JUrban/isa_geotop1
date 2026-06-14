@@ -39676,6 +39676,406 @@ proof -
       by (rule geotop_figure33_source_carrier_outer_union_scalar_prefix
           [OF hv\<^sub>1_mid_ne ht])
   qed
+  have hfigure33_source_carrier_frontier_outer_edges_scalar:
+      "\<And>t. 0 < t \<Longrightarrow>
+        frontier (geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5))
+        \<subseteq> closed_segment v\<^sub>0 (?v\<^sub>4_of t)
+          \<union> closed_segment (?v\<^sub>4_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>0"
+  proof -
+    fix t :: real
+    assume ht: "0 < t"
+    have hbasic:
+        "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+        \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+        \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+        \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+        \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+        \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+        \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+        \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+      by (rule hfigure33_book_line_scalar_basic[OF ht])
+    have hv\<^sub>3_line:
+        "?v\<^sub>3_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+    proof -
+      have "?v\<^sub>3_of t = v\<^sub>1 + (- t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+        by (simp add: algebra_simps)
+      thus ?thesis
+        unfolding affine_hull_2_alt by (by100 blast)
+    qed
+    have hv\<^sub>4_line:
+        "?v\<^sub>4_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+    proof -
+      have "?v\<^sub>4_of t = v\<^sub>1 + (1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+        by (simp add: algebra_simps)
+      thus ?thesis
+        unfolding affine_hull_2_alt by (by100 blast)
+    qed
+    have hv\<^sub>5_line:
+        "?v\<^sub>5 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+      by (rule hull_inc) (by100 simp)
+    have hv\<^sub>3v\<^sub>4: "?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t"
+      using hbasic by (by100 blast)
+    have hv\<^sub>4v\<^sub>3: "?v\<^sub>4_of t \<noteq> ?v\<^sub>3_of t"
+      using hv\<^sub>3v\<^sub>4 by (by100 simp)
+    have haff43:
+        "affine hull {?v\<^sub>4_of t, ?v\<^sub>3_of t}
+          = affine hull {v\<^sub>1, ?v\<^sub>5}"
+      by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+          [OF hv\<^sub>1_mid_ne hv\<^sub>4v\<^sub>3 hv\<^sub>4_line hv\<^sub>3_line])
+    have hv\<^sub>5_aff43:
+        "?v\<^sub>5 \<in> affine hull {?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+      using haff43 hv\<^sub>5_line by (by100 simp)
+    have hv\<^sub>0_off43:
+        "v\<^sub>0 \<notin> affine hull {?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+      using hv\<^sub>0_mid_off_line haff43 by (by100 simp)
+    obtain n43 r43 where hn43: "n43 \<noteq> 0"
+      and hline43:
+        "affine hull {?v\<^sub>4_of t, ?v\<^sub>3_of t}
+          = {x. n43 \<bullet> x = r43}"
+      using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>4v\<^sub>3]
+      by (by100 blast)
+    have hmid43: "n43 \<bullet> ?v\<^sub>5 = r43"
+      using hline43 hv\<^sub>5_aff43 by (by100 simp)
+    have hv\<^sub>0_ne43: "n43 \<bullet> v\<^sub>0 \<noteq> r43"
+      using hline43 hv\<^sub>0_off43 by (by100 simp)
+    have hsides43:
+        "(n43 \<bullet> v\<^sub>0 > r43 \<and> n43 \<bullet> v\<^sub>2 < r43)
+        \<or> (n43 \<bullet> v\<^sub>0 < r43 \<and> n43 \<bullet> v\<^sub>2 > r43)"
+      by (rule geotop_midpoint_on_line_opposite_sides_prefix
+          [OF hmid43 hv\<^sub>0_ne43])
+    have hfront_raw:
+        "frontier
+          (geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>0}
+            \<union> geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>2})
+        \<subseteq> closed_segment (?v\<^sub>4_of t) v\<^sub>0
+          \<union> closed_segment v\<^sub>0 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>4_of t)"
+      by (rule geotop_opposite_side_shared_base_union_frontier_outer_edges_prefix
+          [OF hv\<^sub>4v\<^sub>3 hline43 hsides43])
+    have houter:
+        "geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        = geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>0}
+          \<union> geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>2}"
+    proof -
+      have houter0:
+          "geotop_polyhedron
+            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+          = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+            \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
+        by (rule hfigure33_source_carrier_outer_union_scalar[OF ht])
+      have hset0:
+          "{v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+          = {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>0}"
+        by (by100 blast)
+      have hset2:
+          "{v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
+          = {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>2}"
+        by (by100 blast)
+      show ?thesis
+        using houter0 hset0 hset2 by (by100 simp)
+    qed
+    show "frontier (geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5))
+        \<subseteq> closed_segment v\<^sub>0 (?v\<^sub>4_of t)
+          \<union> closed_segment (?v\<^sub>4_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>0"
+    proof
+      fix x
+      assume hx:
+        "x \<in> frontier (geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5))"
+      have hx_raw:
+        "x \<in> frontier
+          (geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>0}
+            \<union> geotop_convex_hull {?v\<^sub>4_of t, ?v\<^sub>3_of t, v\<^sub>2})"
+        using hx houter by (by100 simp)
+      have hx_outer:
+        "x \<in> closed_segment (?v\<^sub>4_of t) v\<^sub>0
+          \<union> closed_segment v\<^sub>0 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>4_of t)"
+        using hfront_raw hx_raw by (by100 blast)
+      have houter_edges_eq:
+        "closed_segment (?v\<^sub>4_of t) v\<^sub>0
+          \<union> closed_segment v\<^sub>0 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>4_of t)
+        = closed_segment v\<^sub>0 (?v\<^sub>4_of t)
+          \<union> closed_segment (?v\<^sub>4_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>0"
+        using closed_segment_commute[of "?v\<^sub>4_of t" v\<^sub>0]
+          closed_segment_commute[of v\<^sub>0 "?v\<^sub>3_of t"]
+          closed_segment_commute[of "?v\<^sub>3_of t" v\<^sub>2]
+          closed_segment_commute[of v\<^sub>2 "?v\<^sub>4_of t"]
+        by (by100 blast)
+      show "x \<in> closed_segment v\<^sub>0 (?v\<^sub>4_of t)
+          \<union> closed_segment (?v\<^sub>4_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>0"
+        using hx_outer houter_edges_eq by (by100 simp)
+    qed
+  qed
+  have hfigure33_source_carrier_frontier_fix_rule_scalar:
+      "\<And>t. 0 < t \<Longrightarrow>
+        \<forall>h. (\<forall>v\<in>geotop_complex_vertices
+                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5).
+                h v = (if v = ?v\<^sub>5 then v\<^sub>1 else v))
+          \<longrightarrow> (\<forall>\<sigma>\<in>?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5.
+                geotop_linear_on \<sigma> h)
+          \<longrightarrow> (\<forall>x\<in>frontier
+                (geotop_polyhedron
+                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)).
+                h x = x)"
+  proof -
+    fix t :: real
+    assume ht: "0 < t"
+    have hbasic:
+        "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+        \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
+        \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
+        \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
+        \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
+        \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
+        \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
+        \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
+      by (rule hfigure33_book_line_scalar_basic[OF ht])
+    have hv\<^sub>3_line:
+        "?v\<^sub>3_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+    proof -
+      have "?v\<^sub>3_of t = v\<^sub>1 + (- t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+        by (simp add: algebra_simps)
+      thus ?thesis
+        unfolding affine_hull_2_alt by (by100 blast)
+    qed
+    have hv\<^sub>4_line:
+        "?v\<^sub>4_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+    proof -
+      have "?v\<^sub>4_of t = v\<^sub>1 + (1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
+        by (simp add: algebra_simps)
+      thus ?thesis
+        unfolding affine_hull_2_alt by (by100 blast)
+    qed
+    have hv\<^sub>5_line:
+        "?v\<^sub>5 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+      by (rule hull_inc) (by100 simp)
+    have hv\<^sub>4v\<^sub>5: "?v\<^sub>4_of t \<noteq> ?v\<^sub>5"
+      using hbasic by (by100 blast)
+    have hv\<^sub>5v\<^sub>3: "?v\<^sub>5 \<noteq> ?v\<^sub>3_of t"
+      using hbasic by (by100 blast)
+    have hv\<^sub>3v\<^sub>5: "?v\<^sub>3_of t \<noteq> ?v\<^sub>5"
+      using hv\<^sub>5v\<^sub>3 by (by100 simp)
+    have hv\<^sub>0v\<^sub>5: "v\<^sub>0 \<noteq> ?v\<^sub>5"
+    proof
+      assume h_eq: "v\<^sub>0 = ?v\<^sub>5"
+      have "v\<^sub>0 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+        using hv\<^sub>5_line h_eq by (by100 simp)
+      thus False
+        using hv\<^sub>0_mid_off_line by (by100 blast)
+    qed
+    have hv\<^sub>2v\<^sub>5: "v\<^sub>2 \<noteq> ?v\<^sub>5"
+    proof
+      assume h_eq: "v\<^sub>2 = ?v\<^sub>5"
+      have "v\<^sub>2 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+        using hv\<^sub>5_line h_eq by (by100 simp)
+      thus False
+        using hv\<^sub>2_mid_off_line by (by100 blast)
+    qed
+    have hv\<^sub>0v\<^sub>4: "v\<^sub>0 \<noteq> ?v\<^sub>4_of t"
+    proof
+      assume h_eq: "v\<^sub>0 = ?v\<^sub>4_of t"
+      have "v\<^sub>0 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+        using hv\<^sub>4_line h_eq by (by100 simp)
+      thus False
+        using hv\<^sub>0_mid_off_line by (by100 blast)
+    qed
+    have hv\<^sub>4v\<^sub>2: "?v\<^sub>4_of t \<noteq> v\<^sub>2"
+    proof
+      assume h_eq: "?v\<^sub>4_of t = v\<^sub>2"
+      have "v\<^sub>2 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+        using hv\<^sub>4_line h_eq by (by100 simp)
+      thus False
+        using hv\<^sub>2_mid_off_line by (by100 blast)
+    qed
+    have hv\<^sub>2v\<^sub>3: "v\<^sub>2 \<noteq> ?v\<^sub>3_of t"
+    proof
+      assume h_eq: "v\<^sub>2 = ?v\<^sub>3_of t"
+      have "v\<^sub>2 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+        using hv\<^sub>3_line h_eq by (by100 simp)
+      thus False
+        using hv\<^sub>2_mid_off_line by (by100 blast)
+    qed
+    have hv\<^sub>3v\<^sub>0: "?v\<^sub>3_of t \<noteq> v\<^sub>0"
+    proof
+      assume h_eq: "?v\<^sub>3_of t = v\<^sub>0"
+      have "v\<^sub>0 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
+        using hv\<^sub>3_line h_eq by (by100 simp)
+      thus False
+        using hv\<^sub>0_mid_off_line by (by100 blast)
+    qed
+    have haff45:
+        "affine hull {?v\<^sub>4_of t, ?v\<^sub>5}
+          = affine hull {v\<^sub>1, ?v\<^sub>5}"
+      by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+          [OF hv\<^sub>1_mid_ne hv\<^sub>4v\<^sub>5 hv\<^sub>4_line hv\<^sub>5_line])
+    have haff53:
+        "affine hull {?v\<^sub>5, ?v\<^sub>3_of t}
+          = affine hull {v\<^sub>1, ?v\<^sub>5}"
+      by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+          [OF hv\<^sub>1_mid_ne hv\<^sub>5v\<^sub>3 hv\<^sub>5_line hv\<^sub>3_line])
+    have hv\<^sub>0_not_45:
+        "v\<^sub>0 \<notin> affine hull {?v\<^sub>4_of t, ?v\<^sub>5}"
+      using haff45 hv\<^sub>0_mid_off_line by (by100 simp)
+    have hv\<^sub>2_not_45:
+        "v\<^sub>2 \<notin> affine hull {?v\<^sub>4_of t, ?v\<^sub>5}"
+      using haff45 hv\<^sub>2_mid_off_line by (by100 simp)
+    have hv\<^sub>0_not_53:
+        "v\<^sub>0 \<notin> affine hull {?v\<^sub>5, ?v\<^sub>3_of t}"
+      using haff53 hv\<^sub>0_mid_off_line by (by100 simp)
+    have hv\<^sub>2_not_53:
+        "v\<^sub>2 \<notin> affine hull {?v\<^sub>5, ?v\<^sub>3_of t}"
+      using haff53 hv\<^sub>2_mid_off_line by (by100 simp)
+    have hncol045: "\<not> collinear {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}"
+      by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+          [OF hv\<^sub>4v\<^sub>5 hv\<^sub>0_not_45])
+    have hncol245: "\<not> collinear {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}"
+      by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+          [OF hv\<^sub>4v\<^sub>5 hv\<^sub>2_not_45])
+    have hncol053: "\<not> collinear {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}"
+      by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+          [OF hv\<^sub>5v\<^sub>3 hv\<^sub>0_not_53])
+    have hncol253: "\<not> collinear {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}"
+      by (rule geotop_not_collinear_off_affine_hull_pair_prefix
+          [OF hv\<^sub>5v\<^sub>3 hv\<^sub>2_not_53])
+    have hsource045_vertices:
+        "geotop_simplex_vertices
+          (geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5})
+          {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}"
+      by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+          [OF hncol045])
+    have hsource245_vertices:
+        "geotop_simplex_vertices
+          (geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5})
+          {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}"
+      by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+          [OF hncol245])
+    have hsource053_vertices:
+        "geotop_simplex_vertices
+          (geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t})
+          {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}"
+      by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+          [OF hncol053])
+    have hsource253_vertices:
+        "geotop_simplex_vertices
+          (geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t})
+          {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}"
+      by (rule geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
+          [OF hncol253])
+    have htri045:
+        "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
+        \<in> ?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5"
+      by (by100 simp)
+    have htri245:
+        "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
+        \<in> ?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5"
+      by (by100 simp)
+    have htri053:
+        "geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
+        \<in> ?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5"
+      by (by100 simp)
+    have htri253:
+        "geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
+        \<in> ?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5"
+      by (by100 simp)
+    show "\<forall>h. (\<forall>v\<in>geotop_complex_vertices
+                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5).
+                h v = (if v = ?v\<^sub>5 then v\<^sub>1 else v))
+          \<longrightarrow> (\<forall>\<sigma>\<in>?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5.
+                geotop_linear_on \<sigma> h)
+          \<longrightarrow> (\<forall>x\<in>frontier
+                (geotop_polyhedron
+                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)).
+                h x = x)"
+    proof (intro allI impI)
+      fix h :: "real^2 \<Rightarrow> real^2"
+      assume hfix_vertices:
+        "\<forall>v\<in>geotop_complex_vertices
+                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5).
+                h v = (if v = ?v\<^sub>5 then v\<^sub>1 else v)"
+      assume hlinear_carrier:
+        "\<forall>\<sigma>\<in>?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5.
+                geotop_linear_on \<sigma> h"
+      have hfront:
+        "frontier (geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5))
+        \<subseteq> closed_segment v\<^sub>0 (?v\<^sub>4_of t)
+          \<union> closed_segment (?v\<^sub>4_of t) v\<^sub>2
+          \<union> closed_segment v\<^sub>2 (?v\<^sub>3_of t)
+          \<union> closed_segment (?v\<^sub>3_of t) v\<^sub>0"
+        by (rule hfigure33_source_carrier_frontier_outer_edges_scalar[OF ht])
+      have hv\<^sub>0_vertex:
+        "v\<^sub>0 \<in> geotop_complex_vertices
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+        by (rule geotop_simplex_face_closure_vertex_member_prefix
+            [OF htri045 hsource045_vertices]) (by100 simp)
+      have hv\<^sub>4_vertex:
+        "?v\<^sub>4_of t \<in> geotop_complex_vertices
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+        by (rule geotop_simplex_face_closure_vertex_member_prefix
+            [OF htri045 hsource045_vertices]) (by100 simp)
+      have hv\<^sub>2_vertex:
+        "v\<^sub>2 \<in> geotop_complex_vertices
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+        by (rule geotop_simplex_face_closure_vertex_member_prefix
+            [OF htri245 hsource245_vertices]) (by100 simp)
+      have hv\<^sub>3_vertex:
+        "?v\<^sub>3_of t \<in> geotop_complex_vertices
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+        by (rule geotop_simplex_face_closure_vertex_member_prefix
+            [OF htri253 hsource253_vertices]) (by100 simp)
+      have hfix0: "h v\<^sub>0 = v\<^sub>0"
+        using hfix_vertices hv\<^sub>0_vertex hv\<^sub>0v\<^sub>5 by (by100 simp)
+      have hfix4: "h (?v\<^sub>4_of t) = ?v\<^sub>4_of t"
+        using hfix_vertices hv\<^sub>4_vertex hv\<^sub>4v\<^sub>5 by (by100 simp)
+      have hfix2: "h v\<^sub>2 = v\<^sub>2"
+        using hfix_vertices hv\<^sub>2_vertex hv\<^sub>2v\<^sub>5 by (by100 simp)
+      have hfix3: "h (?v\<^sub>3_of t) = ?v\<^sub>3_of t"
+        using hfix_vertices hv\<^sub>3_vertex hv\<^sub>3v\<^sub>5 by (by100 simp)
+      have hlin04:
+        "geotop_linear_on (closed_segment v\<^sub>0 (?v\<^sub>4_of t)) h"
+        by (rule geotop_simplex_face_closure_edge_linear_on_prefix
+            [OF htri045 hsource045_vertices _ _ hlinear_carrier])
+          (by100 simp_all)
+      have hlin42:
+        "geotop_linear_on (closed_segment (?v\<^sub>4_of t) v\<^sub>2) h"
+        by (rule geotop_simplex_face_closure_edge_linear_on_prefix
+            [OF htri245 hsource245_vertices _ _ hlinear_carrier])
+          (by100 simp_all)
+      have hlin23:
+        "geotop_linear_on (closed_segment v\<^sub>2 (?v\<^sub>3_of t)) h"
+        by (rule geotop_simplex_face_closure_edge_linear_on_prefix
+            [OF htri253 hsource253_vertices _ _ hlinear_carrier])
+          (by100 simp_all)
+      have hlin30:
+        "geotop_linear_on (closed_segment (?v\<^sub>3_of t) v\<^sub>0) h"
+        by (rule geotop_simplex_face_closure_edge_linear_on_prefix
+            [OF htri053 hsource053_vertices _ _ hlinear_carrier])
+          (by100 simp_all)
+      show "\<forall>x\<in>frontier
+                (geotop_polyhedron
+                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)).
+                h x = x"
+        by (rule geotop_frontier_four_segments_fix_from_linear_edges_prefix
+            [OF hfront hv\<^sub>0v\<^sub>4 hv\<^sub>4v\<^sub>2 hv\<^sub>2v\<^sub>3 hv\<^sub>3v\<^sub>0
+              hlin04 hlin42 hlin23 hlin30 hfix0 hfix4 hfix2 hfix3])
+    qed
+  qed
   have hfigure33_source_carrier_near_theta_scalar:
       "\<And>t x. 0 < t \<Longrightarrow>
         x \<in> geotop_polyhedron
