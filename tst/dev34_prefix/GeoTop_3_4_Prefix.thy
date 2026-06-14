@@ -4834,17 +4834,6 @@ proof -
       by (rule hD44_connected_route_component_suffices
           [OF hB_sub hQ1_B hS1_B hB_conn])
   qed
-  have hD44_Q1S1_same_component_in_Ncut:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    (**
-      The single remaining Moise 4.4 regular-neighborhood/frontier-route
-      step.  The fine carrier \<open>N\<close> plays the role of the brick neighborhood of
-      \<open>A1\<close>.  The book proves that the frontier component through \<open>P\<close> is a
-      polygonal 1-sphere, splits off the boundary piece on \<open>J\<close>, takes the
-      complementary lower-to-upper frontier subarc, and attaches it to the
-      chosen access positions \<open>Q1\<close> and \<open>S1\<close> in
-      \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-    sorry
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
@@ -4857,8 +4846,16 @@ proof -
       into the boundary arc on \<open>J\<close> and the complementary frontier arc, then
       takes the lower-to-upper subarc outside \<open>N \<union> A2\<close> and attaches it to the
       already chosen access positions \<open>Q1,S1\<close>. **)
-    by (rule hD44_same_component_in_Ncut_suffices
-        [OF hD44_Q1S1_same_component_in_Ncut])
+    sorry
+  have hD44_Q1S1_same_component_in_Ncut:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Component-form consequence of the Moise frontier route: once the
+      regular-neighborhood analysis has produced the broken line in
+      \<open>I - (N \<union> A2)\<close> through the access points, connectedness of broken
+      lines puts \<open>Q1\<close> and \<open>S1\<close> in the same component. **)
+    by (rule hD44_broken_line_route_component_suffices
+        [OF hD44_frontier_component_route])
   show ?thesis
     using hD44_frontier_component_route .
 qed
