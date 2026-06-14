@@ -1113,6 +1113,9 @@ proof -
         qed
       qed
     qed
+    have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
+      by (rule geotop_complex_1dim_imp_linear_graph_prefix
+          [OF hBdK\<^sub>N_complex hBdK\<^sub>N_1dim])
     have hBdK\<^sub>N_poly_compact: "compact (geotop_polyhedron BdK\<^sub>N)"
       by (rule geotop_complex_polyhedron_compact[OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
     have hBdK\<^sub>N_poly_closed: "closed (geotop_polyhedron BdK\<^sub>N)"
