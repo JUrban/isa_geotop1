@@ -39360,6 +39360,8 @@ proof -
       {\<tau>. \<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
         \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
   let ?v\<^sub>5 = "midpoint v\<^sub>0 v\<^sub>2"
+  let ?v\<^sub>3_of = "\<lambda>t::real. v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - ?v\<^sub>5)"
+  let ?v\<^sub>4_of = "\<lambda>t::real. ?v\<^sub>5 + t *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
   have hfigure33_not_col_021:
       "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
     using hfigure33_local_triangle_package by (by100 blast)
@@ -39374,6 +39376,8 @@ proof -
     using geotop_figure33_midpoint_chord_split_off_line_prefix
       [OF hv\<^sub>0v\<^sub>2 hfigure33_not_col_021]
     unfolding Let_def by (by100 simp)
+  have hv\<^sub>1_mid_ne: "v\<^sub>1 \<noteq> ?v\<^sub>5"
+    using hmidpoint_chord_package by (by100 blast)
   have hCO_minus_endpoints_theta_disj:
       "(C\<^sub>O - {v\<^sub>0, v\<^sub>2}) \<inter> \<theta> = {}"
     using hCO_\<theta> by (by100 blast)
@@ -39483,6 +39487,119 @@ proof -
       by (by100 simp)
     thus ?thesis
       by (by100 blast)
+  qed
+  have h\<theta>_conv: "convex \<theta>"
+    by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
+  have hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+    using h\<theta>vertices_sub by (by100 blast)
+  have hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+    using h\<theta>vertices_sub by (by100 blast)
+  have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+    using h\<theta>vertices_sub by (by100 blast)
+  have hfigure33_source_carrier_near_theta_scalar:
+      "\<And>t x. 0 < t \<Longrightarrow>
+        x \<in> geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        \<Longrightarrow> \<exists>y\<in>\<theta>. dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
+  proof -
+    fix t :: real and x :: "real^2"
+    assume ht: "0 < t"
+    assume hx:
+      "x \<in> geotop_polyhedron
+        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+    have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+      by (by100 simp)
+    show "\<exists>y\<in>\<theta>. dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
+      by (rule geotop_figure33_source_carrier_near_convex_triangle_scalar_prefix
+          [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne h\<theta>_conv hv\<^sub>0_\<theta> hv\<^sub>1_\<theta>
+            hv\<^sub>2_\<theta> ht hx])
+  qed
+  have hfigure33_source_carrier_avoids_C\<^sub>O_middle_bound_scalar:
+      "\<And>t. 0 < t \<Longrightarrow>
+        t * norm (?v\<^sub>5 - v\<^sub>1) < setdist ?C\<^sub>O_mid \<theta> \<Longrightarrow>
+        ?C\<^sub>O_mid \<inter> geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        = {}"
+  proof -
+    fix t :: real
+    assume ht_pos: "0 < t"
+    assume ht_gap:
+      "t * norm (?v\<^sub>5 - v\<^sub>1) < setdist ?C\<^sub>O_mid \<theta>"
+    have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+      by (by100 simp)
+    show "?C\<^sub>O_mid \<inter> geotop_polyhedron
+        (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        = {}"
+      by (rule geotop_figure33_source_carrier_avoids_set_bound_scalar_prefix
+          [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne h\<theta>_conv hv\<^sub>0_\<theta> hv\<^sub>1_\<theta>
+            hv\<^sub>2_\<theta> ht_pos ht_gap])
+  qed
+  have hfigure33_source_carrier_support_bound_scalar:
+      "\<exists>\<eta>>0. \<forall>t>0.
+        t < \<eta> \<longrightarrow>
+        geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        \<subseteq> U"
+  proof -
+    have hU_open_HOL: "open U"
+      using hU_open
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    obtain \<epsilon> where h\<epsilon>_pos: "0 < \<epsilon>"
+      and h\<epsilon>_balls:
+        "(\<Union>x\<in>\<theta>. ball x \<epsilon>) \<subseteq> U"
+      by (rule compact_subset_open_imp_ball_epsilon_subset
+          [OF h\<theta>_compact hU_open_HOL h\<theta>_sub_U])
+    let ?D = "norm (?v\<^sub>5 - v\<^sub>1)"
+    have hD_pos: "0 < ?D"
+      using hv\<^sub>1_mid_ne by (simp add: norm_minus_commute)
+    define \<eta> where "\<eta> = \<epsilon> / (2 * ?D)"
+    have h\<eta>_pos: "0 < \<eta>"
+      unfolding \<eta>_def using h\<epsilon>_pos hD_pos by (by100 simp)
+    have hsmall:
+        "\<forall>t>0. t < \<eta> \<longrightarrow>
+          geotop_polyhedron
+            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+          \<subseteq> U"
+    proof (intro allI impI)
+      fix t :: real
+      assume ht_pos: "0 < t"
+      assume ht_lt: "t < \<eta>"
+      have htD_eps: "t * ?D < \<epsilon>"
+      proof -
+        have "t * ?D < \<eta> * ?D"
+          using ht_lt hD_pos by (by100 simp)
+        also have "\<dots> = \<epsilon> / 2"
+          unfolding \<eta>_def using hD_pos by (simp add: field_simps)
+        also have "\<dots> < \<epsilon>"
+          using h\<epsilon>_pos by (by100 simp)
+        finally show ?thesis .
+      qed
+      show "geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        \<subseteq> U"
+      proof
+        fix x
+        assume hx:
+          "x \<in> geotop_polyhedron
+            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+        obtain y where hy\<theta>: "y \<in> \<theta>"
+          and hdist_le: "dist x y \<le> t * ?D"
+          using hfigure33_source_carrier_near_theta_scalar[OF ht_pos hx]
+          by (by100 blast)
+        have hdist_eps: "dist y x < \<epsilon>"
+          using hdist_le htD_eps by (simp add: dist_commute)
+        have hx_ball: "x \<in> ball y \<epsilon>"
+          using hdist_eps by (by100 simp)
+        have "x \<in> (\<Union>y\<in>\<theta>. ball y \<epsilon>)"
+          by (rule UN_I[where a=y and A=\<theta> and B="\<lambda>z. ball z \<epsilon>",
+              OF hy\<theta> hx_ball])
+        thus "x \<in> U"
+          using h\<epsilon>_balls by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      using h\<eta>_pos hsmall by (by100 blast)
   qed
   have hfold_extension:
       "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
