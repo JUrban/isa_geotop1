@@ -39344,7 +39344,166 @@ lemma geotop_figure33_case1_local_supported_fold_map_prefix:
     construction already used inside the one-boundary fold: choose the small
     vertices \<open>v\<^sub>3,v\<^sub>4,v\<^sub>5\<close>, keep the retained broken line fixed, and send the
     old chord \<open>v\<^sub>0v\<^sub>2\<close> to the two-edge corner arc through \<open>v\<^sub>1\<close>. **)
-  sorry
+proof -
+  let ?B\<^sub>0\<^sub>2 = "closed_segment v\<^sub>0 v\<^sub>2"
+  let ?B\<^sub>0\<^sub>1 = "closed_segment v\<^sub>0 v\<^sub>1"
+  let ?B\<^sub>2\<^sub>1 = "closed_segment v\<^sub>2 v\<^sub>1"
+  let ?B\<^sub>0\<^sub>1\<^sub>2 = "?B\<^sub>0\<^sub>1 \<union> ?B\<^sub>2\<^sub>1"
+  let ?source_triangles =
+    "\<lambda>v\<^sub>3 v\<^sub>4 v\<^sub>5.
+      {geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+       geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+       geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+       geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}"
+  let ?source_carrier =
+    "\<lambda>v\<^sub>3 v\<^sub>4 v\<^sub>5.
+      {\<tau>. \<exists>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  let ?v\<^sub>5 = "midpoint v\<^sub>0 v\<^sub>2"
+  have hfigure33_not_col_021:
+      "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    using hfigure33_local_triangle_package by (by100 blast)
+  have hmidpoint_chord_package:
+      "v\<^sub>0 \<noteq> ?v\<^sub>5
+      \<and> v\<^sub>2 \<noteq> ?v\<^sub>5
+      \<and> v\<^sub>1 \<noteq> ?v\<^sub>5
+      \<and> v\<^sub>0 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}
+      \<and> v\<^sub>2 \<notin> affine hull {v\<^sub>1, ?v\<^sub>5}
+      \<and> ?B\<^sub>0\<^sub>2 =
+        closed_segment v\<^sub>0 ?v\<^sub>5 \<union> closed_segment v\<^sub>2 ?v\<^sub>5"
+    using geotop_figure33_midpoint_chord_split_off_line_prefix
+      [OF hv\<^sub>0v\<^sub>2 hfigure33_not_col_021]
+    unfolding Let_def by (by100 simp)
+  have hCO_minus_endpoints_theta_disj:
+      "(C\<^sub>O - {v\<^sub>0, v\<^sub>2}) \<inter> \<theta> = {}"
+    using hCO_\<theta> by (by100 blast)
+  have hCO_compact: "compact C\<^sub>O"
+    by (rule geotop_broken_line_compact[OF hCO_bl])
+  have hCO_closed: "closed C\<^sub>O"
+    by (rule geotop_broken_line_closed[OF hCO_bl])
+  have h\<theta>_simplex: "geotop_is_simplex \<theta>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<theta>2])
+  have h\<theta>_compact: "compact \<theta>"
+    by (rule GeoTopBase0.geotop_simplex_compact[OF h\<theta>_simplex])
+  have h\<theta>_closed: "closed \<theta>"
+    using h\<theta>_compact compact_imp_closed by (by100 blast)
+  have hv\<^sub>0_CO_endpoint: "v\<^sub>0 \<in> {v\<^sub>0, v\<^sub>2}"
+    by (by100 simp)
+  have hv\<^sub>2_CO_endpoint: "v\<^sub>2 \<in> {v\<^sub>0, v\<^sub>2}"
+    by (by100 simp)
+  obtain \<delta>\<^sub>0 p\<^sub>0 where h\<delta>\<^sub>0_pos: "\<delta>\<^sub>0 > 0"
+    and hp\<^sub>0_ne: "p\<^sub>0 \<noteq> v\<^sub>0"
+    and hCO_local_v\<^sub>0:
+      "ball v\<^sub>0 \<delta>\<^sub>0 \<inter> C\<^sub>O =
+        ball v\<^sub>0 \<delta>\<^sub>0 \<inter> closed_segment v\<^sub>0 p\<^sub>0"
+    and hCO_arc_local_v\<^sub>0:
+      "ball v\<^sub>0 \<delta>\<^sub>0 \<inter> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}
+        \<subseteq> closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}"
+    using broken_line_endpoint_local_segment
+      [OF hCO_bl hCO_E hv\<^sub>0_CO_endpoint]
+    by (elim exE conjE)
+  obtain \<delta>\<^sub>2 p\<^sub>2 where h\<delta>\<^sub>2_pos: "\<delta>\<^sub>2 > 0"
+    and hp\<^sub>2_ne: "p\<^sub>2 \<noteq> v\<^sub>2"
+    and hCO_local_v\<^sub>2:
+      "ball v\<^sub>2 \<delta>\<^sub>2 \<inter> C\<^sub>O =
+        ball v\<^sub>2 \<delta>\<^sub>2 \<inter> closed_segment v\<^sub>2 p\<^sub>2"
+    and hCO_arc_local_v\<^sub>2:
+      "ball v\<^sub>2 \<delta>\<^sub>2 \<inter> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}
+        \<subseteq> closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}"
+    using broken_line_endpoint_local_segment
+      [OF hCO_bl hCO_E hv\<^sub>2_CO_endpoint]
+    by (elim exE conjE)
+  let ?C\<^sub>O_mid =
+    "C\<^sub>O - (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+  have hC\<^sub>O_mid_compact: "compact ?C\<^sub>O_mid"
+  proof -
+    have hopen:
+        "open (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+      by (intro open_Un open_ball)
+    have hclosed_compl:
+        "closed (- (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)))"
+      by (rule closed_Compl[OF hopen])
+    have hmid_eq:
+        "?C\<^sub>O_mid =
+          C\<^sub>O \<inter> - (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+      by (by100 blast)
+    show ?thesis
+      using compact_Int_closed[OF hCO_compact hclosed_compl] hmid_eq
+      by (by100 simp)
+  qed
+  have hC\<^sub>O_mid_closed: "closed ?C\<^sub>O_mid"
+    using hC\<^sub>O_mid_compact compact_imp_closed by (by100 blast)
+  have hv\<^sub>0_in_endpoint_ball:
+      "v\<^sub>0 \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2)"
+    using h\<delta>\<^sub>0_pos by (by100 simp)
+  have hv\<^sub>2_in_endpoint_ball:
+      "v\<^sub>2 \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+    using h\<delta>\<^sub>2_pos by (by100 simp)
+  have hC\<^sub>O_mid_theta_disj:
+      "?C\<^sub>O_mid \<inter> \<theta> = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> ?C\<^sub>O_mid \<inter> \<theta>"
+    have hxCO: "x \<in> C\<^sub>O"
+      using hx by (by100 blast)
+    have hx\<theta>: "x \<in> \<theta>"
+      using hx by (by100 blast)
+    have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+      using hxCO hx\<theta> hCO_\<theta> by (by100 blast)
+    have hx_not_ball:
+        "x \<notin> ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<and>
+         x \<notin> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+      using hx by (by100 blast)
+    show False
+    proof (rule disjE[OF hx_end[unfolded insert_iff]])
+      assume hx0: "x = v\<^sub>0"
+      show False
+        using hx0 hx_not_ball hv\<^sub>0_in_endpoint_ball by (by100 blast)
+    next
+      assume hx2_or_empty: "x = v\<^sub>2 \<or> x \<in> {}"
+      have hx2: "x = v\<^sub>2"
+        using hx2_or_empty by (by100 blast)
+      show False
+        using hx2 hx_not_ball hv\<^sub>2_in_endpoint_ball by (by100 blast)
+    qed
+  qed
+  have h\<theta>_nonempty: "\<theta> \<noteq> {}"
+    using h\<theta>vertices_sub by (by100 blast)
+  have hC\<^sub>O_mid_setdist_gap:
+      "?C\<^sub>O_mid = {} \<or> 0 < setdist ?C\<^sub>O_mid \<theta>"
+  proof (cases "?C\<^sub>O_mid = {}")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case False
+    have "setdist ?C\<^sub>O_mid \<theta> > 0"
+      using setdist_gt_0_compact_closed[OF hC\<^sub>O_mid_compact h\<theta>_closed]
+        False h\<theta>_nonempty hC\<^sub>O_mid_theta_disj
+      by (by100 simp)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  have hfold_extension:
+      "\<exists>v\<^sub>3 v\<^sub>4 v\<^sub>5 f.
+        geotop_polyhedron (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5) \<subseteq> U
+        \<and> (\<forall>P\<in>UNIV - geotop_polyhedron
+              (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5). f P = P)
+        \<and> top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology f
+        \<and> f ` ?B\<^sub>0\<^sub>2 = ?B\<^sub>0\<^sub>1\<^sub>2
+        \<and> f ` C\<^sub>O = C\<^sub>O"
+    (**
+      Remaining extracted Case 1 carrier-extension block from the proved
+      one-boundary fold: choose \<open>v\<^sub>3,v\<^sub>4\<close> on the line through \<open>v\<^sub>1\<close> and the
+      midpoint \<open>v\<^sub>5\<close>, make the source carrier small enough to lie in \<open>U\<close> and
+      to meet \<open>C\<^sub>O\<close> only at the fixed endpoints, then extend the vertex map
+      simplicially over the four Figure 3.3 triangles. **)
+    sorry
+  show ?thesis
+    by (rule geotop_supported_fold_from_carrier_extension_prefix
+        [OF hfold_extension])
+qed
 
 lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
   fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
