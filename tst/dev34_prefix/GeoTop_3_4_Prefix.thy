@@ -639,6 +639,90 @@ proof -
   have hN_closed: "closed N"
     unfolding hN_def
     by (rule closed_Union[OF hN_index_fin hN_index_closed])
+  have hN_connected_HOL: "connected N"
+  proof -
+    let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
+    let ?S = "(\<lambda>B. A1 \<union> B) ` ?I"
+    have hA1_connected: "connected A1"
+    proof -
+      obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+        and h\<gamma>_img: "path_image \<gamma> = A1"
+        using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
+      have h\<gamma>_path: "path \<gamma>"
+        using h\<gamma>_arc unfolding arc_def by (by100 simp)
+      show ?thesis
+        using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
+    qed
+    have hS_connected: "\<And>T. T \<in> ?S \<Longrightarrow> connected T"
+    proof -
+      fix T
+      assume hT: "T \<in> ?S"
+      obtain B where hB_I: "B \<in> ?I" and hT_eq: "T = A1 \<union> B"
+        using hT by (by100 blast)
+      have hB_Sd: "B \<in> geotop_iterated_Sd m K"
+        using hB_I by (by100 simp)
+      have hB_meets_A1: "A1 \<inter> B \<noteq> {}"
+        using hB_I by (by100 blast)
+      have hB_simplex: "geotop_is_simplex B"
+        using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
+      have hB_path_connected:
+          "top1_path_connected_on B
+            (subspace_topology UNIV geotop_euclidean_topology B)"
+        by (rule Theorem_GT_1_3[OF hB_simplex])
+      have hB_connected_top:
+          "top1_connected_on B
+            (subspace_topology UNIV geotop_euclidean_topology B)"
+        by (rule top1_path_connected_on_geotop_imp_connected[OF hB_path_connected])
+      have hB_connected: "connected B"
+        using hB_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+      have hA1B_meet: "A1 \<inter> B \<noteq> {}"
+        using hB_meets_A1 by (by100 blast)
+      show "connected T"
+        unfolding hT_eq
+        by (rule connected_Un[OF hA1_connected hB_connected hA1B_meet])
+    qed
+    have hInter_nonempty: "\<Inter>?S \<noteq> {}"
+    proof -
+      have hP_all: "\<And>T. T \<in> ?S \<Longrightarrow> P \<in> T"
+        using hP_in_A1 by (by100 blast)
+      have "P \<in> \<Inter>?S"
+        using hP_all by (by100 blast)
+      thus ?thesis by (by100 blast)
+    qed
+    have hUnion_connected: "connected (\<Union>?S)"
+      by (rule connected_Union[OF hS_connected hInter_nonempty])
+    have hUnion_eq_N: "\<Union>?S = N"
+    proof
+      show "\<Union>?S \<subseteq> N"
+      proof
+        fix x
+        assume hx: "x \<in> \<Union>?S"
+        then obtain B where hB_I: "B \<in> ?I" and hxAB: "x \<in> A1 \<union> B"
+          by (by100 blast)
+        have hB_sub_N: "B \<subseteq> N"
+          unfolding hN_def using hB_I by (by100 blast)
+        show "x \<in> N"
+          using hxAB hA1_N hB_sub_N by (by100 blast)
+      qed
+      show "N \<subseteq> \<Union>?S"
+      proof
+        fix x
+        assume hxN: "x \<in> N"
+        obtain B where hB_I: "B \<in> ?I" and hxB: "x \<in> B"
+          using hxN unfolding hN_def by (by100 blast)
+        have "x \<in> A1 \<union> B"
+          using hxB by (by100 blast)
+        thus "x \<in> \<Union>?S"
+          using hB_I by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      using hUnion_connected hUnion_eq_N by (by100 simp)
+  qed
+  have hN_connected:
+      "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+    using hN_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
   define N\<^sub>I where
       "N\<^sub>I = N \<inter> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
@@ -648,6 +732,12 @@ proof -
     using hN\<^sub>I_eq_N hN_compact by (by100 simp)
   have hN\<^sub>I_closed: "closed N\<^sub>I"
     using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hN\<^sub>I_connected_HOL: "connected N\<^sub>I"
+    using hN_connected_HOL hN\<^sub>I_eq_N by (by100 simp)
+  have hN\<^sub>I_connected:
+      "top1_connected_on N\<^sub>I
+        (subspace_topology UNIV geotop_euclidean_topology N\<^sub>I)"
+    using hN\<^sub>I_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
   define FrN\<^sub>I where
       "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
   have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
@@ -735,6 +825,103 @@ proof -
     using hJ\<^sub>N_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
   have hJ\<^sub>N_nonempty: "J\<^sub>N \<noteq> {}"
     using hP_J\<^sub>N by (by100 blast)
+  have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
+  have hJ\<^sub>N_compact: "compact J\<^sub>N"
+    by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
+  have hJ\<^sub>N_closed: "closed J\<^sub>N"
+    by (rule compact_imp_closed[OF hJ\<^sub>N_compact])
+  have hJ\<^sub>N_forbidden_setdist_pos:
+      "0 < setdist J\<^sub>N (A2 \<union> {Q, S})"
+  proof -
+    have hA2_closed: "closed A2"
+      using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
+    have hF_closed: "closed (A2 \<union> {Q, S})"
+      using hA2_closed by (by100 simp)
+    have hF_nonempty: "A2 \<union> {Q, S} \<noteq> {}"
+      by (by100 blast)
+    have hsd_iff:
+        "(0 < setdist J\<^sub>N (A2 \<union> {Q, S})) =
+          (J\<^sub>N \<noteq> {} \<and> A2 \<union> {Q, S} \<noteq> {} \<and>
+            J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {})"
+      by (rule setdist_gt_0_compact_closed[OF hJ\<^sub>N_compact hF_closed])
+    show ?thesis
+      using hsd_iff hJ\<^sub>N_nonempty hF_nonempty hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  qed
+  obtain \<delta>\<^sub>J\<^sub>N where h\<delta>\<^sub>J\<^sub>N_pos: "0 < \<delta>\<^sub>J\<^sub>N"
+    and h\<delta>\<^sub>J\<^sub>N_gap:
+      "\<forall>x\<in>J\<^sub>N. \<forall>y\<in>A2 \<union> {Q, S}. \<delta>\<^sub>J\<^sub>N \<le> dist x y"
+  proof -
+    define \<delta>\<^sub>J\<^sub>N where "\<delta>\<^sub>J\<^sub>N = setdist J\<^sub>N (A2 \<union> {Q, S}) / 2"
+    have hpos: "0 < \<delta>\<^sub>J\<^sub>N"
+      unfolding \<delta>\<^sub>J\<^sub>N_def using hJ\<^sub>N_forbidden_setdist_pos by (by100 simp)
+    have hle: "\<delta>\<^sub>J\<^sub>N \<le> setdist J\<^sub>N (A2 \<union> {Q, S})"
+      unfolding \<delta>\<^sub>J\<^sub>N_def using hJ\<^sub>N_forbidden_setdist_pos by (by100 simp)
+    have hgap:
+        "\<forall>x\<in>J\<^sub>N. \<forall>y\<in>A2 \<union> {Q, S}. \<delta>\<^sub>J\<^sub>N \<le> dist x y"
+      using hle le_setdist_iff[of \<delta>\<^sub>J\<^sub>N J\<^sub>N "A2 \<union> {Q, S}"] by (by100 blast)
+    show ?thesis
+      using hpos hgap by (rule that)
+  qed
+  define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding K\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    unfolding K\<^sub>N_def using hSd_fin by (by100 simp)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+  proof -
+    have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+      unfolding K\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+    have hcarrier_sub_N:
+        "\<And>x. x \<in> N \<Longrightarrow>
+          geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+    proof -
+      fix x
+      assume hxN: "x \<in> N"
+      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
+        and hB_A1: "B \<inter> A1 \<noteq> {}"
+        and hxB: "x \<in> B"
+        using hxN unfolding hN_def by (by100 blast)
+      have hB_sub_N: "B \<subseteq> N"
+        unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
+      have hcarrier_sub_B:
+          "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
+        by (rule geotop_K_carrier_subset_containing_simplex
+            [OF hSd_complex hSd_fin hB_Sd hxB])
+      show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+        using hcarrier_sub_B hB_sub_N by (by100 blast)
+    qed
+    have hN_sub_K\<^sub>N_poly:
+        "N \<subseteq> geotop_polyhedron K\<^sub>N"
+    proof -
+      have "N \<subseteq>
+          geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+        by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+            [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
+      thus ?thesis
+        unfolding K\<^sub>N_def by (by100 simp)
+    qed
+    show ?thesis
+      using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
+  qed
+  have hK\<^sub>N_poly_connected:
+      "top1_connected_on (geotop_polyhedron K\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron K\<^sub>N))"
+    using hN_connected hK\<^sub>N_poly by (by100 simp)
+  have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
+  proof -
+    have hK\<^sub>N_poly_path_connected:
+        "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron K\<^sub>N))"
+      by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
+            hK\<^sub>N_poly_connected])
+    show ?thesis
+      by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
+            hK\<^sub>N_poly_path_connected])
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
