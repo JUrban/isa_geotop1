@@ -4130,6 +4130,8 @@ proof -
         \<and> P \<in> C
         \<and> X \<in> C
         \<and> geotop_arc_endpoints C {P, X}
+        \<and> connected (geotop_arc_interior C {P, X})
+        \<and> geotop_arc_interior C {P, X} \<noteq> {}
         \<and> geotop_is_complex L
         \<and> geotop_complex_is_1dim L
         \<and> finite L
@@ -4170,8 +4172,13 @@ proof -
       using hL_fin_if hL0_fin by (by100 blast)
     have hL_poly_C: "geotop_polyhedron L = C"
       using hL_poly hL0_poly by (by100 simp)
+    have hC_int_connected: "connected (geotop_arc_interior C {P, X})"
+      by (rule arc_interior_connected[OF hC_end])
+    have hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
+      by (rule arc_interior_nonempty[OF hC_end])
     show ?thesis
       using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hP_C hX_C hC_end
+        hC_int_connected hC_int_nonempty
         hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
       by (intro exI conjI)
   qed
@@ -4189,6 +4196,8 @@ proof -
         \<and> P \<in> C
         \<and> X \<in> C
         \<and> geotop_arc_endpoints C {P, X}
+        \<and> connected (geotop_arc_interior C {P, X})
+        \<and> geotop_arc_interior C {P, X} \<noteq> {}
         \<and> geotop_is_complex L
         \<and> geotop_complex_is_1dim L
         \<and> finite L
@@ -4204,6 +4213,8 @@ proof -
       and hP_C: "P \<in> C"
       and hX_C: "X \<in> C"
       and hC_end: "geotop_arc_endpoints C {P, X}"
+      and hC_int_connected: "connected (geotop_arc_interior C {P, X})"
+      and hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
       and hL_complex: "geotop_is_complex L"
       and hL_1dim: "geotop_complex_is_1dim L"
       and hL_fin: "finite L"
@@ -4225,7 +4236,8 @@ proof -
     show ?thesis
       using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
         hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
-        hP_C hX_C hC_end hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
+        hP_C hX_C hC_end hC_int_connected hC_int_nonempty
+        hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
       by (intro exI conjI)
   qed
   have hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint:
@@ -4243,6 +4255,8 @@ proof -
           \<and> P \<in> C
           \<and> X \<in> C
           \<and> geotop_arc_endpoints C {P, X}
+          \<and> connected (geotop_arc_interior C {P, X})
+          \<and> geotop_arc_interior C {P, X} \<noteq> {}
           \<and> geotop_is_complex L
           \<and> geotop_complex_is_1dim L
           \<and> finite L
@@ -4264,7 +4278,12 @@ proof -
           \<and> C \<subseteq> C\<^sub>B \<union> C\<^sub>O
           \<and> geotop_arc_interior C {P, X} \<subseteq>
               geotop_arc_interior C\<^sub>B {P, X} \<union>
-              geotop_arc_interior C\<^sub>O {P, X}"
+              geotop_arc_interior C\<^sub>O {P, X}
+          \<and> (geotop_arc_interior C {P, X} \<subseteq>
+                geotop_arc_interior C\<^sub>B {P, X}
+              \<or> geotop_arc_interior C {P, X} \<subseteq>
+                geotop_arc_interior C\<^sub>O {P, X})
+          \<and> (C = C\<^sub>B \<or> C = C\<^sub>O)"
   proof -
     assume hpolygon:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
@@ -4281,6 +4300,8 @@ proof -
       and hP_C: "P \<in> C"
       and hX_C: "X \<in> C"
       and hC_end: "geotop_arc_endpoints C {P, X}"
+      and hC_int_connected: "connected (geotop_arc_interior C {P, X})"
+      and hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
       and hL_complex: "geotop_is_complex L"
       and hL_1dim: "geotop_complex_is_1dim L"
       and hL_fin: "finite L"
@@ -4397,6 +4418,138 @@ proof -
         thus ?thesis by (by100 blast)
       qed
     qed
+    have hC_int_one_side_split:
+        "geotop_arc_interior C {P, X} \<subseteq>
+            geotop_arc_interior C\<^sub>B {P, X}
+          \<or> geotop_arc_interior C {P, X} \<subseteq>
+            geotop_arc_interior C\<^sub>O {P, X}"
+    proof (rule ccontr)
+      let ?Y = "geotop_arc_interior C {P, X}"
+      let ?IB = "geotop_arc_interior C\<^sub>B {P, X}"
+      let ?IO = "geotop_arc_interior C\<^sub>O {P, X}"
+      assume hnot: "\<not> (?Y \<subseteq> ?IB \<or> ?Y \<subseteq> ?IO)"
+      have hnot_IB: "\<not> ?Y \<subseteq> ?IB"
+        using hnot by (by100 blast)
+      have hnot_IO: "\<not> ?Y \<subseteq> ?IO"
+        using hnot by (by100 blast)
+      have hYIB_ne: "?Y \<inter> ?IB \<noteq> {}"
+      proof -
+        obtain y where hyY: "y \<in> ?Y" and hy_not_IO: "y \<notin> ?IO"
+          using hnot_IO by (by100 blast)
+        have "y \<in> ?IB"
+          using hC_int_sub_split_int hyY hy_not_IO by (by100 blast)
+        thus ?thesis
+          using hyY by (by100 blast)
+      qed
+      have hYIO_ne: "?Y \<inter> ?IO \<noteq> {}"
+      proof -
+        obtain y where hyY: "y \<in> ?Y" and hy_not_IB: "y \<notin> ?IB"
+          using hnot_IB by (by100 blast)
+        have "y \<in> ?IO"
+          using hC_int_sub_split_int hyY hy_not_IB by (by100 blast)
+        thus ?thesis
+          using hyY by (by100 blast)
+      qed
+      have hY_union: "(?Y \<inter> ?IB) \<union> (?Y \<inter> ?IO) = ?Y"
+        using hC_int_sub_split_int by (by100 blast)
+      have hY_disj: "(?Y \<inter> ?IB) \<inter> (?Y \<inter> ?IO) = {}"
+        using hC_int_disj_split by (by100 blast)
+      have hC\<^sub>B_closed: "closed C\<^sub>B"
+        by (rule broken_line_closed[OF hC\<^sub>B_end_split])
+      have hC\<^sub>O_closed: "closed C\<^sub>O"
+        by (rule broken_line_closed[OF hC\<^sub>O_end_split])
+      have hYIB_eq: "?Y \<inter> ?IB = ?Y \<inter> C\<^sub>B"
+        unfolding geotop_arc_interior_def by (by100 blast)
+      have hYIO_eq: "?Y \<inter> ?IO = ?Y \<inter> C\<^sub>O"
+        unfolding geotop_arc_interior_def by (by100 blast)
+      have hYIB_closed: "closedin (top_of_set ?Y) (?Y \<inter> ?IB)"
+      proof -
+        have "closedin (top_of_set ?Y) (?Y \<inter> C\<^sub>B)"
+          by (rule closedin_closed_Int[OF hC\<^sub>B_closed])
+        thus ?thesis
+          using hYIB_eq by (by100 simp)
+      qed
+      have hYIO_closed: "closedin (top_of_set ?Y) (?Y \<inter> ?IO)"
+      proof -
+        have "closedin (top_of_set ?Y) (?Y \<inter> C\<^sub>O)"
+          by (rule closedin_closed_Int[OF hC\<^sub>O_closed])
+        thus ?thesis
+          using hYIO_eq by (by100 simp)
+      qed
+      have hNoClosedSep:
+          "\<nexists>E\<^sub>1 E\<^sub>2.
+            closedin (top_of_set ?Y) E\<^sub>1
+            \<and> closedin (top_of_set ?Y) E\<^sub>2
+            \<and> E\<^sub>1 \<union> E\<^sub>2 = ?Y
+            \<and> E\<^sub>1 \<inter> E\<^sub>2 = {}
+            \<and> E\<^sub>1 \<noteq> {}
+            \<and> E\<^sub>2 \<noteq> {}"
+        using hC_int_connected
+        unfolding connected_closedin_eq
+        by (by100 blast)
+      show False
+        using hNoClosedSep hYIB_closed hYIO_closed hY_union hY_disj
+          hYIB_ne hYIO_ne
+        by (by100 blast)
+    qed
+    have hC_eq_one_split: "C = C\<^sub>B \<or> C = C\<^sub>O"
+    proof (rule disjE[OF hC_int_one_side_split])
+      assume hC_int_sub_B:
+          "geotop_arc_interior C {P, X} \<subseteq>
+            geotop_arc_interior C\<^sub>B {P, X}"
+      have hC_sub_B: "C \<subseteq> C\<^sub>B"
+      proof
+        fix y
+        assume hyC: "y \<in> C"
+        show "y \<in> C\<^sub>B"
+        proof (cases "y \<in> {P, X}")
+          case True
+          thus ?thesis
+            using hP_C\<^sub>B_split hX_C\<^sub>B_split by (by100 blast)
+        next
+          case False
+          have "y \<in> geotop_arc_interior C {P, X}"
+            using hyC False unfolding geotop_arc_interior_def by (by100 blast)
+          hence "y \<in> geotop_arc_interior C\<^sub>B {P, X}"
+            using hC_int_sub_B by (by100 blast)
+          thus ?thesis
+            unfolding geotop_arc_interior_def by (by100 blast)
+        qed
+      qed
+      have "C = C\<^sub>B"
+        by (rule geotop_same_endpoint_arc_subset_eq_prefix
+            [OF hC_end hC\<^sub>B_end_split hC_sub_B])
+      thus "C = C\<^sub>B \<or> C = C\<^sub>O"
+        by (by100 blast)
+    next
+      assume hC_int_sub_O:
+          "geotop_arc_interior C {P, X} \<subseteq>
+            geotop_arc_interior C\<^sub>O {P, X}"
+      have hC_sub_O: "C \<subseteq> C\<^sub>O"
+      proof
+        fix y
+        assume hyC: "y \<in> C"
+        show "y \<in> C\<^sub>O"
+        proof (cases "y \<in> {P, X}")
+          case True
+          thus ?thesis
+            using hP_C\<^sub>O_split hX_C\<^sub>O_split by (by100 blast)
+        next
+          case False
+          have "y \<in> geotop_arc_interior C {P, X}"
+            using hyC False unfolding geotop_arc_interior_def by (by100 blast)
+          hence "y \<in> geotop_arc_interior C\<^sub>O {P, X}"
+            using hC_int_sub_O by (by100 blast)
+          thus ?thesis
+            unfolding geotop_arc_interior_def by (by100 blast)
+        qed
+      qed
+      have "C = C\<^sub>O"
+        by (rule geotop_same_endpoint_arc_subset_eq_prefix
+            [OF hC_end hC\<^sub>O_end_split hC_sub_O])
+      thus "C = C\<^sub>B \<or> C = C\<^sub>O"
+        by (by100 blast)
+    qed
     show ?thesis
       apply (rule exI[where x=X])
       apply (rule exI[where x=C])
@@ -4405,9 +4558,12 @@ proof -
       apply (rule exI[where x=C\<^sub>O])
       using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
         hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
-        hP_C hX_C hC_end hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
+        hP_C hX_C hC_end hC_int_connected hC_int_nonempty
+        hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
         hsplit_BdJ hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
         hP_C\<^sub>O_split hX_C\<^sub>O_split hC_sub_split hC_int_sub_split_int
+        hC_int_one_side_split
+        hC_eq_one_split
       apply (intro conjI)
       by (by100 blast)+
   qed
