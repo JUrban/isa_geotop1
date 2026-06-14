@@ -1129,6 +1129,26 @@ proof -
     qed
     have hK\<^sub>N_poly_N\<^sub>I: "geotop_polyhedron K\<^sub>N = N\<^sub>I"
       using hK\<^sub>N_poly hN\<^sub>I_eq_N by (by100 simp)
+    have hK\<^sub>N_edge_owned_by_Sd_2simplex:
+        "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          \<exists>\<sigma>\<in>geotop_iterated_Sd m K.
+            geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+    proof -
+      fix e
+      assume heK\<^sub>N: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+      have heSd: "e \<in> geotop_iterated_Sd m K"
+        using heK\<^sub>N unfolding K\<^sub>N_def by (by100 simp)
+      have hSd_poly_disk:
+          "geotop_polyhedron (geotop_iterated_Sd m K) =
+            closure_on UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J)"
+        using hSd_poly hK_poly by (by100 simp)
+      show "\<exists>\<sigma>\<in>geotop_iterated_Sd m K.
+          geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+        by (rule geotop_polygon_disk_edge_owned_by_2simplex_prefix
+            [OF hJ hSd_complex hSd_poly_disk heSd hedge])
+    qed
     have hK\<^sub>N_edge_incident_2faces_card_le2:
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
