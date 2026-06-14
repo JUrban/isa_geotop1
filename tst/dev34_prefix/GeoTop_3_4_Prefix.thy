@@ -5756,6 +5756,53 @@ proof -
         by (rule hC_conn)
     qed
   qed
+  have hD44_Ncut_open_split_if_not_same_component:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> ?Ncut =
+          geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<union>
+          (?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+        \<and> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<inter>
+          (?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1) = {}
+        \<and> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<in> geotop_euclidean_topology
+        \<and> ?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<in> geotop_euclidean_topology
+        \<and> Q1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<and> S1 \<in> ?Ncut -
+          geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Contradiction setup for the remaining Moise step.  If the lower-to-upper
+      frontier route did not put \<open>S1\<close> in the \<open>Q1\<close> outside-carrier component,
+      the open set \<open>I - (N \<union> A2)\<close> would split into the \<open>Q1\<close> component and its
+      complementary open side containing \<open>S1\<close>.  The unfinished book argument
+      must rule out exactly this split using the frontier component through
+      \<open>P\<close>. **)
+  proof -
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CS = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut S1"
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets
+          top1_open_sets_is_topology_on_UNIV)
+    have hS1_sing_conn:
+        "top1_connected_on {S1}
+          (subspace_topology UNIV geotop_euclidean_topology {S1})"
+      by (rule top1_connected_on_singleton[OF hTU], simp)
+    have hS1_CS: "S1 \<in> ?CS"
+      by (rule geotop_self_in_component_at[OF hS1_Ncut hS1_sing_conn])
+    have hcomp_neq: "?CQ \<noteq> ?CS"
+    proof
+      assume heq: "?CQ = ?CS"
+      have "S1 \<in> ?CQ"
+        using heq hS1_CS by (by100 simp)
+      thus False
+        using hnot by (by100 blast)
+    qed
+    show ?thesis
+      by (rule geotop_open_component_complement_split_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hcomp_neq])
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
