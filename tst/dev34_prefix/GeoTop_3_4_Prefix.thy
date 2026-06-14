@@ -3178,6 +3178,32 @@ proof -
       show ?thesis
         using huBdJ hvBdJ huv hsplit by (by100 blast)
     qed
+    have hBdJ\<^sub>N_polygon_from_degree_two:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+          geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      assume hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      obtain u v C\<^sub>1 C\<^sub>2 where huBdJ: "{u} \<in> BdJ\<^sub>N"
+        and hvBdJ: "{v} \<in> BdJ\<^sub>N"
+        and huv: "u \<noteq> v"
+        and hpoly_eq: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2"
+        and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+        and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+        and hC\<^sub>1_end: "geotop_arc_endpoints C\<^sub>1 {u, v}"
+        and hC\<^sub>2_end: "geotop_arc_endpoints C\<^sub>2 {u, v}"
+        and hdisj: "geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+            geotop_arc_interior C\<^sub>2 {u, v} = {}"
+        using hBdJ\<^sub>N_cycle_split_from_degree_two[OF hdegree]
+        by (by100 blast)
+      have hpolygon_C: "geotop_is_polygon (C\<^sub>1 \<union> C\<^sub>2)"
+        by (rule pair_of_arcs_is_polygon
+            [OF hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1_end hC\<^sub>2_end hdisj])
+      show ?thesis
+        using hpolygon_C hpoly_eq by (by100 simp)
+    qed
     have hBdJ\<^sub>N_polygon_from_simple_closed_curve:
         "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
           (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
