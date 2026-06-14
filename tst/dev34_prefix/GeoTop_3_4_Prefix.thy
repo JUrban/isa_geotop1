@@ -2155,6 +2155,16 @@ proof -
     have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
         "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
       unfolding BdJ\<^sub>N_def by (by100 simp)
+    have hBdJ\<^sub>N_edge_sub_FrN\<^sub>I:
+        "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+    proof -
+      fix e
+      assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+      have heJ: "e \<subseteq> J\<^sub>N"
+        by (rule hBdJ\<^sub>N_edge_sub_J\<^sub>N[OF heBdJ hedge])
+      show "e \<subseteq> FrN\<^sub>I"
+        using heJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    qed
     have hBdJ\<^sub>N_edge_member_incident_count_one:
         "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
@@ -2977,6 +2987,50 @@ proof -
       show "card ?E \<ge> 1"
         using hcard_pos by (by100 linarith)
     qed
+    have hBdJ\<^sub>N_vertex_degree_one_or_two_from_card_le2:
+        "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+          \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+            \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    proof (intro allI impI)
+      fix w
+      assume hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+      have hge1:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+        by (rule hBdJ\<^sub>N_vertex_incident_edge_card_ge1[OF hwBdJ])
+      have hle:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+        by (rule hle2[OF hwBdJ])
+      show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+          \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        using hge1 hle by (by100 linarith)
+    qed
+    have hBdJ\<^sub>N_vertex_degree_two_from_card_le2_no_endpoint:
+        "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+          \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    proof -
+      assume hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      assume hnoend:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      have hdegree12:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+            \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule hBdJ\<^sub>N_vertex_degree_one_or_two_from_card_le2[OF hle2])
+      show "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule geotop_degree_one_or_two_no_endpoint_degree_two_prefix
+            [OF hBdJ\<^sub>N_linear_graph hdegree12 hnoend])
+    qed
     have hBdJ\<^sub>N_two_distinct_vertices:
         "\<exists>u v. {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v"
     proof -
@@ -3010,6 +3064,41 @@ proof -
              OF hBdJ\<^sub>N_complex heBdJ heV hV_eq])
       show ?thesis
         using huv_BdJ huv by (by100 blast)
+    qed
+    have hBdJ\<^sub>N_cycle_split_from_degree_two:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+          \<exists>u v C\<^sub>1 C\<^sub>2.
+            {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v
+            \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+            \<and> geotop_is_broken_line C\<^sub>1
+            \<and> geotop_is_broken_line C\<^sub>2
+            \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+            \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+            \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+                geotop_arc_interior C\<^sub>2 {u, v} = {}"
+    proof -
+      assume hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      obtain u v where huBdJ: "{u} \<in> BdJ\<^sub>N"
+        and hvBdJ: "{v} \<in> BdJ\<^sub>N"
+        and huv: "u \<noteq> v"
+        using hBdJ\<^sub>N_two_distinct_vertices by (by100 blast)
+      obtain C\<^sub>1 C\<^sub>2 where hsplit:
+          "geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+          \<and> geotop_is_broken_line C\<^sub>1
+          \<and> geotop_is_broken_line C\<^sub>2
+          \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+          \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+          \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+              geotop_arc_interior C\<^sub>2 {u, v} = {}"
+        using geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+            hdegree huBdJ hvBdJ huv]
+        by (by100 blast)
+      show ?thesis
+        using huBdJ hvBdJ huv hsplit by (by100 blast)
     qed
     have hBdJ\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
