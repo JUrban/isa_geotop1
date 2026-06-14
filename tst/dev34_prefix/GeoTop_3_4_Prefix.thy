@@ -7208,9 +7208,52 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
         \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hZ_sub hZ_conn hQmeet hSmeet by (intro exI conjI)
+      using hZ_sub hZ_conn hQmeet hSmeet by (intro exI conjI)
     qed
   qed
+  have hD44_same_component_gives_closed_corridor:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    (**
+      Component-to-corridor bookkeeping.  The direct Moise component statement
+      already contains a connected witness through \<open>Q1\<close> and \<open>S1\<close>; taking
+      that witness as \<open>Z\<close> immediately gives the closed-corridor form. **)
+  proof -
+    assume hcomp:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    obtain Z where hZ_pack:
+        "Z \<subseteq> ?Ncut \<and> Q1 \<in> Z
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hS1_Z: "S1 \<in> Z"
+      using hcomp unfolding geotop_component_at_def by (by100 blast)
+    have hZ_sub: "Z \<subseteq> ?Ncut"
+      using hZ_pack by (by100 blast)
+    have hQ1_Z: "Q1 \<in> Z"
+      using hZ_pack by (by100 blast)
+    have hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      using hZ_pack by (by100 blast)
+    have hQ1_cl: "Q1 \<in> closure Z"
+      using hQ1_Z closure_subset by (by100 blast)
+    have hS1_cl: "S1 \<in> closure Z"
+      using hS1_Z closure_subset by (by100 blast)
+    show ?thesis
+      using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
+  qed
+  have hD44_moise_same_component_direct:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Final literal Moise component step.  The complementary frontier arc
+      \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close>; the adjacent component of
+      \<open>I - (N \<union> A2)\<close> along that arc contains the lower and upper access
+      points in the same outside-carrier component. **)
+    sorry
   have hD44_moise_closed_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
@@ -7222,7 +7265,8 @@ proof -
       complementary frontier arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close>; the adjacent
       component of \<open>I - (N \<union> A2)\<close> along that arc is connected, lies in
       \<open>Ncut\<close>, and has both lower and upper access points in its closure. **)
-    sorry
+    by (rule hD44_same_component_gives_closed_corridor
+        [OF hD44_moise_same_component_direct])
   have hD44_moise_arbitrary_access_ball_crossings:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
