@@ -7105,20 +7105,15 @@ proof -
         using hZ_sub hZ_conn hZ_CQ hZ_Sball by (intro exI conjI)
     qed
   qed
-  have hD44_moise_complementary_frontier_closed_corridor:
-      "\<exists>Z. Z \<subseteq> ?Ncut
-        \<and> top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)
-        \<and> Q1 \<in> closure Z
-        \<and> S1 \<in> closure Z"
+  have hD44_moise_Q1_component_accumulates_at_S1:
+      "S1 \<in> closure
+        (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
     (**
-      Final literal Moise corridor construction in the closure form used by
-      the surrounding access lemmas.  The complementary frontier arc \<open>C\<^sub>F\<close> is
-      the book's \<open>B\<^sub>2\<close> arc after removing the boundary component through
-      \<open>P\<close>; the lower-to-upper subarc has one adjacent outside component of
-      \<open>I - (N \<union> A2)\<close>.  That adjacent component is the connected corridor
-      \<open>Z\<close>, contained in \<open>?Ncut\<close>, whose closure contains the lower and upper
-      access points \<open>Q1\<close> and \<open>S1\<close>. **)
+      Final literal Moise corridor construction in component-closure form.  The
+      complementary frontier arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close> arc after removing
+      the boundary component through \<open>P\<close>; the adjacent outside component of
+      \<open>I - (N \<union> A2)\<close> along the lower-to-upper subarc is the \<open>Q1\<close> component,
+      and its closure reaches the upper access point \<open>S1\<close>. **)
     sorry
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
@@ -7130,8 +7125,8 @@ proof -
       complementary frontier arc, then using the lower-to-upper subarc outside
       \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-    by (rule hD44_closed_corridor_suffices
-        [OF hD44_moise_complementary_frontier_closed_corridor])
+    by (rule hD44_component_closure_at_S1_suffices
+        [OF hD44_moise_Q1_component_accumulates_at_S1])
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
