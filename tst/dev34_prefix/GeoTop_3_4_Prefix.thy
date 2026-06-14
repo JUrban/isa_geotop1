@@ -949,7 +949,92 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_broken_line_access_crossings
     subarc, and show that the adjacent outside side supplies broken-line
     crossings of every prescribed pair of access collars around \<open>Q1\<close> and
     \<open>S1\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hN_sub_Sd_poly: "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+    unfolding hN_def geotop_polyhedron_def by (by100 blast)
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+  have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_simplex: "geotop_is_simplex B"
+      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
+    show "compact B"
+      by (rule geotop_simplex_compact[OF hB_simplex])
+  qed
+  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_compact: "compact B"
+      using hSd_compact_all hB by (by100 blast)
+    show "closed B"
+      by (rule compact_imp_closed[OF hB_compact])
+  qed
+  have hN_index_fin:
+      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
+    using hSd_fin by (by100 simp)
+  have hN_index_compact:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. compact B"
+    using hSd_compact_all by (by100 blast)
+  have hN_compact: "compact N"
+    unfolding hN_def
+    by (rule compact_Union[OF hN_index_fin hN_index_compact])
+  have hN_index_closed:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
+    using hSd_closed_all by (by100 blast)
+  have hN_closed: "closed N"
+    unfolding hN_def
+    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+  have hA2_closed: "closed A2"
+    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
+  have hI_open_HOL: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hN_A2_closed: "closed (N \<union> A2)"
+    by (rule closed_Un[OF hN_closed hA2_closed])
+  have hNcut_open_HOL: "open ?Ncut"
+    by (rule open_Diff[OF hI_open_HOL hN_A2_closed])
+  have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
+    using hNcut_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hQ1_local_Ncut_ball:
+      "\<exists>\<epsilon>>0. ball Q1 \<epsilon> \<subseteq> ?Ncut"
+    using hNcut_open_HOL hQ1_Ncut open_contains_ball by (by100 blast)
+  have hS1_local_Ncut_ball:
+      "\<exists>\<epsilon>>0. ball S1 \<epsilon> \<subseteq> ?Ncut"
+    using hNcut_open_HOL hS1_Ncut open_contains_ball by (by100 blast)
+  have hD44_moise_broken_line_access_crossings_book_step:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Remaining Moise 4.4 construction after the routine carrier hygiene
+      above.  The unproved part is exactly the book's regular-neighborhood
+      frontier analysis: restrict the fine carrier to the closed disk, prove
+      the frontier component through \<open>P\<close> is a polygonal 1-sphere, take the
+      complementary lower-to-upper frontier subarc, and push it to the
+      adjacent outside side of \<open>?Ncut\<close> so it crosses every pair of access
+      collars. **)
+    sorry
+  show ?thesis
+    by (rule hD44_moise_broken_line_access_crossings_book_step)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_prefix:
   fixes J A1 A2 N :: "(real^2) set"
