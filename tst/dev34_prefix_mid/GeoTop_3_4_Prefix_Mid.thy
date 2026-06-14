@@ -38577,6 +38577,73 @@ proof -
   qed
 qed
 
+lemma geotop_figure33_source_carrier_avoids_set_bound_scalar_prefix:
+  fixes A \<theta> :: "(real^2) set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>5 :: "real^2"
+  assumes hv\<^sub>5_mid: "v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+  assumes hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
+  assumes h\<theta>_conv: "convex \<theta>"
+  assumes hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+  assumes hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+  assumes hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+  assumes ht: "0 < t"
+  assumes hgap: "t * norm (v\<^sub>5 - v\<^sub>1) < setdist A \<theta>"
+  shows
+    "A \<inter> geotop_polyhedron
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>} = {}"
+  (**
+    Figure 3.3 retained-set avoidance bound: if the scalar displacement
+    bound is smaller than the set distance from \<open>A\<close> to \<open>\<theta>\<close>, then the
+    small source carrier misses \<open>A\<close>. **)
+proof (rule equals0I)
+  fix x
+  assume hx:
+    "x \<in> A \<inter> geotop_polyhedron
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  have hxA: "x \<in> A"
+    using hx by (by100 blast)
+  have hxcarrier:
+    "x \<in> geotop_polyhedron
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+    using hx by (by100 blast)
+  obtain y where hy\<theta>: "y \<in> \<theta>"
+    and hdist_le: "dist x y \<le> t * norm (v\<^sub>5 - v\<^sub>1)"
+    using geotop_figure33_source_carrier_near_convex_triangle_scalar_prefix
+      [OF hv\<^sub>5_mid hv\<^sub>1v\<^sub>5 h\<theta>_conv hv\<^sub>0_\<theta> hv\<^sub>1_\<theta> hv\<^sub>2_\<theta> ht hxcarrier]
+    by (by100 blast)
+  have hgap_le: "setdist A \<theta> \<le> dist x y"
+    by (rule setdist_le_dist[OF hxA hy\<theta>])
+  show False
+    using hgap_le hdist_le hgap by (by100 linarith)
+qed
+
 lemma geotop_not_collinear_off_affine_hull_pair_prefix:
   fixes p x y :: "real^2"
   assumes hxy: "x \<noteq> y"
@@ -41745,30 +41812,29 @@ proof -
 		                ?C\<^sub>O_mid \<inter> geotop_polyhedron
 		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
 		                = {}"
-		          proof (rule equals0I)
-		            fix t :: real and x :: "real^2"
+		          proof -
+		            fix t :: real
 		            assume ht_pos: "0 < t"
 		            assume ht_gap:
 		              "t * norm (?v\<^sub>5 - v\<^sub>1) < setdist ?C\<^sub>O_mid \<theta>"
-		            assume hx:
-		              "x \<in> ?C\<^sub>O_mid \<inter> geotop_polyhedron
-		                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		            have hxmid: "x \<in> ?C\<^sub>O_mid"
-		              using hx by (by100 blast)
-		            have hxcarrier:
-		              "x \<in> geotop_polyhedron
-		                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		              using hx by (by100 blast)
-		            obtain y where hy\<theta>: "y \<in> \<theta>"
-		              and hdist_le:
-		                "dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		              using hfigure33_source_carrier_near_theta_scalar
-		                [OF ht_pos hxcarrier]
-		              by (by100 blast)
-		            have hgap_le: "setdist ?C\<^sub>O_mid \<theta> \<le> dist x y"
-		              by (rule setdist_le_dist[OF hxmid hy\<theta>])
-		            show False
-		              using hgap_le hdist_le ht_gap by (by100 linarith)
+		            have h\<theta>_conv: "convex \<theta>"
+		              by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
+		            have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+		              by (rule GeoTopBase0.geotop_simplex_vertices_subset[OF h\<theta>vertices])
+		            have hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+		              using hverts_sub by (by100 blast)
+		            have hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+		              using hverts_sub by (by100 blast)
+		            have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+		              using hverts_sub by (by100 blast)
+		            have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+		              by (by100 simp)
+		            show "?C\<^sub>O_mid \<inter> geotop_polyhedron
+		                (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+		                = {}"
+		              by (rule geotop_figure33_source_carrier_avoids_set_bound_scalar_prefix
+		                  [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne h\<theta>_conv hv\<^sub>0_\<theta>
+		                    hv\<^sub>1_\<theta> hv\<^sub>2_\<theta> ht_pos ht_gap])
 		          qed
 		          have hfigure33_source_carrier_avoids_C\<^sub>O_middle_scalar:
 		              "\<exists>t>0.
@@ -42833,28 +42899,24 @@ proof -
 		              show "?C\<^sub>O_out_tiny \<inter> geotop_polyhedron
 		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
 		                = {}"
-		              proof (rule equals0I)
-		                fix x
-		                assume hx:
-		                  "x \<in> ?C\<^sub>O_out_tiny \<inter> geotop_polyhedron
-		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		                have hxout: "x \<in> ?C\<^sub>O_out_tiny"
-		                  using hx by (by100 blast)
-		                have hxcarrier:
-		                  "x \<in> geotop_polyhedron
-		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		                  using hx by (by100 blast)
-		                obtain y where hy\<theta>: "y \<in> \<theta>"
-		                  and hdist_le:
-		                    "dist x y \<le> t * norm (?v\<^sub>5 - v\<^sub>1)"
-		                  using hfigure33_source_carrier_near_theta_scalar
-		                    [OF ht_pos hxcarrier]
-		                  by (by100 blast)
-		                have hgap_le: "setdist ?C\<^sub>O_out_tiny \<theta> \<le> dist x y"
-		                  by (rule setdist_le_dist[OF hxout hy\<theta>])
-		                show False
-			              using hgap_le hdist_le htD_gap by (by100 linarith)
-			              qed
+		              proof -
+		                have h\<theta>_conv: "convex \<theta>"
+		                  by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<theta>_simplex])
+		                have hverts_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+		                  by (rule GeoTopBase0.geotop_simplex_vertices_subset[OF h\<theta>vertices])
+		                have hv\<^sub>0_\<theta>: "v\<^sub>0 \<in> \<theta>"
+		                  using hverts_sub by (by100 blast)
+		                have hv\<^sub>2_\<theta>: "v\<^sub>2 \<in> \<theta>"
+		                  using hverts_sub by (by100 blast)
+		                have hv\<^sub>1_\<theta>: "v\<^sub>1 \<in> \<theta>"
+		                  using hverts_sub by (by100 blast)
+		                have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+		                  by (by100 simp)
+		                show ?thesis
+		                  by (rule geotop_figure33_source_carrier_avoids_set_bound_scalar_prefix
+		                      [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne h\<theta>_conv hv\<^sub>0_\<theta>
+		                        hv\<^sub>1_\<theta> hv\<^sub>2_\<theta> ht_pos htD_gap])
+		              qed
 			            qed
 			            show ?thesis
 			              using h\<eta>_pos hsmall by (by100 blast)
