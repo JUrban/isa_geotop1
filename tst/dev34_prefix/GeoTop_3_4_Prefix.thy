@@ -625,6 +625,55 @@ proof -
       by (rule geotop_polygon_disk_fine_Sd_named_carrier_meeting_first_arc_misses_second_prefix
           [OF hJ hA1_sub h\<delta>_pos h\<delta>_gap])
   qed
+  have hD44_named_fine_disk_carrier_avoids_A2_QS:
+      "\<exists>K m N. geotop_is_complex K
+        \<and> finite K
+        \<and> geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+        \<and> N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})
+        \<and> A1 \<subseteq> N
+        \<and> N \<inter> (A2 \<union> {Q, S}) = {}"
+  proof -
+    obtain \<delta>\<^sub>0 where h\<delta>\<^sub>0_pos: "0 < \<delta>\<^sub>0"
+      and h\<delta>\<^sub>0_gap: "\<forall>x\<in>A1. \<forall>y\<in>A2. \<delta>\<^sub>0 \<le> dist x y"
+      using hA12_metric_separation by (by100 blast)
+    have hA1_compact: "compact A1"
+      using hA12_metric_separation by (by100 blast)
+    have hA1_closed: "closed A1"
+      using hA12_metric_separation by (by100 blast)
+    have hA1_nonempty: "A1 \<noteq> {}"
+      using hA12_metric_separation by (by100 blast)
+    have hA2_compact: "compact A2"
+      using hA12_metric_separation by (by100 blast)
+    have hA2_closed: "closed A2"
+      using hA12_metric_separation by (by100 blast)
+    have hF_compact: "compact (A2 \<union> {Q, S})"
+      using hA2_compact by (by100 simp)
+    have hF_closed: "closed (A2 \<union> {Q, S})"
+      using hA2_closed by (by100 simp)
+    have hF_nonempty: "A2 \<union> {Q, S} \<noteq> {}"
+      by (by100 blast)
+    have hA1F_disj: "A1 \<inter> (A2 \<union> {Q, S}) = {}"
+      using hA12 hQ_not_A1 hS_not_A1 by (by100 blast)
+    have hsdF_iff:
+        "(0 < setdist A1 (A2 \<union> {Q, S})) =
+          (A1 \<noteq> {} \<and> A2 \<union> {Q, S} \<noteq> {} \<and>
+            A1 \<inter> (A2 \<union> {Q, S}) = {})"
+      by (rule setdist_gt_0_compact_closed[OF hA1_compact hF_closed])
+    have hsdF_pos: "0 < setdist A1 (A2 \<union> {Q, S})"
+      using hsdF_iff hA1_nonempty hF_nonempty hA1F_disj by (by100 blast)
+    define \<delta> where "\<delta> = min \<delta>\<^sub>0 (setdist A1 (A2 \<union> {Q, S}) / 2)"
+    have h\<delta>_pos: "0 < \<delta>"
+      unfolding \<delta>_def using h\<delta>\<^sub>0_pos hsdF_pos by (by100 simp)
+    have h\<delta>_le_sdF: "\<delta> \<le> setdist A1 (A2 \<union> {Q, S})"
+      unfolding \<delta>_def using h\<delta>\<^sub>0_pos hsdF_pos by (by100 simp)
+    have h\<delta>_gapF: "\<forall>x\<in>A1. \<forall>y\<in>A2 \<union> {Q, S}. \<delta> \<le> dist x y"
+      using h\<delta>_le_sdF le_setdist_iff[of \<delta> A1 "A2 \<union> {Q, S}"]
+      by (by100 blast)
+    show ?thesis
+      by (rule geotop_polygon_disk_fine_Sd_named_carrier_meeting_first_arc_misses_second_prefix
+          [OF hJ hA1_sub h\<delta>_pos h\<delta>_gapF])
+  qed
   have hQ_S_two_arc_local_access:
       "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
         0 < r
@@ -716,9 +765,15 @@ proof -
       and hN_def:
         "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
       and hA1_N: "A1 \<subseteq> N"
-      and hN_A2: "N \<inter> A2 = {}"
-      using hD44_named_fine_disk_carrier
+      and hN_A2_QS: "N \<inter> (A2 \<union> {Q, S}) = {}"
+      using hD44_named_fine_disk_carrier_avoids_A2_QS
       by (elim exE conjE)
+    have hN_A2_only: "N \<inter> A2 = {}"
+      using hN_A2_QS by (by100 blast)
+    have hQ_not_N: "Q \<notin> N"
+      using hN_A2_QS by (by100 blast)
+    have hS_not_N: "S \<notin> N"
+      using hN_A2_QS by (by100 blast)
     obtain r U\<^sub>Q U\<^sub>S Q' S'
       where hr_pos: "0 < r"
         and hU\<^sub>Q_conn: "connected U\<^sub>Q"
@@ -752,7 +807,8 @@ proof -
         cyclic order plus the D42 separation package to show the local access
         witnesses \<open>Q'\<close> and \<open>S'\<close> lie in the same component of
         \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close>. **)
-      using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2
+      using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS hN_A2_only
+        hQ_not_N hS_not_N
         hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
         hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
         hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
