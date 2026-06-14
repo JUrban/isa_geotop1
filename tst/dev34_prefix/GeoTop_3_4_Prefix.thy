@@ -7246,15 +7246,43 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_boundary_arc_access_ball_crossings_core:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Direct Moise 4.4 frontier-route target.  After the frontier component of
+      the fine carrier through \<open>P\<close> is split into the boundary arc and the
+      complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, the adjacent outside component of
+      \<open>I - (N \<union> A2)\<close> must meet every prescribed lower and upper access collar.
+      This is exactly the book sentence that \<open>V\<close> and \<open>W\<close> lie in the boundary
+      of one component of \<open>I - (A1 \<union> A2)\<close>, instantiated to the carrier
+      complement \<open>?Ncut\<close>. **)
+    sorry
   have hD44_moise_Q1_component_accumulates_core:
       "S1 \<in> closure
         (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
     (**
-      Sharp remaining Moise component-frontier statement.  The outside component
-      of \<open>I - (N \<union> A2)\<close> reached from the lower access point accumulates at the
-      upper access point via the complementary frontier arc \<open>C\<^sub>F\<close> / book
-      \<open>B\<^sub>2\<close>. **)
-    sorry
+      Component-closure consequence of the direct Moise frontier-route target.
+      The connected lower-to-upper collar crossings force every upper collar to
+      meet the \<open>Q1\<close>-component, hence \<open>S1\<close> is in its closure. **)
+  proof -
+    have hS1_witnesses:
+        "\<forall>\<epsilon>>0. \<exists>Y.
+          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>"
+      by (rule hD44_arbitrary_access_ball_crossings_give_S1_ball_witnesses
+          [OF hD44_moise_boundary_arc_access_ball_crossings_core])
+    have hS1_comp:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      by (rule hD44_component_points_accumulate_at_S1_suffices
+          [OF hS1_witnesses])
+    show ?thesis
+      using hS1_comp closure_subset by (by100 blast)
+  qed
   have hD44_moise_closed_corridor_core:
       "\<exists>C. C \<subseteq> ?Ncut
         \<and> top1_connected_on C
@@ -7489,60 +7517,9 @@ proof -
           \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
     (**
-      Positive Moise corridor target.  The complementary frontier arc
-      \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close>, together with the adjacent outside-carrier component,
-      must supply a connected subset of \<open>?Ncut\<close> meeting every prescribed lower
-      and upper access collar. **)
-  proof (intro allI impI)
-    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
-    assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
-    assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
-    have hQ_spec:
-      "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof -
-      have hQ_imp:
-        "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-        by (rule spec[OF hD44_moise_arbitrary_access_broken_line_crossings_core])
-      show ?thesis
-        by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
-    qed
-    have hQS_spec:
-      "\<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof -
-      have hS_imp:
-        "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-        by (rule spec[OF hQ_spec])
-      show ?thesis
-        by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
-    qed
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_sub: "B \<subseteq> ?Ncut"
-      and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
-      and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hQS_spec by (elim exE conjE)
-    have hB_conn:
-      "top1_connected_on B
-        (subspace_topology UNIV geotop_euclidean_topology B)"
-      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-    show "\<exists>Z. Z \<subseteq> ?Ncut
-        \<and> top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)
-        \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-        \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
-  qed
+      Named copy of the direct Moise corridor target for the already-staged split
+      contradiction below. **)
+    by (rule hD44_moise_boundary_arc_access_ball_crossings_core)
   have hD44_frontier_component_forbids_Ncut_split:
       "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> False"
