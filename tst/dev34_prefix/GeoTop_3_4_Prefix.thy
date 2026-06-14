@@ -3212,6 +3212,82 @@ proof -
     using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
     using hR_in_A2 hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hQ1_not_N: "Q1 \<notin> N"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_N: "S1 \<notin> N"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_A2: "Q1 \<notin> A2"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_A2: "S1 \<notin> A2"
+    using hS1_Ncut by (by100 blast)
+  have hA2_closed: "closed A2"
+    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
+  have hN_A2_closed: "closed (N \<union> A2)"
+    using hN_closed hA2_closed by (by100 simp)
+  have hI_open_HOL: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hNcut_open_HOL: "open ?Ncut"
+    using hI_open_HOL hN_A2_closed by (by100 simp)
+  have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
+    using hNcut_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hD44_same_component_in_Ncut_suffices:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> Q1 \<in> B
+          \<and> S1 \<in> B"
+  proof -
+    assume hS1_comp:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?C = "connected_component_set ?Ncut Q1"
+    have hC_eq:
+        "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 = ?C"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hC_comp: "?C \<in> components ?Ncut"
+      by (rule componentsI[OF hQ1_Ncut])
+    have hC_conn_HOL: "connected ?C"
+      using hC_comp in_components_connected by (by100 blast)
+    have hC_conn:
+        "top1_connected_on ?C
+          (subspace_topology UNIV geotop_euclidean_topology ?C)"
+      using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hC_open_HOL: "open ?C"
+      using hC_comp hNcut_open_HOL open_components by (by100 blast)
+    have hC_open: "?C \<in> geotop_euclidean_topology"
+      using hC_open_HOL
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hC_broken_connected: "geotop_broken_line_connected ?C"
+      by (rule Theorem_GT_1_13[OF hC_open hC_conn])
+    have hQ1_C: "Q1 \<in> ?C"
+      using hQ1_Ncut connected_component_refl by (by100 blast)
+    have hS1_C: "S1 \<in> ?C"
+      using hS1_comp hC_eq by (by100 simp)
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub_C: "B \<subseteq> ?C"
+      and hQ1_B: "Q1 \<in> B"
+      and hS1_B: "S1 \<in> B"
+      using hC_broken_connected hQ1_C hS1_C
+      unfolding geotop_broken_line_connected_def
+      by (by100 blast)
+    have hC_sub_Ncut: "?C \<subseteq> ?Ncut"
+      using hC_comp in_components_subset by (by100 blast)
+    have hB_sub_Ncut: "B \<subseteq> ?Ncut"
+      using hB_sub_C hC_sub_Ncut by (by100 blast)
+    show ?thesis
+      using hB_bl hB_sub_Ncut hQ1_B hS1_B by (intro exI conjI)
+  qed
+  have hD44_Q1S1_same_component_in_Ncut:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Remaining Moise frontier-component extraction in its exact component
+      form.  The frontier component \<open>J\<^sub>N\<close> through \<open>P\<close> is analyzed as the
+      boundary of the regular neighborhood of \<open>A1\<close>; the outside boundary
+      route then places the two access points in one component of
+      \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
@@ -3224,7 +3300,8 @@ proof -
       into the boundary arc on \<open>J\<close> and the complementary frontier arc, then
       takes the lower-to-upper subarc outside \<open>N \<union> A2\<close> and attaches it to the
       already chosen access positions \<open>Q1,S1\<close>. **)
-    sorry
+    by (rule hD44_same_component_in_Ncut_suffices
+        [OF hD44_Q1S1_same_component_in_Ncut])
   show ?thesis
     using hD44_frontier_component_route .
 qed
