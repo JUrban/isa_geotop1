@@ -6420,6 +6420,57 @@ proof -
       by (rule hD44_accumulating_connected_corridor_suffices
           [OF hex_accumulating])
   qed
+  have hD44_component_closure_at_S1_suffices:
+      "S1 \<in> closure
+          (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Access-collar closure bridge.  If Moise's outside component containing
+      the \<open>Q1\<close> access point accumulates at \<open>S1\<close>, then the local \<open>Ncut\<close> ball
+      around \<open>S1\<close> intersects that component.  The union of the component with
+      this small ball is connected and lies in \<open>Ncut\<close>, so it is an actual
+      connected witness through \<open>Q1\<close> and \<open>S1\<close>. **)
+  proof -
+    assume hS1_cl:
+      "S1 \<in> closure
+        (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    obtain \<epsilon> where h\<epsilon>_pos: "0 < \<epsilon>"
+      and hball_sub: "ball S1 \<epsilon> \<subseteq> ?Ncut"
+      using hD44_S1_local_Ncut_ball by (elim exE conjE)
+    have hCQ_eq: "?CQ = connected_component_set ?Ncut Q1"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hCQ_sub: "?CQ \<subseteq> ?Ncut"
+      using hCQ_eq connected_component_subset by (by100 simp)
+    have hQ1_CQ: "Q1 \<in> ?CQ"
+      using hCQ_eq hQ1_Ncut connected_component_refl by (by100 simp)
+    have hCQ_conn_HOL: "connected ?CQ"
+      using hCQ_eq connected_connected_component by (by100 simp)
+    have hmeet: "?CQ \<inter> ball S1 \<epsilon> \<noteq> {}"
+      by (rule geotop_closure_point_meets_centered_ball_prefix
+          [OF hS1_cl h\<epsilon>_pos])
+    have hball_conn_HOL: "connected (ball S1 \<epsilon>)"
+      by (rule connected_ball)
+    have hW_conn_HOL: "connected (?CQ \<union> ball S1 \<epsilon>)"
+      by (rule connected_Un[OF hCQ_conn_HOL hball_conn_HOL hmeet])
+    have hW_conn:
+        "top1_connected_on (?CQ \<union> ball S1 \<epsilon>)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (?CQ \<union> ball S1 \<epsilon>))"
+      using hW_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hW_sub: "?CQ \<union> ball S1 \<epsilon> \<subseteq> ?Ncut"
+      using hCQ_sub hball_sub by (by100 blast)
+    have hQ1_W: "Q1 \<in> ?CQ \<union> ball S1 \<epsilon>"
+      using hQ1_CQ by (by100 blast)
+    have hS1_ball: "S1 \<in> ball S1 \<epsilon>"
+      using h\<epsilon>_pos by (by100 simp)
+    have hS1_W: "S1 \<in> ?CQ \<union> ball S1 \<epsilon>"
+      using hS1_ball by (by100 blast)
+    show ?thesis
+      by (rule hD44_connected_route_component_suffices
+          [OF hW_sub hQ1_W hS1_W hW_conn])
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -6430,12 +6481,9 @@ proof -
       complementary frontier arc, then using the lower-to-upper subarc outside
       \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-  proof (rule hD44_closed_corridor_suffices)
-    show "\<exists>C. C \<subseteq> ?Ncut
-        \<and> top1_connected_on C
-            (subspace_topology UNIV geotop_euclidean_topology C)
-        \<and> Q1 \<in> closure C
-        \<and> S1 \<in> closure C"
+  proof (rule hD44_component_closure_at_S1_suffices)
+    show "S1 \<in> closure
+        (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
       (**
         Remaining literal Moise corridor construction.  Use the frontier
         component through \<open>P\<close>, choose the lower-to-upper complementary subarc
