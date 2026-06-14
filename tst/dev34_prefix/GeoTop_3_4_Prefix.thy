@@ -5217,6 +5217,116 @@ proof -
     show ?thesis
       by (rule hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split[OF hpolygon])
   qed
+  have hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+      (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))"
+    (**
+      Degree-two form of the local regular-neighborhood incidence statement.
+      Several earlier graph packages naturally produce cardinality two at each
+      frontier vertex; the complementary frontier split wants the explicit two
+      incident edges and their exhaustion property. **)
+  proof (intro allI impI)
+    assume hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
+      and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
+      and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
+      and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
+      and hwe\<^sub>1: "w \<in> e\<^sub>1"
+      and hwe\<^sub>2: "w \<in> e\<^sub>2"
+      and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
+      and hE_eq:
+        "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
+      using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
+        [OF hdegree hwBdJ]
+      by (by100 blast)
+    have hexhaust:
+        "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+    proof (intro allI impI)
+      fix e
+      assume he: "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e"
+      have "e \<in> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+        using he by (by100 simp)
+      hence "e \<in> {e\<^sub>1, e\<^sub>2}"
+        using hE_eq by (by100 simp)
+      thus "e = e\<^sub>1 \<or> e = e\<^sub>2"
+        by (by100 simp)
+    qed
+    show "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+      using he\<^sub>1BdJ he\<^sub>2BdJ he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
+      by (by100 blast)
+  qed
+  have hD44_BdJ\<^sub>N_degree_two_boundary_subarc_complement_split:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+        \<exists>X C L C\<^sub>F. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_is_broken_line C
+          \<and> C \<subseteq> ?B1P
+          \<and> C \<subseteq> F\<^sub>1
+          \<and> C \<subseteq> J\<^sub>N
+          \<and> C \<subseteq> FrN\<^sub>I
+          \<and> C \<inter> F\<^sub>2 = {}
+          \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C \<inter> ?Ncut = {}
+          \<and> P \<in> C
+          \<and> X \<in> C
+          \<and> geotop_arc_endpoints C {P, X}
+          \<and> connected (geotop_arc_interior C {P, X})
+          \<and> geotop_arc_interior C {P, X} \<noteq> {}
+          \<and> geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> {P} \<in> L
+          \<and> {X} \<in> L
+          \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+          \<and> geotop_is_broken_line C\<^sub>F
+          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+          \<and> geotop_arc_interior C {P, X} \<inter>
+              geotop_arc_interior C\<^sub>F {P, X} = {}
+          \<and> C \<inter> C\<^sub>F = {P, X}
+          \<and> P \<in> C\<^sub>F
+          \<and> X \<in> C\<^sub>F
+          \<and> C\<^sub>F \<subseteq> J\<^sub>N
+          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C\<^sub>F \<inter> ?Ncut = {}"
+    (**
+      Same Moise frontier split, but keyed by the degree-two statement that the
+      local frontier graph analysis is expected to establish. **)
+  proof -
+    assume hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    have htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_exact_two_boundary_subarc_complement_split[OF htwo])
+  qed
   have hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
