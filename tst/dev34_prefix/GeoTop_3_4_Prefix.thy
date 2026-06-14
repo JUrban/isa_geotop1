@@ -1423,6 +1423,81 @@ proof -
           using hp_rel hp_Fr hdisj by (by100 blast)
       qed
     qed
+    have hK\<^sub>N_frontier_carrier_dim_le1:
+        "\<And>p. p \<in> FrN\<^sub>I \<Longrightarrow>
+          \<exists>n\<le>1. geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) n"
+    proof -
+      fix p
+      assume hp_Fr: "p \<in> FrN\<^sub>I"
+      have hpN: "p \<in> N"
+        using hp_Fr hFrN\<^sub>I_sub_N by (by100 blast)
+      have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+        using hpN hK\<^sub>N_poly by (by100 simp)
+      have hcarrierK: "geotop_K_carrier K\<^sub>N p \<in> K\<^sub>N"
+        by (rule geotop_K_carrier_in[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+      have hp_rel:
+          "p \<in> rel_interior (geotop_K_carrier K\<^sub>N p)"
+        by (rule geotop_K_carrier_rel_interior[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+      have hK\<^sub>N_simplices: "\<forall>\<sigma>\<in>K\<^sub>N. geotop_is_simplex \<sigma>"
+        using hK\<^sub>N_complex unfolding geotop_is_complex_def by (by100 simp)
+      have hcarrier_simplex: "geotop_is_simplex (geotop_K_carrier K\<^sub>N p)"
+        by (rule bspec[OF hK\<^sub>N_simplices hcarrierK])
+      obtain V m n where hVfin: "finite V"
+        and hVcard: "card V = n + 1"
+        and hnm: "n \<le> m"
+        and hVgp: "geotop_general_position V m"
+        and hcarrier_eq: "geotop_K_carrier K\<^sub>N p = geotop_convex_hull V"
+        using hcarrier_simplex unfolding geotop_is_simplex_def by (elim exE conjE)
+      have hdim:
+          "geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) n"
+        unfolding geotop_simplex_dim_def
+        using hVfin hVcard hnm hVgp hcarrier_eq by (by100 blast)
+      have hn_le2: "n \<le> 2"
+        by (rule geotop_simplex_dim_le_2_R2_prefix[OF hdim])
+      have hn_ne2: "n \<noteq> 2"
+      proof
+        assume hn2: "n = 2"
+        have hdim2: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 2"
+          using hdim hn2 by (by100 simp)
+        have hri_eq:
+            "rel_interior (geotop_K_carrier K\<^sub>N p) =
+              interior (geotop_K_carrier K\<^sub>N p)"
+          using geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF hdim2]
+          by (by100 simp)
+        have hp_int_carrier: "p \<in> interior (geotop_K_carrier K\<^sub>N p)"
+          using hp_rel hri_eq by (by100 simp)
+        have hcarrier_sub_poly:
+            "geotop_K_carrier K\<^sub>N p \<subseteq> geotop_polyhedron K\<^sub>N"
+          using hcarrierK unfolding geotop_polyhedron_def by (by100 blast)
+        have hinterior_sub:
+            "interior (geotop_K_carrier K\<^sub>N p)
+              \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
+          by (rule interior_mono[OF hcarrier_sub_poly])
+        have hp_int_poly: "p \<in> interior (geotop_polyhedron K\<^sub>N)"
+          using hp_int_carrier hinterior_sub by (by100 blast)
+        have hp_front_poly: "p \<in> frontier (geotop_polyhedron K\<^sub>N)"
+          using hp_Fr hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
+        have hp_not_int: "p \<notin> interior (geotop_polyhedron K\<^sub>N)"
+          using hp_front_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
+        show False
+          using hp_int_poly hp_not_int by (by100 blast)
+      qed
+      have hn_le1: "n \<le> 1"
+        using hn_le2 hn_ne2 by (by100 linarith)
+      show "\<exists>n\<le>1. geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) n"
+        using hn_le1 hdim by (intro exI conjI)
+    qed
+    have hJ\<^sub>N_carrier_dim_le1:
+        "\<And>p. p \<in> J\<^sub>N \<Longrightarrow>
+          \<exists>n\<le>1. geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) n"
+    proof -
+      fix p
+      assume hpJ: "p \<in> J\<^sub>N"
+      have hp_Fr: "p \<in> FrN\<^sub>I"
+        using hpJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+      show "\<exists>n\<le>1. geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) n"
+        by (rule hK\<^sub>N_frontier_carrier_dim_le1[OF hp_Fr])
+    qed
     have hFrN\<^sub>I_geotop_frontier_K\<^sub>N_poly:
         "FrN\<^sub>I =
           geotop_frontier UNIV geotop_euclidean_topology
