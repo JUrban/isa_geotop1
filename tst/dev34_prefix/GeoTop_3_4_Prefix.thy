@@ -1908,6 +1908,73 @@ proof -
     show "e \<subseteq> J\<^sub>N"
       using hunion_sub_comp hJ\<^sub>N_eq_connected_component by (by100 blast)
   qed
+  define BdJ\<^sub>N where "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    unfolding BdJ\<^sub>N_def by (by100 simp)
+  have hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+    by (rule finite_subset[OF hBdJ\<^sub>N_sub_BdK\<^sub>N hBdK\<^sub>N_fin])
+  have hBdJ\<^sub>N_face_closed:
+      "\<forall>\<sigma>\<in>BdJ\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> BdJ\<^sub>N"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>BdJ: "\<sigma> \<in> BdJ\<^sub>N"
+      and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>Bd: "\<sigma> \<in> BdK\<^sub>N"
+      using h\<sigma>BdJ unfolding BdJ\<^sub>N_def by (by100 simp)
+    have h\<sigma>J: "\<sigma> \<subseteq> J\<^sub>N"
+      using h\<sigma>BdJ unfolding BdJ\<^sub>N_def by (by100 simp)
+    have h\<tau>Bd: "\<tau> \<in> BdK\<^sub>N"
+      using hBdK\<^sub>N_face_closed h\<sigma>Bd h\<tau>\<sigma> by (by100 blast)
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF h\<tau>\<sigma>])
+    have h\<tau>J: "\<tau> \<subseteq> J\<^sub>N"
+      using h\<tau>sub\<sigma> h\<sigma>J by (by100 blast)
+    show "\<tau> \<in> BdJ\<^sub>N"
+      unfolding BdJ\<^sub>N_def using h\<tau>Bd h\<tau>J by (by100 simp)
+  qed
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    by (rule geotop_complex_subset_is_complex
+        [OF hBdK\<^sub>N_complex hBdJ\<^sub>N_sub_BdK\<^sub>N hBdJ\<^sub>N_face_closed])
+  have hBdJ\<^sub>N_1dim: "geotop_complex_is_1dim BdJ\<^sub>N"
+    using hBdK\<^sub>N_1dim hBdJ\<^sub>N_sub_BdK\<^sub>N
+    unfolding geotop_complex_is_1dim_def by (by100 blast)
+  have hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_1dim])
+  have hBdJ\<^sub>N_poly_compact: "compact (geotop_polyhedron BdJ\<^sub>N)"
+    by (rule geotop_complex_polyhedron_compact
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
+  have hBdJ\<^sub>N_poly_closed: "closed (geotop_polyhedron BdJ\<^sub>N)"
+    by (rule geotop_complex_polyhedron_closed
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
+  have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+    unfolding BdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
+    unfolding BdJ\<^sub>N_def by (by100 simp)
+  have hBdJ\<^sub>N_edge_sub_FrN\<^sub>I:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heJ: "e \<subseteq> J\<^sub>N"
+      by (rule hBdJ\<^sub>N_edge_sub_J\<^sub>N[OF heBdJ hedge])
+    show "e \<subseteq> FrN\<^sub>I"
+      using heJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heBdK: "e \<in> BdK\<^sub>N"
+      using heBdJ unfolding BdJ\<^sub>N_def by (by100 simp)
+    show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBdK hedge])
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
