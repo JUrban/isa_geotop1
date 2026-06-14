@@ -2300,6 +2300,47 @@ proof -
       show "p \<in> geotop_polyhedron BdJ\<^sub>N"
         unfolding geotop_polyhedron_def using hcarrier_BdJ hp_carrier by (by100 blast)
     qed
+    have hJ\<^sub>N_carrier_vertex_edge_germ_point_in_BdJ\<^sub>N_poly:
+        "\<And>p e q. p \<in> J\<^sub>N \<Longrightarrow>
+          geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 0
+          \<Longrightarrow> e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> p \<in> e \<Longrightarrow>
+          q \<in> rel_interior e \<Longrightarrow> q \<in> J\<^sub>N
+          \<Longrightarrow> p \<in> geotop_polyhedron BdJ\<^sub>N"
+    proof -
+      fix p e q
+      assume hpJ: "p \<in> J\<^sub>N"
+        and hdim0: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 0"
+        and heK: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hp_e: "p \<in> e"
+        and hq_rel: "q \<in> rel_interior e"
+        and hqJ: "q \<in> J\<^sub>N"
+      have hpN: "p \<in> N"
+        using hpJ hJ\<^sub>N_sub_N by (by100 blast)
+      have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+        using hpN hK\<^sub>N_poly by (by100 simp)
+      have hcarrierK: "geotop_K_carrier K\<^sub>N p \<in> K\<^sub>N"
+        by (rule geotop_K_carrier_in[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+      have hcarrier_eq: "geotop_K_carrier K\<^sub>N p = {p}"
+        by (rule hJ\<^sub>N_carrier_dim0_singleton[OF hpJ hdim0])
+      have hpK: "{p} \<in> K\<^sub>N"
+        using hcarrierK hcarrier_eq by (by100 simp)
+      have hface_pe: "geotop_is_face {p} e"
+        by (rule geotop_1dim_vertex_in_simplex_is_face
+            [OF hK\<^sub>N_complex hpK heK hp_e])
+      have hge1:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<ge> 1"
+        by (rule hK\<^sub>N_edge_rel_interior_incident_count_ge1
+            [OF heK hedge hq_rel])
+      have heBdJ: "e \<in> BdJ\<^sub>N"
+        by (rule hK\<^sub>N_edge_J\<^sub>N_rel_interior_member_BdJ\<^sub>N
+            [OF heK hedge hge1 hq_rel hqJ])
+      have hpBdJ: "{p} \<in> BdJ\<^sub>N"
+        using hBdJ\<^sub>N_face_closed heBdJ hface_pe by (by100 blast)
+      show "p \<in> geotop_polyhedron BdJ\<^sub>N"
+        unfolding geotop_polyhedron_def using hpBdJ by (by100 blast)
+    qed
     have hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly:
         "geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N"
       unfolding geotop_polyhedron_def using hBdJ\<^sub>N_sub_BdK\<^sub>N by (by100 blast)
