@@ -7246,6 +7246,17 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_accumulating_connected_corridor_core:
+      "\<exists>C. C \<subseteq> ?Ncut
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)
+        \<and> (\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {})
+        \<and> (\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Single adjacent-corridor form of Moise's book step.  The component of
+      \<open>I - (N \<union> A2)\<close> next to the complementary frontier arc \<open>C\<^sub>F\<close> / book
+      \<open>B\<^sub>2\<close> is connected and has both access points in its closure. **)
+    sorry
   have hD44_moise_arbitrary_access_component_witnesses_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>X Y. X \<in> ?Ncut
@@ -7259,7 +7270,65 @@ proof -
       beside the complementary frontier arc \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> has closure
       meeting both access points, so every prescribed pair of access collars
       contains two points in one component of \<open>?Ncut\<close>. **)
-    sorry
+  proof (intro allI impI)
+    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+    assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+    assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+    obtain C where hC_sub: "C \<subseteq> ?Ncut"
+      and hC_conn:
+        "top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+      and hC_Q_all: "\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      and hC_S_all: "\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hD44_moise_accumulating_connected_corridor_core
+      by (elim exE conjE)
+    have hC_Q: "C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    proof -
+      have hQ_imp: "0 < \<epsilon>\<^sub>Q \<longrightarrow> C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        by (rule spec[OF hC_Q_all])
+      show ?thesis
+        by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+    qed
+    have hC_S: "C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have hS_imp: "0 < \<epsilon>\<^sub>S \<longrightarrow> C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        by (rule spec[OF hC_S_all])
+      show ?thesis
+        by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
+    qed
+    obtain X where hX_C: "X \<in> C" and hX_ball: "X \<in> ball Q1 \<epsilon>\<^sub>Q"
+    proof -
+      have hX_ex: "\<exists>X. X \<in> C \<inter> ball Q1 \<epsilon>\<^sub>Q"
+        unfolding ex_in_conv by (rule hC_Q)
+      obtain X where hX: "X \<in> C \<inter> ball Q1 \<epsilon>\<^sub>Q"
+        using hX_ex by (elim exE)
+      show ?thesis
+        by (rule that[of X], rule IntD1[OF hX], rule IntD2[OF hX])
+    qed
+    obtain Y where hY_C: "Y \<in> C" and hY_ball: "Y \<in> ball S1 \<epsilon>\<^sub>S"
+    proof -
+      have hY_ex: "\<exists>Y. Y \<in> C \<inter> ball S1 \<epsilon>\<^sub>S"
+        unfolding ex_in_conv by (rule hC_S)
+      obtain Y where hY: "Y \<in> C \<inter> ball S1 \<epsilon>\<^sub>S"
+        using hY_ex by (elim exE)
+      show ?thesis
+        by (rule that[of Y], rule IntD1[OF hY], rule IntD2[OF hY])
+    qed
+    have hX_Ncut: "X \<in> ?Ncut"
+      by (rule hC_sub[THEN subsetD, OF hX_C])
+    have hY_Ncut: "Y \<in> ?Ncut"
+      by (rule hC_sub[THEN subsetD, OF hY_C])
+    have hY_comp:
+        "Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut X"
+      by (rule geotop_connected_witness_component_at_intro_prefix
+          [OF hC_sub hX_C hY_C hC_conn])
+    show "\<exists>X Y. X \<in> ?Ncut
+        \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+        \<and> Y \<in> ?Ncut
+        \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+        \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut X"
+      using hX_Ncut hX_ball hY_Ncut hY_ball hY_comp by (intro exI conjI)
+  qed
   have hD44_moise_arbitrary_access_broken_line_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
