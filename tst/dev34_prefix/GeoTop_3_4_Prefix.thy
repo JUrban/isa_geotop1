@@ -4256,7 +4256,11 @@ proof -
           \<and> geotop_arc_endpoints C\<^sub>O {P, X}
           \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
               geotop_arc_interior C\<^sub>O {P, X} = {}
-          \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}"
+          \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}
+          \<and> P \<in> C\<^sub>B
+          \<and> X \<in> C\<^sub>B
+          \<and> P \<in> C\<^sub>O
+          \<and> X \<in> C\<^sub>O"
   proof -
     assume hpolygon:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
@@ -4318,6 +4322,14 @@ proof -
     have hC_inter: "C\<^sub>B \<inter> C\<^sub>O = {P, X}"
       by (rule geotop_same_endpoint_arcs_inter_eq_prefix
           [OF hC\<^sub>B_end_split hC\<^sub>O_end_split hC_int_disj_split])
+    have hP_C\<^sub>B_split: "P \<in> C\<^sub>B"
+      using hC\<^sub>B_end_split unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hX_C\<^sub>B_split: "X \<in> C\<^sub>B"
+      using hC\<^sub>B_end_split unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hP_C\<^sub>O_split: "P \<in> C\<^sub>O"
+      using hC\<^sub>O_end_split unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hX_C\<^sub>O_split: "X \<in> C\<^sub>O"
+      using hC\<^sub>O_end_split unfolding geotop_arc_endpoints_def by (by100 blast)
     have hsplit_BdJ:
         "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
         \<and> geotop_is_broken_line C\<^sub>B
@@ -4326,8 +4338,14 @@ proof -
         \<and> geotop_arc_endpoints C\<^sub>O {P, X}
         \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
             geotop_arc_interior C\<^sub>O {P, X} = {}
-        \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}"
-      using hsplit hLJ_poly hC_inter by (by100 simp)
+        \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}
+        \<and> P \<in> C\<^sub>B
+        \<and> X \<in> C\<^sub>B
+        \<and> P \<in> C\<^sub>O
+        \<and> X \<in> C\<^sub>O"
+      using hsplit hLJ_poly hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
+        hP_C\<^sub>O_split hX_C\<^sub>O_split
+      by (by100 simp)
     show ?thesis
       apply (rule exI[where x=X])
       apply (rule exI[where x=C])
@@ -4337,7 +4355,8 @@ proof -
       using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
         hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
         hP_C hX_C hC_end hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
-        hsplit_BdJ hC_inter
+        hsplit_BdJ hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
+        hP_C\<^sub>O_split hX_C\<^sub>O_split
       apply (intro conjI)
       by (by100 blast)+
   qed
