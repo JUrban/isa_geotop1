@@ -4449,6 +4449,36 @@ proof -
     show ?thesis
       by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
   qed
+  have hD44_J\<^sub>N_1sphere_has_book_two_arc_split:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1 \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Book statement bridge: Moise names the frontier component through \<open>P\<close>
+      as \<open>J\<close> and proves it is a 1-sphere.  Since the preceding finite-complex
+      analysis has already identified that component with \<open>geotop_polyhedron
+      BdJ\<^sub>N\<close>, this is the literal route from the book's 1-sphere sentence to
+      the two broken-line arcs used below. **)
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hsphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_1sphere_has_book_two_arc_split[OF hsphere_BdJ])
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
