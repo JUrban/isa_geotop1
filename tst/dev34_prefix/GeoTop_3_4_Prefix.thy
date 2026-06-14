@@ -4712,26 +4712,6 @@ proof -
       chosen in the small boundary ball to the same outside component once the
       regular-neighborhood frontier subarc has been constructed. **)
     using hNcut_open_HOL hS1_Ncut open_contains_ball by (by100 blast)
-  have hD44_UNIV_top:
-      "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
-    by (metis geotop_euclidean_topology_eq_open_sets
-        top1_open_sets_is_topology_on_UNIV)
-  have hD44_Q1_singleton_connected:
-      "top1_connected_on {Q1}
-        (subspace_topology UNIV geotop_euclidean_topology {Q1})"
-    by (rule top1_connected_on_singleton[OF hD44_UNIV_top], simp)
-  have hD44_S1_singleton_connected:
-      "top1_connected_on {S1}
-        (subspace_topology UNIV geotop_euclidean_topology {S1})"
-    by (rule top1_connected_on_singleton[OF hD44_UNIV_top], simp)
-  have hD44_Q1_self_component_Ncut:
-      "Q1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    by (rule geotop_self_in_component_at
-        [OF hQ1_Ncut hD44_Q1_singleton_connected])
-  have hD44_S1_self_component_Ncut:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut S1"
-    by (rule geotop_self_in_component_at
-        [OF hS1_Ncut hD44_S1_singleton_connected])
   have hD44_same_component_in_Ncut_suffices:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> \<exists>B. geotop_is_broken_line B
