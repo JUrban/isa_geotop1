@@ -4328,6 +4328,45 @@ proof -
       apply (intro conjI)
       by (by100 blast)+
   qed
+  have hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Book split package for the regular-neighborhood frontier component:
+      after the missing no-endpoint step proves the component polygonal,
+      the frontier through \<open>P\<close> supplies the two broken-line arcs that Moise
+      denotes by the boundary piece and the complementary piece. **)
+  proof -
+    assume hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    obtain X C L C\<^sub>B C\<^sub>O where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+      and hC\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
+      and hC\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
+      and hC\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
+      and hC\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
+      and hC_int_disj:
+        "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+      using hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint[OF hpolygon]
+      by (elim exE conjE)
+    show ?thesis
+      apply (rule exI[where x=X])
+      apply (rule exI[where x=C\<^sub>B])
+      apply (rule exI[where x=C\<^sub>O])
+      using hX_B1P hX_ne hBdJ_split hC\<^sub>B_bl hC\<^sub>O_bl
+        hC\<^sub>B_end hC\<^sub>O_end hC_int_disj
+      apply (intro conjI)
+      by (by100 blast)+
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
