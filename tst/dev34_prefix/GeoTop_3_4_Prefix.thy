@@ -7246,6 +7246,20 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_arbitrary_access_component_witnesses_core:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X"
+    (**
+      Adjacent-component form of Moise's corridor.  The outside component lying
+      beside the complementary frontier arc \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> has closure
+      meeting both access points, so every prescribed pair of access collars
+      contains two points in one component of \<open>?Ncut\<close>. **)
+    sorry
   have hD44_moise_arbitrary_access_broken_line_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
@@ -7256,7 +7270,85 @@ proof -
       Literal Moise frontier-subarc target.  For every pair of lower and upper
       access collars, the complementary frontier arc \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close>
       should yield a broken-line subarc inside \<open>?Ncut\<close> meeting both collars. **)
-    sorry
+  proof (intro allI impI)
+    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+    assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+    assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+    have hQ_spec:
+      "\<forall>\<epsilon>\<^sub>S>0. \<exists>X Y. X \<in> ?Ncut
+        \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+        \<and> Y \<in> ?Ncut
+        \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+        \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut X"
+    proof -
+      have hQ_imp:
+        "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0. \<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X)"
+        by (rule spec[OF hD44_moise_arbitrary_access_component_witnesses_core])
+      show ?thesis
+        by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+    qed
+    have hQS_spec:
+      "\<exists>X Y. X \<in> ?Ncut
+        \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+        \<and> Y \<in> ?Ncut
+        \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+        \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut X"
+    proof -
+      have hS_imp:
+        "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X)"
+        by (rule spec[OF hQ_spec])
+      show ?thesis
+        by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
+    qed
+    obtain X Y where hX_Ncut: "X \<in> ?Ncut"
+      and hX_ball: "X \<in> ball Q1 \<epsilon>\<^sub>Q"
+      and hY_Ncut: "Y \<in> ?Ncut"
+      and hY_ball: "Y \<in> ball S1 \<epsilon>\<^sub>S"
+      and hY_comp:
+        "Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut X"
+      using hQS_spec by (elim exE conjE)
+    have hB_exists:
+      "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> ?Ncut
+        \<and> X \<in> B \<and> Y \<in> B"
+      by (rule geotop_open_component_broken_line_between_prefix
+          [OF hNcut_open hX_Ncut hY_comp])
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hX_B: "X \<in> B"
+      and hY_B: "Y \<in> B"
+      using hB_exists by (elim exE conjE)
+    have hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    proof -
+      have "X \<in> B \<inter> ball Q1 \<epsilon>\<^sub>Q"
+        by (rule IntI[OF hX_B hX_ball])
+      thus ?thesis
+        unfolding ex_in_conv[symmetric] by (rule exI[where x = X])
+    qed
+    have hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have "Y \<in> B \<inter> ball S1 \<epsilon>\<^sub>S"
+        by (rule IntI[OF hY_B hY_ball])
+      thus ?thesis
+        unfolding ex_in_conv[symmetric] by (rule exI[where x = Y])
+    qed
+    show "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hB_bl hB_sub hB_Q hB_S by (intro exI conjI)
+  qed
   have hD44_moise_arbitrary_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
