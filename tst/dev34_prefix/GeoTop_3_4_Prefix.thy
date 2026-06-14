@@ -2142,6 +2142,12 @@ proof -
     have hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
       by (rule geotop_complex_1dim_imp_linear_graph_prefix
           [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_1dim])
+    have hBdJ\<^sub>N_poly_compact: "compact (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule geotop_complex_polyhedron_compact
+          [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
+    have hBdJ\<^sub>N_poly_closed: "closed (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule geotop_complex_polyhedron_closed
+          [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
     have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
       unfolding BdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
     have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
