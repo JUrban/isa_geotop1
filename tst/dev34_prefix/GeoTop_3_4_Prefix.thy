@@ -7380,87 +7380,6 @@ proof -
             \<and> S1 \<in> closure Z"
         using hD44_moise_polygon_adjacent_corridor_book_step
         by (rule conjunct2)
-      have hle2_all:
-          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-        by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
-            [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected hpolygon])
-      have hle2:
-          "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      proof -
-        fix w
-        assume hw: "{w} \<in> BdJ\<^sub>N"
-        have himp:
-            "{w} \<in> BdJ\<^sub>N \<longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-          by (rule spec[OF hle2_all])
-        show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-          by (rule mp[OF himp hw])
-      qed
-      have hnot_broken:
-          "\<not> geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)"
-      proof
-        assume hbroken: "geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)"
-        show False
-          by (rule geotop_polygon_not_broken_line_graph_prefix[OF hpolygon hbroken])
-      qed
-      have hnoend:
-          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      proof (intro allI impI)
-        fix w
-        assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-        show "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
-        proof
-          assume hend_w: "geotop_graph_endpoint BdJ\<^sub>N w"
-          have hdegree12:
-              "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
-                \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-            by (rule hBdJ\<^sub>N_vertex_degree_one_or_two_from_card_le2[OF hle2])
-          have hend_ex:
-              "\<exists>w. {w} \<in> BdJ\<^sub>N \<and> geotop_graph_endpoint BdJ\<^sub>N w"
-            using hwBdJ hend_w by (intro exI conjI)
-          have hbroken:
-              "geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)"
-            by (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_prefix
-                [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
-                  hdegree12 hend_ex])
-          show False
-            using hnot_broken hbroken by (by100 blast)
-        qed
-      qed
-      have hge2:
-          "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-      proof -
-        fix w
-        assume hw: "{w} \<in> BdJ\<^sub>N"
-        have hge2_all:
-            "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-          by (rule hBdJ\<^sub>N_vertex_card_ge2_from_no_endpoint[OF hnoend])
-        have himp:
-            "{w} \<in> BdJ\<^sub>N \<longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-          by (rule spec[OF hge2_all])
-        show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-          by (rule mp[OF himp hw])
-      qed
-      have hdegree:
-          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-        by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_bounds[OF hle2 hge2])
-      have htwo:
-          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-              geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-              \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-              \<and> e\<^sub>1 \<noteq> e\<^sub>2
-              \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                  \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-        by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
       obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
         and hZ_conn:
           "top1_connected_on Z
@@ -7502,7 +7421,7 @@ proof -
         and hC\<^sub>F_sub_FrN\<^sub>I: "C\<^sub>F \<subseteq> FrN\<^sub>I"
         and hC\<^sub>F_A2_QS_disj: "C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}"
         and hC\<^sub>F_Ncut_disj: "C\<^sub>F \<inter> ?Ncut = {}"
-        using hD44_BdJ\<^sub>N_exact_two_boundary_subarc_complement_split[OF htwo]
+        using hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split[OF hpolygon]
         by (elim exE conjE)
       show ?thesis
         using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_J\<^sub>N hC_sub_FrN\<^sub>I
