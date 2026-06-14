@@ -970,25 +970,68 @@ proof -
         and hU\<^sub>S_N_disj: "U\<^sub>S \<inter> N = {}"
       using hQ_S_two_arc_local_access_outside_N
       by (elim exE conjE)
-    have hD44_QS_witnesses_same_component_from_fine_A1_neighborhood:
-        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
-          (geotop_polygon_interior J - (A1 \<union> A2)) Q'"
+    let ?cut = "geotop_polygon_interior J - (A1 \<union> A2)"
+    let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+    have hNcut_sub_cut: "?Ncut \<subseteq> ?cut"
+      using hA1_N by (by100 blast)
+    have hU\<^sub>Q_sub_Ncut: "U\<^sub>Q \<subseteq> ?Ncut"
+      using hU\<^sub>Q_sub hU\<^sub>Q_N_disj by (by100 blast)
+    have hU\<^sub>S_sub_Ncut: "U\<^sub>S \<subseteq> ?Ncut"
+      using hU\<^sub>S_sub hU\<^sub>S_N_disj by (by100 blast)
+    have hQ'_Ncut: "Q' \<in> ?Ncut"
+      using hQ'_U\<^sub>Q hU\<^sub>Q_sub_Ncut by (by100 blast)
+    have hS'_Ncut: "S' \<in> ?Ncut"
+      using hS'_U\<^sub>S hU\<^sub>S_sub_Ncut by (by100 blast)
+    have hcomponent_Ncut_sub_cut:
+        "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
+          \<subseteq> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
+    proof (rule subsetI)
+      fix x
+      assume hx:
+        "x \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
+      obtain C where hC:
+          "C \<subseteq> ?Ncut \<and> Q' \<in> C \<and>
+            top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)"
+        and hxC: "x \<in> C"
+        using hx unfolding geotop_component_at_def by (by100 blast)
+      have hC_sub_cut: "C \<subseteq> ?cut"
+        using hC hNcut_sub_cut by (by100 blast)
+      have hC_witness:
+          "C \<in> {C. C \<subseteq> ?cut \<and> Q' \<in> C \<and>
+            top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)}"
+        using hC hC_sub_cut by (by100 simp)
+      show "x \<in> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
+        unfolding geotop_component_at_def using hC_witness hxC by (by100 blast)
+    qed
+    have hD44_same_component_from_Ncut_suffices:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
+          \<Longrightarrow> S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
+      using hcomponent_Ncut_sub_cut by (rule subsetD)
+    have hD44_QS_witnesses_same_component_in_Ncut:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
       (**
-        Remaining regular-neighborhood step in Moise 4.4.  Use the fine
-        carrier \<open>N\<close> with \<open>A1 \<subseteq> N\<close> and \<open>N \<inter> A2 = {}\<close>; restrict it to the
-        closed polygonal disk, take the relevant frontier component through
-        \<open>P\<close>, extract the broken-line subarc with endpoints on \<open>J\<close>, and use
-        cyclic order plus the D42 separation package to show the local access
-        witnesses \<open>Q'\<close> and \<open>S'\<close> lie in the same component of
-        \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close>. **)
+        Remaining regular-neighborhood step in Moise 4.4, now stated in the
+        smaller complement outside the chosen carrier \<open>N\<close>.  Use the compact
+        finite polyhedral carrier \<open>N\<close> with \<open>A1 \<subseteq> N\<close>, \<open>N \<inter> A2 = {}\<close>,
+        and the local witnesses already chosen outside \<open>N\<close>.  Analyze the
+        frontier component of \<open>N\<close> through \<open>P\<close>, extract the broken-line subarc
+        with endpoints on \<open>J\<close>, and use the cyclic-order/D42 transfer to show
+        the outside witnesses \<open>Q'\<close> and \<open>S'\<close> lie in one component of
+        \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
       using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS hN_A2_only
         hSd_poly hN_sub_disk hN_compact
         hQ_not_N hS_not_N hN_closed hball_Q_N hball_S_N
         hball_Q_r_N hball_S_r_N hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
-        hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
+        hU\<^sub>Q_sub_Ncut hU\<^sub>S_sub_Ncut hQ'_Ncut hS'_Ncut
+        hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
         hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
-        hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+        hQ'_U\<^sub>Q hS'_U\<^sub>S hU_disj
       sorry
+    have hD44_QS_witnesses_same_component_from_fine_A1_neighborhood:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - (A1 \<union> A2)) Q'"
+      by (rule hD44_same_component_from_Ncut_suffices
+          [OF hD44_QS_witnesses_same_component_in_Ncut])
     show ?thesis
       by (rule geotop_same_component_local_access_frontier_transfer_prefix
           [where U = "geotop_polygon_interior J - (A1 \<union> A2)"
