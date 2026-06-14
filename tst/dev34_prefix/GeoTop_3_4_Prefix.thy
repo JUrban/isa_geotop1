@@ -6150,6 +6150,69 @@ proof -
       thus False .
     qed
   qed
+  have hD44_arbitrary_access_broken_line_crossings_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Book-facing version of the previous reduction.  Moise constructs a
+      broken-line corridor between arbitrarily small lower and upper access
+      collars; since every broken line is connected, such corridors supply the
+      connected access-ball crossings needed to force the \<open>Q1\<close> and \<open>S1\<close>
+      access points into the same \<open>Ncut\<close> component. **)
+  proof -
+    assume hall_broken:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    have hall_connected:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      have hQ_spec:
+        "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hall_broken h\<epsilon>\<^sub>Q_pos by (by100 blast)
+      have hQS_spec:
+        "\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hQ_spec h\<epsilon>\<^sub>S_pos by (by100 blast)
+      obtain B where hB_bl: "geotop_is_broken_line B"
+        and hB_sub: "B \<subseteq> ?Ncut"
+        and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hQS_spec by (elim exE conjE)
+      have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+        by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+      show "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
+    qed
+    show ?thesis
+      by (rule hD44_arbitrary_access_ball_crossings_suffice[OF hall_connected])
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -6160,7 +6223,20 @@ proof -
       complementary frontier arc, then using the lower-to-upper subarc outside
       \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-    sorry
+  proof (rule hD44_arbitrary_access_broken_line_crossings_suffice)
+    show "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      (**
+        Remaining literal Moise corridor construction.  For arbitrary positive
+        access collars around \<open>Q1\<close> and \<open>S1\<close>, use the frontier component
+        through \<open>P\<close>, choose the lower-to-upper complementary subarc between
+        the last lower and first upper boundary hits, and take the adjacent
+        outside corridor in \<open>I - (N \<union> A2)\<close> as the required broken line. **)
+      sorry
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
