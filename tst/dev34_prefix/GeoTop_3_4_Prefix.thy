@@ -7354,11 +7354,10 @@ proof -
         its closure contains the two access witnesses chosen near \<open>Q\<close> and
         \<open>S\<close>. **)
     proof -
-      have hD44_moise_le2_noendpoint_adjacent_corridor_book_step:
+      have hD44_moise_le2_not_broken_adjacent_corridor_book_step:
           "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
               card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-          \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-              \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+          \<and> \<not> geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)
           \<and> (\<exists>Z. Z \<subseteq> ?Ncut
             \<and> top1_connected_on Z
                 (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -7366,32 +7365,19 @@ proof -
             \<and> S1 \<in> closure Z)"
         (**
           Sharper remaining book obligation.  Moise's "then \<open>J\<close> is a
-          1-sphere" is represented here as the two local incidence bounds on
-          \<open>BdJ\<^sub>N\<close>: no vertex has more than two frontier edges, and no vertex
-          is an endpoint.  The already proved finite-graph packages convert
-          these conditions into degree two, exact incident edges, then the
-          boundary arc \<open>C\<close> and complementary frontier arc \<open>C\<^sub>F\<close>.  The final
-          conjunct is the adjacent outside component/corridor along \<open>C\<^sub>F\<close>. **)
+          1-sphere" is represented here by two local/topological facts about
+          \<open>BdJ\<^sub>N\<close>: no vertex has more than two frontier edges, and the frontier
+          component carrier is not a broken line.  The already proved finite
+          graph packages turn these into no endpoints, degree two, exact
+          incident edges, then the boundary arc \<open>C\<close> and complementary
+          frontier arc \<open>C\<^sub>F\<close>.  The final conjunct is the adjacent outside
+          component/corridor along \<open>C\<^sub>F\<close>. **)
         sorry
       have hle2_all:
           "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
             card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-        using hD44_moise_le2_noendpoint_adjacent_corridor_book_step
+        using hD44_moise_le2_not_broken_adjacent_corridor_book_step
         by (rule conjunct1)
-      have hnoend_Z:
-          "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-              \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-          \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Q1 \<in> closure Z
-            \<and> S1 \<in> closure Z)"
-        using hD44_moise_le2_noendpoint_adjacent_corridor_book_step
-        by (rule conjunct2)
-      have hnoend:
-          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-        using hnoend_Z by (rule conjunct1)
       have hle2:
           "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
             card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
@@ -7404,6 +7390,44 @@ proof -
           by (rule spec[OF hle2_all])
         show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
           by (rule mp[OF himp hw])
+      qed
+      have hnot_broken_Z:
+          "\<not> geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)
+          \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Q1 \<in> closure Z
+            \<and> S1 \<in> closure Z)"
+        using hD44_moise_le2_not_broken_adjacent_corridor_book_step
+        by (rule conjunct2)
+      have hnot_broken:
+          "\<not> geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)"
+        using hnot_broken_Z by (rule conjunct1)
+      have hnoend:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      proof (intro allI impI)
+        fix w
+        assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+        show "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+        proof
+          assume hend_w: "geotop_graph_endpoint BdJ\<^sub>N w"
+          have hdegree12:
+              "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+                \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+            by (rule hBdJ\<^sub>N_vertex_degree_one_or_two_from_card_le2[OF hle2])
+          have hend_ex:
+              "\<exists>w. {w} \<in> BdJ\<^sub>N \<and> geotop_graph_endpoint BdJ\<^sub>N w"
+            using hwBdJ hend_w by (intro exI conjI)
+          have hbroken:
+              "geotop_is_broken_line (geotop_polyhedron BdJ\<^sub>N)"
+            by (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_prefix
+                [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+                  hdegree12 hend_ex])
+          show False
+            using hnot_broken hbroken by (by100 blast)
+        qed
       qed
       have hge2:
           "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
@@ -7441,7 +7465,7 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Q1 \<in> closure Z
             \<and> S1 \<in> closure Z"
-        using hnoend_Z
+        using hnot_broken_Z
         by (rule conjunct2)
       obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
         and hZ_conn:
