@@ -7105,16 +7105,53 @@ proof -
         using hZ_sub hZ_conn hZ_CQ hZ_Sball by (intro exI conjI)
     qed
   qed
+  have hD44_moise_Q1_component_has_S1_ball_witnesses:
+      "\<forall>\<epsilon>>0. \<exists>Y.
+          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>"
+    (**
+      Literal upper-collar form of Moise's final regular-neighborhood step:
+      after the frontier component through \<open>P\<close> is split into the boundary
+      subarc and the complementary frontier arc, the outside component already
+      reached from \<open>Q1\<close> has points in every upper access collar around
+      \<open>S1\<close>. **)
+    sorry
   have hD44_moise_Q1_component_accumulates_at_S1:
       "S1 \<in> closure
         (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
     (**
-      Final literal Moise corridor construction in component-closure form.  The
-      complementary frontier arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close> arc after removing
-      the boundary component through \<open>P\<close>; the adjacent outside component of
-      \<open>I - (N \<union> A2)\<close> along the lower-to-upper subarc is the \<open>Q1\<close> component,
-      and its closure reaches the upper access point \<open>S1\<close>. **)
-    sorry
+      Conversion from Moise's collar formulation to ordinary Euclidean
+      closure. **)
+    unfolding closure_approachable
+  proof (intro allI impI)
+    fix \<epsilon> :: real
+    assume h\<epsilon>_pos: "0 < \<epsilon>"
+    have h\<epsilon>_imp:
+        "0 < \<epsilon> \<longrightarrow> (\<exists>Y.
+          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>)"
+      by (rule spec[OF hD44_moise_Q1_component_has_S1_ball_witnesses])
+    have hY_ex:
+        "\<exists>Y. Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>"
+      by (rule mp[OF h\<epsilon>_imp h\<epsilon>_pos])
+    obtain Y where hY_comp:
+        "Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      and hY_ball: "Y \<in> ball S1 \<epsilon>"
+      using hY_ex by (elim exE conjE)
+    have hdist: "dist Y S1 < \<epsilon>"
+    proof -
+      have hdist_SY: "dist S1 Y < \<epsilon>"
+        using hY_ball unfolding ball_def by (by100 simp)
+      have hcomm: "dist Y S1 = dist S1 Y"
+        by (rule dist_commute)
+      show ?thesis
+        using hdist_SY hcomm by (by100 simp)
+    qed
+    show "\<exists>y\<in>geotop_component_at UNIV geotop_euclidean_topology
+        ?Ncut Q1. dist y S1 < \<epsilon>"
+      using hY_comp hdist by (intro bexI)
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
