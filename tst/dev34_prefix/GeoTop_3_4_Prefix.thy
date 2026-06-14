@@ -4367,6 +4367,56 @@ proof -
       apply (intro conjI)
       by (by100 blast)+
   qed
+  have hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split_with_endpoint_members:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}
+          \<and> P \<in> C\<^sub>B
+          \<and> X \<in> C\<^sub>B
+          \<and> P \<in> C\<^sub>O
+          \<and> X \<in> C\<^sub>O"
+    (**
+      Endpoint-explicit form of the same Moise two-arc split.  The later
+      lower-to-upper route bookkeeping needs the fact that both broken arcs
+      really contain the two cut endpoints, not just the endpoint predicate. **)
+  proof -
+    assume hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    obtain X C\<^sub>B C\<^sub>O where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+      and hC\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
+      and hC\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
+      and hC\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
+      and hC\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
+      and hC_int_disj:
+        "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+      using hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon]
+      by (elim exE conjE)
+    have hP_C\<^sub>B: "P \<in> C\<^sub>B"
+      using hC\<^sub>B_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hX_C\<^sub>B: "X \<in> C\<^sub>B"
+      using hC\<^sub>B_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hP_C\<^sub>O: "P \<in> C\<^sub>O"
+      using hC\<^sub>O_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hX_C\<^sub>O: "X \<in> C\<^sub>O"
+      using hC\<^sub>O_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    show ?thesis
+      apply (rule exI[where x=X])
+      apply (rule exI[where x=C\<^sub>B])
+      apply (rule exI[where x=C\<^sub>O])
+      using hX_B1P hX_ne hBdJ_split hC\<^sub>B_bl hC\<^sub>O_bl hC\<^sub>B_end
+        hC\<^sub>O_end hC_int_disj hP_C\<^sub>B hX_C\<^sub>B hP_C\<^sub>O hX_C\<^sub>O
+      apply (intro conjI)
+      by (by100 blast)+
+  qed
   have hD44_BdJ\<^sub>N_card_le2_no_endpoint_has_book_two_arc_split:
       "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
