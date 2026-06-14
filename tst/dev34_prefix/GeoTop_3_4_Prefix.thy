@@ -2859,6 +2859,78 @@ proof -
       show ?thesis
         using heBdJ hedge hP_e by (intro bexI[where x=e] conjI)
     qed
+    have hBdJ\<^sub>N_poly_not_singleton:
+        "\<And>w. geotop_polyhedron BdJ\<^sub>N \<noteq> {w}"
+    proof
+      fix w
+      assume hpoly_single: "geotop_polyhedron BdJ\<^sub>N = {w}"
+      obtain e where heBdJ: "e \<in> BdJ\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hP_e: "P \<in> e"
+        using hBdJ\<^sub>N_P_incident_edge by (by100 blast)
+      have he_sub_poly: "e \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+        unfolding geotop_polyhedron_def using heBdJ by (by100 blast)
+      have hP_w: "P = w"
+        using hP_e he_sub_poly hpoly_single by (by100 blast)
+      have he_sub_singleP: "e \<subseteq> {P}"
+        using he_sub_poly hpoly_single hP_w by (by100 simp)
+      have he_eq_singleP: "e = {P}"
+        using hP_e he_sub_singleP by (by100 blast)
+      have "geotop_is_edge {P}"
+        using hedge he_eq_singleP by (by100 simp)
+      thus False
+        using geotop_singleton_not_edge_prefix by (by100 blast)
+    qed
+    have hBdJ\<^sub>N_vertex_incident_edge:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          \<exists>e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e"
+    proof (rule ccontr)
+      fix w
+      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+        and hno: "\<not> (\<exists>e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e)"
+      have hw_vertex: "w \<in> geotop_complex_vertices BdJ\<^sub>N"
+        using geotop_complex_vertices_eq_0_simplexes[OF hBdJ\<^sub>N_complex] hwBdJ
+        by (by100 blast)
+      have hsingle_top:
+          "{w} \<in>
+            subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron BdJ\<^sub>N)"
+        by (rule geotop_complex_no_incident_edge_vertex_open_singleton_prefix
+            [OF hBdJ\<^sub>N_complex hw_vertex hno])
+      obtain U where hsingle_eq:
+          "{w} = geotop_polyhedron BdJ\<^sub>N \<inter> U"
+        and hU_top: "U \<in> geotop_euclidean_topology"
+        using hsingle_top unfolding subspace_topology_def by (by100 blast)
+      have hU_open: "open U"
+        using hU_top unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hsingle_openin:
+          "openin (top_of_set (geotop_polyhedron BdJ\<^sub>N)) {w}"
+        unfolding openin_open
+        using hU_open hsingle_eq by (by100 blast)
+      have hw_poly: "w \<in> geotop_polyhedron BdJ\<^sub>N"
+        unfolding geotop_polyhedron_def using hwBdJ by (by100 blast)
+      have hsingle_closedin:
+          "closedin (top_of_set (geotop_polyhedron BdJ\<^sub>N)) {w}"
+      proof -
+        have hclosed_single: "closed {w}"
+          by (by100 simp)
+        have hsingle_eq_poly:
+            "{w} = geotop_polyhedron BdJ\<^sub>N \<inter> {w}"
+          using hw_poly by (by100 blast)
+        show ?thesis
+          unfolding closedin_closed
+          using hclosed_single hsingle_eq_poly by (by100 blast)
+      qed
+      have hsingle_cases:
+          "{w} = {} \<or> {w} = geotop_polyhedron BdJ\<^sub>N"
+        using connected_clopen[THEN iffD1, OF hBdJ\<^sub>N_poly_connected_HOL]
+          hsingle_openin hsingle_closedin by (by100 blast)
+      have hpoly_single: "geotop_polyhedron BdJ\<^sub>N = {w}"
+        using hsingle_cases by (by100 blast)
+      show False
+        using hBdJ\<^sub>N_poly_not_singleton[of w] hpoly_single by (by100 blast)
+    qed
     have hBdJ\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
