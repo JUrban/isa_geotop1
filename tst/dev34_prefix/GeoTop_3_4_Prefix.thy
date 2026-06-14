@@ -3270,6 +3270,27 @@ proof -
       show ?thesis
         using huBdJ hvBdJ huv hsplit by (by100 blast)
     qed
+    have hBdJ\<^sub>N_cycle_split_from_simple_closed_curve:
+        "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+          \<exists>u v C\<^sub>1 C\<^sub>2.
+            {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v
+            \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+            \<and> geotop_is_broken_line C\<^sub>1
+            \<and> geotop_is_broken_line C\<^sub>2
+            \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+            \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+            \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+                geotop_arc_interior C\<^sub>2 {u, v} = {}"
+    proof -
+      assume hSCC:
+        "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)"
+      have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+        by (rule hBdJ\<^sub>N_polygon_from_simple_closed_curve[OF hSCC])
+      show ?thesis
+        by (rule hBdJ\<^sub>N_cycle_split_from_polygon[OF hpolygon])
+    qed
     have hBdJ\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
