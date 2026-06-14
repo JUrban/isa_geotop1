@@ -1872,6 +1872,42 @@ proof -
         using hx\<rho> h\<rho>sub\<tau> h\<tau>Fr by (by100 blast)
     qed
   qed
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  proof -
+    fix e
+    assume heBd: "e \<in> BdK\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+    have he_Fr: "e \<subseteq> FrN\<^sub>I"
+      by (rule hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBd hedge])
+    have he_dim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+    have he_path_connected:
+        "top1_path_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule Theorem_GT_1_3[OF he_simplex])
+    have he_connected_top:
+        "top1_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule top1_path_connected_on_geotop_imp_connected[OF he_path_connected])
+    have he_connected: "connected e"
+      using he_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hunion_connected: "connected (e \<union> J\<^sub>N)"
+      by (rule connected_Un[OF he_connected hJ\<^sub>N_connected_HOL hmeet])
+    have hunion_sub: "e \<union> J\<^sub>N \<subseteq> FrN\<^sub>I"
+      using he_Fr hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    have hP_union: "P \<in> e \<union> J\<^sub>N"
+      using hP_J\<^sub>N by (by100 blast)
+    have hunion_sub_comp: "e \<union> J\<^sub>N \<subseteq> connected_component_set FrN\<^sub>I P"
+      by (rule connected_component_maximal
+          [OF hP_union hunion_connected hunion_sub])
+    show "e \<subseteq> J\<^sub>N"
+      using hunion_sub_comp hJ\<^sub>N_eq_connected_component by (by100 blast)
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
