@@ -4255,7 +4255,8 @@ proof -
           \<and> geotop_arc_endpoints C\<^sub>B {P, X}
           \<and> geotop_arc_endpoints C\<^sub>O {P, X}
           \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
-              geotop_arc_interior C\<^sub>O {P, X} = {}"
+              geotop_arc_interior C\<^sub>O {P, X} = {}
+          \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}"
   proof -
     assume hpolygon:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
@@ -4306,6 +4307,17 @@ proof -
       using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
         [OF hLJ_linear hLJ_fin hLJ_conn hLJ_polygon hP_LJ hX_LJ hP_ne_X]
       by (by100 blast)
+    have hC\<^sub>B_end_split: "geotop_arc_endpoints C\<^sub>B {P, X}"
+      using hsplit by (by100 blast)
+    have hC\<^sub>O_end_split: "geotop_arc_endpoints C\<^sub>O {P, X}"
+      using hsplit by (by100 blast)
+    have hC_int_disj_split:
+        "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+      using hsplit by (by100 blast)
+    have hC_inter: "C\<^sub>B \<inter> C\<^sub>O = {P, X}"
+      by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+          [OF hC\<^sub>B_end_split hC\<^sub>O_end_split hC_int_disj_split])
     have hsplit_BdJ:
         "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
         \<and> geotop_is_broken_line C\<^sub>B
@@ -4313,8 +4325,9 @@ proof -
         \<and> geotop_arc_endpoints C\<^sub>B {P, X}
         \<and> geotop_arc_endpoints C\<^sub>O {P, X}
         \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
-            geotop_arc_interior C\<^sub>O {P, X} = {}"
-      using hsplit hLJ_poly by (by100 simp)
+            geotop_arc_interior C\<^sub>O {P, X} = {}
+        \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}"
+      using hsplit hLJ_poly hC_inter by (by100 simp)
     show ?thesis
       apply (rule exI[where x=X])
       apply (rule exI[where x=C])
@@ -4324,7 +4337,7 @@ proof -
       using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
         hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
         hP_C hX_C hC_end hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
-        hsplit_BdJ
+        hsplit_BdJ hC_inter
       apply (intro conjI)
       by (by100 blast)+
   qed
