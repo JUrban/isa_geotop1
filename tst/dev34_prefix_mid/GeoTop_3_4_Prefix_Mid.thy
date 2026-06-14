@@ -36331,6 +36331,102 @@ proof -
     using hpq ha_open hb_open by (by100 blast)
 qed
 
+lemma geotop_figure33_line_scalar_basic_prefix:
+  fixes v\<^sub>1 v\<^sub>5 :: "real^2"
+  assumes hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
+  assumes ht: "0 < t"
+  shows
+    "collinear
+      {v\<^sub>1, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5),
+        v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5}
+    \<and> v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1) \<noteq> v\<^sub>5
+    \<and> v\<^sub>5 \<noteq> v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)
+    \<and> v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1) \<noteq> v\<^sub>1
+    \<and> v\<^sub>1 \<noteq> v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)
+    \<and> v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)
+        \<noteq> v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1)
+    \<and> v\<^sub>1 \<in> open_segment
+        (v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5))
+        (v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1))
+    \<and> v\<^sub>5 \<in> open_segment
+        (v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5))
+        (v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1))"
+  (**
+    Figure 3.3 scalar line package: for positive scalar \<open>t\<close>, the auxiliary
+    points placed beyond \<open>v\<^sub>1\<close> and \<open>v\<^sub>5\<close> are distinct, collinear with them,
+    and contain \<open>v\<^sub>1\<close> and \<open>v\<^sub>5\<close> in the open segment between the auxiliaries. **)
+proof -
+  let ?v\<^sub>3 = "v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)"
+  let ?v\<^sub>4 = "v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+  have ht_ne: "t \<noteq> 0"
+    using ht by (by100 simp)
+  have h1t_ne: "1 + t \<noteq> 0"
+    using ht by (by100 simp)
+  have hv\<^sub>1v\<^sub>5_vec: "v\<^sub>1 - v\<^sub>5 \<noteq> 0"
+    using hv\<^sub>1v\<^sub>5 by (by100 simp)
+  have hv\<^sub>5v\<^sub>1_vec: "v\<^sub>5 - v\<^sub>1 \<noteq> 0"
+    using hv\<^sub>1v\<^sub>5 by (by100 simp)
+  have hv\<^sub>3_line:
+      "?v\<^sub>3 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+  proof -
+    have "?v\<^sub>3 = v\<^sub>1 + (- t) *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+      by (simp add: algebra_simps)
+    thus ?thesis
+      unfolding affine_hull_2_alt by (by100 blast)
+  qed
+  have hv\<^sub>4_line:
+      "?v\<^sub>4 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+  proof -
+    have "?v\<^sub>4 = v\<^sub>1 + (1 + t) *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+      by (simp add: algebra_simps)
+    thus ?thesis
+      unfolding affine_hull_2_alt by (by100 blast)
+  qed
+  have hcol3: "collinear {v\<^sub>1, v\<^sub>5, ?v\<^sub>3}"
+    by (rule affine_hull_3_imp_collinear[OF hv\<^sub>3_line])
+  have hcol4: "collinear {v\<^sub>1, v\<^sub>5, ?v\<^sub>4}"
+    by (rule affine_hull_3_imp_collinear[OF hv\<^sub>4_line])
+  have hcol: "collinear {v\<^sub>1, ?v\<^sub>3, ?v\<^sub>4, v\<^sub>5}"
+  proof -
+    have "collinear (insert v\<^sub>1 (insert v\<^sub>5 {?v\<^sub>3, ?v\<^sub>4}))"
+      using hcol3 hcol4
+        collinear_triples[OF hv\<^sub>1v\<^sub>5, of "{?v\<^sub>3, ?v\<^sub>4}"]
+      by (by100 simp)
+    thus ?thesis
+      by (simp add: insert_commute)
+  qed
+  have hv\<^sub>4_ne_v\<^sub>5: "?v\<^sub>4 \<noteq> v\<^sub>5"
+    using ht_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 fastforce)
+  have hv\<^sub>1_ne_v\<^sub>3: "v\<^sub>1 \<noteq> ?v\<^sub>3"
+    using ht_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 fastforce)
+  have hv\<^sub>5_ne_v\<^sub>3: "v\<^sub>5 \<noteq> ?v\<^sub>3"
+  proof
+    assume "v\<^sub>5 = ?v\<^sub>3"
+    hence "(1 + t) *\<^sub>R (v\<^sub>1 - v\<^sub>5) = 0"
+      by (simp add: algebra_simps)
+    thus False
+      using h1t_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 blast)
+  qed
+  have hv\<^sub>4_ne_v\<^sub>1: "?v\<^sub>4 \<noteq> v\<^sub>1"
+  proof
+    assume "?v\<^sub>4 = v\<^sub>1"
+    hence "(1 + t) *\<^sub>R (v\<^sub>5 - v\<^sub>1) = 0"
+      by (simp add: algebra_simps)
+    thus False
+      using h1t_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 blast)
+  qed
+  have horder:
+      "?v\<^sub>3 \<noteq> ?v\<^sub>4
+      \<and> v\<^sub>1 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4
+      \<and> v\<^sub>5 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4"
+    by (rule geotop_figure33_scalar_outer_open_segment_order_prefix
+        [OF hv\<^sub>1v\<^sub>5 ht])
+  show ?thesis
+    using hcol hv\<^sub>4_ne_v\<^sub>5 hv\<^sub>5_ne_v\<^sub>3 hv\<^sub>4_ne_v\<^sub>1
+      hv\<^sub>1_ne_v\<^sub>3 horder
+    by (by100 blast)
+qed
+
 lemma geotop_convex_hull_insert_inter_affine_base_prefix:
   fixes A L :: "(real^2) set"
   assumes hA_ne: "A \<noteq> {}"
@@ -40570,70 +40666,7 @@ proof -
 	          proof -
 	            fix t :: real
 	            assume ht: "0 < t"
-	            have ht_ne: "t \<noteq> 0"
-	              using ht by (by100 simp)
-	            have h1t_ne: "1 + t \<noteq> 0"
-	              using ht by (by100 simp)
-	            have hv\<^sub>1v\<^sub>5_vec: "v\<^sub>1 - ?v\<^sub>5 \<noteq> 0"
-	              using hv\<^sub>1_mid_ne by (by100 simp)
-	            have hv\<^sub>5v\<^sub>1_vec: "?v\<^sub>5 - v\<^sub>1 \<noteq> 0"
-	              using hv\<^sub>1_mid_ne by (by100 simp)
-	            have hv\<^sub>3_line:
-	                "?v\<^sub>3_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-	            proof -
-	              have "?v\<^sub>3_of t = v\<^sub>1 + (- t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
-	                by (simp add: algebra_simps)
-	              thus ?thesis
-	                unfolding affine_hull_2_alt by (by100 blast)
-	            qed
-	            have hv\<^sub>4_line:
-	                "?v\<^sub>4_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-	            proof -
-	              have "?v\<^sub>4_of t = v\<^sub>1 + (1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
-	                by (simp add: algebra_simps)
-	              thus ?thesis
-	                unfolding affine_hull_2_alt by (by100 blast)
-	            qed
-	            have hcol3: "collinear {v\<^sub>1, ?v\<^sub>5, ?v\<^sub>3_of t}"
-	              by (rule affine_hull_3_imp_collinear[OF hv\<^sub>3_line])
-	            have hcol4: "collinear {v\<^sub>1, ?v\<^sub>5, ?v\<^sub>4_of t}"
-	              by (rule affine_hull_3_imp_collinear[OF hv\<^sub>4_line])
-	            have hcol: "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}"
-	            proof -
-	              have "collinear (insert v\<^sub>1 (insert ?v\<^sub>5 {?v\<^sub>3_of t, ?v\<^sub>4_of t}))"
-	                using hcol3 hcol4
-	                  collinear_triples[OF hv\<^sub>1_mid_ne, of "{?v\<^sub>3_of t, ?v\<^sub>4_of t}"]
-	                by (by100 simp)
-	              thus ?thesis
-	                by (simp add: insert_commute)
-	            qed
-	            have hv\<^sub>4_ne_v\<^sub>5: "?v\<^sub>4_of t \<noteq> ?v\<^sub>5"
-	              using ht_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 fastforce)
-	            have hv\<^sub>1_ne_v\<^sub>3: "v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
-	              using ht_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 fastforce)
-	            have hv\<^sub>5_ne_v\<^sub>3: "?v\<^sub>5 \<noteq> ?v\<^sub>3_of t"
-	            proof
-	              assume "?v\<^sub>5 = ?v\<^sub>3_of t"
-	              hence "(1 + t) *\<^sub>R (v\<^sub>1 - ?v\<^sub>5) = 0"
-	                by (simp add: algebra_simps)
-	              thus False
-	                using h1t_ne hv\<^sub>1v\<^sub>5_vec scaleR_eq_0_iff by (by100 blast)
-	            qed
-		            have hv\<^sub>4_ne_v\<^sub>1: "?v\<^sub>4_of t \<noteq> v\<^sub>1"
-		            proof
-		              assume "?v\<^sub>4_of t = v\<^sub>1"
-		              hence "(1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1) = 0"
-		                by (simp add: algebra_simps)
-		              thus False
-		                using h1t_ne hv\<^sub>5v\<^sub>1_vec scaleR_eq_0_iff by (by100 blast)
-		            qed
-		            have horder:
-		                "?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
-		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
-		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-		              by (rule geotop_figure33_scalar_outer_open_segment_order_prefix
-		                  [OF hv\<^sub>1_mid_ne ht])
-		            show "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
+	            show "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
 		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
 		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
 		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
@@ -40641,9 +40674,8 @@ proof -
 		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
 		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
 		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-			              using hcol hv\<^sub>4_ne_v\<^sub>5 hv\<^sub>5_ne_v\<^sub>3 hv\<^sub>4_ne_v\<^sub>1 hv\<^sub>1_ne_v\<^sub>3
-			                horder
-			              by (by100 blast)
+	              by (rule geotop_figure33_line_scalar_basic_prefix
+	                  [OF hv\<^sub>1_mid_ne ht])
 		          qed
 		          have hfigure33_same_apex_split_intersections_scalar:
 		              "\<And>t. 0 < t \<Longrightarrow>
