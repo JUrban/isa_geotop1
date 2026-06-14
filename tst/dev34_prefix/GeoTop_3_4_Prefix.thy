@@ -4475,6 +4475,38 @@ proof -
       \<open>I - (N \<union> A2)\<close> through the two local access endpoints, the endpoints are
       in the same ambient component. **)
     by (rule geotop_connected_witness_component_at_intro_prefix)
+  have hD44_broken_line_route_component_suffices:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Direct Moise-form reduction: the remaining frontier analysis may now
+      target exactly the book's broken line \<open>B\<close> in
+      \<open>I - (N \<union> A2)\<close>.  Once such a broken line is constructed, connectedness
+      of broken lines supplies the component relation. **)
+  proof -
+    assume hB_ex:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hQ1_B: "Q1 \<in> B"
+      and hS1_B: "S1 \<in> B"
+      using hB_ex by (elim exE conjE)
+    have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+    show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+        ?Ncut Q1"
+      by (rule hD44_connected_route_component_suffices
+          [OF hB_sub hQ1_B hS1_B hB_conn])
+  qed
   have hD44_Q1S1_same_component_in_Ncut:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
