@@ -1433,6 +1433,14 @@ proof -
         using hQ1_Ncut by (by100 blast)
       have hS1_not_N: "S1 \<notin> N"
         using hS1_Ncut by (by100 blast)
+      have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
+        using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+      have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
+        using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+      have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
+        using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+      have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
+        using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
       have hQ1_not_A2: "Q1 \<notin> A2"
         using hQ1_Ncut by (by100 blast)
       have hS1_not_A2: "S1 \<notin> A2"
