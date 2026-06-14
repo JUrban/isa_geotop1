@@ -3259,6 +3259,62 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hQ_ne_S: "Q \<noteq> S"
+  proof
+    assume hQS: "Q = S"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQS card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hD44_QS_broken_boundary_arc_split:
+      "\<exists>F\<^sub>1 F\<^sub>2.
+        J = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  proof -
+    obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_conn: "geotop_complex_connected L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hQL: "{Q} \<in> L"
+      and hSL: "{S} \<in> L"
+      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ hQ hS]
+      by (by100 blast)
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+      using hJ hL_poly by (by100 simp)
+    obtain F\<^sub>1 F\<^sub>2 where hsplit:
+        "geotop_polyhedron L = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hQL hSL hQ_ne_S]
+      by (by100 blast)
+    show ?thesis
+      using hsplit hL_poly by (by100 blast)
+  qed
+  obtain F\<^sub>1 F\<^sub>2 where hD44_F_J_split: "J = F\<^sub>1 \<union> F\<^sub>2"
+    and hD44_F\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
+    and hD44_F\<^sub>2_bl: "geotop_is_broken_line F\<^sub>2"
+    and hD44_F\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
+    and hD44_F\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+    and hD44_F\<^sub>1F\<^sub>2_int_disj:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    using hD44_QS_broken_boundary_arc_split
+    by (elim exE conjE)
+  have hD44_F\<^sub>1F\<^sub>2_inter: "F\<^sub>1 \<inter> F\<^sub>2 = {Q, S}"
+    by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+        [OF hD44_F\<^sub>1E hD44_F\<^sub>2E hD44_F\<^sub>1F\<^sub>2_int_disj])
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
