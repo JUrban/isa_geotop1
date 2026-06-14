@@ -925,6 +925,40 @@ proof -
     qed
     have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
       by (rule finite_subset[OF hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_fin])
+    have hBdK\<^sub>N_face_closed:
+        "\<forall>\<sigma>\<in>BdK\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> BdK\<^sub>N"
+    proof (intro ballI allI impI)
+      fix \<sigma> \<tau>
+      assume h\<sigma>Bd: "\<sigma> \<in> BdK\<^sub>N"
+        and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      let ?S = "{\<eta> \<in> K\<^sub>N. geotop_simplex_dim \<eta> (2 - 1) \<and>
+          card {\<omega> \<in> K\<^sub>N. geotop_simplex_dim \<omega> 2 \<and>
+            geotop_is_face \<eta> \<omega>} = 1}"
+      have h\<sigma>_cases:
+          "\<sigma> \<in> ?S \<union> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+        using h\<sigma>Bd unfolding BdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+      show "\<tau> \<in> BdK\<^sub>N"
+      proof (rule UnE[OF h\<sigma>_cases])
+        assume h\<sigma>S: "\<sigma> \<in> ?S"
+        have "\<tau> \<in> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+          using h\<sigma>S h\<tau>\<sigma> by (by100 blast)
+        thus "\<tau> \<in> BdK\<^sub>N"
+          unfolding BdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+      next
+        assume "\<sigma> \<in> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+        then obtain \<eta> where h\<eta>S: "\<eta> \<in> ?S" and h\<sigma>\<eta>: "geotop_is_face \<sigma> \<eta>"
+          by (by100 blast)
+        have h\<tau>\<eta>: "geotop_is_face \<tau> \<eta>"
+          by (rule geotop_is_face_trans_prefix[OF h\<tau>\<sigma> h\<sigma>\<eta>])
+        have "\<tau> \<in> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+          using h\<eta>S h\<tau>\<eta> by (by100 blast)
+        thus "\<tau> \<in> BdK\<^sub>N"
+          unfolding BdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+      qed
+    qed
+    have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
+      by (rule geotop_complex_subset_is_complex
+          [OF hK\<^sub>N_complex hBdK\<^sub>N_sub_K\<^sub>N hBdK\<^sub>N_face_closed])
     have hBdK\<^sub>N_poly_sub_N: "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
       using hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_poly unfolding geotop_polyhedron_def by (by100 blast)
     have hBdK\<^sub>N_poly_A2_QS_disj:
