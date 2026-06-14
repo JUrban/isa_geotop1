@@ -851,6 +851,24 @@ proof -
       using hN\<^sub>I_eq_N hN_compact by (by100 simp)
     have hN\<^sub>I_closed: "closed N\<^sub>I"
       using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+    define FrN\<^sub>I where
+        "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+    have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
+      unfolding FrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+    have hFrN\<^sub>I_eq_N: "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N"
+      unfolding FrN\<^sub>I_def using hN\<^sub>I_eq_N by (by100 simp)
+    have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+      using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+    have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+      using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+    have hFrN\<^sub>I_A2_QS_disj: "FrN\<^sub>I \<inter> (A2 \<union> {Q, S}) = {}"
+      using hFrN\<^sub>I_sub_N hN_A2_QS by (by100 blast)
+    have hQ_not_FrN\<^sub>I: "Q \<notin> FrN\<^sub>I"
+      using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+    have hS_not_FrN\<^sub>I: "S \<notin> FrN\<^sub>I"
+      using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+    have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
+      using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
