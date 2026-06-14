@@ -4420,6 +4420,35 @@ proof -
     show ?thesis
       by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
   qed
+  have hD44_BdJ\<^sub>N_1sphere_has_book_two_arc_split:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1 \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Literal formal version of Moise's sentence "Then J is a 1-sphere":
+      because \<open>BdJ\<^sub>N\<close> is already a finite complex, the 1-sphere carrier
+      statement is exactly the missing input needed for polygonality and the
+      book's two broken-line arcs. **)
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      unfolding geotop_is_polygon_def
+      using hBdJ\<^sub>N_complex hsphere by (intro exI[where x=BdJ\<^sub>N] conjI) (by100 simp)+
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
