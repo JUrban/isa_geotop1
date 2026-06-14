@@ -5978,6 +5978,92 @@ proof -
         using hdisj by (by100 blast)
     qed
   qed
+  have hD44_Ncut_open_split_forbids_connected_access_ball_crossing:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>\<epsilon>\<^sub>Q>0. \<exists>\<epsilon>\<^sub>S>0.
+          (\<forall>Z. Z \<subseteq> ?Ncut
+            \<longrightarrow> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+            \<longrightarrow> False)"
+    (**
+      Access-ball contradiction form of the same split.  After negating the
+      desired component relation, choose the component-side collars around
+      \<open>Q1\<close> and \<open>S1\<close>.  Any connected subset of \<open>Ncut\<close> meeting both collars
+      would cross the open component separation, contradicting the previous
+      separation bridge.  This is the exact target for the final Moise
+      lower-to-upper frontier witness. **)
+  proof -
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?R = "?Ncut - ?CQ"
+    obtain \<epsilon>\<^sub>Q \<epsilon>\<^sub>S where h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      and h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      and hball_Q_CQ: "ball Q1 \<epsilon>\<^sub>Q \<subseteq> ?CQ"
+      and hball_S_R: "ball S1 \<epsilon>\<^sub>S \<subseteq> ?R"
+      using hD44_Ncut_open_split_access_balls_if_not_same_component[OF hnot]
+      by (elim exE conjE)
+    have hall:
+        "\<forall>Z. Z \<subseteq> ?Ncut
+          \<longrightarrow> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+          \<longrightarrow> False"
+    proof (intro allI impI)
+      fix Z
+      assume hZ_sub: "Z \<subseteq> ?Ncut"
+      assume hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      assume hZ_Qball: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      assume hZ_Sball: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      have hZ_CQ: "Z \<inter> ?CQ \<noteq> {}"
+      proof -
+        obtain x where hxZ: "x \<in> Z" and hxball: "x \<in> ball Q1 \<epsilon>\<^sub>Q"
+          using hZ_Qball by (by100 blast)
+        have hxCQ: "x \<in> ?CQ"
+          using hball_Q_CQ hxball by (by100 blast)
+        have "x \<in> Z \<inter> ?CQ"
+          by (rule IntI[OF hxZ hxCQ])
+        thus ?thesis by (by100 blast)
+      qed
+      have hZ_R: "Z \<inter> ?R \<noteq> {}"
+      proof -
+        obtain x where hxZ: "x \<in> Z" and hxball: "x \<in> ball S1 \<epsilon>\<^sub>S"
+          using hZ_Sball by (by100 blast)
+        have hxR: "x \<in> ?R"
+          using hball_S_R hxball by (by100 blast)
+        have "x \<in> Z \<inter> ?R"
+          by (rule IntI[OF hxZ hxR])
+        thus ?thesis by (by100 blast)
+      qed
+      show False
+        by (rule hD44_Ncut_open_split_forbids_connected_crossing
+            [OF hnot hZ_sub hZ_conn hZ_CQ hZ_R])
+    qed
+    show ?thesis
+    proof (rule exI[where x=\<epsilon>\<^sub>Q], intro conjI)
+      show "0 < \<epsilon>\<^sub>Q" by (rule h\<epsilon>\<^sub>Q_pos)
+      show "\<exists>\<epsilon>\<^sub>S>0.
+          (\<forall>Z. Z \<subseteq> ?Ncut \<longrightarrow>
+            top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z) \<longrightarrow>
+            Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {} \<longrightarrow>
+            Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {} \<longrightarrow> False)"
+      proof (rule exI[where x=\<epsilon>\<^sub>S], intro conjI)
+        show "0 < \<epsilon>\<^sub>S" by (rule h\<epsilon>\<^sub>S_pos)
+        show "\<forall>Z. Z \<subseteq> ?Ncut \<longrightarrow>
+            top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z) \<longrightarrow>
+            Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {} \<longrightarrow>
+            Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {} \<longrightarrow> False"
+          by (rule hall)
+      qed
+    qed
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
