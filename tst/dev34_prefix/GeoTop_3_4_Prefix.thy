@@ -7320,7 +7320,51 @@ proof -
       should produce one connected subset of
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
       access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
-    sorry
+  proof -
+    have hD44_moise_frontier_split_adjacent_corridor_book_step:
+        "\<exists>X C C\<^sub>F Z. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_is_broken_line C
+          \<and> C \<subseteq> ?B1P
+          \<and> C \<subseteq> J\<^sub>N
+          \<and> C \<subseteq> FrN\<^sub>I
+          \<and> P \<in> C
+          \<and> X \<in> C
+          \<and> geotop_arc_endpoints C {P, X}
+          \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+          \<and> geotop_is_broken_line C\<^sub>F
+          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+          \<and> C \<inter> C\<^sub>F = {P, X}
+          \<and> P \<in> C\<^sub>F
+          \<and> X \<in> C\<^sub>F
+          \<and> C\<^sub>F \<subseteq> J\<^sub>N
+          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C\<^sub>F \<inter> ?Ncut = {}
+          \<and> Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      (**
+        Literal book target for the remaining Moise 4.4 step.  The component
+        of \<open>Fr N'\<close> through \<open>P\<close> is first split into the boundary arc \<open>C\<close>
+        and the other frontier arc \<open>C\<^sub>F\<close>.  The open component of
+        \<open>I - (N \<union> A2)\<close> adjacent to \<open>C\<^sub>F\<close> is the connected corridor \<open>Z\<close>;
+        its closure contains the two access witnesses chosen near \<open>Q\<close> and
+        \<open>S\<close>. **)
+      sorry
+    obtain X C C\<^sub>F Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_moise_frontier_split_adjacent_corridor_book_step
+      by (elim exE conjE)
+    show ?thesis
+      using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
+  qed
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
