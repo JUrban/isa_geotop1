@@ -589,7 +589,89 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_pr
     read it as a polygonal 1-sphere, extract the lower-to-upper broken-line
     subarc outside \<open>N \<union> A2\<close>, and use cyclic order together with the closed
     D42 separation package to put the two access points in one component. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_simplex: "geotop_is_simplex B"
+      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
+    have hB_compact: "compact B"
+      by (rule geotop_simplex_compact[OF hB_simplex])
+    show "closed B"
+      by (rule compact_imp_closed[OF hB_compact])
+  qed
+  have hN_index_fin:
+      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
+    using hSd_fin by (by100 simp)
+  have hN_index_closed:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
+    using hSd_closed_all by (by100 blast)
+  have hN_closed: "closed N"
+    unfolding hN_def
+    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+  have hA2_closed: "closed A2"
+    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
+  have hI_open_HOL: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hN_A2_closed: "closed (N \<union> A2)"
+    by (rule closed_Un[OF hN_closed hA2_closed])
+  have hNcut_open_HOL: "open ?Ncut"
+    by (rule open_Diff[OF hI_open_HOL hN_A2_closed])
+  have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
+    using hNcut_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_I: "S1 \<in> geotop_polygon_interior J"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_N: "Q1 \<notin> N"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_N: "S1 \<notin> N"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_A1: "Q1 \<notin> A1"
+    using hQ1_not_N hA1_N by (by100 blast)
+  have hS1_not_A1: "S1 \<notin> A1"
+    using hS1_not_N hA1_N by (by100 blast)
+  have hD44_frontier_route_broken_line_exists:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    (**
+      Remaining Moise 4.4 frontier-route step.  From the fine carrier
+      neighborhood \<open>N\<close> of \<open>A1\<close>, analyze the frontier component through
+      \<open>P\<close> as the polygonal 1-sphere supplied by the regular-neighborhood
+      construction.  Its lower-to-upper subarc outside \<open>N \<union> A2\<close>, together
+      with the local access positions of \<open>Q1\<close> and \<open>S1\<close>, gives this broken
+      line in \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
+    sorry
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_Ncut: "B \<subseteq> ?Ncut"
+    and hQ1_B: "Q1 \<in> B"
+    and hS1_B: "S1 \<in> B"
+    using hD44_frontier_route_broken_line_exists by (elim exE conjE)
+  have hB_conn:
+      "top1_connected_on B
+        (subspace_topology UNIV geotop_euclidean_topology B)"
+    by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+  have hB_witness:
+      "B \<in> {C. C \<subseteq> ?Ncut \<and> Q1 \<in> C \<and>
+        top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)}"
+    using hB_Ncut hQ1_B hB_conn by (by100 simp)
+  show ?thesis
+    unfolding geotop_component_at_def
+    using hB_witness hS1_B by (by100 blast)
+qed
 
 lemma geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix:
   fixes J A1 A2 :: "(real^2) set" and P Q R S :: "real^2"
