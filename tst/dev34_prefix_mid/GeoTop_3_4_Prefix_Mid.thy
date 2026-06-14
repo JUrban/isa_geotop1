@@ -41657,6 +41657,106 @@ proof -
 	    show ?thesis
 	      using h\<eta>_pos hsmall by (by100 blast)
 	  qed
+	  have hfigure33_source_carrier_endpoint_segments_bound_scalar:
+	      "\<exists>\<eta>>0. \<forall>t>0.
+	        t < \<eta> \<longrightarrow>
+	        (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	            ball v\<^sub>0 \<rho>\<^sub>0)
+	          \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	            ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	          geotop_polyhedron
+	            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	        \<subseteq> {v\<^sub>0, v\<^sub>2}"
+	  proof -
+	    obtain \<eta>\<^sub>o where h\<eta>\<^sub>o_pos: "0 < \<eta>\<^sub>o"
+	      and hsame_outer:
+	        "\<forall>t>0.
+	          t < \<eta>\<^sub>o \<longrightarrow>
+	          (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0)
+	            \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	            geotop_polyhedron
+	              (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	          \<subseteq>
+	            (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	                ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	              geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	            \<union>
+	            (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	                ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	              geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+	      using hfigure33_source_carrier_endpoint_germs_same_outer_scalar
+	      by (elim exE conjE)
+	    obtain \<eta>\<^sub>e where h\<eta>\<^sub>e_pos: "0 < \<eta>\<^sub>e"
+	      and hempty:
+	        "\<forall>t>0.
+	          t < \<eta>\<^sub>e \<longrightarrow>
+	          ((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	              geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	            \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	              geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+	          = {}"
+	      using hfigure33_endpoint_same_outer_germs_empty_scalar
+	      by (elim exE conjE)
+	    define \<eta> where "\<eta> = min \<eta>\<^sub>o \<eta>\<^sub>e"
+	    have h\<eta>_pos: "0 < \<eta>"
+	      unfolding \<eta>_def using h\<eta>\<^sub>o_pos h\<eta>\<^sub>e_pos by (by100 simp)
+	    have hsmall:
+	        "\<forall>t>0.
+	          t < \<eta> \<longrightarrow>
+	          (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0)
+	            \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	            geotop_polyhedron
+	              (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+	          \<subseteq> {v\<^sub>0, v\<^sub>2}"
+	    proof (intro allI impI subsetI)
+	      fix t :: real
+	      fix x :: "real^2"
+	      assume ht_pos: "0 < t"
+	      assume ht_lt: "t < \<eta>"
+	      assume hx:
+	        "x \<in> (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	            ball v\<^sub>0 \<rho>\<^sub>0)
+	          \<union> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	            ball v\<^sub>2 \<rho>\<^sub>2)) \<inter>
+	          geotop_polyhedron
+	            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
+	      have ht_lt_o: "t < \<eta>\<^sub>o"
+	        using ht_lt unfolding \<eta>_def by (by100 simp)
+	      have ht_lt_e: "t < \<eta>\<^sub>e"
+	        using ht_lt unfolding \<eta>_def by (by100 simp)
+	      have hx_same:
+	        "x \<in>
+	          (((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	              ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	          \<union>
+	          (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	              ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t})"
+	        using hsame_outer ht_pos ht_lt_o hx by (by100 blast)
+	      have hsame_empty:
+	        "((((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+	            ball v\<^sub>0 \<rho>\<^sub>0) \<inter>
+	            geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t})
+	          \<union> (((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+	            ball v\<^sub>2 \<rho>\<^sub>2) \<inter>
+	            geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}))
+	        = {}"
+	        using hempty ht_pos ht_lt_e by (by100 blast)
+	      have False
+	        using hx_same hsame_empty by (by100 blast)
+	      thus "x \<in> {v\<^sub>0, v\<^sub>2}"
+	        by (by100 blast)
+	    qed
+	    show ?thesis
+	      using h\<eta>_pos hsmall by (by100 blast)
+	  qed
 	  have hfigure33_source_carrier_support_bound_scalar:
 	      "\<exists>\<eta>>0. \<forall>t>0.
 	        t < \<eta> \<longrightarrow>
