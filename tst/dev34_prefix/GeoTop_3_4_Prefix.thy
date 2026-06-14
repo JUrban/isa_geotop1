@@ -7246,6 +7246,17 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_closed_corridor_core:
+      "\<exists>C. C \<subseteq> ?Ncut
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)
+        \<and> Q1 \<in> closure C
+        \<and> S1 \<in> closure C"
+    (**
+      Closure form of the Moise adjacent-corridor step.  The outside component
+      next to the complementary frontier arc \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> lies in
+      \<open>I - (N \<union> A2)\<close> and has the lower and upper access points in its closure. **)
+    sorry
   have hD44_moise_accumulating_connected_corridor_core:
       "\<exists>C. C \<subseteq> ?Ncut
         \<and> top1_connected_on C
@@ -7256,7 +7267,34 @@ proof -
       Single adjacent-corridor form of Moise's book step.  The component of
       \<open>I - (N \<union> A2)\<close> next to the complementary frontier arc \<open>C\<^sub>F\<close> / book
       \<open>B\<^sub>2\<close> is connected and has both access points in its closure. **)
-    sorry
+  proof -
+    obtain C where hC_sub: "C \<subseteq> ?Ncut"
+      and hC_conn:
+        "top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+      and hQ1_cl: "Q1 \<in> closure C"
+      and hS1_cl: "S1 \<in> closure C"
+      using hD44_moise_closed_corridor_core
+      by (elim exE conjE)
+    have hC_Q_all: "\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q :: real
+      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      show "C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hQ1_cl h\<epsilon>\<^sub>Q_pos])
+    qed
+    have hC_S_all: "\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>S :: real
+      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      show "C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hS1_cl h\<epsilon>\<^sub>S_pos])
+    qed
+    show ?thesis
+      using hC_sub hC_conn hC_Q_all hC_S_all by (intro exI conjI)
+  qed
   have hD44_moise_arbitrary_access_component_witnesses_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>X Y. X \<in> ?Ncut
