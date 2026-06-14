@@ -3466,6 +3466,56 @@ proof -
       using hR_in_A2 hD44_R_F\<^sub>2
       unfolding geotop_arc_interior_def by (by100 blast)
   qed
+  have hD44_P_not_Ncut: "P \<notin> ?Ncut"
+    using hP_in_A1 hA1_N by (by100 blast)
+  have hD44_Q_not_Ncut: "Q \<notin> ?Ncut"
+  proof
+    assume hQcut: "Q \<in> ?Ncut"
+    have hQint: "Q \<in> geotop_polygon_interior J"
+      using hQcut by (by100 blast)
+    have "Q \<notin> geotop_polygon_interior J"
+      using hQ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hQint by (by100 blast)
+  qed
+  have hD44_R_not_Ncut: "R \<notin> ?Ncut"
+    using hR_in_A2 by (by100 blast)
+  have hD44_S_not_Ncut: "S \<notin> ?Ncut"
+  proof
+    assume hScut: "S \<in> ?Ncut"
+    have hSint: "S \<in> geotop_polygon_interior J"
+      using hScut by (by100 blast)
+    have "S \<notin> geotop_polygon_interior J"
+      using hS polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hSint by (by100 blast)
+  qed
+  have hD44_F\<^sub>1_Ncut_disj: "F\<^sub>1 \<inter> ?Ncut = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> F\<^sub>1 \<inter> ?Ncut"
+    have hxJ: "x \<in> J"
+      using hx hD44_F\<^sub>1_sub_J by (by100 blast)
+    have hxI: "x \<in> geotop_polygon_interior J"
+      using hx by (by100 blast)
+    have "x \<notin> geotop_polygon_interior J"
+      using hxJ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hxI by (by100 blast)
+  qed
+  have hD44_F\<^sub>2_Ncut_disj: "F\<^sub>2 \<inter> ?Ncut = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> F\<^sub>2 \<inter> ?Ncut"
+    have hxJ: "x \<in> J"
+      using hx hD44_F\<^sub>2_sub_J by (by100 blast)
+    have hxI: "x \<in> geotop_polygon_interior J"
+      using hx by (by100 blast)
+    have "x \<notin> geotop_polygon_interior J"
+      using hxJ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hxI by (by100 blast)
+  qed
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
