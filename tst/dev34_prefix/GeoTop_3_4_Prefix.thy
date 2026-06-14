@@ -4461,6 +4461,14 @@ proof -
           "top1_connected_on C\<^sub>O
             (subspace_topology UNIV geotop_euclidean_topology C\<^sub>O)"
         by (rule geotop_broken_line_connected_on_prefix[OF hD44_C\<^sub>O_bl])
+      have hD44_P_C\<^sub>O: "P \<in> C\<^sub>O"
+        using hD44_C\<^sub>O_end unfolding geotop_arc_endpoints_def
+        by (by100 blast)
+      have hD44_X_C\<^sub>O: "X \<in> C\<^sub>O"
+        using hD44_C\<^sub>O_end unfolding geotop_arc_endpoints_def
+        by (by100 blast)
+      have hD44_C\<^sub>O_nonempty: "C\<^sub>O \<noteq> {}"
+        using hD44_P_C\<^sub>O by (by100 blast)
       have hD44_complementary_frontier_arc_access_connected_witness:
           "\<exists>W. W \<subseteq> ?Ncut
             \<and> Q1 \<in> W
