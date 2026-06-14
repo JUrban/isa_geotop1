@@ -6064,6 +6064,92 @@ proof -
       qed
     qed
   qed
+  have hD44_arbitrary_access_ball_crossings_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Final reduction toward Moise's lower-to-upper frontier construction.  To
+      prove the desired component relation, it is enough to show that every pair
+      of sufficiently small access collars around \<open>Q1\<close> and \<open>S1\<close> is joined by
+      some connected subset of \<open>Ncut\<close>.  If the component relation failed, the
+      previous split-collar lemma would choose two collars that no connected
+      subset of \<open>Ncut\<close> can meet simultaneously. **)
+  proof -
+    assume hall_crossings:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    show ?thesis
+    proof (rule ccontr)
+      assume hnotnot:
+        "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      obtain \<epsilon>\<^sub>Q \<epsilon>\<^sub>S where h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+        and h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+        and hforbid:
+          "\<forall>Z. Z \<subseteq> ?Ncut
+            \<longrightarrow> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+            \<longrightarrow> False"
+        using hD44_Ncut_open_split_forbids_connected_access_ball_crossing
+          [OF hnotnot]
+        by (elim exE conjE)
+      obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+        and hZ_conn:
+          "top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)"
+        and hZ_Q: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        and hZ_S: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      proof -
+        have hQ_spec:
+          "\<forall>\<epsilon>\<^sub>S>0. \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using hall_crossings h\<epsilon>\<^sub>Q_pos by (by100 blast)
+        have hQS_spec:
+          "\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using hQ_spec h\<epsilon>\<^sub>S_pos by (by100 blast)
+        then obtain Z where hZ:
+          "Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          by (elim exE)
+        have hZ_sub': "Z \<subseteq> ?Ncut"
+          using hZ by (by100 blast)
+        have hZ_conn':
+          "top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)"
+          using hZ by (by100 blast)
+        have hZ_Q': "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+          using hZ by (by100 blast)
+        have hZ_S': "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using hZ by (by100 blast)
+        show ?thesis
+          by (rule that[OF hZ_sub' hZ_conn' hZ_Q' hZ_S'])
+      qed
+      have False
+        using hforbid hZ_sub hZ_conn hZ_Q hZ_S by (by100 blast)
+      thus False .
+    qed
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
