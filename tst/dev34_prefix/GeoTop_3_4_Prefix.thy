@@ -7306,17 +7306,30 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_boundary_arc_access_ball_crossings_core:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Direct Moise 4.4 lower-to-upper crossing target.  After the fine carrier
+      of \<open>A1\<close> is chosen, the book analyzes the frontier component through
+      \<open>P\<close>, proves it is the required 1-sphere/frontier broken line, and takes
+      the complementary outside corridor.  In formal terms the needed output is
+      that every pair of small access collars around \<open>Q1\<close> and \<open>S1\<close> is met by
+      one connected subset of \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_moise_regular_neighborhood_component_core:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Direct Moise 4.4 regular-neighborhood component target.  This is the
-      book step beginning with the fine carrier of \<open>A1\<close>: analyze the
-      component of \<open>Fr (N \<inter> closure I)\<close> through \<open>P\<close>, prove it is the
-      required 1-sphere/frontier broken line, take the complementary outside
-      corridor, and use the cyclic-order/D42 transfer to put the lower and
-      upper access points in the same component of
-      \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-    sorry
+      Component form of the lower-to-upper crossing target.  The existing
+      open-split contradiction package says that arbitrary connected crossings
+      of the two access collars force the access points to lie in one
+      outside-carrier component. **)
+    by (rule hD44_arbitrary_access_ball_crossings_suffice
+        [OF hD44_moise_boundary_arc_access_ball_crossings_core])
   have hD44_moise_boundary_arc_closed_corridor_core:
       "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
@@ -7330,29 +7343,11 @@ proof -
       the connected set whose closure contains both access points. **)
     by (rule hD44_same_component_gives_closed_corridor
         [OF hD44_moise_regular_neighborhood_component_core])
-  have hD44_moise_boundary_arc_access_ball_crossings_core:
-      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-        \<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    (**
-      Collar form of the Moise adjacent-corridor target.  The connected
-      outside corridor whose closure contains the two access points meets every
-      prescribed lower and upper access ball. **)
-    by (rule hD44_closed_corridor_gives_arbitrary_access_ball_crossings
-        [OF hD44_moise_boundary_arc_closed_corridor_core])
   have hD44_moise_boundary_arc_same_component_core:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Component consequence of the collar-crossing target.  If \<open>Q1\<close> and
-      \<open>S1\<close> were in different \<open>?Ncut\<close> components, the already-proved open
-      split supplies two access collars that no connected subset of \<open>?Ncut\<close>
-      can meet simultaneously, contradicting Moise's complementary-frontier
-      crossings. **)
-    by (rule hD44_arbitrary_access_ball_crossings_suffice
-        [OF hD44_moise_boundary_arc_access_ball_crossings_core])
+      Same-component form of the Moise adjacent-corridor target. **)
+    by (rule hD44_moise_regular_neighborhood_component_core)
   have hD44_moise_Q1_component_accumulates_core:
       "S1 \<in> closure
         (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
