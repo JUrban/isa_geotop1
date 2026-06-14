@@ -6213,6 +6213,87 @@ proof -
     show ?thesis
       by (rule hD44_arbitrary_access_ball_crossings_suffice[OF hall_connected])
   qed
+  have hD44_arbitrary_access_component_witnesses_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>X Y. X \<in> ?Ncut
+            \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+            \<and> Y \<in> ?Ncut
+            \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+            \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+                ?Ncut X)
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Component-witness form of the remaining Moise sentence.  If every pair
+      of access collars contains points in one component of the open outside
+      carrier \<open>Ncut\<close>, then the open-component broken-line lemma turns those
+      points into the broken-line collar crossings required above. **)
+  proof -
+    assume hall_components:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X"
+    have hall_broken:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      have hQ_spec:
+        "\<forall>\<epsilon>\<^sub>S>0. \<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X"
+        using hall_components h\<epsilon>\<^sub>Q_pos by (by100 blast)
+      have hQS_spec:
+        "\<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X"
+        using hQ_spec h\<epsilon>\<^sub>S_pos by (by100 blast)
+      obtain X Y where hX_Ncut: "X \<in> ?Ncut"
+        and hX_ball: "X \<in> ball Q1 \<epsilon>\<^sub>Q"
+        and hY_Ncut: "Y \<in> ?Ncut"
+        and hY_ball: "Y \<in> ball S1 \<epsilon>\<^sub>S"
+        and hY_comp:
+          "Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut X"
+        using hQS_spec by (elim exE conjE)
+      have hB_exists:
+        "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> ?Ncut
+          \<and> X \<in> B \<and> Y \<in> B"
+        by (rule geotop_open_component_broken_line_between_prefix
+            [OF hNcut_open hX_Ncut hY_comp])
+      obtain B where hB_bl: "geotop_is_broken_line B"
+        and hB_sub: "B \<subseteq> ?Ncut"
+        and hX_B: "X \<in> B"
+        and hY_B: "Y \<in> B"
+        using hB_exists by (elim exE conjE)
+      have hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        using hX_B hX_ball by (by100 blast)
+      have hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hY_B hY_ball by (by100 blast)
+      show "\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hB_bl hB_sub hB_Q hB_S by (intro exI conjI)
+    qed
+    show ?thesis
+      by (rule hD44_arbitrary_access_broken_line_crossings_suffice
+          [OF hall_broken])
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -6223,18 +6304,20 @@ proof -
       complementary frontier arc, then using the lower-to-upper subarc outside
       \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-  proof (rule hD44_arbitrary_access_broken_line_crossings_suffice)
+  proof (rule hD44_arbitrary_access_component_witnesses_suffice)
     show "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-        \<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        \<exists>X Y. X \<in> ?Ncut
+          \<and> X \<in> ball Q1 \<epsilon>\<^sub>Q
+          \<and> Y \<in> ?Ncut
+          \<and> Y \<in> ball S1 \<epsilon>\<^sub>S
+          \<and> Y \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut X"
       (**
         Remaining literal Moise corridor construction.  For arbitrary positive
         access collars around \<open>Q1\<close> and \<open>S1\<close>, use the frontier component
         through \<open>P\<close>, choose the lower-to-upper complementary subarc between
-        the last lower and first upper boundary hits, and take the adjacent
-        outside corridor in \<open>I - (N \<union> A2)\<close> as the required broken line. **)
+        the last lower and first upper boundary hits, and show that the
+        adjacent outside component of \<open>I - (N \<union> A2)\<close> meets both collars. **)
       sorry
   qed
   have hD44_frontier_component_route:
