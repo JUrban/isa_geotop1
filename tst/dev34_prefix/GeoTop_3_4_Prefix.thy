@@ -4392,28 +4392,58 @@ proof -
         (**
           Moise's regular-neighborhood boundary assertion for the chosen fine
           carrier: the frontier component through \<open>P\<close> is a polygonal
-          1-sphere.  The local degree-two formulation above remains useful
-          for the eventual proof, but the book step itself is the simple
-          closed-curve assertion for this frontier component. **)
+          1-sphere.  In the finite boundary complex already constructed above
+          this is exactly the local valence-two assertion at every vertex of
+          \<open>BdJ\<^sub>N\<close>; the proved graph-cycle machinery then turns that valence
+          statement into the required polygon. **)
       proof -
-        have hD44_BdJ\<^sub>N_simple_closed_curve_book_step:
-            "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
-              (geotop_polyhedron BdJ\<^sub>N)"
+        have hD44_BdJ\<^sub>N_vertex_degree_two_book_step:
+            "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
           (**
-            Regular-neighborhood 1-sphere package: for the fine carrier
-            neighborhood of the arc \<open>A1\<close>, the component of the frontier of
-            \<open>N \<inter> cl I\<close> through the boundary point \<open>P\<close> is a simple closed
-            curve.  Internally this is expected to use the same finite-star
-            facts as the former degree-bound subgoals: no boundary branching
-            and no terminal endpoint in the frontier component. **)
+            Regular-neighborhood 1-sphere package, in Moise's finite frontier
+            graph form.  At a vertex of the component \<open>J\<^sub>N\<close> of
+            \<open>Fr(N \<inter> cl I)\<close>, the fine carrier has exactly the two boundary
+            germs of the regular neighborhood: no branch vertex and no terminal
+            endpoint.  This is the local star calculation corresponding to the
+            book sentence that the relevant frontier component is a 1-sphere. **)
           sorry
         show ?thesis
-          by (rule hBdJ\<^sub>N_polygon_from_simple_closed_curve
-              [OF hD44_BdJ\<^sub>N_simple_closed_curve_book_step])
+          by (rule hBdJ\<^sub>N_polygon_from_degree_two
+              [OF hD44_BdJ\<^sub>N_vertex_degree_two_book_step])
       qed
       note hD44_BdJ\<^sub>N_split_ready =
         hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint
           [OF hD44_BdJ\<^sub>N_polygon_book_step]
+      obtain X C L C\<^sub>B C\<^sub>O where hD44_X_B1P: "X \<in> ?B1P"
+        and hD44_X_ne_P: "X \<noteq> P"
+        and hD44_C_bl: "geotop_is_broken_line C"
+        and hD44_C_sub_B1P: "C \<subseteq> ?B1P"
+        and hD44_C_sub_F\<^sub>1: "C \<subseteq> F\<^sub>1"
+        and hD44_C_sub_J\<^sub>N: "C \<subseteq> J\<^sub>N"
+        and hD44_C_sub_FrN\<^sub>I: "C \<subseteq> FrN\<^sub>I"
+        and hD44_C_F\<^sub>2_disj: "C \<inter> F\<^sub>2 = {}"
+        and hD44_C_A2_QS_disj: "C \<inter> (A2 \<union> {Q, S}) = {}"
+        and hD44_C_Ncut_disj: "C \<inter> ?Ncut = {}"
+        and hD44_P_C: "P \<in> C"
+        and hD44_X_C: "X \<in> C"
+        and hD44_C_end: "geotop_arc_endpoints C {P, X}"
+        and hD44_L_complex: "geotop_is_complex L"
+        and hD44_L_1dim: "geotop_complex_is_1dim L"
+        and hD44_L_fin: "finite L"
+        and hD44_L_poly_C: "geotop_polyhedron L = C"
+        and hD44_P_L: "{P} \<in> L"
+        and hD44_X_L: "{X} \<in> L"
+        and hD44_BdJ_split:
+          "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+        and hD44_C\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
+        and hD44_C\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
+        and hD44_C\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
+        and hD44_C\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
+        and hD44_C\<^sub>B_C\<^sub>O_int_disj:
+          "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+        using hD44_BdJ\<^sub>N_split_ready by (elim exE conjE)
       have hD44_complementary_frontier_arc_access_connected_witness:
           "\<exists>W. W \<subseteq> ?Ncut
             \<and> Q1 \<in> W
@@ -4424,12 +4454,12 @@ proof -
           Moise's lower-to-upper complementary-arc step.  Use the split of
           \<open>J\<^sub>N = geotop_polyhedron BdJ\<^sub>N\<close> at the endpoint \<open>X\<close> of the
           boundary component \<open>B1P\<close>.  The arc containing the already-packaged
-          boundary subarc is \<open>B\<^sub>1\<close>; the other arc is the book's \<open>B\<^sub>2\<close>.
+          boundary subarc is represented above by \<open>C\<^sub>B\<close>; the other arc
+          \<open>C\<^sub>O\<close> is the book's \<open>B\<^sub>2\<close>.
           Choosing the last lower and first following upper boundary hits on
           that complementary arc, then taking the open subarc between them and
           attaching the local access positions \<open>Q1,S1\<close>, gives the connected
           witness in \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-        using hD44_BdJ\<^sub>N_split_ready
         sorry
       show ?thesis
         using hD44_complementary_frontier_arc_access_connected_witness .
