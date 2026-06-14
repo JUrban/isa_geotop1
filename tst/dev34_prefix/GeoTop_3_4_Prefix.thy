@@ -3539,6 +3539,12 @@ proof -
     using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
   have hD44_B\<^sub>1_Ncut_disj: "?B\<^sub>1 \<inter> ?Ncut = {}"
     using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hD44_J_closed: "closed J"
+    by (rule polygon_closed[OF hJ])
+  have hD44_B\<^sub>1_closed: "closed ?B\<^sub>1"
+    using hBdJ\<^sub>N_poly_closed hD44_J_closed by (by100 simp)
+  have hD44_B\<^sub>1_compact: "compact ?B\<^sub>1"
+    using hBdJ\<^sub>N_poly_compact hD44_J_closed by (rule compact_Int_closed)
   let ?B1P = "geotop_component_at UNIV geotop_euclidean_topology ?B\<^sub>1 P"
   have hD44_B1P_sub_B\<^sub>1: "?B1P \<subseteq> ?B\<^sub>1"
     by (rule geotop_component_at_UNIV_subset)
@@ -3550,6 +3556,17 @@ proof -
     using hD44_P_B\<^sub>1
       geotop_component_at_UNIV_eq_connected_component_set[of ?B\<^sub>1 P]
     by (by100 simp)
+  have hD44_B1P_eq_connected_component:
+      "?B1P = connected_component_set ?B\<^sub>1 P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hD44_B1P_closed: "closed ?B1P"
+    unfolding hD44_B1P_eq_connected_component
+    by (rule closed_connected_component[OF hD44_B\<^sub>1_closed])
+  have hD44_B1P_component: "?B1P \<in> components ?B\<^sub>1"
+    using hD44_B1P_eq_connected_component componentsI[OF hD44_P_B\<^sub>1]
+    by (by100 simp)
+  have hD44_B1P_compact: "compact ?B1P"
+    by (rule compact_components[OF hD44_B\<^sub>1_compact hD44_B1P_component])
   have hD44_B1P_sub_boundary_arcs:
       "?B1P \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
     using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_sub_boundary_arcs by (by100 blast)
@@ -3628,8 +3645,12 @@ proof -
   qed
   have hD44_B1P_sub_F\<^sub>1: "?B1P \<subseteq> F\<^sub>1"
     using hD44_B1P_sub_F1o by (by100 blast)
+  have hD44_B1P_inter_F\<^sub>1: "?B1P \<inter> F\<^sub>1 = ?B1P"
+    using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
   have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
     using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+  have hD44_B1P_inter_J: "?B1P \<inter> J = ?B1P"
+    using hD44_B1P_sub_B\<^sub>1 by (by100 blast)
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
