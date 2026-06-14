@@ -972,6 +972,18 @@ proof -
       by (elim exE conjE)
     let ?cut = "geotop_polygon_interior J - (A1 \<union> A2)"
     let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+    have hI_open_HOL: "open (geotop_polygon_interior J)"
+      by (rule polygon_interior_open[OF hJ])
+    have hA2_closed: "closed A2"
+      using hA12_metric_separation by (by100 blast)
+    have hN_A2_closed: "closed (N \<union> A2)"
+      by (rule closed_Un[OF hN_closed hA2_closed])
+    have hNcut_open_HOL: "open ?Ncut"
+      by (rule open_Diff[OF hI_open_HOL hN_A2_closed])
+    have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
+      using hNcut_open_HOL
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
     have hNcut_sub_cut: "?Ncut \<subseteq> ?cut"
       using hA1_N by (by100 blast)
     have hU\<^sub>Q_sub_Ncut: "U\<^sub>Q \<subseteq> ?Ncut"
@@ -1007,6 +1019,10 @@ proof -
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
           \<Longrightarrow> S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
       using hcomponent_Ncut_sub_cut by (rule subsetD)
+    have hQ'_Ncut_component_open:
+        "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
+          \<in> geotop_euclidean_topology"
+      by (rule geotop_component_at_open_in_euclidean[OF hNcut_open hQ'_Ncut])
     have hD44_QS_witnesses_same_component_in_Ncut:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
       (**
@@ -1023,6 +1039,7 @@ proof -
         hQ_not_N hS_not_N hN_closed hball_Q_N hball_S_N
         hball_Q_r_N hball_S_r_N hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
         hU\<^sub>Q_sub_Ncut hU\<^sub>S_sub_Ncut hQ'_Ncut hS'_Ncut
+        hNcut_open hQ'_Ncut_component_open
         hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
         hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
         hQ'_U\<^sub>Q hS'_U\<^sub>S hU_disj
