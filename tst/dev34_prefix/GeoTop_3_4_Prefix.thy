@@ -3144,6 +3144,21 @@ proof -
         using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
       have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
         using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+      have hNcut_N_disj: "?Ncut \<inter> N = {}"
+        by (by100 blast)
+      have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
+        using hFrN\<^sub>I_sub_N by (by100 blast)
+      have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
+        using hJ\<^sub>N_sub_N by (by100 blast)
+      have hNcut_BdJ\<^sub>N_poly_disj:
+          "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+        using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+      have hQ1_not_BdJ\<^sub>N_poly:
+          "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+        using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+      have hS1_not_BdJ\<^sub>N_poly:
+          "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+        using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
       have hD44_connected_route_component_suffices:
           "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
             top1_connected_on W
