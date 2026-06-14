@@ -7621,8 +7621,7 @@ proof -
       complementary frontier arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close>; the adjacent
       component of \<open>I - (N \<union> A2)\<close> along that arc is connected, lies in
       \<open>Ncut\<close>, and has both lower and upper access points in its closure. **)
-    by (rule hD44_same_component_gives_closed_corridor
-        [OF hD44_moise_same_component_direct])
+    by (rule hD44_moise_closed_corridor_core)
   have hD44_moise_arbitrary_access_ball_crossings:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
