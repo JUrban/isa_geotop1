@@ -1711,6 +1711,25 @@ proof -
         by (rule closed_subset_compact
             [OF hJ\<^sub>N_compact hJ\<^sub>N_BdK\<^sub>N_poly_closed hsub])
     qed
+    have hBdJ\<^sub>N_poly_closedin_J\<^sub>N:
+        "closedin (top_of_set J\<^sub>N) (geotop_polyhedron BdJ\<^sub>N)"
+      using hJ\<^sub>N_BdK\<^sub>N_poly_closedin_J\<^sub>N hJ\<^sub>N_BdK\<^sub>N_poly_eq_BdJ\<^sub>N_poly
+      by (by100 simp)
+    have hBdJ\<^sub>N_poly_closed: "closed (geotop_polyhedron BdJ\<^sub>N)"
+      using hJ\<^sub>N_BdK\<^sub>N_poly_closed hJ\<^sub>N_BdK\<^sub>N_poly_eq_BdJ\<^sub>N_poly
+      by (by100 simp)
+    have hBdJ\<^sub>N_poly_compact: "compact (geotop_polyhedron BdJ\<^sub>N)"
+      using hJ\<^sub>N_BdK\<^sub>N_poly_compact hJ\<^sub>N_BdK\<^sub>N_poly_eq_BdJ\<^sub>N_poly
+      by (by100 simp)
+    have hBdJ\<^sub>N_poly_A2_QS_disj:
+        "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+      using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    have hQ_not_BdJ\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdJ\<^sub>N"
+      using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    have hS_not_BdJ\<^sub>N_poly: "S \<notin> geotop_polyhedron BdJ\<^sub>N"
+      using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
+      using hR_in_A2 hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
     have hBdK\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdK\<^sub>N_poly_sub_N hN_A2_QS by (by100 blast)
