@@ -3204,6 +3204,45 @@ proof -
       show ?thesis
         using hpolygon_C hpoly_eq by (by100 simp)
     qed
+    have hBdJ\<^sub>N_polygon_from_card_bounds:
+        "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2) \<Longrightarrow>
+          geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      assume hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      assume hge2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      have hdegree:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_bounds[OF hle2 hge2])
+      show ?thesis
+        by (rule hBdJ\<^sub>N_polygon_from_degree_two[OF hdegree])
+    qed
+    have hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint:
+        "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+          geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      assume hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      assume hnoend:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      have hdegree:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_le2_no_endpoint
+            [OF hle2 hnoend])
+      show ?thesis
+        by (rule hBdJ\<^sub>N_polygon_from_degree_two[OF hdegree])
+    qed
     have hBdJ\<^sub>N_polygon_from_simple_closed_curve:
         "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
           (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
