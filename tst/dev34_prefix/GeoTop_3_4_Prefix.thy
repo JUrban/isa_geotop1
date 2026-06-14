@@ -935,6 +935,12 @@ proof -
       using hN\<^sub>I_eq_N hN_compact by (by100 simp)
     have hN\<^sub>I_closed: "closed N\<^sub>I"
       using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+    have hN\<^sub>I_connected_HOL: "connected N\<^sub>I"
+      using hN_connected_HOL hN\<^sub>I_eq_N by (by100 simp)
+    have hN\<^sub>I_connected:
+        "top1_connected_on N\<^sub>I
+          (subspace_topology UNIV geotop_euclidean_topology N\<^sub>I)"
+      using hN\<^sub>I_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
     define FrN\<^sub>I where
         "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
     have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
@@ -1104,13 +1110,13 @@ proof -
       show ?thesis
         using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
     qed
+    have hK\<^sub>N_poly_connected:
+        "top1_connected_on (geotop_polyhedron K\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron K\<^sub>N))"
+      using hN_connected hK\<^sub>N_poly by (by100 simp)
     have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
     proof -
-      have hK\<^sub>N_poly_connected:
-          "top1_connected_on (geotop_polyhedron K\<^sub>N)
-            (subspace_topology UNIV geotop_euclidean_topology
-              (geotop_polyhedron K\<^sub>N))"
-        using hN_connected hK\<^sub>N_poly by (by100 simp)
       have hK\<^sub>N_poly_path_connected:
           "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
             (subspace_topology UNIV geotop_euclidean_topology
