@@ -1185,6 +1185,89 @@ proof -
       show "card ?F \<ge> 1"
         using hcard_pos by (by100 linarith)
     qed
+    have hK\<^sub>N_edge_rel_interior_incident_count_ge1:
+        "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          p \<in> rel_interior e \<Longrightarrow>
+          card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<ge> 1"
+    proof -
+      fix e p
+      assume heK\<^sub>N: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hp_rel: "p \<in> rel_interior e"
+      have heSd: "e \<in> geotop_iterated_Sd m K"
+        using heK\<^sub>N unfolding K\<^sub>N_def by (by100 simp)
+      have he_sub_N: "e \<subseteq> N"
+        using heK\<^sub>N unfolding K\<^sub>N_def by (by100 simp)
+      have hp_e: "p \<in> e"
+        using hp_rel rel_interior_subset by (by100 blast)
+      have hpN: "p \<in> N"
+        using he_sub_N hp_e by (by100 blast)
+      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
+        and hB_A1: "B \<inter> A1 \<noteq> {}"
+        and hpB: "p \<in> B"
+        using hpN unfolding hN_def by (by100 blast)
+      have hcarrier_eq_e:
+          "geotop_K_carrier (geotop_iterated_Sd m K) p = e"
+        by (rule geotop_K_carrier_eq[OF hSd_complex heSd hp_rel])
+      have hcarrier_sub_B:
+          "geotop_K_carrier (geotop_iterated_Sd m K) p \<subseteq> B"
+        by (rule geotop_K_carrier_subset_containing_simplex
+            [OF hSd_complex hSd_fin hB_Sd hpB])
+      have he_sub_B: "e \<subseteq> B"
+        using hcarrier_eq_e hcarrier_sub_B by (by100 simp)
+      have hface_eB: "geotop_is_face e B"
+        by (rule geotop_complex_subset_simplex_face_prefix
+            [OF hSd_complex heSd hB_Sd he_sub_B])
+      have hB_simplex: "geotop_is_simplex B"
+        using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
+      obtain n where hBdim: "geotop_simplex_dim B n"
+        using hB_simplex unfolding geotop_is_simplex_def geotop_simplex_dim_def
+        by (by100 blast)
+      have hn_le2: "n \<le> 2"
+        by (rule geotop_simplex_dim_le_2_R2_prefix[OF hBdim])
+      show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<ge> 1"
+      proof (cases "n = 2")
+        case True
+        have hB2: "geotop_simplex_dim B 2"
+          using hBdim True by (by100 simp)
+        show ?thesis
+          by (rule hK\<^sub>N_Sd_owner_meeting_A1_count_ge1
+              [OF heK\<^sub>N hedge hB_Sd hB2 hface_eB hB_A1])
+      next
+        case False
+        have hn_le1: "n \<le> 1"
+          using hn_le2 False by (by100 linarith)
+        obtain k where hk_le_n: "k \<le> n"
+          and hedimk: "geotop_simplex_dim e k"
+          using geotop_face_dim_le_prefix[OF hBdim hface_eB] by (by100 blast)
+        have hedim1: "geotop_simplex_dim e 1"
+          using hedge unfolding geotop_is_edge_def by (by100 simp)
+        have hk_eq1: "k = 1"
+          by (rule geotop_simplex_dim_unique[OF hedimk hedim1])
+        have hn1: "n = 1"
+          using hk_le_n hk_eq1 hn_le1 by (by100 linarith)
+        have hBedge: "geotop_is_edge B"
+          using hBdim hn1 unfolding geotop_is_edge_def by (by100 simp)
+        have he_eq_B: "e = B"
+          by (rule geotop_edge_face_of_edge_eq_prefix[OF hedge hBedge hface_eB])
+        obtain \<sigma> where h\<sigma>Sd: "\<sigma> \<in> geotop_iterated_Sd m K"
+          and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+          and heface\<sigma>: "geotop_is_face e \<sigma>"
+          using hK\<^sub>N_edge_owned_by_Sd_2simplex[OF heK\<^sub>N hedge]
+          by (by100 blast)
+        have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+          by (rule geotop_is_face_imp_subset_prefix[OF heface\<sigma>])
+        have he_A1: "e \<inter> A1 \<noteq> {}"
+          using hB_A1 he_eq_B by (by100 simp)
+        have h\<sigma>A1: "\<sigma> \<inter> A1 \<noteq> {}"
+          using he_sub_\<sigma> he_A1 by (by100 blast)
+        show ?thesis
+          by (rule hK\<^sub>N_Sd_owner_meeting_A1_count_ge1
+              [OF heK\<^sub>N hedge h\<sigma>Sd h\<sigma>2 heface\<sigma> h\<sigma>A1])
+      qed
+    qed
     have hK\<^sub>N_edge_incident_2faces_card_le2:
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
@@ -2069,6 +2152,38 @@ proof -
         show ?thesis
           using hcard_pos by (by100 linarith)
       qed
+      have hcarrier_BdJ: "geotop_K_carrier K\<^sub>N p \<in> BdJ\<^sub>N"
+        by (rule hJ\<^sub>N_carrier_edge_member_BdJ\<^sub>N
+            [OF hpJ hdim1 hge1])
+      show "p \<in> geotop_polyhedron BdJ\<^sub>N"
+        unfolding geotop_polyhedron_def using hcarrier_BdJ hp_carrier by (by100 blast)
+    qed
+    have hJ\<^sub>N_carrier_edge_point_in_BdJ\<^sub>N_poly:
+        "\<And>p. p \<in> J\<^sub>N \<Longrightarrow>
+          geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 1
+          \<Longrightarrow> p \<in> geotop_polyhedron BdJ\<^sub>N"
+    proof -
+      fix p
+      assume hpJ: "p \<in> J\<^sub>N"
+        and hdim1: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 1"
+      have hpN: "p \<in> N"
+        using hpJ hJ\<^sub>N_sub_N by (by100 blast)
+      have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+        using hpN hK\<^sub>N_poly by (by100 simp)
+      have hcarrierK: "geotop_K_carrier K\<^sub>N p \<in> K\<^sub>N"
+        by (rule geotop_K_carrier_in[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+      have hp_rel:
+          "p \<in> rel_interior (geotop_K_carrier K\<^sub>N p)"
+        by (rule geotop_K_carrier_rel_interior[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+      have hp_carrier: "p \<in> geotop_K_carrier K\<^sub>N p"
+        using hp_rel rel_interior_subset by (by100 blast)
+      have hedge: "geotop_is_edge (geotop_K_carrier K\<^sub>N p)"
+        using hdim1 unfolding geotop_is_edge_def by (by100 simp)
+      have hge1:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face (geotop_K_carrier K\<^sub>N p) \<sigma>} \<ge> 1"
+        by (rule hK\<^sub>N_edge_rel_interior_incident_count_ge1
+            [OF hcarrierK hedge hp_rel])
       have hcarrier_BdJ: "geotop_K_carrier K\<^sub>N p \<in> BdJ\<^sub>N"
         by (rule hJ\<^sub>N_carrier_edge_member_BdJ\<^sub>N
             [OF hpJ hdim1 hge1])
