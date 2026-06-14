@@ -3802,18 +3802,29 @@ proof -
             geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q']
           by (by100 simp)
       qed
+      have hD44_central_same_component_in_Ncut_book_step:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        (**
+          Remaining book step in its component form.  Moise's
+          regular-neighborhood construction analyzes the frontier component of
+          the fine carrier \<open>N\<close> through \<open>P\<close>: the boundary component gives the
+          lower-to-upper broken-line subarc outside \<open>N \<union> A2\<close>, and the access
+          points chosen near \<open>Q\<close> and \<open>S\<close> attach to that same outside
+          component of \<open>I - (N \<union> A2)\<close>. **)
+        sorry
       have hD44_central_frontier_broken_line_route_exists:
           "\<exists>B\<^sub>c. geotop_is_broken_line B\<^sub>c
             \<and> B\<^sub>c \<subseteq> ?Ncut
             \<and> Q1 \<in> B\<^sub>c
             \<and> S1 \<in> B\<^sub>c"
         (**
-          Remaining book step in its literal broken-line form.  Moise's
-          frontier-component construction supplies a broken-line subarc of the
-          frontier of the regular neighborhood of \<open>A1\<close>, lying outside
-          \<open>N \<union> A2\<close>, whose ends attach to the chosen access points near
-          \<open>Q\<close> and \<open>S\<close>. **)
-        sorry
+          Broken-line extraction from the component form of Moise's
+          frontier-route step.  The set \<open>?Ncut\<close> is open, so the established
+          Section 1/D42 broken-line-connectedness bridge turns same-component
+          membership into the literal broken line used by the surrounding
+          component bookkeeping. **)
+        by (rule geotop_open_component_broken_line_between_prefix
+            [OF hNcut_open hQ1_Ncut hD44_central_same_component_in_Ncut_book_step])
       have hD44_central_frontier_route_exists:
           "\<exists>W. W \<subseteq> ?Ncut
             \<and> Q1 \<in> W
