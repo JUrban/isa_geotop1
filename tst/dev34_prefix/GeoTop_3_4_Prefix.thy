@@ -724,6 +724,44 @@ proof -
         [OF hW_U hX_W hY_W hW_conn])
 qed
 
+lemma geotop_component_member_gives_closed_corridor_prefix:
+  fixes U :: "(real^2) set" and X Y :: "real^2"
+  assumes hY_comp:
+    "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  shows "\<exists>C. C \<subseteq> U
+      \<and> top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)
+      \<and> X \<in> closure C
+      \<and> Y \<in> closure C"
+  (**
+    Component-to-corridor bookkeeping used in D44: an actual component
+    membership already contains a connected witness inside the ambient cut-open
+    set; taking its ordinary closure gives the closed-corridor form used by
+    the access-collar reductions. **)
+proof -
+  obtain C where hC:
+      "C \<subseteq> U
+        \<and> X \<in> C
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)"
+    and hY_C: "Y \<in> C"
+    using hY_comp unfolding geotop_component_at_def by (by100 blast)
+  have hC_sub: "C \<subseteq> U"
+    using hC by (by100 blast)
+  have hX_C: "X \<in> C"
+    using hC by (by100 blast)
+  have hC_conn:
+      "top1_connected_on C
+        (subspace_topology UNIV geotop_euclidean_topology C)"
+    using hC by (by100 blast)
+  have hX_cl: "X \<in> closure C"
+    using hX_C closure_subset by (by100 blast)
+  have hY_cl: "Y \<in> closure C"
+    using hY_C closure_subset by (by100 blast)
+  show ?thesis
+    using hC_sub hC_conn hX_cl hY_cl by (intro exI conjI)
+qed
+
 lemma geotop_same_component_local_access_frontier_transfer_prefix:
   fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
   assumes hUQ_conn: "connected U\<^sub>Q"
@@ -5897,27 +5935,7 @@ proof -
       form used by the collar machinery below.  The corridor is simply the
       \<open>Q1\<close>-component of \<open>I - (N \<union> A2)\<close>; once \<open>S1\<close> lies in it, both access
       points lie in its ordinary closure. **)
-  proof -
-    assume hS1_comp:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    obtain C where hC_eq:
-        "C = geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      and hC_sub: "C \<subseteq> ?Ncut"
-      and hQ1_C: "Q1 \<in> C"
-      and hC_open: "C \<in> geotop_euclidean_topology"
-      and hC_conn:
-        "top1_connected_on C
-          (subspace_topology UNIV geotop_euclidean_topology C)"
-      using hD44_Q1_Ncut_component_package by (elim exE conjE)
-    have hS1_C: "S1 \<in> C"
-      using hS1_comp hC_eq by (by100 simp)
-    have hQ1_cl: "Q1 \<in> closure C"
-      using hQ1_C closure_subset by (by100 blast)
-    have hS1_cl: "S1 \<in> closure C"
-      using hS1_C closure_subset by (by100 blast)
-    show ?thesis
-      using hC_sub hC_conn hQ1_cl hS1_cl by (intro exI conjI)
-  qed
+    by (rule geotop_component_member_gives_closed_corridor_prefix)
   have hD44_Ncut_open_split_if_not_same_component:
       "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> ?Ncut =
