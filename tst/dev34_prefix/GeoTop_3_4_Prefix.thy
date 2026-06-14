@@ -3178,6 +3178,38 @@ proof -
       show ?thesis
         using huBdJ hvBdJ huv hsplit by (by100 blast)
     qed
+    have hBdJ\<^sub>N_cycle_split_from_polygon:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+          \<exists>u v C\<^sub>1 C\<^sub>2.
+            {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v
+            \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+            \<and> geotop_is_broken_line C\<^sub>1
+            \<and> geotop_is_broken_line C\<^sub>2
+            \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+            \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+            \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+                geotop_arc_interior C\<^sub>2 {u, v} = {}"
+    proof -
+      assume hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      obtain u v where huBdJ: "{u} \<in> BdJ\<^sub>N"
+        and hvBdJ: "{v} \<in> BdJ\<^sub>N"
+        and huv: "u \<noteq> v"
+        using hBdJ\<^sub>N_two_distinct_vertices by (by100 blast)
+      obtain C\<^sub>1 C\<^sub>2 where hsplit:
+          "geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+          \<and> geotop_is_broken_line C\<^sub>1
+          \<and> geotop_is_broken_line C\<^sub>2
+          \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+          \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+          \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+              geotop_arc_interior C\<^sub>2 {u, v} = {}"
+        using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+            hpolygon huBdJ hvBdJ huv]
+        by (by100 blast)
+      show ?thesis
+        using huBdJ hvBdJ huv hsplit by (by100 blast)
+    qed
     have hBdJ\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
