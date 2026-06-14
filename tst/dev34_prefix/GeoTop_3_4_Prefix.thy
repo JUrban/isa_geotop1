@@ -780,20 +780,42 @@ proof -
       using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
     have hSd_fin: "finite (geotop_iterated_Sd m K)"
       by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
-    have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+    have hSd_poly:
+        "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+      using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+    have hN_sub_Sd_poly: "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+      unfolding hN_def geotop_polyhedron_def by (by100 blast)
+    have hN_sub_disk:
+        "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J)"
+      using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+    have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
     proof
       fix B
       assume hB: "B \<in> geotop_iterated_Sd m K"
       have hB_simplex: "geotop_is_simplex B"
         using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
-      have hB_compact: "compact B"
+      show "compact B"
         by (rule geotop_simplex_compact[OF hB_simplex])
+    qed
+    have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+    proof
+      fix B
+      assume hB: "B \<in> geotop_iterated_Sd m K"
+      have hB_compact: "compact B"
+        using hSd_compact_all hB by (by100 blast)
       show "closed B"
         by (rule compact_imp_closed[OF hB_compact])
     qed
     have hN_index_fin:
         "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
       using hSd_fin by (by100 simp)
+    have hN_index_compact:
+        "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. compact B"
+      using hSd_compact_all by (by100 blast)
+    have hN_compact: "compact N"
+      unfolding hN_def
+      by (rule compact_Union[OF hN_index_fin hN_index_compact])
     have hN_index_closed:
         "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
       using hSd_closed_all by (by100 blast)
@@ -960,6 +982,7 @@ proof -
         witnesses \<open>Q'\<close> and \<open>S'\<close> lie in the same component of
         \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close>. **)
       using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS hN_A2_only
+        hSd_poly hN_sub_disk hN_compact
         hQ_not_N hS_not_N hN_closed hball_Q_N hball_S_N
         hball_Q_r_N hball_S_r_N hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
         hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
