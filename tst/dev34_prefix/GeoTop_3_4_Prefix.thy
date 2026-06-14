@@ -7246,17 +7246,32 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_boundary_arc_access_ball_crossings_core:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Direct Moise 4.4 frontier-collar target.  After the frontier
+      component of the fine carrier through \<open>P\<close> is split into the boundary
+      arc and the complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, the adjacent outside
+      component of \<open>I - (N \<union> A2)\<close> meets every lower and upper access collar.
+      This is the literal collar-crossing form of the book sentence that the
+      complementary frontier subarc has one adjacent outside component on the
+      side running from below \<open>P,R\<close> to above \<open>P,R\<close>. **)
+    sorry
   have hD44_moise_boundary_arc_same_component_core:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Direct Moise 4.4 frontier-component target.  After the frontier
-      component of the fine carrier through \<open>P\<close> is split into the boundary
-      arc and the complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, the adjacent outside
-      component of \<open>I - (N \<union> A2)\<close> must contain both access points.  This is
-      the exact component form of the book sentence that \<open>V\<close> and \<open>W\<close> lie in
-      the boundary of one component of \<open>I - (A1 \<union> A2)\<close>, instantiated to the
-      carrier complement \<open>?Ncut\<close>. **)
-    sorry
+      Component consequence of the collar-crossing target.  If \<open>Q1\<close> and
+      \<open>S1\<close> were in different \<open>?Ncut\<close> components, the already-proved open
+      split supplies two access collars that no connected subset of \<open>?Ncut\<close>
+      can meet simultaneously, contradicting Moise's complementary-frontier
+      crossings. **)
+    by (rule hD44_arbitrary_access_ball_crossings_suffice
+        [OF hD44_moise_boundary_arc_access_ball_crossings_core])
   have hD44_moise_boundary_arc_closed_corridor_core:
       "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
@@ -7270,19 +7285,6 @@ proof -
       both endpoints. **)
     by (rule hD44_same_component_gives_closed_corridor
         [OF hD44_moise_boundary_arc_same_component_core])
-  have hD44_moise_boundary_arc_access_ball_crossings_core:
-      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-        \<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    (**
-      Collar-crossing consequence of the direct same-component target.  The
-      remaining mathematical content is no longer the arbitrary-ball
-      bookkeeping; it is the Moise frontier-component statement above. **)
-    by (rule hD44_closed_corridor_gives_arbitrary_access_ball_crossings
-        [OF hD44_moise_boundary_arc_closed_corridor_core])
   have hD44_moise_Q1_component_accumulates_core:
       "S1 \<in> closure
         (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
