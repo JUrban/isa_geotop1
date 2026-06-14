@@ -3585,6 +3585,8 @@ proof -
     by (rule broken_line_closed[OF hD44_F\<^sub>1E])
   have hD44_F\<^sub>2_closed: "closed F\<^sub>2"
     by (rule broken_line_closed[OF hD44_F\<^sub>2E])
+  have hD44_F\<^sub>2_nonempty: "F\<^sub>2 \<noteq> {}"
+    using hD44_F\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
   have hD44_UNIV_top:
       "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
     by (metis geotop_euclidean_topology_eq_open_sets
@@ -3643,16 +3645,47 @@ proof -
     thus False
       using hD44_P_not_F2o by (by100 blast)
   qed
+  have hD44_B1P_sub_F\<^sub>1_arc_interior:
+      "?B1P \<subseteq> geotop_arc_interior F\<^sub>1 {Q, S}"
+    using hD44_B1P_sub_F1o unfolding geotop_arc_interior_def by (by100 simp)
   have hD44_B1P_sub_F\<^sub>1: "?B1P \<subseteq> F\<^sub>1"
     using hD44_B1P_sub_F1o by (by100 blast)
   have hD44_B1P_inter_F\<^sub>1: "?B1P \<inter> F\<^sub>1 = ?B1P"
     using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
   have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
     using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+  have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
+  proof -
+    have hsd_iff:
+        "(0 < setdist ?B1P F\<^sub>2) =
+          (?B1P \<noteq> {} \<and> F\<^sub>2 \<noteq> {} \<and> ?B1P \<inter> F\<^sub>2 = {})"
+      by (rule setdist_gt_0_compact_closed
+          [OF hD44_B1P_compact hD44_F\<^sub>2_closed])
+    show ?thesis
+      using hsd_iff hD44_P_B1P hD44_F\<^sub>2_nonempty hD44_B1P_F\<^sub>2_disj
+      by (by100 blast)
+  qed
   have hD44_B1P_inter_J: "?B1P \<inter> J = ?B1P"
     using hD44_B1P_sub_B\<^sub>1 by (by100 blast)
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
+  have hD44_A2_QS_closed: "closed (A2 \<union> {Q, S})"
+    using hA2_closed by (by100 simp)
+  have hD44_A2_QS_nonempty: "A2 \<union> {Q, S} \<noteq> {}"
+    by (by100 blast)
+  have hD44_B1P_forbidden_setdist_pos:
+      "0 < setdist ?B1P (A2 \<union> {Q, S})"
+  proof -
+    have hsd_iff:
+        "(0 < setdist ?B1P (A2 \<union> {Q, S})) =
+          (?B1P \<noteq> {} \<and> A2 \<union> {Q, S} \<noteq> {}
+            \<and> ?B1P \<inter> (A2 \<union> {Q, S}) = {})"
+      by (rule setdist_gt_0_compact_closed
+          [OF hD44_B1P_compact hD44_A2_QS_closed])
+    show ?thesis
+      using hsd_iff hD44_P_B1P hD44_A2_QS_nonempty hD44_B1P_A2_QS_disj
+      by (by100 blast)
+  qed
   have hN_A2_closed: "closed (N \<union> A2)"
     using hN_closed hA2_closed by (by100 simp)
   have hI_open_HOL: "open (geotop_polygon_interior J)"
