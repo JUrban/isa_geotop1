@@ -3517,6 +3517,8 @@ proof -
       using hxI by (by100 blast)
   qed
   let ?B\<^sub>1 = "geotop_polyhedron BdJ\<^sub>N \<inter> J"
+  have hD44_B\<^sub>1_eq_J\<^sub>N_boundary: "?B\<^sub>1 = J\<^sub>N \<inter> J"
+    using hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   have hD44_P_BdJ\<^sub>N_F\<^sub>1:
       "P \<in> geotop_polyhedron BdJ\<^sub>N \<inter> F\<^sub>1"
     using hP_BdJ\<^sub>N_poly hD44_P_F\<^sub>1
@@ -3539,6 +3541,8 @@ proof -
     using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
   have hD44_B\<^sub>1_Ncut_disj: "?B\<^sub>1 \<inter> ?Ncut = {}"
     using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hD44_B\<^sub>1_sub_J\<^sub>N: "?B\<^sub>1 \<subseteq> J\<^sub>N"
+    using hD44_B\<^sub>1_eq_J\<^sub>N_boundary by (by100 blast)
   have hD44_J_closed: "closed J"
     by (rule polygon_closed[OF hJ])
   have hD44_B\<^sub>1_closed: "closed ?B\<^sub>1"
@@ -3546,8 +3550,16 @@ proof -
   have hD44_B\<^sub>1_compact: "compact ?B\<^sub>1"
     using hBdJ\<^sub>N_poly_compact hD44_J_closed by (rule compact_Int_closed)
   let ?B1P = "geotop_component_at UNIV geotop_euclidean_topology ?B\<^sub>1 P"
+  have hD44_B1P_eq_J\<^sub>N_boundary_component:
+      "?B1P =
+        geotop_component_at UNIV geotop_euclidean_topology (J\<^sub>N \<inter> J) P"
+    using hD44_B\<^sub>1_eq_J\<^sub>N_boundary by (by100 simp)
   have hD44_B1P_sub_B\<^sub>1: "?B1P \<subseteq> ?B\<^sub>1"
     by (rule geotop_component_at_UNIV_subset)
+  have hD44_B1P_sub_J\<^sub>N: "?B1P \<subseteq> J\<^sub>N"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_sub_J\<^sub>N by (by100 blast)
+  have hD44_B1P_sub_FrN\<^sub>I: "?B1P \<subseteq> FrN\<^sub>I"
+    using hD44_B1P_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
   have hD44_B1P_conn:
       "top1_connected_on ?B1P
         (subspace_topology UNIV geotop_euclidean_topology ?B1P)"
