@@ -7354,14 +7354,9 @@ proof -
         its closure contains the two access witnesses chosen near \<open>Q\<close> and
         \<open>S\<close>. **)
     proof -
-      have hD44_moise_exact_two_incidence_adjacent_corridor_book_step:
+      have hD44_moise_degree_two_adjacent_corridor_book_step:
           "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-              (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-                geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-                \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-                \<and> e\<^sub>1 \<noteq> e\<^sub>2
-                \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                    \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2)
           \<and> (\<exists>Z. Z \<subseteq> ?Ncut
             \<and> top1_connected_on Z
                 (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -7369,12 +7364,17 @@ proof -
             \<and> S1 \<in> closure Z)"
         (**
           Sharper remaining book obligation.  Moise's "then \<open>J\<close> is a
-          1-sphere" is represented here as exact two incident frontier edges at
-          every vertex of \<open>BdJ\<^sub>N\<close>; the already proved graph package converts
-          that incidence statement into the boundary arc \<open>C\<close> and complementary
-          frontier arc \<open>C\<^sub>F\<close>.  The second conjunct is the adjacent outside
-          component/corridor along \<open>C\<^sub>F\<close>. **)
+          1-sphere" is represented here as degree two at every vertex of
+          \<open>BdJ\<^sub>N\<close>; the already proved finite-graph packages convert degree two
+          into exact incident edges, then into the boundary arc \<open>C\<close> and
+          complementary frontier arc \<open>C\<^sub>F\<close>.  The second conjunct is the
+          adjacent outside component/corridor along \<open>C\<^sub>F\<close>. **)
         sorry
+      have hdegree:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        using hD44_moise_degree_two_adjacent_corridor_book_step
+        by (rule conjunct1)
       have htwo:
           "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
             (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -7383,15 +7383,14 @@ proof -
               \<and> e\<^sub>1 \<noteq> e\<^sub>2
               \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                   \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-        using hD44_moise_exact_two_incidence_adjacent_corridor_book_step
-        by (rule conjunct1)
+        by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
       have hZ_ex:
           "\<exists>Z. Z \<subseteq> ?Ncut
             \<and> top1_connected_on Z
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Q1 \<in> closure Z
             \<and> S1 \<in> closure Z"
-        using hD44_moise_exact_two_incidence_adjacent_corridor_book_step
+        using hD44_moise_degree_two_adjacent_corridor_book_step
         by (rule conjunct2)
       obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
         and hZ_conn:
