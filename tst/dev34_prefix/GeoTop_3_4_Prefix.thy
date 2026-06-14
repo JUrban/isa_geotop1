@@ -1551,6 +1551,87 @@ proof -
           using hx\<rho> h\<rho>sub\<tau> h\<tau>Fr by (by100 blast)
       qed
     qed
+    have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+        "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+    proof -
+      fix e
+      assume heBd: "e \<in> BdK\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+      have he_Fr: "e \<subseteq> FrN\<^sub>I"
+        by (rule hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBd hedge])
+      have he_dim: "geotop_simplex_dim e 1"
+        using hedge unfolding geotop_is_edge_def by (by100 simp)
+      have he_simplex: "geotop_is_simplex e"
+        by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+      have he_path_connected:
+          "top1_path_connected_on e
+            (subspace_topology UNIV geotop_euclidean_topology e)"
+        by (rule Theorem_GT_1_3[OF he_simplex])
+      have he_connected_top:
+          "top1_connected_on e
+            (subspace_topology UNIV geotop_euclidean_topology e)"
+        by (rule top1_path_connected_on_geotop_imp_connected[OF he_path_connected])
+      have he_connected: "connected e"
+        using he_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+      have hunion_connected: "connected (e \<union> J\<^sub>N)"
+        by (rule connected_Un[OF he_connected hJ\<^sub>N_connected_HOL hmeet])
+      have hunion_sub: "e \<union> J\<^sub>N \<subseteq> FrN\<^sub>I"
+        using he_Fr hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+      have hP_union: "P \<in> e \<union> J\<^sub>N"
+        using hP_J\<^sub>N by (by100 blast)
+      have hunion_sub_comp: "e \<union> J\<^sub>N \<subseteq> connected_component_set FrN\<^sub>I P"
+        by (rule connected_component_maximal
+            [OF hP_union hunion_connected hunion_sub])
+      show "e \<subseteq> J\<^sub>N"
+        using hunion_sub_comp hJ\<^sub>N_eq_connected_component by (by100 blast)
+    qed
+    define BdJ\<^sub>N where "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+    have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+      unfolding BdJ\<^sub>N_def by (by100 simp)
+    have hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+      by (rule finite_subset[OF hBdJ\<^sub>N_sub_BdK\<^sub>N hBdK\<^sub>N_fin])
+    have hBdJ\<^sub>N_face_closed:
+        "\<forall>\<sigma>\<in>BdJ\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> BdJ\<^sub>N"
+    proof (intro ballI allI impI)
+      fix \<sigma> \<tau>
+      assume h\<sigma>BdJ: "\<sigma> \<in> BdJ\<^sub>N"
+        and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      have h\<sigma>Bd: "\<sigma> \<in> BdK\<^sub>N"
+        using h\<sigma>BdJ unfolding BdJ\<^sub>N_def by (by100 simp)
+      have h\<sigma>J: "\<sigma> \<subseteq> J\<^sub>N"
+        using h\<sigma>BdJ unfolding BdJ\<^sub>N_def by (by100 simp)
+      have h\<tau>Bd: "\<tau> \<in> BdK\<^sub>N"
+        using hBdK\<^sub>N_face_closed h\<sigma>Bd h\<tau>\<sigma> by (by100 blast)
+      have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+        by (rule geotop_is_face_imp_subset_prefix[OF h\<tau>\<sigma>])
+      have h\<tau>J: "\<tau> \<subseteq> J\<^sub>N"
+        using h\<tau>sub\<sigma> h\<sigma>J by (by100 blast)
+      show "\<tau> \<in> BdJ\<^sub>N"
+        unfolding BdJ\<^sub>N_def using h\<tau>Bd h\<tau>J by (by100 simp)
+    qed
+    have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+      by (rule geotop_complex_subset_is_complex
+          [OF hBdK\<^sub>N_complex hBdJ\<^sub>N_sub_BdK\<^sub>N hBdJ\<^sub>N_face_closed])
+    have hBdJ\<^sub>N_1dim: "geotop_complex_is_1dim BdJ\<^sub>N"
+      using hBdK\<^sub>N_1dim hBdJ\<^sub>N_sub_BdK\<^sub>N
+      unfolding geotop_complex_is_1dim_def by (by100 blast)
+    have hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+      by (rule geotop_complex_1dim_imp_linear_graph_prefix
+          [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_1dim])
+    have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+      unfolding BdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+    have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+      using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
+        "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
+      unfolding BdJ\<^sub>N_def by (by100 simp)
+    have hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N:
+        "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<in> BdJ\<^sub>N"
+      unfolding BdJ\<^sub>N_def
+      using hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N by (by100 blast)
     have hBdK\<^sub>N_poly_closedin_FrN\<^sub>I:
         "closedin (top_of_set FrN\<^sub>I) (geotop_polyhedron BdK\<^sub>N)"
     proof -
