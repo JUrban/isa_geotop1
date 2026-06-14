@@ -3486,6 +3486,20 @@ proof -
   have hBdJ\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hball_Q_FrN\<^sub>I_disj: "ball Q r \<inter> FrN\<^sub>I = {}"
+    using hball_Q_N hFrN\<^sub>I_sub_N by (by100 blast)
+  have hball_S_FrN\<^sub>I_disj: "ball S r \<inter> FrN\<^sub>I = {}"
+    using hball_S_N hFrN\<^sub>I_sub_N by (by100 blast)
+  have hball_Q_J\<^sub>N_disj: "ball Q r \<inter> J\<^sub>N = {}"
+    using hball_Q_N hJ\<^sub>N_sub_N by (by100 blast)
+  have hball_S_J\<^sub>N_disj: "ball S r \<inter> J\<^sub>N = {}"
+    using hball_S_N hJ\<^sub>N_sub_N by (by100 blast)
+  have hball_Q_BdJ\<^sub>N_poly_disj:
+      "ball Q r \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hball_Q_J\<^sub>N_disj hBdJ\<^sub>N_poly_sub_J\<^sub>N by (by100 blast)
+  have hball_S_BdJ\<^sub>N_poly_disj:
+      "ball S r \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hball_S_J\<^sub>N_disj hBdJ\<^sub>N_poly_sub_J\<^sub>N by (by100 blast)
   have hQ_not_BdJ\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
   have hS_not_BdJ\<^sub>N_poly: "S \<notin> geotop_polyhedron BdJ\<^sub>N"
