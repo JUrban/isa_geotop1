@@ -49,6 +49,26 @@ definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" w
        g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
     (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
 
+lemma geotop_broken_line_connected_on_prefix:
+  fixes B :: "(real^2) set"
+  assumes hB: "geotop_is_broken_line B"
+  shows "top1_connected_on B
+    (subspace_topology UNIV geotop_euclidean_topology B)"
+proof -
+  have hB_arc: "geotop_is_arc B
+      (subspace_topology UNIV geotop_euclidean_topology B)"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+    and h\<gamma>_img: "path_image \<gamma> = B"
+    using geotop_is_arc_imp_HOL_arc[OF hB_arc] by (by100 blast)
+  have h\<gamma>_path: "path \<gamma>"
+    using h\<gamma>_arc unfolding arc_def by (by100 simp)
+  have hB_conn_HOL: "connected B"
+    using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
+  show ?thesis
+    using hB_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
 lemma geotop_two_arcs_compact_closed_prefix:
   fixes A1 A2 :: "(real^2) set"
   assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
@@ -1023,6 +1043,27 @@ proof -
         "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
           \<in> geotop_euclidean_topology"
       by (rule geotop_component_at_open_in_euclidean[OF hNcut_open hQ'_Ncut])
+    have hD44_broken_line_in_Ncut_suffices:
+        "\<And>B. geotop_is_broken_line B \<Longrightarrow> B \<subseteq> ?Ncut \<Longrightarrow>
+          Q' \<in> B \<Longrightarrow> S' \<in> B \<Longrightarrow>
+          S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
+    proof -
+      fix B
+      assume hB_bl: "geotop_is_broken_line B"
+        and hB_Ncut: "B \<subseteq> ?Ncut"
+        and hQ'_B: "Q' \<in> B"
+        and hS'_B: "S' \<in> B"
+      have hB_conn:
+          "top1_connected_on B
+            (subspace_topology UNIV geotop_euclidean_topology B)"
+        by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+      have hB_witness:
+          "B \<in> {C. C \<subseteq> ?Ncut \<and> Q' \<in> C \<and>
+            top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)}"
+        using hB_Ncut hQ'_B hB_conn by (by100 simp)
+      show "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
+        unfolding geotop_component_at_def using hB_witness hS'_B by (by100 blast)
+    qed
     have hD44_QS_witnesses_same_component_in_Ncut:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
       (**
@@ -1034,16 +1075,16 @@ proof -
         with endpoints on \<open>J\<close>, and use the cyclic-order/D42 transfer to show
         the outside witnesses \<open>Q'\<close> and \<open>S'\<close> lie in one component of
         \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-      using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS hN_A2_only
-        hSd_poly hN_sub_disk hN_compact
-        hQ_not_N hS_not_N hN_closed hball_Q_N hball_S_N
-        hball_Q_r_N hball_S_r_N hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
-        hU\<^sub>Q_sub_Ncut hU\<^sub>S_sub_Ncut hQ'_Ncut hS'_Ncut
-        hNcut_open hQ'_Ncut_component_open
-        hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
-        hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
-        hQ'_U\<^sub>Q hS'_U\<^sub>S hU_disj
-      sorry
+    proof -
+      obtain B where hB_bl: "geotop_is_broken_line B"
+        and hB_Ncut: "B \<subseteq> ?Ncut"
+        and hQ'_B: "Q' \<in> B"
+        and hS'_B: "S' \<in> B"
+        sorry
+      show ?thesis
+        by (rule hD44_broken_line_in_Ncut_suffices
+            [OF hB_bl hB_Ncut hQ'_B hS'_B])
+    qed
     have hD44_QS_witnesses_same_component_from_fine_A1_neighborhood:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
           (geotop_polygon_interior J - (A1 \<union> A2)) Q'"
