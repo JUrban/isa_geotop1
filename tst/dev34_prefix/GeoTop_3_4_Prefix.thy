@@ -7306,6 +7306,17 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_regular_neighborhood_component_core:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Direct Moise 4.4 regular-neighborhood component target.  This is the
+      book step beginning with the fine carrier of \<open>A1\<close>: analyze the
+      component of \<open>Fr (N \<inter> closure I)\<close> through \<open>P\<close>, prove it is the
+      required 1-sphere/frontier broken line, take the complementary outside
+      corridor, and use the cyclic-order/D42 transfer to put the lower and
+      upper access points in the same component of
+      \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_moise_boundary_arc_closed_corridor_core:
       "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
@@ -7313,13 +7324,12 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z"
     (**
-      Direct Moise 4.4 adjacent-corridor target.  After the frontier component
-      of the fine carrier through \<open>P\<close> is split into the boundary arc and the
-      complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, the adjacent outside component of
-      \<open>I - (N \<union> A2)\<close> lies in \<open>?Ncut\<close>, is connected, and has the lower and
-      upper access points in its closure.  This is the book sentence before
-      converting it into arbitrary access-ball crossings. **)
-    sorry
+      Closed-corridor form of the direct component target.  Once Moise's
+      regular-neighborhood argument puts the two access points in the same
+      outside component, the existing component-to-corridor bookkeeping gives
+      the connected set whose closure contains both access points. **)
+    by (rule hD44_same_component_gives_closed_corridor
+        [OF hD44_moise_regular_neighborhood_component_core])
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
