@@ -4507,6 +4507,116 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Link/local-star version of the same book target.  Existing link
+      component facts naturally produce an exact-two incident-edge witness at
+      every vertex.  This bridge records that such a local 1-manifold statement
+      is strong enough to recover Moise's frontier-component 1-sphere. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    have hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    proof (intro allI impI)
+      fix w
+      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+      have htwo_w:
+        "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+      proof -
+        have hspec:
+          "{w} \<in> BdJ\<^sub>N \<longrightarrow>
+            (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+              geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+              \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+              \<and> e\<^sub>1 \<noteq> e\<^sub>2
+              \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                  \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+          using htwo by (rule spec)
+        show ?thesis
+          using hspec hwBdJ by (by100 simp)
+      qed
+      obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
+        and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
+        and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
+        and hwe\<^sub>1: "w \<in> e\<^sub>1"
+        and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
+        and hwe\<^sub>2: "w \<in> e\<^sub>2"
+        and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
+        and hexhaust:
+          "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+        using htwo_w by (elim bexE exE conjE)
+      let ?E = "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      have hE_eq: "?E = {e\<^sub>1, e\<^sub>2}"
+      proof
+        show "?E \<subseteq> {e\<^sub>1, e\<^sub>2}"
+        proof
+          fix e
+          assume heE: "e \<in> ?E"
+          have heprops: "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e"
+            using heE by (by100 simp)
+          have hexhaust_e:
+            "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+            using hexhaust by (rule spec)
+          have he_cases: "e = e\<^sub>1 \<or> e = e\<^sub>2"
+            using hexhaust_e heprops by (by100 simp)
+          show "e \<in> {e\<^sub>1, e\<^sub>2}"
+            using he_cases by (by100 simp)
+        qed
+        show "{e\<^sub>1, e\<^sub>2} \<subseteq> ?E"
+        proof
+          fix e
+          assume he_pair: "e \<in> {e\<^sub>1, e\<^sub>2}"
+          have he_cases: "e = e\<^sub>1 \<or> e = e\<^sub>2"
+            using he_pair by (by100 simp)
+          show "e \<in> ?E"
+          proof (rule disjE[OF he_cases])
+            assume he: "e = e\<^sub>1"
+            show "e \<in> ?E"
+              using he he\<^sub>1BdJ he\<^sub>1edge hwe\<^sub>1 by (by100 simp)
+          next
+            assume he: "e = e\<^sub>2"
+            show "e \<in> ?E"
+              using he he\<^sub>2BdJ he\<^sub>2edge hwe\<^sub>2 by (by100 simp)
+          qed
+        qed
+      qed
+      show "card ?E = 2"
+        using hE_eq he12 by (by100 simp)
+    qed
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_degree_two[OF hdegree])
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
+    show ?thesis
+      using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
