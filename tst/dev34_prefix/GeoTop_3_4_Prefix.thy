@@ -7472,14 +7472,77 @@ proof -
                 \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
                 \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
           (**
-            Literal Moise 4.4 collar-crossing construction.  After the fine
-            carrier of \<open>A1\<close> is chosen, the book restricts it to the closed
-            disk, analyzes the frontier component through \<open>P\<close>, splits that
-            polygonal 1-sphere into the boundary arc and complementary
-            frontier arc, and uses the adjacent outside side of the
-            complementary arc to cross every prescribed pair of access collars
-            around \<open>Q1\<close> and \<open>S1\<close>. **)
-          sorry
+            Connected-set consequence of Moise's literal broken-line
+            construction.  The book constructs the broken line \<open>B\<close> between
+            the last lower and first upper boundary hits on the complementary
+            frontier arc; broken-line connectedness then gives the connected
+            crossing needed by the component/collar bridge. **)
+        proof (intro allI impI)
+          fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+          assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+          assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+          have hD44_moise_boundary_arc_broken_line_access_crossings_book_step:
+              "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+                \<exists>B. geotop_is_broken_line B
+                  \<and> B \<subseteq> ?Ncut
+                  \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                  \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+            (**
+              Literal Moise 4.4 broken-line construction.  After the fine
+              carrier of \<open>A1\<close> is chosen, the book restricts it to the closed
+              disk, analyzes the frontier component through \<open>P\<close>, splits that
+              polygonal 1-sphere into the boundary arc and complementary
+              frontier arc, chooses the lower-to-upper subarc \<open>B\<close>, and shows
+              that this subarc lies in \<open>I - (N \<union> A2)\<close> while meeting every
+              prescribed pair of access collars around \<open>Q1\<close> and \<open>S1\<close>. **)
+            sorry
+          have hQ_spec:
+              "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
+                \<and> B \<subseteq> ?Ncut
+                \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          proof -
+            have hQ_imp:
+                "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0.
+                  \<exists>B. geotop_is_broken_line B
+                    \<and> B \<subseteq> ?Ncut
+                    \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                    \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+              by (rule spec[OF hD44_moise_boundary_arc_broken_line_access_crossings_book_step])
+            show ?thesis
+              by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+          qed
+          have hB_ex:
+              "\<exists>B. geotop_is_broken_line B
+                \<and> B \<subseteq> ?Ncut
+                \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          proof -
+            have hS_imp:
+                "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+                  \<and> B \<subseteq> ?Ncut
+                  \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                  \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+              by (rule spec[OF hQ_spec])
+            show ?thesis
+              by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
+          qed
+          obtain B where hB_bl: "geotop_is_broken_line B"
+            and hB_sub: "B \<subseteq> ?Ncut"
+            and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+            and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+            using hB_ex by (elim exE conjE)
+          have hB_conn:
+              "top1_connected_on B
+                (subspace_topology UNIV geotop_euclidean_topology B)"
+            by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+          show "\<exists>Z. Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+            using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
+        qed
         have hS1_witnesses:
             "\<forall>\<epsilon>>0. \<exists>Y.
               Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
