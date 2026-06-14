@@ -4479,6 +4479,34 @@ proof -
     show ?thesis
       by (rule hD44_BdJ\<^sub>N_1sphere_has_book_two_arc_split[OF hsphere_BdJ])
   qed
+  have hD44_BdJ\<^sub>N_card_le2_no_endpoint_imp_J\<^sub>N_1sphere:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Precise remaining regular-neighborhood graph target.  Once the frontier
+      component graph has valence at most two and no endpoints, the already
+      proved finite-graph classifier makes its carrier polygonal; the equality
+      \<open>J\<^sub>N = geotop_polyhedron BdJ\<^sub>N\<close> then turns that into Moise's
+      "then \<open>J\<close> is a 1-sphere" statement for the actual frontier component. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint[OF hle2 hnoend])
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
+    show ?thesis
+      using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
