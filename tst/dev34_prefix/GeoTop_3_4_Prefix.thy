@@ -7676,36 +7676,7 @@ proof -
     (**
       Conversion from Moise's collar formulation to ordinary Euclidean
       closure. **)
-    unfolding closure_approachable
-  proof (intro allI impI)
-    fix \<epsilon> :: real
-    assume h\<epsilon>_pos: "0 < \<epsilon>"
-    have h\<epsilon>_imp:
-        "0 < \<epsilon> \<longrightarrow> (\<exists>Y.
-          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
-          \<and> Y \<in> ball S1 \<epsilon>)"
-      by (rule spec[OF hD44_moise_Q1_component_has_S1_ball_witnesses])
-    have hY_ex:
-        "\<exists>Y. Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
-          \<and> Y \<in> ball S1 \<epsilon>"
-      by (rule mp[OF h\<epsilon>_imp h\<epsilon>_pos])
-    obtain Y where hY_comp:
-        "Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      and hY_ball: "Y \<in> ball S1 \<epsilon>"
-      using hY_ex by (elim exE conjE)
-    have hdist: "dist Y S1 < \<epsilon>"
-    proof -
-      have hdist_SY: "dist S1 Y < \<epsilon>"
-        using hY_ball unfolding ball_def by (by100 simp)
-      have hcomm: "dist Y S1 = dist S1 Y"
-        by (rule dist_commute)
-      show ?thesis
-        using hdist_SY hcomm by (by100 simp)
-    qed
-    show "\<exists>y\<in>geotop_component_at UNIV geotop_euclidean_topology
-        ?Ncut Q1. dist y S1 < \<epsilon>"
-      using hY_comp hdist by (intro bexI)
-  qed
+    by (rule hD44_moise_Q1_component_accumulates_core)
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
