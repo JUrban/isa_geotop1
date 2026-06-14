@@ -762,6 +762,34 @@ proof -
     using hC_sub hC_conn hX_cl hY_cl by (intro exI conjI)
 qed
 
+lemma geotop_component_closure_pair_gives_closed_corridor_prefix:
+  fixes U C :: "(real^2) set" and X Y :: "real^2"
+  assumes hC_comp: "C \<in> components U"
+  assumes hX_cl: "X \<in> closure C"
+  assumes hY_cl: "Y \<in> closure C"
+  shows "\<exists>Z. Z \<subseteq> U
+      \<and> top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)
+      \<and> X \<in> closure Z
+      \<and> Y \<in> closure Z"
+  (**
+    Moise 4.4 component-frontier bookkeeping: if the two access points are in
+    the ordinary closure of one HOL component of the cut-open set, then that
+    component is exactly the closed corridor used by the local collar
+    reductions. **)
+proof -
+  have hC_sub: "C \<subseteq> U"
+    by (rule in_components_subset[OF hC_comp])
+  have hC_conn_HOL: "connected C"
+    by (rule in_components_connected[OF hC_comp])
+  have hC_conn:
+      "top1_connected_on C
+        (subspace_topology UNIV geotop_euclidean_topology C)"
+    by (rule iffD2[OF top1_connected_on_geotop_iff_connected hC_conn_HOL])
+  show ?thesis
+    using hC_sub hC_conn hX_cl hY_cl by (intro exI conjI)
+qed
+
 lemma geotop_same_component_local_access_frontier_transfer_prefix:
   fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
   assumes hUQ_conn: "connected U\<^sub>Q"
@@ -7383,7 +7411,27 @@ proof -
       missing construction is one connected subset of
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
       access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
-    sorry
+  proof -
+    have hD44_moise_same_component_frontier_book_step:
+        "\<exists>C. C \<in> components ?Ncut
+          \<and> Q1 \<in> closure C
+          \<and> S1 \<in> closure C"
+      (**
+        Literal Moise 4.4 component-frontier sentence.  After splitting the
+        frontier component of the fine carrier neighborhood, the book takes
+        the outside component adjacent to the complementary frontier subarc;
+        the lower and upper access points lie in the frontier, hence in the
+        closure, of that one component. **)
+      sorry
+    obtain C where hC_comp: "C \<in> components ?Ncut"
+      and hQ1_cl: "Q1 \<in> closure C"
+      and hS1_cl: "S1 \<in> closure C"
+      using hD44_moise_same_component_frontier_book_step
+      by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_component_closure_pair_gives_closed_corridor_prefix
+          [OF hC_comp hQ1_cl hS1_cl])
+  qed
   have hD44_moise_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
