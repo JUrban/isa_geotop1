@@ -3267,6 +3267,44 @@ proof -
     thus False
       using hcard by (by100 simp)
   qed
+  have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  proof
+    show "Q \<noteq> P"
+    proof
+      assume hQP: "Q = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQP card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+    show "Q \<noteq> R"
+    proof
+      assume hQR: "Q = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQR card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+  qed
+  have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  proof
+    show "S \<noteq> P"
+    proof
+      assume hSP: "S = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSP card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+    show "S \<noteq> R"
+    proof
+      assume hSR: "S = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSR card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+  qed
   have hD44_QS_broken_boundary_arc_split:
       "\<exists>F\<^sub>1 F\<^sub>2.
         J = F\<^sub>1 \<union> F\<^sub>2
@@ -3315,6 +3353,24 @@ proof -
   have hD44_F\<^sub>1F\<^sub>2_inter: "F\<^sub>1 \<inter> F\<^sub>2 = {Q, S}"
     by (rule geotop_same_endpoint_arcs_inter_eq_prefix
         [OF hD44_F\<^sub>1E hD44_F\<^sub>2E hD44_F\<^sub>1F\<^sub>2_int_disj])
+  have hD44_PR_on_QS_boundary_arc_interiors:
+      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> P \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<and> (R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})"
+    using hD44_F_J_split hP hR hQ_ne_PR hS_ne_PR
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_PR_unique_QS_boundary_arc_interiors:
+      "((P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))
+        \<and> ((R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (R \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))"
+    using hD44_PR_on_QS_boundary_arc_interiors hD44_F\<^sub>1F\<^sub>2_int_disj
+    by (by100 blast)
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
