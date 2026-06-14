@@ -480,6 +480,157 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_connected_subset_broken_line_subarc_with_endpoints_prefix:
+  fixes B W :: "(real^2) set" and X Y :: "real^2"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hW_sub: "W \<subseteq> B"
+  assumes hW_conn: "connected W"
+  assumes hX: "X \<in> W"
+  assumes hY: "Y \<in> W"
+  assumes hXY: "X \<noteq> Y"
+  shows "\<exists>C. geotop_is_broken_line C
+      \<and> C \<subseteq> W
+      \<and> X \<in> C
+      \<and> Y \<in> C
+      \<and> geotop_arc_endpoints C {X, Y}"
+proof -
+  have hB_arc:
+      "geotop_is_arc B
+        (subspace_topology UNIV geotop_euclidean_topology B)"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>" and h\<gamma>_img: "path_image \<gamma> = B"
+    using geotop_is_arc_imp_HOL_arc[OF hB_arc] by (by100 blast)
+  have hX_B: "X \<in> B"
+    using hW_sub hX by (by100 blast)
+  have hY_B: "Y \<in> B"
+    using hW_sub hY by (by100 blast)
+  obtain sX where hsX: "sX \<in> {0::real..1}" and h\<gamma>sX: "\<gamma> sX = X"
+    using hX_B h\<gamma>_img unfolding path_image_def by (by100 blast)
+  obtain sY where hsY: "sY \<in> {0::real..1}" and h\<gamma>sY: "\<gamma> sY = Y"
+    using hY_B h\<gamma>_img unfolding path_image_def by (by100 blast)
+  have hsXY: "sX \<noteq> sY"
+    using h\<gamma>sX h\<gamma>sY hXY by (by100 blast)
+  define s_lo where "s_lo = min sX sY"
+  define s_hi where "s_hi = max sX sY"
+  have hsX_lb: "0 \<le> sX" and hsX_ub: "sX \<le> 1"
+    using hsX by (by100 simp_all)
+  have hsY_lb: "0 \<le> sY" and hsY_ub: "sY \<le> 1"
+    using hsY by (by100 simp_all)
+  have hs_lo_range: "s_lo \<in> {0..1}"
+    unfolding s_lo_def using hsX_lb hsX_ub hsY_lb hsY_ub by (by100 simp)
+  have hs_hi_range: "s_hi \<in> {0..1}"
+    unfolding s_hi_def using hsX_lb hsX_ub hsY_lb hsY_ub by (by100 simp)
+  have hs_lt: "s_lo < s_hi"
+    using hsXY unfolding s_lo_def s_hi_def by (by100 simp)
+  have hs_lo_ne_hi: "s_lo \<noteq> s_hi"
+    using hs_lt by (by100 simp)
+  let ?T = "{t\<in>{0..1}. \<gamma> t \<in> W}"
+  have hW_sub_path: "W \<subseteq> path_image \<gamma>"
+    using hW_sub h\<gamma>_img by (by100 simp)
+  have hT_interval: "is_interval ?T"
+    by (rule geotop_arc_preimage_is_interval
+        [OF h\<gamma>_arc hW_sub_path hW_conn])
+  have hsX_T: "sX \<in> ?T"
+    using hsX h\<gamma>sX hX by (by100 simp)
+  have hsY_T: "sY \<in> ?T"
+    using hsY h\<gamma>sY hY by (by100 simp)
+  have h_seg_eq: "closed_segment s_lo s_hi = {s_lo..s_hi}"
+    using hs_lt unfolding closed_segment_eq_real_ivl by (by100 simp)
+  have hseg_T: "closed_segment s_lo s_hi \<subseteq> ?T"
+  proof
+    fix t
+    assume ht: "t \<in> closed_segment s_lo s_hi"
+    have ht_ivl: "t \<in> {s_lo..s_hi}"
+      using ht h_seg_eq by (by100 simp)
+    have hbetween:
+        "(sX \<le> t \<and> t \<le> sY) \<or> (sY \<le> t \<and> t \<le> sX)"
+      using ht_ivl unfolding s_lo_def s_hi_def by (by100 simp)
+    show "t \<in> ?T"
+      using hT_interval hsX_T hsY_T hbetween
+      unfolding is_interval_1 by (by100 blast)
+  qed
+  define \<gamma>' where "\<gamma>' = subpath sX sY \<gamma>"
+  let ?C = "path_image (subpath s_lo s_hi \<gamma>)"
+  have hsub_arc: "arc (subpath s_lo s_hi \<gamma>)"
+    by (rule arc_subpath_arc[OF h\<gamma>_arc hs_lo_range hs_hi_range hs_lo_ne_hi])
+  have hC_img: "?C = \<gamma> ` closed_segment s_lo s_hi"
+    by (rule path_image_subpath_gen)
+  have hC_sub_W: "?C \<subseteq> W"
+    using hC_img hseg_T by (by100 blast)
+  have hsX_seg: "sX \<in> closed_segment s_lo s_hi"
+  proof -
+    have "sX \<in> {s_lo..s_hi}"
+      unfolding s_lo_def s_hi_def by (by100 simp)
+    thus ?thesis
+      using h_seg_eq by (by100 simp)
+  qed
+  have hsY_seg: "sY \<in> closed_segment s_lo s_hi"
+  proof -
+    have "sY \<in> {s_lo..s_hi}"
+      unfolding s_lo_def s_hi_def by (by100 simp)
+    thus ?thesis
+      using h_seg_eq by (by100 simp)
+  qed
+  have hX_C: "X \<in> ?C"
+    using hC_img hsX_seg h\<gamma>sX by (by100 blast)
+  have hY_C: "Y \<in> ?C"
+    using hC_img hsY_seg h\<gamma>sY by (by100 blast)
+  have hC_geotop_arc:
+      "geotop_is_arc ?C
+        (subspace_topology UNIV geotop_euclidean_topology ?C)"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF hsub_arc])
+  have hC_poly_im:
+      "\<exists>K'. geotop_is_complex K'
+        \<and> geotop_polyhedron K' = \<gamma> ` closed_segment s_lo s_hi
+        \<and> geotop_complex_is_1dim K'"
+    by (rule geotop_subarc_polyhedron
+        [OF hB h\<gamma>_arc h\<gamma>_img hs_lo_range hs_hi_range hs_lt])
+  have hC_poly:
+      "\<exists>K'. geotop_is_complex K'
+        \<and> geotop_polyhedron K' = ?C
+        \<and> geotop_complex_is_1dim K'"
+    using hC_poly_im hC_img by (by100 simp)
+  have hC_bl: "geotop_is_broken_line ?C"
+    unfolding geotop_is_broken_line_def
+    using hC_poly hC_geotop_arc by (by100 blast)
+  have h\<gamma>'_arc: "arc \<gamma>'"
+    unfolding \<gamma>'_def
+    by (rule arc_subpath_arc[OF h\<gamma>_arc hsX hsY hsXY])
+  have h\<gamma>'_start: "pathstart \<gamma>' = X"
+    unfolding \<gamma>'_def pathstart_def subpath_def using h\<gamma>sX by (by100 simp)
+  have h\<gamma>'_finish: "pathfinish \<gamma>' = Y"
+    unfolding \<gamma>'_def pathfinish_def subpath_def using h\<gamma>sY by (by100 simp)
+  have h\<gamma>'_image: "path_image \<gamma>' = ?C"
+  proof -
+    have h1: "path_image \<gamma>' = \<gamma> ` closed_segment sX sY"
+      unfolding \<gamma>'_def by (rule path_image_subpath_gen)
+    have h2: "?C = \<gamma> ` closed_segment s_lo s_hi"
+      by (rule path_image_subpath_gen)
+    have hseg_eq:
+        "closed_segment sX sY = closed_segment s_lo s_hi"
+    proof -
+      have hleft:
+          "closed_segment sX sY = {min sX sY..max sX sY}"
+        unfolding closed_segment_eq_real_ivl by (by100 simp)
+      have hright: "closed_segment s_lo s_hi = {s_lo..s_hi}"
+        using hs_lt unfolding closed_segment_eq_real_ivl by (by100 simp)
+      show ?thesis
+        using hleft hright unfolding s_lo_def s_hi_def by (by100 simp)
+    qed
+    show ?thesis
+      using h1 h2 hseg_eq by (by100 simp)
+  qed
+  have hC_end_raw:
+      "geotop_arc_endpoints (path_image \<gamma>')
+        {pathstart \<gamma>', pathfinish \<gamma>'}"
+    by (rule geotop_HOL_arc_imp_geotop_arc_endpoints_prefix[OF h\<gamma>'_arc])
+  have hC_end: "geotop_arc_endpoints ?C {X, Y}"
+    using hC_end_raw h\<gamma>'_image h\<gamma>'_start h\<gamma>'_finish by (by100 simp)
+  show ?thesis
+    using hC_bl hC_sub_W hX_C hY_C hC_end by (intro exI conjI)
+qed
+
 lemma geotop_same_component_local_access_frontier_transfer_prefix:
   fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
   assumes hUQ_conn: "connected U\<^sub>Q"
@@ -3859,10 +4010,39 @@ proof -
       using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
       by (intro exI conjI)
   qed
+  have hD44_B1P_boundary_subarc_inside_B1P:
+      "\<exists>X C. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> ?B1P
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P"
+      and hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      and hX_ne: "X \<noteq> P"
+      using hD44_B1P_other_F\<^sub>1_arc_interior by (elim exE conjE)
+    have hB1P_conn_HOL: "connected ?B1P"
+      using hD44_B1P_conn top1_connected_on_geotop_iff_connected
+      by (by100 blast)
+    obtain C where hC_bl: "geotop_is_broken_line C"
+      and hC_sub: "C \<subseteq> ?B1P"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      by (rule geotop_connected_subset_broken_line_subarc_with_endpoints_prefix
+          [OF hD44_F\<^sub>1_bl hD44_B1P_sub_F\<^sub>1 hB1P_conn_HOL
+            hD44_P_B1P hX_B1P hX_ne])
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
+      by (intro exI conjI)
+  qed
   have hD44_F\<^sub>1_boundary_subarc_vertex_refinement_from_P_to_B1P:
       "\<exists>X C L. X \<in> ?B1P
         \<and> X \<noteq> P
         \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> ?B1P
         \<and> C \<subseteq> F\<^sub>1
         \<and> P \<in> C
         \<and> X \<in> C
@@ -3877,11 +4057,13 @@ proof -
     obtain X C where hX_B1P: "X \<in> ?B1P"
       and hX_ne: "X \<noteq> P"
       and hC_bl: "geotop_is_broken_line C"
-      and hC_sub: "C \<subseteq> F\<^sub>1"
       and hP_C: "P \<in> C"
       and hX_C: "X \<in> C"
       and hC_end: "geotop_arc_endpoints C {P, X}"
-      using hD44_F\<^sub>1_boundary_subarc_from_P_to_B1P by (elim exE conjE)
+      and hC_sub_B1P: "C \<subseteq> ?B1P"
+      using hD44_B1P_boundary_subarc_inside_B1P by (elim exE conjE)
+    have hC_sub_F1: "C \<subseteq> F\<^sub>1"
+      using hC_sub_B1P hD44_B1P_sub_F\<^sub>1 by (by100 blast)
     obtain L0 where hL0_complex: "geotop_is_complex L0"
       and hL0_1dim: "geotop_complex_is_1dim L0"
       and hL0_poly: "geotop_polyhedron L0 = C"
@@ -3906,7 +4088,7 @@ proof -
     have hL_poly_C: "geotop_polyhedron L = C"
       using hL_poly hL0_poly by (by100 simp)
     show ?thesis
-      using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
+      using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hP_C hX_C hC_end
         hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
       by (intro exI conjI)
   qed
