@@ -7271,41 +7271,6 @@ proof -
       using hZ_sub hZ_conn hQmeet hSmeet by (intro exI conjI)
     qed
   qed
-  have hD44_same_component_gives_closed_corridor:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
-        \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-    (**
-      Component-to-corridor bookkeeping.  The direct Moise component statement
-      already contains a connected witness through \<open>Q1\<close> and \<open>S1\<close>; taking
-      that witness as \<open>Z\<close> immediately gives the closed-corridor form. **)
-  proof -
-    assume hcomp:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    obtain Z where hZ_pack:
-        "Z \<subseteq> ?Ncut \<and> Q1 \<in> Z
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)"
-      and hS1_Z: "S1 \<in> Z"
-      using hcomp unfolding geotop_component_at_def by (by100 blast)
-    have hZ_sub: "Z \<subseteq> ?Ncut"
-      using hZ_pack by (by100 blast)
-    have hQ1_Z: "Q1 \<in> Z"
-      using hZ_pack by (by100 blast)
-    have hZ_conn:
-        "top1_connected_on Z
-          (subspace_topology UNIV geotop_euclidean_topology Z)"
-      using hZ_pack by (by100 blast)
-    have hQ1_cl: "Q1 \<in> closure Z"
-      using hQ1_Z closure_subset by (by100 blast)
-    have hS1_cl: "S1 \<in> closure Z"
-      using hS1_Z closure_subset by (by100 blast)
-    show ?thesis
-      using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
-  qed
   have hD44_moise_boundary_arc_closed_corridor_book_step:
       "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
@@ -7313,29 +7278,15 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z"
     (**
-      Direct Moise 4.4 frontier-corridor target.  After the fine carrier of
-      \<open>A1\<close> is chosen, the book analyzes the frontier component through \<open>P\<close>,
-      proves it is the required 1-sphere/frontier broken line, and takes the
-      complementary outside corridor.  Formally, the remaining construction
-      should produce one connected subset of
+      Literal remaining Moise 4.4 frontier-corridor target.  After the fine
+      carrier is restricted to the closed disk, the book analyzes the frontier
+      component through \<open>P\<close>, proves it is the relevant polygonal 1-sphere,
+      splits it into the boundary arc and the complementary frontier arc, and
+      takes the adjacent outside component of \<open>I - (N \<union> A2)\<close>.  Formally, the
+      missing construction is one connected subset of
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
       access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
-  proof -
-    have hD44_moise_adjacent_component_book_step:
-        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-          ?Ncut Q1"
-      (**
-        Literal remaining Moise 4.4 obligation.  After the fine carrier is
-        restricted to the closed disk, the book analyzes the frontier component
-        through \<open>P\<close>, splits that polygonal 1-sphere into the boundary arc and
-        the complementary frontier arc, and takes the adjacent outside
-        component of \<open>I - (N \<union> A2)\<close>.  The resulting component contains the two
-        access points \<open>Q1\<close> and \<open>S1\<close>. **)
-      sorry
-    show ?thesis
-      by (rule hD44_same_component_gives_closed_corridor
-          [OF hD44_moise_adjacent_component_book_step])
-  qed
+    sorry
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
@@ -7368,10 +7319,9 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z"
     (**
-      Closed-corridor form of the direct component target.  Once Moise's
-      regular-neighborhood argument puts the two access points in the same
-      outside component, the existing component-to-corridor bookkeeping gives
-      the connected set whose closure contains both access points. **)
+      Named closed-corridor form of the direct Moise target.  The remaining
+      regular-neighborhood construction already produces the connected adjacent
+      outside corridor whose closure contains both access points. **)
     by (rule hD44_moise_boundary_arc_closed_corridor_book_step)
   have hD44_moise_boundary_arc_same_component_core:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
