@@ -54496,7 +54496,119 @@ proof
       two-simplex \<open>\<rho>\<close> and the complex intersection with \<open>\<theta>\<close> to show the
       non-boundary germ would have to leave the closed disk through the
       corner wedge already filled by \<open>\<theta>\<close>. **)
-    sorry
+  proof (rule disjE[OF hthird_boundary_or_interior])
+    assume hdJ: "d \<subseteq> J"
+    let ?L = "{\<tau>\<in>K. \<tau> \<subseteq> J}"
+    have hL_complex: "geotop_is_complex ?L"
+      by (rule geotop_complex_restrict_subset_is_complex[OF hK])
+    have hL_fin: "finite ?L"
+      using hK_fin by (by100 simp)
+    have hL_poly: "geotop_polyhedron ?L = J"
+    proof -
+      have hcover: "J \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J}"
+        by (rule geotop_polygon_disk_boundary_subset_selected_edges_prefix
+            [OF hJ hK hK_poly])
+      have hselected_sub_L: "{e\<in>K. geotop_is_edge e \<and> e \<subseteq> J} \<subseteq> ?L"
+        by (by100 blast)
+      have hJ_sub: "J \<subseteq> \<Union>?L"
+        using hcover hselected_sub_L by (by100 blast)
+      have hL_sub: "\<Union>?L \<subseteq> J"
+        by (by100 blast)
+      show ?thesis
+        unfolding geotop_polyhedron_def using hJ_sub hL_sub by (by100 blast)
+    qed
+    have hL_linear: "geotop_is_linear_graph ?L"
+    proof -
+      have hdim_le:
+        "\<forall>\<sigma>\<in>?L. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> 1"
+        by (rule polygon_complex_dim_le_1[OF hJ hL_complex hL_poly])
+      have hdim:
+        "\<forall>\<sigma>\<in>?L. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+      proof
+        fix \<sigma>
+        assume h\<sigma>L: "\<sigma> \<in> ?L"
+        have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+          using geotop_is_complex_simplex[OF hL_complex] h\<sigma>L by (by100 blast)
+        obtain i where hi: "geotop_simplex_dim \<sigma> i"
+          using h\<sigma>simplex unfolding geotop_is_simplex_def by (by100 blast)
+        have "i \<le> 1"
+          using hdim_le h\<sigma>L hi by (by100 blast)
+        thus "\<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+          using hi by (by100 blast)
+      qed
+      show ?thesis
+        unfolding geotop_is_linear_graph_def using hL_complex hdim by (by100 blast)
+    qed
+    have hL_conn: "geotop_complex_connected ?L"
+    proof -
+      have hpolygon: "geotop_is_polygon (geotop_polyhedron ?L)"
+        using hJ hL_poly by (by100 simp)
+      show ?thesis
+        by (rule geotop_finite_linear_graph_polygon_polyhedron_connected_prefix
+            [OF hL_linear hpolygon])
+    qed
+    have hxL: "{x} \<in> ?L"
+    proof -
+      have hx_face_xy: "geotop_is_face {x} (closed_segment x y)"
+        by (rule geotop_closed_segment_is_face_endpoint[OF hxy]) (by100 simp)
+      have hxK: "{x} \<in> K"
+        using geotop_is_complex_face_closed[OF hK] hxyK hx_face_xy
+        by (by100 blast)
+      have hxJ_single: "{x} \<subseteq> J"
+        using hxyJ by (by100 simp)
+      show ?thesis
+        using hxK hxJ_single by (by100 simp)
+    qed
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron ?L)"
+      using hJ hL_poly by (by100 simp)
+    have hnobranch_all:
+      "\<forall>w. {w} \<in> ?L \<longrightarrow>
+        card {e\<in>?L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
+          [OF hL_linear hL_fin hL_conn hL_polygon])
+    have hnobranch:
+      "card {e\<in>?L. geotop_is_edge e \<and> x \<in> e} \<le> 2"
+      using hnobranch_all hxL by (by100 blast)
+    have hxy_xz_ne: "closed_segment x y \<noteq> closed_segment x z"
+    proof
+      assume h_eq: "closed_segment x y = closed_segment x z"
+      have "{closed_segment x y, closed_segment x z} = {closed_segment x y}"
+        using h_eq by (by100 simp)
+      hence "{e1, e2} = {closed_segment x y}"
+        using hcorner_edge_set by (by100 simp)
+      hence "e1 = e2"
+        by (by100 blast)
+      thus False
+        using hboundary_two_edge_package by (by100 blast)
+    qed
+    have hd_ne_xy: "d \<noteq> closed_segment x y"
+      using hd_not_sub_xy by (by100 blast)
+    have hd_ne_xz: "d \<noteq> closed_segment x z"
+      using hd_not_sub_xz by (by100 blast)
+    have hthree_sub:
+      "{closed_segment x y, closed_segment x z, d}
+        \<subseteq> {e\<in>?L. geotop_is_edge e \<and> x \<in> e}"
+      using hxyK hxzK hdK hxyJ hxzJ hdJ hxy_edge hxz_edge hd_edge hxd
+      by (by100 simp)
+    have hthree_card: "card {closed_segment x y, closed_segment x z, d} = 3"
+      using hxy_xz_ne hd_ne_xy hd_ne_xz by (by100 simp)
+    have hinc_fin: "finite {e\<in>?L. geotop_is_edge e \<and> x \<in> e}"
+      using hL_fin by (by100 simp)
+    have "3 \<le> card {e\<in>?L. geotop_is_edge e \<and> x \<in> e}"
+    proof -
+      have "card {closed_segment x y, closed_segment x z, d}
+          \<le> card {e\<in>?L. geotop_is_edge e \<and> x \<in> e}"
+        by (rule card_mono[OF hinc_fin hthree_sub])
+      thus ?thesis
+        using hthree_card by (by100 simp)
+    qed
+    thus False
+      using hnobranch by (by100 linarith)
+  next
+    assume hd_notJ: "\<not> d \<subseteq> J"
+    show False
+      sorry
+  qed
   show False
     by (rule hcorner_wedge_excludes_third_edge)
 qed
