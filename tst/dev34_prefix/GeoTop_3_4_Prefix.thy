@@ -3056,6 +3056,34 @@ proof -
           using hcard1 hcard_ge2 by (by100 linarith)
       qed
     qed
+    have hBdJ\<^sub>N_vertex_card_ge2_from_no_endpoint:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+          \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    proof (intro allI impI)
+      fix w
+      assume hnoend:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+      have hge1:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+        by (rule hBdJ\<^sub>N_vertex_incident_edge_card_ge1[OF hwBdJ])
+      show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      proof (rule ccontr)
+        assume hnot_ge2:
+          "\<not> 2 \<le> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+        have hcard1:
+            "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1"
+          using hge1 hnot_ge2 by (by100 linarith)
+        have hend: "geotop_graph_endpoint BdJ\<^sub>N w"
+          by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+              [OF hBdJ\<^sub>N_linear_graph hwBdJ hcard1])
+        have hnot: "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+          using hnoend hwBdJ by (by100 blast)
+        show False
+          using hend hnot by (by100 blast)
+      qed
+    qed
     have hBdJ\<^sub>N_vertex_degree_two_from_card_bounds:
         "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
