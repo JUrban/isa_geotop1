@@ -899,6 +899,32 @@ proof -
       show ?thesis
         using hFrN\<^sub>I_HOL hP_front by (by100 simp)
     qed
+    define J\<^sub>N where
+        "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
+    have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+    proof -
+      have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+      have hP_singleton_conn:
+          "top1_connected_on {P}
+            (subspace_topology UNIV geotop_euclidean_topology {P})"
+        by (rule top1_connected_on_singleton[OF hTU], simp)
+      show ?thesis
+        unfolding J\<^sub>N_def
+        by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
+    qed
+    have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+      unfolding J\<^sub>N_def geotop_component_at_def by (by100 blast)
+    have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+      using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+    have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+      using hJ\<^sub>N_sub_N hN_A2_QS by (by100 blast)
+    have hQ_not_J\<^sub>N: "Q \<notin> J\<^sub>N"
+      using hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    have hS_not_J\<^sub>N: "S \<notin> J\<^sub>N"
+      using hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
+      using hR_in_A2 hJ\<^sub>N_A2_QS_disj by (by100 blast)
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
