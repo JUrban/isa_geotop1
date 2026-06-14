@@ -2323,31 +2323,6 @@ proof -
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
           \<Longrightarrow> S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
       using hcomponent_Ncut_sub_cut by (rule subsetD)
-    have hQ'_Ncut_component_open:
-        "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
-          \<in> geotop_euclidean_topology"
-      by (rule geotop_component_at_open_in_euclidean[OF hNcut_open hQ'_Ncut])
-    have hD44_broken_line_in_Ncut_suffices:
-        "\<And>B. geotop_is_broken_line B \<Longrightarrow> B \<subseteq> ?Ncut \<Longrightarrow>
-          Q' \<in> B \<Longrightarrow> S' \<in> B \<Longrightarrow>
-          S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
-    proof -
-      fix B
-      assume hB_bl: "geotop_is_broken_line B"
-        and hB_Ncut: "B \<subseteq> ?Ncut"
-        and hQ'_B: "Q' \<in> B"
-        and hS'_B: "S' \<in> B"
-      have hB_conn:
-          "top1_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-      have hB_witness:
-          "B \<in> {C. C \<subseteq> ?Ncut \<and> Q' \<in> C \<and>
-            top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)}"
-        using hB_Ncut hQ'_B hB_conn by (by100 simp)
-      show "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
-        unfolding geotop_component_at_def using hB_witness hS'_B by (by100 blast)
-    qed
     have hD44_QS_witnesses_same_component_in_Ncut:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
       (**
@@ -2418,25 +2393,6 @@ proof -
         using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
       have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
         using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
-      have hD44_central_component_chord_suffices:
-          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
-            \<Longrightarrow> \<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
-              \<and> B\<^sub>0 \<subseteq> ?Ncut
-              \<and> Q1 \<in> B\<^sub>0
-              \<and> S1 \<in> B\<^sub>0"
-      proof -
-        assume hS1_comp:
-          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-        obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
-          and hB\<^sub>0_Ncut: "B\<^sub>0 \<subseteq> ?Ncut"
-          and hQ1_B\<^sub>0: "Q1 \<in> B\<^sub>0"
-          and hS1_B\<^sub>0: "S1 \<in> B\<^sub>0"
-          using geotop_open_component_broken_line_between_prefix
-              [OF hNcut_open hQ1_Ncut hS1_comp]
-          by (elim exE conjE)
-        show ?thesis
-          using hB\<^sub>0_bl hB\<^sub>0_Ncut hQ1_B\<^sub>0 hS1_B\<^sub>0 by (intro exI conjI)
-      qed
       have hD44_connected_route_component_suffices:
           "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
             top1_connected_on W
@@ -2463,6 +2419,75 @@ proof -
         show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
           unfolding geotop_component_at_def
           using hW_witness hS1_W by (by100 blast)
+      qed
+      have hD44_access_same_component_from_central:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+            \<Longrightarrow> S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
+        (**
+          Access bookkeeping around Moise's central frontier route: once the
+          near-boundary access endpoint \<open>S1\<close> lies in the same outside-carrier
+          component as \<open>Q1\<close>, the already constructed local broken lines inside
+          \<open>U_Q\<close> and \<open>U_S\<close> transfer that component relation back to the
+          original witnesses \<open>Q'\<close> and \<open>S'\<close>. **)
+      proof -
+        assume hcentral:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        have hB\<^sub>Q_conn:
+            "top1_connected_on B\<^sub>Q
+              (subspace_topology UNIV geotop_euclidean_topology B\<^sub>Q)"
+          by (rule geotop_broken_line_connected_on_prefix[OF hB\<^sub>Q_bl])
+        have hB\<^sub>Q_witness:
+            "B\<^sub>Q \<in> {C. C \<subseteq> ?Ncut \<and> Q' \<in> C \<and>
+              top1_connected_on C
+                (subspace_topology UNIV geotop_euclidean_topology C)}"
+          using hB\<^sub>Q_Ncut hQ'_B\<^sub>Q hB\<^sub>Q_conn by (by100 simp)
+        have hQ1_comp_Q':
+            "Q1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
+          unfolding geotop_component_at_def
+          using hB\<^sub>Q_witness hQ1_B\<^sub>Q by (by100 blast)
+        have hB\<^sub>S_conn:
+            "top1_connected_on B\<^sub>S
+              (subspace_topology UNIV geotop_euclidean_topology B\<^sub>S)"
+          by (rule geotop_broken_line_connected_on_prefix[OF hB\<^sub>S_bl])
+        have hB\<^sub>S_witness:
+            "B\<^sub>S \<in> {C. C \<subseteq> ?Ncut \<and> S1 \<in> C \<and>
+              top1_connected_on C
+                (subspace_topology UNIV geotop_euclidean_topology C)}"
+          using hB\<^sub>S_Ncut hS1_B\<^sub>S hB\<^sub>S_conn by (by100 simp)
+        have hS'_comp_S1:
+            "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut S1"
+          unfolding geotop_component_at_def
+          using hB\<^sub>S_witness hS'_B\<^sub>S by (by100 blast)
+        have hQ1_HOL:
+            "Q1 \<in> connected_component_set ?Ncut Q'"
+          using hQ1_comp_Q'
+            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q']
+          by (by100 simp)
+        have hS1_HOL:
+            "S1 \<in> connected_component_set ?Ncut Q1"
+          using hcentral
+            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q1]
+          by (by100 simp)
+        have hS'_HOL_S1:
+            "S' \<in> connected_component_set ?Ncut S1"
+          using hS'_comp_S1
+            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut S1]
+          by (by100 simp)
+        have hcomp_Q1_Q':
+            "connected_component_set ?Ncut Q1 =
+             connected_component_set ?Ncut Q'"
+          by (rule connected_component_eq[OF hQ1_HOL])
+        have hcomp_S1_Q1:
+            "connected_component_set ?Ncut S1 =
+             connected_component_set ?Ncut Q1"
+          by (rule connected_component_eq[OF hS1_HOL])
+        have hS'_HOL_Q':
+            "S' \<in> connected_component_set ?Ncut Q'"
+          using hS'_HOL_S1 hcomp_S1_Q1 hcomp_Q1_Q' by (by100 simp)
+        show "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
+          using hS'_HOL_Q'
+            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q']
+          by (by100 simp)
       qed
       have hD44_central_frontier_broken_line_route_exists:
           "\<exists>B\<^sub>c. geotop_is_broken_line B\<^sub>c
@@ -2525,42 +2550,9 @@ proof -
           by (rule hD44_connected_route_component_suffices
               [OF hW_Ncut hQ1_W hS1_W hW_conn])
       qed
-      obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
-        and hB\<^sub>0_Ncut: "B\<^sub>0 \<subseteq> ?Ncut"
-        and hQ1_B\<^sub>0: "Q1 \<in> B\<^sub>0"
-        and hS1_B\<^sub>0: "S1 \<in> B\<^sub>0"
-        using hD44_central_component_chord_suffices
-            [OF hD44_central_same_component]
-        by (elim exE conjE)
-      obtain B\<^sub>m where hB\<^sub>m_bl: "geotop_is_broken_line B\<^sub>m"
-        and hB\<^sub>m_sub: "B\<^sub>m \<subseteq> B\<^sub>Q \<union> B\<^sub>0"
-        and hQ'_B\<^sub>m: "Q' \<in> B\<^sub>m"
-        and hS1_B\<^sub>m: "S1 \<in> B\<^sub>m"
-        using geotop_broken_line_arc_reduction
-            [OF hB\<^sub>Q_bl hB\<^sub>0_bl hQ'_B\<^sub>Q hQ1_B\<^sub>Q hQ1_B\<^sub>0 hS1_B\<^sub>0]
-        by (elim exE conjE)
-      obtain B where hB_bl: "geotop_is_broken_line B"
-        and hB_Ncut: "B \<subseteq> ?Ncut"
-        and hQ'_B: "Q' \<in> B"
-        and hS'_B: "S' \<in> B"
-      proof -
-        obtain B where hB_bl: "geotop_is_broken_line B"
-          and hB_sub: "B \<subseteq> B\<^sub>m \<union> B\<^sub>S"
-          and hQ'_B: "Q' \<in> B"
-          and hS'_B: "S' \<in> B"
-          using geotop_broken_line_arc_reduction
-              [OF hB\<^sub>m_bl hB\<^sub>S_bl hQ'_B\<^sub>m hS1_B\<^sub>m hS1_B\<^sub>S hS'_B\<^sub>S]
-          by (elim exE conjE)
-        have hB\<^sub>m_Ncut: "B\<^sub>m \<subseteq> ?Ncut"
-          using hB\<^sub>m_sub hB\<^sub>Q_Ncut hB\<^sub>0_Ncut by (by100 blast)
-        have hB_Ncut: "B \<subseteq> ?Ncut"
-          using hB_sub hB\<^sub>m_Ncut hB\<^sub>S_Ncut by (by100 blast)
-        show ?thesis
-          using hB_bl hB_Ncut hQ'_B hS'_B by (rule that)
-      qed
       show ?thesis
-        by (rule hD44_broken_line_in_Ncut_suffices
-            [OF hB_bl hB_Ncut hQ'_B hS'_B])
+        by (rule hD44_access_same_component_from_central
+            [OF hD44_central_same_component])
     qed
     have hD44_QS_witnesses_same_component_from_fine_A1_neighborhood:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
