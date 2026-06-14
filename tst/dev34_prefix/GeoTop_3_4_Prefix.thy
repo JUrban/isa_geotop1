@@ -869,6 +869,36 @@ proof -
       using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
     have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
       using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+    have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
+      using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
+    have hP_N\<^sub>I: "P \<in> N\<^sub>I"
+      using hP_in_A1 hA1_N hN\<^sub>I_eq_N by (by100 blast)
+    have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
+      by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+    have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
+      using hP hK_poly_frontier_eq_J by (by100 simp)
+    have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
+      using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
+    have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
+    proof
+      assume hP_int: "P \<in> interior N\<^sub>I"
+      have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
+        by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
+      have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
+        using hinter_sub hP_int by (by100 blast)
+      show False
+        using hP_not_int_K_poly hP_int_K by (by100 blast)
+    qed
+    have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+    proof -
+      have hP_cl: "P \<in> closure N\<^sub>I"
+        using hP_N\<^sub>I closure_subset by (by100 blast)
+      have hP_front: "P \<in> frontier N\<^sub>I"
+        using hP_cl hP_not_int_N\<^sub>I
+        unfolding Elementary_Topology.frontier_def by (by100 blast)
+      show ?thesis
+        using hFrN\<^sub>I_HOL hP_front by (by100 simp)
+    qed
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
