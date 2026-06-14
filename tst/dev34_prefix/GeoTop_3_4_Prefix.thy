@@ -655,6 +655,75 @@ proof -
     using hW_witness hY_W by (by100 blast)
 qed
 
+lemma geotop_connected_closure_corridor_same_component_open_prefix:
+  fixes U C :: "(real^2) set" and X Y :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hXU: "X \<in> U"
+  assumes hYU: "Y \<in> U"
+  assumes hC_U: "C \<subseteq> U"
+  assumes hC_conn:
+    "top1_connected_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)"
+  assumes hX_cl: "X \<in> closure C"
+  assumes hY_cl: "Y \<in> closure C"
+  shows "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  (**
+    Closure-corridor form of the component bookkeeping used in D44.  If an
+    open Euclidean region contains a connected corridor whose closure touches
+    two interior access points, small balls at the access points attach to the
+    corridor and give an actual connected witness inside the region. **)
+proof -
+  have hUopen_HOL: "open U"
+    using hUopen
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  obtain r\<^sub>X where hr\<^sub>X_pos: "0 < r\<^sub>X"
+    and hball_X_U: "ball X r\<^sub>X \<subseteq> U"
+    using hUopen_HOL hXU open_contains_ball by (by100 blast)
+  obtain r\<^sub>Y where hr\<^sub>Y_pos: "0 < r\<^sub>Y"
+    and hball_Y_U: "ball Y r\<^sub>Y \<subseteq> U"
+    using hUopen_HOL hYU open_contains_ball by (by100 blast)
+  have hC_conn_HOL: "connected C"
+    by (rule iffD1[OF top1_connected_on_geotop_iff_connected hC_conn])
+  have hball_X_conn: "connected (ball X r\<^sub>X)"
+    by (rule connected_ball)
+  have hball_Y_conn: "connected (ball Y r\<^sub>Y)"
+    by (rule connected_ball)
+  have hC_X_meet: "C \<inter> ball X r\<^sub>X \<noteq> {}"
+    by (rule geotop_closure_point_meets_centered_ball_prefix
+        [OF hX_cl hr\<^sub>X_pos])
+  have hC_Y_meet: "C \<inter> ball Y r\<^sub>Y \<noteq> {}"
+    by (rule geotop_closure_point_meets_centered_ball_prefix
+        [OF hY_cl hr\<^sub>Y_pos])
+  have hCX_conn: "connected (C \<union> ball X r\<^sub>X)"
+    by (rule connected_Un[OF hC_conn_HOL hball_X_conn hC_X_meet])
+  have hCX_Y_meet: "(C \<union> ball X r\<^sub>X) \<inter> ball Y r\<^sub>Y \<noteq> {}"
+  proof -
+    obtain z where hz: "z \<in> C \<inter> ball Y r\<^sub>Y"
+      using hC_Y_meet by (by100 blast)
+    have "z \<in> (C \<union> ball X r\<^sub>X) \<inter> ball Y r\<^sub>Y"
+      using hz by (by100 blast)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  let ?W = "C \<union> ball X r\<^sub>X \<union> ball Y r\<^sub>Y"
+  have hW_conn_HOL: "connected ?W"
+    by (rule connected_Un[OF hCX_conn hball_Y_conn hCX_Y_meet])
+  have hW_conn:
+      "top1_connected_on ?W
+        (subspace_topology UNIV geotop_euclidean_topology ?W)"
+    by (rule iffD2[OF top1_connected_on_geotop_iff_connected hW_conn_HOL])
+  have hW_U: "?W \<subseteq> U"
+    using hC_U hball_X_U hball_Y_U by (by100 blast)
+  have hX_W: "X \<in> ?W"
+    using hr\<^sub>X_pos by (by100 simp)
+  have hY_W: "Y \<in> ?W"
+    using hr\<^sub>Y_pos by (by100 simp)
+  show ?thesis
+    by (rule geotop_connected_witness_component_at_intro_prefix
+        [OF hW_U hX_W hY_W hW_conn])
+qed
+
 lemma geotop_same_component_local_access_frontier_transfer_prefix:
   fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
   assumes hUQ_conn: "connected U\<^sub>Q"
@@ -6755,32 +6824,9 @@ proof -
       and hQ1_cl: "Q1 \<in> closure C"
       and hS1_cl: "S1 \<in> closure C"
       using hex_corridor by (elim exE conjE)
-    have hC_Q_all: "\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
-    proof (intro allI impI)
-      fix \<epsilon>\<^sub>Q :: real
-      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
-      show "C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
-        by (rule geotop_closure_point_meets_centered_ball_prefix
-            [OF hQ1_cl h\<epsilon>\<^sub>Q_pos])
-    qed
-    have hC_S_all: "\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof (intro allI impI)
-      fix \<epsilon>\<^sub>S :: real
-      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
-      show "C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        by (rule geotop_closure_point_meets_centered_ball_prefix
-            [OF hS1_cl h\<epsilon>\<^sub>S_pos])
-    qed
-    have hex_accumulating:
-      "\<exists>C. C \<subseteq> ?Ncut
-        \<and> top1_connected_on C
-            (subspace_topology UNIV geotop_euclidean_topology C)
-        \<and> (\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {})
-        \<and> (\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-      using hC_sub hC_conn hC_Q_all hC_S_all by (intro exI conjI)
     show ?thesis
-      by (rule hD44_accumulating_connected_corridor_suffices
-          [OF hex_accumulating])
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hC_sub hC_conn hQ1_cl hS1_cl])
   qed
   have hD44_component_closure_at_S1_suffices:
       "S1 \<in> closure
