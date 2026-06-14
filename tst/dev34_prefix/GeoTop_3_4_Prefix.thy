@@ -988,6 +988,21 @@ proof -
     qed
     have hK\<^sub>N_poly_N\<^sub>I: "geotop_polyhedron K\<^sub>N = N\<^sub>I"
       using hK\<^sub>N_poly hN\<^sub>I_eq_N by (by100 simp)
+    have hFrN\<^sub>I_frontier_K\<^sub>N_poly:
+        "FrN\<^sub>I = frontier (geotop_polyhedron K\<^sub>N)"
+      using hFrN\<^sub>I_HOL hK\<^sub>N_poly_N\<^sub>I by (by100 simp)
+    have hFrN\<^sub>I_geotop_frontier_K\<^sub>N_poly:
+        "FrN\<^sub>I =
+          geotop_frontier UNIV geotop_euclidean_topology
+            (geotop_polyhedron K\<^sub>N)"
+      using hFrN\<^sub>I_frontier_K\<^sub>N_poly
+        geotop_frontier_UNIV_eq_frontier[of "geotop_polyhedron K\<^sub>N"]
+      by (by100 simp)
+    have hJ\<^sub>N_sub_frontier_K\<^sub>N_poly:
+        "J\<^sub>N \<subseteq> frontier (geotop_polyhedron K\<^sub>N)"
+      using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
+    have hP_front_K\<^sub>N_poly: "P \<in> frontier (geotop_polyhedron K\<^sub>N)"
+      using hP_FrN\<^sub>I hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
     have hA1_K\<^sub>N_poly: "A1 \<subseteq> geotop_polyhedron K\<^sub>N"
       using hA1_N hK\<^sub>N_poly by (by100 simp)
     have hP_K\<^sub>N_poly: "P \<in> geotop_polyhedron K\<^sub>N"
