@@ -460,6 +460,66 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_same_component_local_access_frontier_transfer_prefix:
+  fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
+  assumes hUQ_conn: "connected U\<^sub>Q"
+  assumes hUS_conn: "connected U\<^sub>S"
+  assumes hUQ_sub: "U\<^sub>Q \<subseteq> U"
+  assumes hUS_sub: "U\<^sub>S \<subseteq> U"
+  assumes hQ'_UQ: "Q' \<in> U\<^sub>Q"
+  assumes hS'_US: "S' \<in> U\<^sub>S"
+  assumes hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+  assumes hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+  assumes hQ_not_U: "Q \<notin> U"
+  assumes hS_not_U: "S \<notin> U"
+  assumes hS'_comp:
+    "S' \<in> geotop_component_at UNIV geotop_euclidean_topology U Q'"
+  shows "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
+          \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
+          \<and> (\<exists>P'. P' \<in> U \<and>
+              C = geotop_component_at UNIV geotop_euclidean_topology U P')"
+  (**
+    D44 packaging step: once Moise's regular-neighborhood argument has put the
+    two local access witnesses in the same cut-open component, the frontier
+    points carried by the connected local access sets transfer to that one
+    ambient component. **)
+proof -
+  let ?C\<^sub>Q = "geotop_component_at UNIV geotop_euclidean_topology U Q'"
+  let ?C\<^sub>S = "geotop_component_at UNIV geotop_euclidean_topology U S'"
+  have hQ'_U: "Q' \<in> U"
+    using hUQ_sub hQ'_UQ by (by100 blast)
+  have hS'_U: "S' \<in> U"
+    using hUS_sub hS'_US by (by100 blast)
+  have hQ_front_CQ:
+      "Q \<in> geotop_frontier UNIV geotop_euclidean_topology ?C\<^sub>Q"
+    by (rule geotop_connected_subset_frontier_component_transfer_prefix
+        [OF hUQ_conn hUQ_sub hQ'_UQ hQ_front hQ_not_U])
+  have hS_front_CS:
+      "S \<in> geotop_frontier UNIV geotop_euclidean_topology ?C\<^sub>S"
+    by (rule geotop_connected_subset_frontier_component_transfer_prefix
+        [OF hUS_conn hUS_sub hS'_US hS_front hS_not_U])
+  have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hS'_sing_conn:
+      "top1_connected_on {S'}
+        (subspace_topology UNIV geotop_euclidean_topology {S'})"
+    by (rule top1_connected_on_singleton[OF hTU], simp)
+  have hS'_CS: "S' \<in> ?C\<^sub>S"
+    by (rule geotop_self_in_component_at[OF hS'_U hS'_sing_conn])
+  have hcomponent_dichotomy:
+      "?C\<^sub>Q = ?C\<^sub>S \<or> ?C\<^sub>Q \<inter> ?C\<^sub>S = {}"
+    by (rule Theorem_GT_1_16[OF hTU subset_UNIV hQ'_U hS'_U])
+  have hcomponent_meets: "?C\<^sub>Q \<inter> ?C\<^sub>S \<noteq> {}"
+    using hS'_comp hS'_CS by (by100 blast)
+  have hcomponent_eq: "?C\<^sub>Q = ?C\<^sub>S"
+    using hcomponent_dichotomy hcomponent_meets by (by100 blast)
+  have hS_front_CQ:
+      "S \<in> geotop_frontier UNIV geotop_euclidean_topology ?C\<^sub>Q"
+    using hS_front_CS hcomponent_eq by (by100 simp)
+  show ?thesis
+    using hQ_front_CQ hS_front_CQ hQ'_U by (intro exI conjI)
+qed
+
 lemma geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix:
   fixes J A1 A2 :: "(real^2) set" and P Q R S :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -647,8 +707,64 @@ proof -
       polygonal disk, analyzes the frontier component through \<open>P\<close>, and uses
       the cyclic order of \<open>P,Q,R,S\<close> on \<open>J\<close> to transfer the component frontier
       to the opposite boundary points \<open>Q,S\<close>. **)
-    using hD44_named_fine_disk_carrier hQ_S_two_arc_local_access
-    sorry
+  proof -
+    obtain K m N where hK_complex: "geotop_is_complex K"
+      and hK_fin: "finite K"
+      and hK_poly:
+        "geotop_polyhedron K =
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+      and hN_def:
+        "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+      and hA1_N: "A1 \<subseteq> N"
+      and hN_A2: "N \<inter> A2 = {}"
+      using hD44_named_fine_disk_carrier
+      by (elim exE conjE)
+    obtain r U\<^sub>Q U\<^sub>S Q' S'
+      where hr_pos: "0 < r"
+        and hU\<^sub>Q_conn: "connected U\<^sub>Q"
+        and hU\<^sub>S_conn: "connected U\<^sub>S"
+        and hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+        and hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+        and hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+        and hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+        and hU\<^sub>Q_ball: "U\<^sub>Q \<subseteq> ball Q r"
+        and hU\<^sub>S_ball: "U\<^sub>S \<subseteq> ball S r"
+        and hr_disj: "ball Q r \<inter> ball S r = {}"
+        and hQ_front:
+          "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+        and hS_front:
+          "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+        and hQ'_U\<^sub>Q: "Q' \<in> U\<^sub>Q"
+        and hS'_U\<^sub>S: "S' \<in> U\<^sub>S"
+        and hQ'_cut: "Q' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+        and hS'_cut: "S' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+        and hU_disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+      using hQ_S_two_arc_local_access
+      by (elim exE conjE)
+    have hD44_QS_witnesses_same_component_from_fine_A1_neighborhood:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - (A1 \<union> A2)) Q'"
+      (**
+        Remaining regular-neighborhood step in Moise 4.4.  Use the fine
+        carrier \<open>N\<close> with \<open>A1 \<subseteq> N\<close> and \<open>N \<inter> A2 = {}\<close>; restrict it to the
+        closed polygonal disk, take the relevant frontier component through
+        \<open>P\<close>, extract the broken-line subarc with endpoints on \<open>J\<close>, and use
+        cyclic order plus the D42 separation package to show the local access
+        witnesses \<open>Q'\<close> and \<open>S'\<close> lie in the same component of
+        \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close>. **)
+      using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2
+        hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
+        hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
+        hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+      sorry
+    show ?thesis
+      by (rule geotop_same_component_local_access_frontier_transfer_prefix
+          [where U = "geotop_polygon_interior J - (A1 \<union> A2)"
+             and U\<^sub>Q = U\<^sub>Q and U\<^sub>S = U\<^sub>S and Q' = Q' and S' = S',
+           OF hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_sub hU\<^sub>S_sub hQ'_U\<^sub>Q hS'_U\<^sub>S
+              hQ_front hS_front hQ_not_cut hS_not_cut
+              hD44_QS_witnesses_same_component_from_fine_A1_neighborhood])
+  qed
   show ?thesis
     using hD44_component_transfer by (by100 blast)
 qed
