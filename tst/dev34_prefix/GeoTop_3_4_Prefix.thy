@@ -925,6 +925,19 @@ proof -
       using hJ\<^sub>N_A2_QS_disj by (by100 blast)
     have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
       using hR_in_A2 hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    have hJ\<^sub>N_eq_connected_component:
+        "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+      unfolding J\<^sub>N_def by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
+      using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
+    have hJ\<^sub>N_connected:
+        "top1_connected_on J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N)"
+      using hJ\<^sub>N_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hJ\<^sub>N_nonempty: "J\<^sub>N \<noteq> {}"
+      using hP_J\<^sub>N by (by100 blast)
+    have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
+      using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
