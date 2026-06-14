@@ -631,6 +631,30 @@ proof -
     using hC_bl hC_sub_W hX_C hY_C hC_end by (intro exI conjI)
 qed
 
+lemma geotop_connected_witness_component_at_intro_prefix:
+  fixes U W :: "(real^2) set" and X Y :: "real^2"
+  assumes hW_U: "W \<subseteq> U"
+  assumes hX_W: "X \<in> W"
+  assumes hY_W: "Y \<in> W"
+  assumes hW_conn:
+    "top1_connected_on W
+      (subspace_topology UNIV geotop_euclidean_topology W)"
+  shows "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  (**
+    Component bookkeeping used in D42/D44: a connected witness inside the
+    ambient open set is already a witness for membership in the component at
+    its base point. **)
+proof -
+  have hW_witness:
+      "W \<in> {C. C \<subseteq> U \<and> X \<in> C \<and>
+        top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)}"
+    using hW_U hX_W hW_conn by (by100 simp)
+  show ?thesis
+    unfolding geotop_component_at_def
+    using hW_witness hY_W by (by100 blast)
+qed
+
 lemma geotop_same_component_local_access_frontier_transfer_prefix:
   fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
   assumes hUQ_conn: "connected U\<^sub>Q"
@@ -4338,23 +4362,7 @@ proof -
       regular-neighborhood boundary analysis supplies a connected witness in
       \<open>I - (N \<union> A2)\<close> through the two local access endpoints, the endpoints are
       in the same ambient component. **)
-  proof -
-    fix W
-    assume hW_Ncut: "W \<subseteq> ?Ncut"
-      and hQ1_W: "Q1 \<in> W"
-      and hS1_W: "S1 \<in> W"
-      and hW_conn:
-        "top1_connected_on W
-          (subspace_topology UNIV geotop_euclidean_topology W)"
-    have hW_witness:
-        "W \<in> {C. C \<subseteq> ?Ncut \<and> Q1 \<in> C \<and>
-          top1_connected_on C
-            (subspace_topology UNIV geotop_euclidean_topology C)}"
-      using hW_Ncut hQ1_W hW_conn by (by100 simp)
-    show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      unfolding geotop_component_at_def
-      using hW_witness hS1_W by (by100 blast)
-  qed
+    by (rule geotop_connected_witness_component_at_intro_prefix)
   have hD44_Q1S1_same_component_in_Ncut:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -4378,7 +4386,40 @@ proof -
         lower and first upper boundary hits; after trimming off its boundary
         endpoints and attaching the chosen local access positions, one obtains
         this connected witness inside \<open>I - (N \<union> A2)\<close>. **)
-      sorry
+    proof -
+      have hD44_BdJ\<^sub>N_polygon_book_step:
+          "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+        (**
+          Moise's regular-neighborhood boundary assertion for the chosen fine
+          carrier: the frontier component through \<open>P\<close> is a polygonal
+          1-sphere.  In the current formal package this should be discharged
+          by proving the finite boundary graph \<open>BdJ\<^sub>N\<close> has degree two at
+          every vertex, or equivalently by activating the existing
+          card-bound/no-endpoint wrappers above. **)
+        sorry
+      note hD44_BdJ\<^sub>N_split_ready =
+        hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint
+          [OF hD44_BdJ\<^sub>N_polygon_book_step]
+      have hD44_complementary_frontier_arc_access_connected_witness:
+          "\<exists>W. W \<subseteq> ?Ncut
+            \<and> Q1 \<in> W
+            \<and> S1 \<in> W
+            \<and> top1_connected_on W
+                (subspace_topology UNIV geotop_euclidean_topology W)"
+        (**
+          Moise's lower-to-upper complementary-arc step.  Use the split of
+          \<open>J\<^sub>N = geotop_polyhedron BdJ\<^sub>N\<close> at the endpoint \<open>X\<close> of the
+          boundary component \<open>B1P\<close>.  The arc containing the already-packaged
+          boundary subarc is \<open>B\<^sub>1\<close>; the other arc is the book's \<open>B\<^sub>2\<close>.
+          Choosing the last lower and first following upper boundary hits on
+          that complementary arc, then taking the open subarc between them and
+          attaching the local access positions \<open>Q1,S1\<close>, gives the connected
+          witness in \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
+        using hD44_BdJ\<^sub>N_split_ready
+        sorry
+      show ?thesis
+        using hD44_complementary_frontier_arc_access_connected_witness .
+    qed
     obtain W where hW_Ncut: "W \<subseteq> ?Ncut"
       and hQ1_W: "Q1 \<in> W"
       and hS1_W: "S1 \<in> W"
@@ -7720,23 +7761,7 @@ proof -
           regular-neighborhood boundary analysis supplies a connected witness
           in \<open>I - (N \<union> A2)\<close> through the two local access endpoints, the
           endpoints are in the same ambient component. **)
-      proof -
-        fix W
-        assume hW_Ncut: "W \<subseteq> ?Ncut"
-          and hQ1_W: "Q1 \<in> W"
-          and hS1_W: "S1 \<in> W"
-          and hW_conn:
-            "top1_connected_on W
-              (subspace_topology UNIV geotop_euclidean_topology W)"
-        have hW_witness:
-            "W \<in> {C. C \<subseteq> ?Ncut \<and> Q1 \<in> C \<and>
-              top1_connected_on C
-                (subspace_topology UNIV geotop_euclidean_topology C)}"
-          using hW_Ncut hQ1_W hW_conn by (by100 simp)
-        show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-          unfolding geotop_component_at_def
-          using hW_witness hS1_W by (by100 blast)
-      qed
+        by (rule geotop_connected_witness_component_at_intro_prefix)
       have hD44_access_same_component_from_central:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
             \<Longrightarrow> S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
