@@ -2937,6 +2937,33 @@ proof -
       show False
         using hBdJ\<^sub>N_poly_not_singleton[of w] hpoly_single by (by100 blast)
     qed
+    have hBdJ\<^sub>N_vertex_incident_edge_card_ge1:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+    proof -
+      fix w
+      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+      obtain e where heBdJ: "e \<in> BdJ\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hw_e: "w \<in> e"
+        using hBdJ\<^sub>N_vertex_incident_edge[OF hwBdJ] by (by100 blast)
+      let ?E = "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      have hE_fin: "finite ?E"
+        by (rule finite_subset[OF _ hBdJ\<^sub>N_fin]) (by100 blast)
+      have heE: "e \<in> ?E"
+        using heBdJ hedge hw_e by (by100 simp)
+      have hE_ne: "?E \<noteq> {}"
+        using heE by (by100 blast)
+      have hcard_pos: "0 < card ?E"
+      proof -
+        have hiff: "(0 < card ?E) = (?E \<noteq> {} \<and> finite ?E)"
+          by (rule card_gt_0_iff)
+        show ?thesis
+          using hiff hE_ne hE_fin by (by100 blast)
+      qed
+      show "card ?E \<ge> 1"
+        using hcard_pos by (by100 linarith)
+    qed
     have hBdJ\<^sub>N_two_distinct_vertices:
         "\<exists>u v. {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v"
     proof -
