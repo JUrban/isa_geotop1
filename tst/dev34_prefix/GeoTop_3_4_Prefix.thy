@@ -7321,126 +7321,20 @@ proof -
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
       access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
   proof -
-    have hD44_moise_frontier_split_adjacent_corridor_book_step:
-        "\<exists>X C C\<^sub>F Z. X \<in> ?B1P
-          \<and> X \<noteq> P
-          \<and> geotop_is_broken_line C
-          \<and> C \<subseteq> ?B1P
-          \<and> C \<subseteq> J\<^sub>N
-          \<and> C \<subseteq> FrN\<^sub>I
-          \<and> P \<in> C
-          \<and> X \<in> C
-          \<and> geotop_arc_endpoints C {P, X}
-          \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
-          \<and> geotop_is_broken_line C\<^sub>F
-          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
-          \<and> C \<inter> C\<^sub>F = {P, X}
-          \<and> P \<in> C\<^sub>F
-          \<and> X \<in> C\<^sub>F
-          \<and> C\<^sub>F \<subseteq> J\<^sub>N
-          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
-          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
-          \<and> C\<^sub>F \<inter> ?Ncut = {}
-          \<and> Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
+    have hD44_moise_adjacent_component_book_step:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
       (**
-        Literal book target for the remaining Moise 4.4 step.  The component
-        of \<open>Fr N'\<close> through \<open>P\<close> is first split into the boundary arc \<open>C\<close>
-        and the other frontier arc \<open>C\<^sub>F\<close>.  The open component of
-        \<open>I - (N \<union> A2)\<close> adjacent to \<open>C\<^sub>F\<close> is the connected corridor \<open>Z\<close>;
-        its closure contains the two access witnesses chosen near \<open>Q\<close> and
-        \<open>S\<close>. **)
-    proof -
-      have hD44_moise_polygon_adjacent_component_book_step:
-          "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-          \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-                ?Ncut Q1"
-        (**
-          Literal remaining book obligation.  Moise's "then \<open>J\<close> is a
-          1-sphere" is represented by polygonality of the frontier component
-          carrier \<open>geotop_polyhedron BdJ\<^sub>N\<close>; the adjacent component of
-          \<open>I - (N \<union> A2)\<close> along the complementary frontier arc puts the two
-          access points \<open>Q1\<close> and \<open>S1\<close> in the same outside-carrier component. **)
-        sorry
-      have hpolygon:
-          "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-        using hD44_moise_polygon_adjacent_component_book_step
-        by (rule conjunct1)
-      have hS1_comp:
-          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-            ?Ncut Q1"
-        using hD44_moise_polygon_adjacent_component_book_step
-        by (rule conjunct2)
-      have hZ_ex:
-          "\<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Q1 \<in> closure Z
-            \<and> S1 \<in> closure Z"
-        by (rule hD44_same_component_gives_closed_corridor[OF hS1_comp])
-      obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
-        and hZ_conn:
-          "top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)"
-        and hQ1_cl: "Q1 \<in> closure Z"
-        and hS1_cl: "S1 \<in> closure Z"
-        using hZ_ex by (elim exE conjE)
-      obtain X C L C\<^sub>F where hX_B1P: "X \<in> ?B1P"
-        and hX_ne: "X \<noteq> P"
-        and hC_bl: "geotop_is_broken_line C"
-        and hC_sub_B1P: "C \<subseteq> ?B1P"
-        and hC_sub_F\<^sub>1: "C \<subseteq> F\<^sub>1"
-        and hC_sub_J\<^sub>N: "C \<subseteq> J\<^sub>N"
-        and hC_sub_FrN\<^sub>I: "C \<subseteq> FrN\<^sub>I"
-        and hC_F\<^sub>2_disj: "C \<inter> F\<^sub>2 = {}"
-        and hC_A2_QS_disj: "C \<inter> (A2 \<union> {Q, S}) = {}"
-        and hC_Ncut_disj: "C \<inter> ?Ncut = {}"
-        and hP_C: "P \<in> C"
-        and hX_C: "X \<in> C"
-        and hC_end: "geotop_arc_endpoints C {P, X}"
-        and hC_int_conn: "connected (geotop_arc_interior C {P, X})"
-        and hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
-        and hL_complex: "geotop_is_complex L"
-        and hL_1dim: "geotop_complex_is_1dim L"
-        and hL_fin: "finite L"
-        and hL_poly: "geotop_polyhedron L = C"
-        and hP_L: "{P} \<in> L"
-        and hX_L: "{X} \<in> L"
-        and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F"
-        and hC\<^sub>F_bl: "geotop_is_broken_line C\<^sub>F"
-        and hC\<^sub>F_end: "geotop_arc_endpoints C\<^sub>F {P, X}"
-        and hC_int_C\<^sub>F_int_disj:
-          "geotop_arc_interior C {P, X} \<inter>
-            geotop_arc_interior C\<^sub>F {P, X} = {}"
-        and hC_inter_C\<^sub>F: "C \<inter> C\<^sub>F = {P, X}"
-        and hP_C\<^sub>F: "P \<in> C\<^sub>F"
-        and hX_C\<^sub>F: "X \<in> C\<^sub>F"
-        and hC\<^sub>F_sub_J\<^sub>N: "C\<^sub>F \<subseteq> J\<^sub>N"
-        and hC\<^sub>F_sub_FrN\<^sub>I: "C\<^sub>F \<subseteq> FrN\<^sub>I"
-        and hC\<^sub>F_A2_QS_disj: "C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}"
-        and hC\<^sub>F_Ncut_disj: "C\<^sub>F \<inter> ?Ncut = {}"
-        using hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split[OF hpolygon]
-        by (elim exE conjE)
-      show ?thesis
-        using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_J\<^sub>N hC_sub_FrN\<^sub>I
-          hP_C hX_C hC_end hBdJ_split hC\<^sub>F_bl hC\<^sub>F_end
-          hC_inter_C\<^sub>F hP_C\<^sub>F hX_C\<^sub>F hC\<^sub>F_sub_J\<^sub>N hC\<^sub>F_sub_FrN\<^sub>I
-          hC\<^sub>F_A2_QS_disj hC\<^sub>F_Ncut_disj hZ_sub hZ_conn hQ1_cl hS1_cl
-        by (intro exI conjI)
-    qed
-    obtain X C C\<^sub>F Z where hZ_sub: "Z \<subseteq> ?Ncut"
-      and hZ_conn:
-        "top1_connected_on Z
-          (subspace_topology UNIV geotop_euclidean_topology Z)"
-      and hQ1_cl: "Q1 \<in> closure Z"
-      and hS1_cl: "S1 \<in> closure Z"
-      using hD44_moise_frontier_split_adjacent_corridor_book_step
-      by (elim exE conjE)
+        Literal remaining Moise 4.4 obligation.  After the fine carrier is
+        restricted to the closed disk, the book analyzes the frontier component
+        through \<open>P\<close>, splits that polygonal 1-sphere into the boundary arc and
+        the complementary frontier arc, and takes the adjacent outside
+        component of \<open>I - (N \<union> A2)\<close>.  The resulting component contains the two
+        access points \<open>Q1\<close> and \<open>S1\<close>. **)
+      sorry
     show ?thesis
-      using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
+      by (rule hD44_same_component_gives_closed_corridor
+          [OF hD44_moise_adjacent_component_book_step])
   qed
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
