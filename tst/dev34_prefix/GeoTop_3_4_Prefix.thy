@@ -922,6 +922,117 @@ proof -
       by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
             hK\<^sub>N_poly_path_connected])
   qed
+  have hA1_not_subset_singleton:
+      "\<And>x. \<not> A1 \<subseteq> {x}"
+  proof
+    fix x
+    assume hsub: "A1 \<subseteq> {x}"
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A1"
+      using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
+    have h0_img: "\<gamma> 0 \<in> path_image \<gamma>"
+      unfolding path_image_def by (rule image_eqI[where x = 0], simp_all)
+    have h0A1: "\<gamma> 0 \<in> A1"
+      by (subst h\<gamma>_img[symmetric], rule h0_img)
+    have h1_img: "\<gamma> 1 \<in> path_image \<gamma>"
+      unfolding path_image_def by (rule image_eqI[where x = 1], simp_all)
+    have h1A1: "\<gamma> 1 \<in> A1"
+      by (subst h\<gamma>_img[symmetric], rule h1_img)
+    have h0_in_single: "\<gamma> 0 \<in> {x}"
+      by (rule subsetD[OF hsub h0A1])
+    have h0x: "\<gamma> 0 = x"
+      by (rule singletonD[OF h0_in_single])
+    have h1_in_single: "\<gamma> 1 \<in> {x}"
+      by (rule subsetD[OF hsub h1A1])
+    have h1x: "\<gamma> 1 = x"
+      by (rule singletonD[OF h1_in_single])
+    have hinj: "inj_on \<gamma> {0..1}"
+      using h\<gamma>_arc unfolding arc_def by (by100 simp)
+    have h01: "(0::real) \<in> {0..1}"
+      by (by100 simp)
+    have h11: "(1::real) \<in> {0..1}"
+      by (by100 simp)
+    have h\<gamma>01: "\<gamma> 0 = \<gamma> 1"
+      by (subst h0x, rule h1x[symmetric])
+    have "0 = (1::real)"
+      by (rule inj_onD[OF hinj h\<gamma>01 h01 h11])
+    thus False by (by100 simp)
+  qed
+  have hK\<^sub>N_vertex_incident_edge:
+      "\<And>p. {p} \<in> K\<^sub>N \<Longrightarrow>
+        \<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> p \<in> e"
+  proof (rule ccontr)
+    fix p
+    assume hpK: "{p} \<in> K\<^sub>N"
+      and hno: "\<not> (\<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> p \<in> e)"
+    have hp_vertex: "p \<in> geotop_complex_vertices K\<^sub>N"
+      using geotop_complex_vertices_eq_0_simplexes[OF hK\<^sub>N_complex] hpK
+      by (by100 blast)
+    have hsingle_top:
+        "{p} \<in>
+          subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron K\<^sub>N)"
+      by (rule geotop_complex_no_incident_edge_vertex_open_singleton_prefix
+          [OF hK\<^sub>N_complex hp_vertex hno])
+    obtain U where hsingle_eq: "{p} = geotop_polyhedron K\<^sub>N \<inter> U"
+      and hU_top: "U \<in> geotop_euclidean_topology"
+      using hsingle_top unfolding subspace_topology_def by (by100 blast)
+    have hU_open: "open U"
+      using hU_top unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hsingle_openin:
+        "openin (top_of_set (geotop_polyhedron K\<^sub>N)) {p}"
+      unfolding openin_open
+      using hU_open hsingle_eq by (by100 blast)
+    have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+      unfolding geotop_polyhedron_def using hpK by (by100 blast)
+    have hsingle_closedin:
+        "closedin (top_of_set (geotop_polyhedron K\<^sub>N)) {p}"
+    proof -
+      have hclosed_single: "closed {p}"
+        by (by100 simp)
+      have hsingle_eq_poly:
+          "{p} = geotop_polyhedron K\<^sub>N \<inter> {p}"
+        using hp_poly by (by100 blast)
+      show ?thesis
+        unfolding closedin_closed
+        using hclosed_single hsingle_eq_poly by (by100 blast)
+    qed
+    have hK\<^sub>N_poly_connected_HOL: "connected (geotop_polyhedron K\<^sub>N)"
+      using hN_connected_HOL hK\<^sub>N_poly by (by100 simp)
+    have hsingle_cases:
+        "{p} = {} \<or> {p} = geotop_polyhedron K\<^sub>N"
+      using connected_clopen[THEN iffD1, OF hK\<^sub>N_poly_connected_HOL]
+        hsingle_openin hsingle_closedin by (by100 blast)
+    have hpoly_single: "geotop_polyhedron K\<^sub>N = {p}"
+      using hsingle_cases by (by100 blast)
+    have hA1_sub_single: "A1 \<subseteq> {p}"
+      using hA1_N hK\<^sub>N_poly hpoly_single by (by100 simp)
+    show False
+      using hA1_not_subset_singleton[of p] hA1_sub_single by (by100 blast)
+  qed
+  have hK\<^sub>N_poly_N\<^sub>I: "geotop_polyhedron K\<^sub>N = N\<^sub>I"
+    using hK\<^sub>N_poly hN\<^sub>I_eq_N by (by100 simp)
+  have hK\<^sub>N_edge_owned_by_Sd_2simplex:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        \<exists>\<sigma>\<in>geotop_iterated_Sd m K.
+          geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  proof -
+    fix e
+    assume heK\<^sub>N: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+    have heSd: "e \<in> geotop_iterated_Sd m K"
+      using heK\<^sub>N unfolding K\<^sub>N_def by (by100 simp)
+    have hSd_poly_disk:
+        "geotop_polyhedron (geotop_iterated_Sd m K) =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)"
+      using hSd_poly hK_poly by (by100 simp)
+    show "\<exists>\<sigma>\<in>geotop_iterated_Sd m K.
+        geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+      by (rule geotop_polygon_disk_edge_owned_by_2simplex_prefix
+          [OF hJ hSd_complex hSd_poly_disk heSd hedge])
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
