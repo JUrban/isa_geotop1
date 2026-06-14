@@ -7246,6 +7246,30 @@ proof -
     show ?thesis
       using hZ_sub hZ_conn hQ1_cl hS1_cl by (intro exI conjI)
   qed
+  have hD44_moise_boundary_arc_same_component_core:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Direct Moise 4.4 frontier-component target.  After the frontier
+      component of the fine carrier through \<open>P\<close> is split into the boundary
+      arc and the complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, the adjacent outside
+      component of \<open>I - (N \<union> A2)\<close> must contain both access points.  This is
+      the exact component form of the book sentence that \<open>V\<close> and \<open>W\<close> lie in
+      the boundary of one component of \<open>I - (A1 \<union> A2)\<close>, instantiated to the
+      carrier complement \<open>?Ncut\<close>. **)
+    sorry
+  have hD44_moise_boundary_arc_closed_corridor_core:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    (**
+      Closed-corridor form of the same component target.  Once the book
+      frontier-component step puts \<open>Q1\<close> and \<open>S1\<close> in one outside component,
+      the component itself is the connected corridor whose closure contains
+      both endpoints. **)
+    by (rule hD44_same_component_gives_closed_corridor
+        [OF hD44_moise_boundary_arc_same_component_core])
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
@@ -7254,14 +7278,11 @@ proof -
           \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
     (**
-      Direct Moise 4.4 frontier-route target.  After the frontier component of
-      the fine carrier through \<open>P\<close> is split into the boundary arc and the
-      complementary \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> arc, the adjacent outside component of
-      \<open>I - (N \<union> A2)\<close> must meet every prescribed lower and upper access collar.
-      This is exactly the book sentence that \<open>V\<close> and \<open>W\<close> lie in the boundary
-      of one component of \<open>I - (A1 \<union> A2)\<close>, instantiated to the carrier
-      complement \<open>?Ncut\<close>. **)
-    sorry
+      Collar-crossing consequence of the direct same-component target.  The
+      remaining mathematical content is no longer the arbitrary-ball
+      bookkeeping; it is the Moise frontier-component statement above. **)
+    by (rule hD44_closed_corridor_gives_arbitrary_access_ball_crossings
+        [OF hD44_moise_boundary_arc_closed_corridor_core])
   have hD44_moise_Q1_component_accumulates_core:
       "S1 \<in> closure
         (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
@@ -7293,23 +7314,7 @@ proof -
       Closure form of the Moise adjacent-corridor step.  The outside component
       next to the complementary frontier arc \<open>C\<^sub>F\<close> / book \<open>B\<^sub>2\<close> lies in
       \<open>I - (N \<union> A2)\<close> and has the lower and upper access points in its closure. **)
-  proof -
-    obtain C where hC_eq:
-        "C = geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      and hC_sub: "C \<subseteq> ?Ncut"
-      and hQ1_C: "Q1 \<in> C"
-      and hC_open: "C \<in> geotop_euclidean_topology"
-      and hC_conn:
-        "top1_connected_on C
-          (subspace_topology UNIV geotop_euclidean_topology C)"
-      using hD44_Q1_Ncut_component_package by (elim exE conjE)
-    have hQ1_cl: "Q1 \<in> closure C"
-      using hQ1_C closure_subset by (by100 blast)
-    have hS1_cl: "S1 \<in> closure C"
-      using hD44_moise_Q1_component_accumulates_core hC_eq by (by100 simp)
-    show ?thesis
-      using hC_sub hC_conn hQ1_cl hS1_cl by (intro exI conjI)
-  qed
+    by (rule hD44_moise_boundary_arc_closed_corridor_core)
   have hD44_moise_accumulating_connected_corridor_core:
       "\<exists>C. C \<subseteq> ?Ncut
         \<and> top1_connected_on C
@@ -7603,15 +7608,7 @@ proof -
       \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close>; the adjacent component of
       \<open>I - (N \<union> A2)\<close> along that arc contains the lower and upper access
       points in the same outside-carrier component. **)
-  proof (rule ccontr)
-    assume hnot:
-      "\<not> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    have hsplit:
-        "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      using hnot by (by100 simp)
-    show False
-      by (rule hD44_frontier_component_forbids_Ncut_split[OF hsplit])
-  qed
+    by (rule hD44_moise_boundary_arc_same_component_core)
   have hD44_moise_closed_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
