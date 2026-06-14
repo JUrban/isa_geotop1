@@ -7383,18 +7383,26 @@ proof -
       missing construction is one connected subset of
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
       access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
+    sorry
+  have hD44_moise_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Component consequence of the actual Moise corridor.  The book gives the
+      adjacent outside component whose closure contains both access points; the
+      local openness of \<open>?Ncut\<close> attaches those access points to that component
+      inside \<open>?Ncut\<close>. **)
   proof -
-    have hD44_moise_same_component_book_step:
-        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      (**
-        Literal remaining Moise 4.4 same-component sentence.  The book obtains
-        it by taking the component adjacent to the frontier subarc between the
-        last lower and first upper contacts of the complementary frontier arc
-        with \<open>J\<close>. **)
-      sorry
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_moise_boundary_arc_closed_corridor_book_step
+      by (elim exE conjE)
     show ?thesis
-      by (rule hD44_same_component_gives_closed_corridor
-          [OF hD44_moise_same_component_book_step])
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
   qed
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
