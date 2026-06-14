@@ -6364,6 +6364,62 @@ proof -
       by (rule hD44_arbitrary_access_component_witnesses_suffice
           [OF hall_components])
   qed
+  have hD44_closed_corridor_suffices:
+      "(\<exists>C. C \<subseteq> ?Ncut
+          \<and> top1_connected_on C
+              (subspace_topology UNIV geotop_euclidean_topology C)
+          \<and> Q1 \<in> closure C
+          \<and> S1 \<in> closure C)
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Frontier/closure form of the same Moise corridor step.  The book says
+      the boundary points lie in the frontier of one complementary component;
+      for the access points it is enough to produce a connected corridor in
+      \<open>Ncut\<close> whose ordinary Euclidean closure contains both access witnesses.
+      The existing accumulating-collar bridge then supplies the collar
+      intersections. **)
+  proof -
+    assume hex_corridor:
+      "\<exists>C. C \<subseteq> ?Ncut
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)
+        \<and> Q1 \<in> closure C
+        \<and> S1 \<in> closure C"
+    obtain C where hC_sub: "C \<subseteq> ?Ncut"
+      and hC_conn:
+        "top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+      and hQ1_cl: "Q1 \<in> closure C"
+      and hS1_cl: "S1 \<in> closure C"
+      using hex_corridor by (elim exE conjE)
+    have hC_Q_all: "\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q :: real
+      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      show "C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hQ1_cl h\<epsilon>\<^sub>Q_pos])
+    qed
+    have hC_S_all: "\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>S :: real
+      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      show "C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hS1_cl h\<epsilon>\<^sub>S_pos])
+    qed
+    have hex_accumulating:
+      "\<exists>C. C \<subseteq> ?Ncut
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)
+        \<and> (\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {})
+        \<and> (\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+      using hC_sub hC_conn hC_Q_all hC_S_all by (intro exI conjI)
+    show ?thesis
+      by (rule hD44_accumulating_connected_corridor_suffices
+          [OF hex_accumulating])
+  qed
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -6374,12 +6430,12 @@ proof -
       complementary frontier arc, then using the lower-to-upper subarc outside
       \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-  proof (rule hD44_accumulating_connected_corridor_suffices)
+  proof (rule hD44_closed_corridor_suffices)
     show "\<exists>C. C \<subseteq> ?Ncut
         \<and> top1_connected_on C
             (subspace_topology UNIV geotop_euclidean_topology C)
-        \<and> (\<forall>\<epsilon>\<^sub>Q>0. C \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {})
-        \<and> (\<forall>\<epsilon>\<^sub>S>0. C \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+        \<and> Q1 \<in> closure C
+        \<and> S1 \<in> closure C"
       (**
         Remaining literal Moise corridor construction.  Use the frontier
         component through \<open>P\<close>, choose the lower-to-upper complementary subarc
