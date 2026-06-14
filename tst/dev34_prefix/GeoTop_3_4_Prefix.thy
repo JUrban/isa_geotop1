@@ -715,6 +715,24 @@ proof -
     using hQ_front_CQ hS_front_CQ hQ'_U by (intro exI conjI)
 qed
 
+lemma geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix:
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hP_F\<^sub>1: "P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+  assumes hsplit: "J = F\<^sub>1 \<union> F\<^sub>2"
+  assumes hF\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
+  assumes hF\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+  assumes hdisj:
+    "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+      geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+  shows "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+  (**
+    D42/D44 cyclic-order transfer: for a Q-S split of the polygon boundary,
+    if the P-side is F\<^sub>1, then the cyclically opposite point R lies on the
+    other Q-S side.  This is the exact book step used when transferring the
+    regular-neighborhood route from the lower boundary side to the upper one. **)
+  using hcyc hP_F\<^sub>1 hsplit hF\<^sub>1E hF\<^sub>2E hdisj
+  by (by100 blast)
+
 lemma geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_prefix:
   fixes J A1 A2 N :: "(real^2) set"
     and K :: "(real^2) set set"
@@ -3663,9 +3681,9 @@ proof -
     by (by100 blast)
   have hD44_R_not_F\<^sub>1_from_cyclic:
       "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
-    using hcyc hD44_P_F\<^sub>1 hD44_F_J_split hD44_F\<^sub>1E hD44_F\<^sub>2E
-      hD44_F\<^sub>1F\<^sub>2_int_disj
-    by (by100 blast)
+    by (rule geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix
+        [OF hcyc hD44_P_F\<^sub>1 hD44_F_J_split hD44_F\<^sub>1E hD44_F\<^sub>2E
+          hD44_F\<^sub>1F\<^sub>2_int_disj])
   have hD44_R_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
     by (rule hD44_R_F\<^sub>2_if_not_F\<^sub>1[OF hD44_R_not_F\<^sub>1_from_cyclic])
   have hD44_F\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
@@ -3814,7 +3832,7 @@ proof -
   have hD44_J_closed: "closed J"
     by (rule polygon_closed[OF hJ])
   have hD44_B\<^sub>1_closed: "closed ?B\<^sub>1"
-    using hBdJ\<^sub>N_poly_closed hD44_J_closed by (by100 simp)
+    by (rule closed_Int[OF hBdJ\<^sub>N_poly_closed hD44_J_closed])
   have hD44_B\<^sub>1_compact: "compact ?B\<^sub>1"
     using hBdJ\<^sub>N_poly_compact hD44_J_closed by (rule compact_Int_closed)
   let ?B1P = "geotop_component_at UNIV geotop_euclidean_topology ?B\<^sub>1 P"
@@ -3823,7 +3841,16 @@ proof -
         geotop_component_at UNIV geotop_euclidean_topology (J\<^sub>N \<inter> J) P"
     using hD44_B\<^sub>1_eq_J\<^sub>N_boundary by (by100 simp)
   have hD44_B1P_sub_B\<^sub>1: "?B1P \<subseteq> ?B\<^sub>1"
-    by (rule geotop_component_at_UNIV_subset)
+  proof -
+    have hB1P_eq:
+        "?B1P = connected_component_set ?B\<^sub>1 P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hcc_sub:
+        "connected_component_set ?B\<^sub>1 P \<subseteq> ?B\<^sub>1"
+      by (rule connected_component_subset)
+    show ?thesis
+      using hB1P_eq hcc_sub by (by100 blast)
+  qed
   have hD44_B1P_sub_J\<^sub>N: "?B1P \<subseteq> J\<^sub>N"
     using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_sub_J\<^sub>N by (by100 blast)
   have hD44_B1P_sub_FrN\<^sub>I: "?B1P \<subseteq> FrN\<^sub>I"
@@ -3831,7 +3858,15 @@ proof -
   have hD44_B1P_conn:
       "top1_connected_on ?B1P
         (subspace_topology UNIV geotop_euclidean_topology ?B1P)"
-    by (rule geotop_component_at_UNIV_connected)
+  proof -
+    have hB1P_eq:
+        "?B1P = connected_component_set ?B\<^sub>1 P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hB1P_conn_HOL: "connected ?B1P"
+      using hB1P_eq connected_connected_component by (by100 simp)
+    show ?thesis
+      using hB1P_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  qed
   have hD44_P_B1P: "P \<in> ?B1P"
     using hD44_P_B\<^sub>1
       geotop_component_at_UNIV_eq_connected_component_set[of ?B\<^sub>1 P]
@@ -3941,12 +3976,10 @@ proof -
   proof -
     have hF1o_closedin:
         "closedin_on UNIV geotop_euclidean_topology F\<^sub>1"
-      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
-      using hD44_F\<^sub>1_closed by (by100 simp)
+      using hD44_F\<^sub>1_closed closedin_on_geotop_UNIV_iff_closed by (by100 blast)
     have hF2o_closedin:
         "closedin_on UNIV geotop_euclidean_topology F\<^sub>2"
-      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
-      using hD44_F\<^sub>2_closed by (by100 simp)
+      using hD44_F\<^sub>2_closed closedin_on_geotop_UNIV_iff_closed by (by100 blast)
     have hcl_F1o_sub_F1:
         "closure_on UNIV geotop_euclidean_topology ?F1o \<subseteq> F\<^sub>1"
       by (rule closure_on_subset_of_closed[OF hF1o_closedin]) (by100 blast)
@@ -3993,6 +4026,10 @@ proof -
     using hD44_B1P_sub_F1o unfolding geotop_arc_interior_def by (by100 simp)
   have hD44_B1P_sub_F\<^sub>1: "?B1P \<subseteq> F\<^sub>1"
     using hD44_B1P_sub_F1o by (by100 blast)
+  have hD44_B1P_inter_F\<^sub>1: "?B1P \<inter> F\<^sub>1 = ?B1P"
+    using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
+  have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
+    using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
   have hD44_B1P_other_F\<^sub>1_arc_interior:
       "\<exists>X. X \<in> ?B1P
         \<and> X \<in> geotop_arc_interior F\<^sub>1 {Q, S}
@@ -4022,13 +4059,15 @@ proof -
       using hD44_P_F\<^sub>1 unfolding geotop_arc_interior_def by (by100 blast)
     have hX_F1: "X \<in> F\<^sub>1"
       using hX_F1int unfolding geotop_arc_interior_def by (by100 blast)
+    have hP_ne_X: "P \<noteq> X"
+      using hX_ne by (by100 blast)
     obtain C where hC_bl: "geotop_is_broken_line C"
       and hC_sub: "C \<subseteq> F\<^sub>1"
       and hP_C: "P \<in> C"
       and hX_C: "X \<in> C"
       and hC_end: "geotop_arc_endpoints C {P, X}"
       using geotop_broken_line_subarc_with_endpoints_prefix
-        [OF hD44_F\<^sub>1_bl hP_F1 hX_F1 hX_ne]
+        [OF hD44_F\<^sub>1_bl hP_F1 hX_F1 hP_ne_X]
       by (by100 blast)
     show ?thesis
       using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
@@ -4050,14 +4089,17 @@ proof -
     have hB1P_conn_HOL: "connected ?B1P"
       using hD44_B1P_conn top1_connected_on_geotop_iff_connected
       by (by100 blast)
+    have hP_ne_X: "P \<noteq> X"
+      using hX_ne by (by100 blast)
     obtain C where hC_bl: "geotop_is_broken_line C"
       and hC_sub: "C \<subseteq> ?B1P"
       and hP_C: "P \<in> C"
       and hX_C: "X \<in> C"
       and hC_end: "geotop_arc_endpoints C {P, X}"
-      by (rule geotop_connected_subset_broken_line_subarc_with_endpoints_prefix
+      using geotop_connected_subset_broken_line_subarc_with_endpoints_prefix
           [OF hD44_F\<^sub>1_bl hD44_B1P_sub_F\<^sub>1 hB1P_conn_HOL
-            hD44_P_B1P hX_B1P hX_ne])
+            hD44_P_B1P hX_B1P hP_ne_X]
+      by (by100 blast)
     show ?thesis
       using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
       by (intro exI conjI)
@@ -4232,6 +4274,10 @@ proof -
       using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
         [OF hpolygon hP_BdJ\<^sub>N_poly hX_BdJ_poly]
       by (elim exE conjE)
+    have hLJ_polygon: "geotop_is_polygon (geotop_polyhedron LJ)"
+      using hpolygon hLJ_poly by (by100 simp)
+    have hP_ne_X: "P \<noteq> X"
+      using hX_ne by (by100 blast)
     obtain C\<^sub>B C\<^sub>O where hsplit:
         "geotop_polyhedron LJ = C\<^sub>B \<union> C\<^sub>O
         \<and> geotop_is_broken_line C\<^sub>B
@@ -4241,7 +4287,7 @@ proof -
         \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
             geotop_arc_interior C\<^sub>O {P, X} = {}"
       using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
-        [OF hLJ_linear hLJ_fin hLJ_conn hpolygon hP_LJ hX_LJ hX_ne]
+        [OF hLJ_linear hLJ_fin hLJ_conn hLJ_polygon hP_LJ hX_LJ hP_ne_X]
       by (by100 blast)
     have hsplit_BdJ:
         "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
@@ -4253,16 +4299,18 @@ proof -
             geotop_arc_interior C\<^sub>O {P, X} = {}"
       using hsplit hLJ_poly by (by100 simp)
     show ?thesis
+      apply (rule exI[where x=X])
+      apply (rule exI[where x=C])
+      apply (rule exI[where x=L])
+      apply (rule exI[where x=C\<^sub>B])
+      apply (rule exI[where x=C\<^sub>O])
       using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
         hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
         hP_C hX_C hC_end hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
         hsplit_BdJ
-      by (intro exI conjI)
+      apply (intro conjI)
+      by (by100 blast)+
   qed
-  have hD44_B1P_inter_F\<^sub>1: "?B1P \<inter> F\<^sub>1 = ?B1P"
-    using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
-  have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
-    using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
@@ -4296,11 +4344,11 @@ proof -
       by (by100 blast)
   qed
   have hN_A2_closed: "closed (N \<union> A2)"
-    using hN_closed hA2_closed by (by100 simp)
+    by (rule closed_Un[OF hN_closed hA2_closed])
   have hI_open_HOL: "open (geotop_polygon_interior J)"
     by (rule polygon_interior_open[OF hJ])
   have hNcut_open_HOL: "open ?Ncut"
-    using hI_open_HOL hN_A2_closed by (by100 simp)
+    by (rule open_Diff[OF hI_open_HOL hN_A2_closed])
   have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
     using hNcut_open_HOL
     unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
@@ -4335,7 +4383,12 @@ proof -
     have hC_broken_connected: "geotop_broken_line_connected ?C"
       by (rule Theorem_GT_1_13[OF hC_open hC_conn])
     have hQ1_C: "Q1 \<in> ?C"
-      using hQ1_Ncut connected_component_refl by (by100 blast)
+    proof -
+      have "connected_component ?Ncut Q1 Q1"
+        by (rule connected_component_refl[OF hQ1_Ncut])
+      thus ?thesis
+        by (simp only: mem_Collect_eq)
+    qed
     have hS1_C: "S1 \<in> ?C"
       using hS1_comp hC_eq by (by100 simp)
     obtain B where hB_bl: "geotop_is_broken_line B"
@@ -4350,7 +4403,14 @@ proof -
     have hB_sub_Ncut: "B \<subseteq> ?Ncut"
       using hB_sub_C hC_sub_Ncut by (by100 blast)
     show ?thesis
-      using hB_bl hB_sub_Ncut hQ1_B hS1_B by (intro exI conjI)
+      apply (rule exI[where x=B])
+      using hB_bl hB_sub_Ncut hQ1_B hS1_B
+      apply (intro conjI)
+      apply assumption
+      apply assumption
+      apply assumption
+      apply assumption
+      done
   qed
   have hD44_connected_route_component_suffices:
       "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
