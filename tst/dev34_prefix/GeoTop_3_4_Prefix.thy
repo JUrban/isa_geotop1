@@ -4260,7 +4260,11 @@ proof -
           \<and> P \<in> C\<^sub>B
           \<and> X \<in> C\<^sub>B
           \<and> P \<in> C\<^sub>O
-          \<and> X \<in> C\<^sub>O"
+          \<and> X \<in> C\<^sub>O
+          \<and> C \<subseteq> C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_arc_interior C {P, X} \<subseteq>
+              geotop_arc_interior C\<^sub>B {P, X} \<union>
+              geotop_arc_interior C\<^sub>O {P, X}"
   proof -
     assume hpolygon:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
@@ -4346,6 +4350,53 @@ proof -
       using hsplit hLJ_poly hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
         hP_C\<^sub>O_split hX_C\<^sub>O_split
       by (by100 simp)
+    have hBdJ_poly_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+      using hsplit_BdJ by (by100 blast)
+    have hC_sub_BdJ_poly: "C \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+    proof
+      fix y
+      assume hyC: "y \<in> C"
+      have hyJ\<^sub>N: "y \<in> J\<^sub>N"
+        using hC_sub_J\<^sub>N hyC by (by100 blast)
+      show "y \<in> geotop_polyhedron BdJ\<^sub>N"
+        using hyJ\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    qed
+    have hC_sub_split: "C \<subseteq> C\<^sub>B \<union> C\<^sub>O"
+    proof
+      fix y
+      assume hyC: "y \<in> C"
+      have hyBdJ: "y \<in> geotop_polyhedron BdJ\<^sub>N"
+        using hC_sub_BdJ_poly hyC by (by100 blast)
+      show "y \<in> C\<^sub>B \<union> C\<^sub>O"
+        using hyBdJ hBdJ_poly_split by (by100 simp)
+    qed
+    have hC_int_sub_split_int:
+        "geotop_arc_interior C {P, X} \<subseteq>
+          geotop_arc_interior C\<^sub>B {P, X} \<union>
+          geotop_arc_interior C\<^sub>O {P, X}"
+    proof
+      fix y
+      assume hy: "y \<in> geotop_arc_interior C {P, X}"
+      have hyC: "y \<in> C"
+        using hy unfolding geotop_arc_interior_def by (by100 blast)
+      have hynot: "y \<notin> {P, X}"
+        using hy unfolding geotop_arc_interior_def by (by100 blast)
+      have hysplit: "y \<in> C\<^sub>B \<union> C\<^sub>O"
+        using hC_sub_split hyC by (by100 blast)
+      show "y \<in> geotop_arc_interior C\<^sub>B {P, X} \<union>
+          geotop_arc_interior C\<^sub>O {P, X}"
+      proof (rule UnE[OF hysplit])
+        assume hyB: "y \<in> C\<^sub>B"
+        have "y \<in> geotop_arc_interior C\<^sub>B {P, X}"
+          using hyB hynot unfolding geotop_arc_interior_def by (by100 blast)
+        thus ?thesis by (by100 blast)
+      next
+        assume hyO: "y \<in> C\<^sub>O"
+        have "y \<in> geotop_arc_interior C\<^sub>O {P, X}"
+          using hyO hynot unfolding geotop_arc_interior_def by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
     show ?thesis
       apply (rule exI[where x=X])
       apply (rule exI[where x=C])
@@ -4356,7 +4407,7 @@ proof -
         hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
         hP_C hX_C hC_end hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
         hsplit_BdJ hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
-        hP_C\<^sub>O_split hX_C\<^sub>O_split
+        hP_C\<^sub>O_split hX_C\<^sub>O_split hC_sub_split hC_int_sub_split_int
       apply (intro conjI)
       by (by100 blast)+
   qed
