@@ -540,6 +540,57 @@ proof -
     using hQ_front_CQ hS_front_CQ hQ'_U by (intro exI conjI)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_prefix:
+  fixes J A1 A2 N :: "(real^2) set"
+    and K :: "(real^2) set set"
+    and P Q R S Q1 S1 :: "real^2"
+    and m :: nat
+    and r :: real
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  assumes hA1_sub:
+    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA2_sub:
+    "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hA1_N: "A1 \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hr: "0 < r"
+  assumes hQ1_ball: "Q1 \<in> ball Q r"
+  assumes hS1_ball: "S1 \<in> ball S r"
+  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  shows
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+       (geotop_polygon_interior J - (N \<union> A2)) Q1"
+  (**
+    Named form of the remaining Moise 4.4 regular-neighborhood transfer.
+    The hypotheses are the book setup after choosing the fine carrier
+    neighborhood of \<open>A1\<close>: the carrier comes from a sufficiently fine
+    subdivision of the closed polygonal disk, contains \<open>A1\<close>, avoids
+    \<open>A2,Q,S\<close>, and the two local access points have been chosen near the
+    boundary points \<open>Q,S\<close> in the outside-carrier complement.
+
+    The proof follows Moise's brick-neighborhood paragraph: restrict the
+    carrier to the closed disk, take the frontier component through \<open>P\<close>,
+    read it as a polygonal 1-sphere, extract the lower-to-upper broken-line
+    subarc outside \<open>N \<union> A2\<close>, and use cyclic order together with the closed
+    D42 separation package to put the two access points in one component. **)
+  sorry
+
 lemma geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix:
   fixes J A1 A2 :: "(real^2) set" and P Q R S :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -3805,13 +3856,12 @@ proof -
       have hD44_central_same_component_in_Ncut_book_step:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
         (**
-          Remaining book step in its component form.  Moise's
-          regular-neighborhood construction analyzes the frontier component of
-          the fine carrier \<open>N\<close> through \<open>P\<close>: the boundary component gives the
-          lower-to-upper broken-line subarc outside \<open>N \<union> A2\<close>, and the access
-          points chosen near \<open>Q\<close> and \<open>S\<close> attach to that same outside
-          component of \<open>I - (N \<union> A2)\<close>. **)
-        sorry
+          Instantiation of the named regular-neighborhood transfer package for
+          the fine carrier \<open>N\<close> and the local access points \<open>Q1,S1\<close>. **)
+        by (rule geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_prefix
+            [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
+              hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS
+              hr_pos hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut])
       have hD44_central_frontier_broken_line_route_exists:
           "\<exists>B\<^sub>c. geotop_is_broken_line B\<^sub>c
             \<and> B\<^sub>c \<subseteq> ?Ncut
