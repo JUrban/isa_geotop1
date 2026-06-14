@@ -7156,6 +7156,73 @@ proof -
         using hS1_comp hS1_ball by (intro exI[where x=S1] conjI)
     qed
   qed
+  have hD44_closed_corridor_gives_arbitrary_access_ball_crossings:
+      "(\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)
+        \<Longrightarrow> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Collar extraction from Moise's component-frontier sentence.  If the
+      adjacent outside corridor is connected inside \<open>Ncut\<close> and its closure
+      contains both access points, then every prescribed pair of access collars
+      meets that same connected corridor. **)
+  proof -
+    assume hex_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hex_corridor by (elim exE conjE)
+    show "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume hQpos: "0 < \<epsilon>\<^sub>Q"
+      assume hSpos: "0 < \<epsilon>\<^sub>S"
+      have hQmeet: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hQ1_cl hQpos])
+      have hSmeet: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hS1_cl hSpos])
+      show "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hZ_sub hZ_conn hQmeet hSmeet by (intro exI conjI)
+    qed
+  qed
+  have hD44_moise_closed_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    (**
+      Final literal Moise corridor in component-frontier form.  The
+      complementary frontier arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close>; the adjacent
+      component of \<open>I - (N \<union> A2)\<close> along that arc is connected, lies in
+      \<open>Ncut\<close>, and has both lower and upper access points in its closure. **)
+    sorry
   have hD44_moise_arbitrary_access_ball_crossings:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
@@ -7169,7 +7236,8 @@ proof -
       through \<open>P\<close>; the adjacent outside component of
       \<open>I - (N \<union> A2)\<close> supplies a connected lower-to-upper crossing for every
       prescribed pair of access collars. **)
-    sorry
+    by (rule hD44_closed_corridor_gives_arbitrary_access_ball_crossings
+        [OF hD44_moise_closed_corridor])
   have hD44_moise_Q1_component_has_S1_ball_witnesses:
       "\<forall>\<epsilon>>0. \<exists>Y.
           Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
