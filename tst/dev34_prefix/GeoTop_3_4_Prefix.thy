@@ -4617,6 +4617,44 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Direct book-route package from the local regular-neighborhood incidence
+      statement to Moise's two frontier arcs.  The remaining geometric work can
+      now target exact-two boundary incidence and then immediately recover the
+      split of the frontier component through \<open>P\<close>. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    have hsphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere[OF htwo])
+    show ?thesis
+      by (rule hD44_J\<^sub>N_1sphere_has_book_two_arc_split[OF hsphere])
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
