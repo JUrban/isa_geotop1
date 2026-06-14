@@ -1148,6 +1148,18 @@ proof -
           unfolding geotop_component_at_def
           using hW_witness hS1_W by (by100 blast)
       qed
+      have hD44_central_frontier_broken_line_route_exists:
+          "\<exists>B\<^sub>c. geotop_is_broken_line B\<^sub>c
+            \<and> B\<^sub>c \<subseteq> ?Ncut
+            \<and> Q1 \<in> B\<^sub>c
+            \<and> S1 \<in> B\<^sub>c"
+        (**
+          Remaining book step in its literal broken-line form.  Moise's
+          frontier-component construction supplies a broken-line subarc of the
+          frontier of the regular neighborhood of \<open>A1\<close>, lying outside
+          \<open>N \<union> A2\<close>, whose ends attach to the chosen access points near
+          \<open>Q\<close> and \<open>S\<close>. **)
+        sorry
       have hD44_central_frontier_route_exists:
           "\<exists>W. W \<subseteq> ?Ncut
             \<and> Q1 \<in> W
@@ -1161,7 +1173,21 @@ proof -
           subarc between the last lower and first upper boundary hits, the
           subarc lies in \<open>I - (N \<union> A2)\<close> and connects the two access points
           selected near \<open>Q\<close> and \<open>S\<close>. **)
-        sorry
+      proof -
+        obtain B\<^sub>c where hB\<^sub>c_bl: "geotop_is_broken_line B\<^sub>c"
+          and hB\<^sub>c_Ncut: "B\<^sub>c \<subseteq> ?Ncut"
+          and hQ1_B\<^sub>c: "Q1 \<in> B\<^sub>c"
+          and hS1_B\<^sub>c: "S1 \<in> B\<^sub>c"
+          using hD44_central_frontier_broken_line_route_exists
+          by (elim exE conjE)
+        have hB\<^sub>c_conn:
+            "top1_connected_on B\<^sub>c
+              (subspace_topology UNIV geotop_euclidean_topology B\<^sub>c)"
+          by (rule geotop_broken_line_connected_on_prefix[OF hB\<^sub>c_bl])
+        show ?thesis
+          using hB\<^sub>c_Ncut hQ1_B\<^sub>c hS1_B\<^sub>c hB\<^sub>c_conn
+          by (intro exI conjI)
+      qed
       have hD44_central_same_component:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
         (**
