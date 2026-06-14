@@ -38085,6 +38085,185 @@ next
         [OF hrbc hline_neg hc_line ha_pos hd_neg])
 qed
 
+lemma geotop_figure33_opposite_apex_point_intersections_scalar_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>5 :: "real^2"
+  assumes hv\<^sub>5_mid: "v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+  assumes hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
+  assumes hv\<^sub>0_off: "v\<^sub>0 \<notin> affine hull {v\<^sub>1, v\<^sub>5}"
+  assumes ht: "0 < t"
+  shows
+    "geotop_convex_hull
+        {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5}
+      \<inter> geotop_convex_hull
+        {v\<^sub>2, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}
+      = geotop_convex_hull {v\<^sub>5}
+    \<and> geotop_convex_hull
+        {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5}
+      \<inter> geotop_convex_hull
+        {v\<^sub>0, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}
+      = geotop_convex_hull {v\<^sub>5}
+    \<and> geotop_convex_hull
+        {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>1}
+      \<inter> geotop_convex_hull
+        {v\<^sub>2, v\<^sub>1, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}
+      = geotop_convex_hull {v\<^sub>1}
+    \<and> geotop_convex_hull
+        {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>1}
+      \<inter> geotop_convex_hull
+        {v\<^sub>0, v\<^sub>1, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}
+      = geotop_convex_hull {v\<^sub>1}"
+  (**
+    Figure 3.3 opposite-apex intersections: the cross-pairs of moving
+    source and target triangles meet only in the vertex on the moving base
+    line, using the same midpoint opposite-side separation. **)
+proof -
+  let ?v\<^sub>3 = "v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)"
+  let ?v\<^sub>4 = "v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+  have hbasic:
+      "collinear {v\<^sub>1, ?v\<^sub>3, ?v\<^sub>4, v\<^sub>5}
+      \<and> ?v\<^sub>4 \<noteq> v\<^sub>5
+      \<and> v\<^sub>5 \<noteq> ?v\<^sub>3
+      \<and> ?v\<^sub>4 \<noteq> v\<^sub>1
+      \<and> v\<^sub>1 \<noteq> ?v\<^sub>3
+      \<and> ?v\<^sub>3 \<noteq> ?v\<^sub>4
+      \<and> v\<^sub>1 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4
+      \<and> v\<^sub>5 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4"
+    by (rule geotop_figure33_line_scalar_basic_prefix[OF hv\<^sub>1v\<^sub>5 ht])
+  have hv\<^sub>3_line: "?v\<^sub>3 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+  proof -
+    have "?v\<^sub>3 = v\<^sub>1 + (- t) *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+      by (simp add: algebra_simps)
+    thus ?thesis
+      unfolding affine_hull_2_alt by (by100 blast)
+  qed
+  have hv\<^sub>4_line: "?v\<^sub>4 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+  proof -
+    have "?v\<^sub>4 = v\<^sub>1 + (1 + t) *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+      by (simp add: algebra_simps)
+    thus ?thesis
+      unfolding affine_hull_2_alt by (by100 blast)
+  qed
+  have hv\<^sub>1_line: "v\<^sub>1 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+    by (rule hull_inc) (by100 simp)
+  have hv\<^sub>5_line: "v\<^sub>5 \<in> affine hull {v\<^sub>1, v\<^sub>5}"
+    by (rule hull_inc) (by100 simp)
+  have hv\<^sub>4v\<^sub>5: "?v\<^sub>4 \<noteq> v\<^sub>5"
+    using hbasic by (by100 blast)
+  have hv\<^sub>5v\<^sub>3: "v\<^sub>5 \<noteq> ?v\<^sub>3"
+    using hbasic by (by100 blast)
+  have hv\<^sub>4v\<^sub>1: "?v\<^sub>4 \<noteq> v\<^sub>1"
+    using hbasic by (by100 blast)
+  have hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> ?v\<^sub>3"
+    using hbasic by (by100 blast)
+  have haff45:
+      "affine hull {?v\<^sub>4, v\<^sub>5} = affine hull {v\<^sub>1, v\<^sub>5}"
+    by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+        [OF hv\<^sub>1v\<^sub>5 hv\<^sub>4v\<^sub>5 hv\<^sub>4_line hv\<^sub>5_line])
+  have haff41:
+      "affine hull {?v\<^sub>4, v\<^sub>1} = affine hull {v\<^sub>1, v\<^sub>5}"
+    by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
+        [OF hv\<^sub>1v\<^sub>5 hv\<^sub>4v\<^sub>1 hv\<^sub>4_line hv\<^sub>1_line])
+  have hv\<^sub>5_closed43: "v\<^sub>5 \<in> closed_segment ?v\<^sub>4 ?v\<^sub>3"
+  proof -
+    have hopen35: "v\<^sub>5 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4"
+      using hbasic by (by100 blast)
+    have hcomm: "open_segment ?v\<^sub>3 ?v\<^sub>4 = open_segment ?v\<^sub>4 ?v\<^sub>3"
+      by (rule open_segment_commute)
+    have "v\<^sub>5 \<in> open_segment ?v\<^sub>4 ?v\<^sub>3"
+      using hopen35 hcomm by (by100 simp)
+    thus ?thesis
+      unfolding open_segment_def by (by100 blast)
+  qed
+  have hv\<^sub>1_closed43: "v\<^sub>1 \<in> closed_segment ?v\<^sub>4 ?v\<^sub>3"
+  proof -
+    have hopen35: "v\<^sub>1 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4"
+      using hbasic by (by100 blast)
+    have hcomm: "open_segment ?v\<^sub>3 ?v\<^sub>4 = open_segment ?v\<^sub>4 ?v\<^sub>3"
+      by (rule open_segment_commute)
+    have "v\<^sub>1 \<in> open_segment ?v\<^sub>4 ?v\<^sub>3"
+      using hopen35 hcomm by (by100 simp)
+    thus ?thesis
+      unfolding open_segment_def by (by100 blast)
+  qed
+  have hv\<^sub>3_line45: "?v\<^sub>3 \<in> affine hull {?v\<^sub>4, v\<^sub>5}"
+    using haff45 hv\<^sub>3_line by (by100 simp)
+  have hv\<^sub>3_line41: "?v\<^sub>3 \<in> affine hull {?v\<^sub>4, v\<^sub>1}"
+    using haff41 hv\<^sub>3_line by (by100 simp)
+  have hv\<^sub>0_off45: "v\<^sub>0 \<notin> affine hull {?v\<^sub>4, v\<^sub>5}"
+    using hv\<^sub>0_off haff45 by (by100 simp)
+  have hv\<^sub>0_off41: "v\<^sub>0 \<notin> affine hull {?v\<^sub>4, v\<^sub>1}"
+    using hv\<^sub>0_off haff41 by (by100 simp)
+  obtain n45 r45 where hn45: "n45 \<noteq> 0"
+    and hline45: "affine hull {?v\<^sub>4, v\<^sub>5} = {x. n45 \<bullet> x = r45}"
+    using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>4v\<^sub>5]
+    by (by100 blast)
+  have hv\<^sub>5_aff45: "v\<^sub>5 \<in> affine hull {?v\<^sub>4, v\<^sub>5}"
+    by (rule hull_inc) (by100 simp)
+  have hmid45: "n45 \<bullet> v\<^sub>5 = r45"
+    using hline45 hv\<^sub>5_aff45 by (by100 simp)
+  have hmid45': "n45 \<bullet> midpoint v\<^sub>0 v\<^sub>2 = r45"
+    using hmid45 hv\<^sub>5_mid by (by100 simp)
+  have hv\<^sub>0_ne45: "n45 \<bullet> v\<^sub>0 \<noteq> r45"
+    using hline45 hv\<^sub>0_off45 by (by100 simp)
+  have hsides45:
+      "(n45 \<bullet> v\<^sub>0 > r45 \<and> n45 \<bullet> v\<^sub>2 < r45)
+      \<or> (n45 \<bullet> v\<^sub>0 < r45 \<and> n45 \<bullet> v\<^sub>2 > r45)"
+    by (rule geotop_midpoint_on_line_opposite_sides_prefix
+        [OF hmid45' hv\<^sub>0_ne45])
+  have hsides45_sym:
+      "(n45 \<bullet> v\<^sub>2 > r45 \<and> n45 \<bullet> v\<^sub>0 < r45)
+      \<or> (n45 \<bullet> v\<^sub>2 < r45 \<and> n45 \<bullet> v\<^sub>0 > r45)"
+    using hsides45 by (by100 blast)
+  have hsource_cross02:
+      "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, v\<^sub>5}
+        \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>5, ?v\<^sub>3}
+        = geotop_convex_hull {v\<^sub>5}"
+    by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
+        [OF hv\<^sub>5_closed43 hline45 hv\<^sub>3_line45 hsides45])
+  have hsource_cross20:
+      "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, v\<^sub>5}
+        \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>5, ?v\<^sub>3}
+        = geotop_convex_hull {v\<^sub>5}"
+    by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
+        [OF hv\<^sub>5_closed43 hline45 hv\<^sub>3_line45 hsides45_sym])
+  obtain n41 r41 where hn41: "n41 \<noteq> 0"
+    and hline41: "affine hull {?v\<^sub>4, v\<^sub>1} = {x. n41 \<bullet> x = r41}"
+    using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>4v\<^sub>1]
+    by (by100 blast)
+  have hv\<^sub>5_aff41: "v\<^sub>5 \<in> affine hull {?v\<^sub>4, v\<^sub>1}"
+    using haff41 hv\<^sub>5_line by (by100 simp)
+  have hmid41: "n41 \<bullet> v\<^sub>5 = r41"
+    using hline41 hv\<^sub>5_aff41 by (by100 simp)
+  have hmid41': "n41 \<bullet> midpoint v\<^sub>0 v\<^sub>2 = r41"
+    using hmid41 hv\<^sub>5_mid by (by100 simp)
+  have hv\<^sub>0_ne41: "n41 \<bullet> v\<^sub>0 \<noteq> r41"
+    using hline41 hv\<^sub>0_off41 by (by100 simp)
+  have hsides41:
+      "(n41 \<bullet> v\<^sub>0 > r41 \<and> n41 \<bullet> v\<^sub>2 < r41)
+      \<or> (n41 \<bullet> v\<^sub>0 < r41 \<and> n41 \<bullet> v\<^sub>2 > r41)"
+    by (rule geotop_midpoint_on_line_opposite_sides_prefix
+        [OF hmid41' hv\<^sub>0_ne41])
+  have hsides41_sym:
+      "(n41 \<bullet> v\<^sub>2 > r41 \<and> n41 \<bullet> v\<^sub>0 < r41)
+      \<or> (n41 \<bullet> v\<^sub>2 < r41 \<and> n41 \<bullet> v\<^sub>0 > r41)"
+    using hsides41 by (by100 blast)
+  have htarget_cross02:
+      "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, v\<^sub>1}
+        \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3}
+        = geotop_convex_hull {v\<^sub>1}"
+    by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
+        [OF hv\<^sub>1_closed43 hline41 hv\<^sub>3_line41 hsides41])
+  have htarget_cross20:
+      "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, v\<^sub>1}
+        \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3}
+        = geotop_convex_hull {v\<^sub>1}"
+    by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
+        [OF hv\<^sub>1_closed43 hline41 hv\<^sub>3_line41 hsides41_sym])
+  show ?thesis
+    using hsource_cross02 hsource_cross20 htarget_cross02 htarget_cross20
+    by (by100 blast)
+qed
+
 lemma geotop_not_collinear_off_affine_hull_pair_prefix:
   fixes p x y :: "real^2"
   assumes hxy: "x \<noteq> y"
@@ -41172,162 +41351,8 @@ proof -
 		          proof -
 		            fix t :: real
 		            assume ht: "0 < t"
-		            have hbasic:
-		                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
-		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
-		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
-		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
-		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
-		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
-		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
-		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-		              by (rule hfigure33_book_line_scalar_basic[OF ht])
-		            have hv\<^sub>3_line:
-		                "?v\<^sub>3_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-		            proof -
-		              have "?v\<^sub>3_of t = v\<^sub>1 + (- t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
-		                by (simp add: algebra_simps)
-		              thus ?thesis
-		                unfolding affine_hull_2_alt by (by100 blast)
-		            qed
-		            have hv\<^sub>4_line:
-		                "?v\<^sub>4_of t \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-		            proof -
-		              have "?v\<^sub>4_of t = v\<^sub>1 + (1 + t) *\<^sub>R (?v\<^sub>5 - v\<^sub>1)"
-		                by (simp add: algebra_simps)
-		              thus ?thesis
-		                unfolding affine_hull_2_alt by (by100 blast)
-		            qed
-		            have hv\<^sub>1_line:
-		                "v\<^sub>1 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-		              by (rule hull_inc) (by100 simp)
-		            have hv\<^sub>5_line:
-		                "?v\<^sub>5 \<in> affine hull {v\<^sub>1, ?v\<^sub>5}"
-		              by (rule hull_inc) (by100 simp)
-		            have hv\<^sub>4v\<^sub>5: "?v\<^sub>4_of t \<noteq> ?v\<^sub>5"
-		              using hbasic by (by100 blast)
-		            have hv\<^sub>5v\<^sub>3: "?v\<^sub>5 \<noteq> ?v\<^sub>3_of t"
-		              using hbasic by (by100 blast)
-		            have hv\<^sub>4v\<^sub>1: "?v\<^sub>4_of t \<noteq> v\<^sub>1"
-		              using hbasic by (by100 blast)
-		            have hv\<^sub>1v\<^sub>3: "v\<^sub>1 \<noteq> ?v\<^sub>3_of t"
-		              using hbasic by (by100 blast)
-		            have haff45:
-		                "affine hull {?v\<^sub>4_of t, ?v\<^sub>5}
-		                  = affine hull {v\<^sub>1, ?v\<^sub>5}"
-		              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
-		                  [OF hv\<^sub>1_mid_ne hv\<^sub>4v\<^sub>5 hv\<^sub>4_line hv\<^sub>5_line])
-		            have haff41:
-		                "affine hull {?v\<^sub>4_of t, v\<^sub>1}
-		                  = affine hull {v\<^sub>1, ?v\<^sub>5}"
-		              by (rule geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix
-		                  [OF hv\<^sub>1_mid_ne hv\<^sub>4v\<^sub>1 hv\<^sub>4_line hv\<^sub>1_line])
-		            have hv\<^sub>5_closed43:
-		                "?v\<^sub>5 \<in> closed_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		            proof -
-		              have hopen35:
-		                  "?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-		                using hbasic by (by100 blast)
-		              have hcomm:
-		                  "open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
-		                    = open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		                by (rule open_segment_commute)
-		              have "?v\<^sub>5 \<in> open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		                using hopen35 hcomm by (by100 simp)
-		              thus ?thesis
-		                unfolding open_segment_def by (by100 blast)
-		            qed
-		            have hv\<^sub>1_closed43:
-		                "v\<^sub>1 \<in> closed_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		            proof -
-		              have hopen35:
-		                  "v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-		                using hbasic by (by100 blast)
-		              have hcomm:
-		                  "open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
-		                    = open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		                by (rule open_segment_commute)
-		              have "v\<^sub>1 \<in> open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		                using hopen35 hcomm by (by100 simp)
-		              thus ?thesis
-		                unfolding open_segment_def by (by100 blast)
-		            qed
-		            have hv\<^sub>3_line45:
-		                "?v\<^sub>3_of t \<in> affine hull {?v\<^sub>4_of t, ?v\<^sub>5}"
-		              using haff45 hv\<^sub>3_line by (by100 simp)
-		            have hv\<^sub>3_line41:
-		                "?v\<^sub>3_of t \<in> affine hull {?v\<^sub>4_of t, v\<^sub>1}"
-		              using haff41 hv\<^sub>3_line by (by100 simp)
-		            have hv\<^sub>0_off45:
-		                "v\<^sub>0 \<notin> affine hull {?v\<^sub>4_of t, ?v\<^sub>5}"
-		              using hv\<^sub>0_mid_off_line haff45 by (by100 simp)
-		            have hv\<^sub>0_off41:
-		                "v\<^sub>0 \<notin> affine hull {?v\<^sub>4_of t, v\<^sub>1}"
-		              using hv\<^sub>0_mid_off_line haff41 by (by100 simp)
-		            obtain n45 r45 where hn45: "n45 \<noteq> 0"
-		              and hline45:
-		                "affine hull {?v\<^sub>4_of t, ?v\<^sub>5} = {x. n45 \<bullet> x = r45}"
-		              using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>4v\<^sub>5]
-		              by (by100 blast)
-		            have hv\<^sub>5_aff45: "?v\<^sub>5 \<in> affine hull {?v\<^sub>4_of t, ?v\<^sub>5}"
-		              by (rule hull_inc) (by100 simp)
-		            have hmid45: "n45 \<bullet> ?v\<^sub>5 = r45"
-		              using hline45 hv\<^sub>5_aff45 by (by100 simp)
-		            have hv\<^sub>0_ne45: "n45 \<bullet> v\<^sub>0 \<noteq> r45"
-		              using hline45 hv\<^sub>0_off45 by (by100 simp)
-		            have hsides45:
-		                "(n45 \<bullet> v\<^sub>0 > r45 \<and> n45 \<bullet> v\<^sub>2 < r45)
-		                \<or> (n45 \<bullet> v\<^sub>0 < r45 \<and> n45 \<bullet> v\<^sub>2 > r45)"
-		              by (rule geotop_midpoint_on_line_opposite_sides_prefix
-		                  [OF hmid45 hv\<^sub>0_ne45])
-		            have hsides45_sym:
-		                "(n45 \<bullet> v\<^sub>2 > r45 \<and> n45 \<bullet> v\<^sub>0 < r45)
-		                \<or> (n45 \<bullet> v\<^sub>2 < r45 \<and> n45 \<bullet> v\<^sub>0 > r45)"
-		              using hsides45 by (by100 blast)
-		            have hsource_cross02:
-		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
-		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
-		                  = geotop_convex_hull {?v\<^sub>5}"
-		              by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
-		                  [OF hv\<^sub>5_closed43 hline45 hv\<^sub>3_line45 hsides45])
-		            have hsource_cross20:
-		                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
-		                  \<inter> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
-		                  = geotop_convex_hull {?v\<^sub>5}"
-		              by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
-		                  [OF hv\<^sub>5_closed43 hline45 hv\<^sub>3_line45 hsides45_sym])
-		            obtain n41 r41 where hn41: "n41 \<noteq> 0"
-		              and hline41:
-		                "affine hull {?v\<^sub>4_of t, v\<^sub>1} = {x. n41 \<bullet> x = r41}"
-		              using geotop_affine_hull_pair_normal_form_prefix[OF hv\<^sub>4v\<^sub>1]
-		              by (by100 blast)
-		            have hv\<^sub>5_aff41: "?v\<^sub>5 \<in> affine hull {?v\<^sub>4_of t, v\<^sub>1}"
-		              using haff41 hv\<^sub>5_line by (by100 simp)
-		            have hmid41: "n41 \<bullet> ?v\<^sub>5 = r41"
-		              using hline41 hv\<^sub>5_aff41 by (by100 simp)
-		            have hv\<^sub>0_ne41: "n41 \<bullet> v\<^sub>0 \<noteq> r41"
-		              using hline41 hv\<^sub>0_off41 by (by100 simp)
-		            have hsides41:
-		                "(n41 \<bullet> v\<^sub>0 > r41 \<and> n41 \<bullet> v\<^sub>2 < r41)
-		                \<or> (n41 \<bullet> v\<^sub>0 < r41 \<and> n41 \<bullet> v\<^sub>2 > r41)"
-		              by (rule geotop_midpoint_on_line_opposite_sides_prefix
-		                  [OF hmid41 hv\<^sub>0_ne41])
-		            have hsides41_sym:
-		                "(n41 \<bullet> v\<^sub>2 > r41 \<and> n41 \<bullet> v\<^sub>0 < r41)
-		                \<or> (n41 \<bullet> v\<^sub>2 < r41 \<and> n41 \<bullet> v\<^sub>0 > r41)"
-		              using hsides41 by (by100 blast)
-		            have htarget_cross02:
-		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, v\<^sub>1}
-		                  \<inter> geotop_convex_hull {v\<^sub>2, v\<^sub>1, ?v\<^sub>3_of t}
-		                  = geotop_convex_hull {v\<^sub>1}"
-		              by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
-		                  [OF hv\<^sub>1_closed43 hline41 hv\<^sub>3_line41 hsides41])
-		            have htarget_cross20:
-		                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
-		                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
-		                  = geotop_convex_hull {v\<^sub>1}"
-		              by (rule geotop_triangles_opposite_side_adjacent_bases_inter_vertex_prefix
-		                  [OF hv\<^sub>1_closed43 hline41 hv\<^sub>3_line41 hsides41_sym])
+		            have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+		              by (by100 simp)
 		            show "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
 		                  \<inter> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
 		                  = geotop_convex_hull {?v\<^sub>5}
@@ -41340,8 +41365,8 @@ proof -
 		                \<and> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, v\<^sub>1}
 		                  \<inter> geotop_convex_hull {v\<^sub>0, v\<^sub>1, ?v\<^sub>3_of t}
 		                  = geotop_convex_hull {v\<^sub>1}"
-		              using hsource_cross02 hsource_cross20 htarget_cross02 htarget_cross20
-		              by (by100 blast)
+		              by (rule geotop_figure33_opposite_apex_point_intersections_scalar_prefix
+		                  [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne hv\<^sub>0_mid_off_line ht])
 		          qed
 		          have hfigure33_source_target_carrier_polyhedron_eq_scalar:
 		              "\<And>t. 0 < t \<Longrightarrow>
