@@ -3516,6 +3516,29 @@ proof -
     thus False
       using hxI by (by100 blast)
   qed
+  let ?B\<^sub>1 = "geotop_polyhedron BdJ\<^sub>N \<inter> J"
+  have hD44_P_BdJ\<^sub>N_F\<^sub>1:
+      "P \<in> geotop_polyhedron BdJ\<^sub>N \<inter> F\<^sub>1"
+    using hP_BdJ\<^sub>N_poly hD44_P_F\<^sub>1
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_B\<^sub>1: "P \<in> ?B\<^sub>1"
+    using hP_BdJ\<^sub>N_poly hP by (by100 blast)
+  have hD44_B\<^sub>1_nonempty: "?B\<^sub>1 \<noteq> {}"
+    using hD44_P_B\<^sub>1 by (by100 blast)
+  have hD44_B\<^sub>1_sub_boundary_arcs:
+      "?B\<^sub>1 \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_B\<^sub>1_A2_QS_disj:
+      "?B\<^sub>1 \<inter> (A2 \<union> {Q, S}) = {}"
+    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hD44_B\<^sub>1_R_notin: "R \<notin> ?B\<^sub>1"
+    using hD44_B\<^sub>1_A2_QS_disj hR_in_A2 by (by100 blast)
+  have hD44_B\<^sub>1_Q_notin: "Q \<notin> ?B\<^sub>1"
+    using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
+  have hD44_B\<^sub>1_S_notin: "S \<notin> ?B\<^sub>1"
+    using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
+  have hD44_B\<^sub>1_Ncut_disj: "?B\<^sub>1 \<inter> ?Ncut = {}"
+    using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
