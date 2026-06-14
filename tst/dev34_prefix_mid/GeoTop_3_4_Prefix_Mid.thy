@@ -36150,6 +36150,105 @@ next
   qed
 qed
 
+lemma geotop_figure33_source_target_carrier_vertices_subset_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>3 v\<^sub>4 v\<^sub>5 :: "real^2"
+  assumes hn045: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>5}"
+  assumes hn245: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>5}"
+  assumes hn053: "\<not> collinear {v\<^sub>0, v\<^sub>5, v\<^sub>3}"
+  assumes hn253: "\<not> collinear {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+  assumes hn041: "\<not> collinear {v\<^sub>0, v\<^sub>4, v\<^sub>1}"
+  assumes hn241: "\<not> collinear {v\<^sub>2, v\<^sub>4, v\<^sub>1}"
+  assumes hn013: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>3}"
+  assumes hn213: "\<not> collinear {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+  shows
+    "geotop_complex_vertices
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+      \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}
+    \<and> geotop_complex_vertices
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+        geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+        geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+      \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+  (**
+    Figure 3.3 carrier vertex bookkeeping: closing the four source/target
+    triangles under faces introduces no vertices beyond the named five. **)
+proof -
+  let ?S =
+    "{geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5},
+      geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}}"
+  let ?T =
+    "{geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1},
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}}"
+  have hsource_seed_vertices:
+      "\<forall>\<sigma>\<in>?S. \<exists>V. geotop_simplex_vertices \<sigma> V
+        \<and> V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+  proof
+    fix \<sigma>
+    assume h\<sigma>: "\<sigma> \<in> ?S"
+    have hcases:
+        "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
+      using h\<sigma> by (by100 simp)
+    show "\<exists>V. geotop_simplex_vertices \<sigma> V
+        \<and> V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+      using hcases
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn045]
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn245]
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn053]
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn253]
+      by (by100 blast)
+  qed
+  have htarget_seed_vertices:
+      "\<forall>\<sigma>\<in>?T. \<exists>V. geotop_simplex_vertices \<sigma> V
+        \<and> V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+  proof
+    fix \<sigma>
+    assume h\<sigma>: "\<sigma> \<in> ?T"
+    have hcases:
+        "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
+        \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
+      using h\<sigma> by (by100 simp)
+    show "\<exists>V. geotop_simplex_vertices \<sigma> V
+        \<and> V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+      using hcases
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn041]
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn241]
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn013]
+        geotop_three_noncollinear_convex_hull_simplex_vertices_prefix[OF hn213]
+      by (by100 blast)
+  qed
+  have hsource_sub:
+      "geotop_complex_vertices
+        {\<tau>. \<exists>\<sigma>\<in>?S. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+        \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
+    by (rule geotop_simplex_face_closure_vertices_subset_prefix
+        [OF hsource_seed_vertices])
+  have htarget_sub:
+      "geotop_complex_vertices
+        {\<tau>. \<exists>\<sigma>\<in>?T. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+        \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+    by (rule geotop_simplex_face_closure_vertices_subset_prefix
+        [OF htarget_seed_vertices])
+  show ?thesis
+    by (intro conjI; rule hsource_sub htarget_sub)
+qed
+
 lemma geotop_affine_hull_pair_eq_of_collinear_pair_members_prefix:
   fixes a b x y :: "real^2"
   assumes hab: "a \<noteq> b"
@@ -44964,70 +45063,22 @@ proof -
                   [OF hncol041 hncol241 hncol013 hncol213 htarget041241
                     htarget041013 htarget041213 htarget241013
                     htarget241213 htarget013213])
+            have hcarrier_vertices_sub:
+                "geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
+                  \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}
+                \<and> geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)
+                  \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
+              by (rule geotop_figure33_source_target_carrier_vertices_subset_prefix
+                  [OF hncol045 hncol245 hncol053 hncol253 hncol041
+                    hncol241 hncol013 hncol213])
             have hsource_carrier_vertices_sub:
                 "geotop_complex_vertices (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)
                   \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
-            proof -
-              have hsource_seed_vertices:
-                  "\<forall>\<sigma>\<in>?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5.
-                    \<exists>V. geotop_simplex_vertices \<sigma> V
-                      \<and> V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
-              proof
-                fix \<sigma>
-                assume h\<sigma>: "\<sigma> \<in> ?source_triangles v\<^sub>3 v\<^sub>4 v\<^sub>5"
-                have hcases:
-                    "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>5}
-                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>5}
-                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>5, v\<^sub>3}
-                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>5, v\<^sub>3}"
-                  using h\<sigma> by (by100 simp)
-                show "\<exists>V. geotop_simplex_vertices \<sigma> V
-                    \<and> V \<subseteq> {v\<^sub>0, v\<^sub>2, v\<^sub>3, v\<^sub>4, v\<^sub>5}"
-                  using hcases hsource045_vertices hsource245_vertices
-                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
-                      [OF hncol053]
-                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
-                      [OF hncol253]
-                  by (by100 blast)
-              qed
-              show ?thesis
-                by (rule geotop_simplex_face_closure_vertices_subset_prefix
-                    [OF hsource_seed_vertices])
-            qed
+              using hcarrier_vertices_sub by (by100 blast)
             have htarget_carrier_vertices_sub:
                 "geotop_complex_vertices (?target_carrier v\<^sub>3 v\<^sub>4)
                   \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
-            proof -
-              have htarget_seed_vertices:
-                  "\<forall>\<sigma>\<in>?target_triangles v\<^sub>3 v\<^sub>4.
-                    \<exists>V. geotop_simplex_vertices \<sigma> V
-                      \<and> V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
-              proof
-                fix \<sigma>
-                assume h\<sigma>: "\<sigma> \<in> ?target_triangles v\<^sub>3 v\<^sub>4"
-                have hcases:
-                    "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>4, v\<^sub>1}
-                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>4, v\<^sub>1}
-                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>3}
-                    \<or> \<sigma> = geotop_convex_hull {v\<^sub>2, v\<^sub>1, v\<^sub>3}"
-                  using h\<sigma> by (by100 simp)
-                show "\<exists>V. geotop_simplex_vertices \<sigma> V
-                    \<and> V \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2, v\<^sub>3, v\<^sub>4}"
-                  using hcases
-                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
-                      [OF hncol041]
-                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
-                      [OF hncol241]
-                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
-                      [OF hncol013]
-                    geotop_three_noncollinear_convex_hull_simplex_vertices_prefix
-                      [OF hncol213]
-                  by (by100 blast)
-              qed
-              show ?thesis
-                by (rule geotop_simplex_face_closure_vertices_subset_prefix
-                    [OF htarget_seed_vertices])
-            qed
+              using hcarrier_vertices_sub by (by100 blast)
             have hsource_complex:
                 "geotop_is_complex (?source_carrier v\<^sub>3 v\<^sub>4 v\<^sub>5)"
               by (rule geotop_compatible_simplex_face_closure_is_complex_prefix
