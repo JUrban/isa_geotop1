@@ -4834,19 +4834,29 @@ proof -
       by (rule hD44_connected_route_component_suffices
           [OF hB_sub hQ1_B hS1_B hB_conn])
   qed
+  have hD44_central_same_component_in_Ncut_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Remaining Moise frontier-component extraction, now in the component form
+      used by the downstream D44 package.  The book proves this by taking the
+      component of the frontier of the fine carrier neighborhood through
+      \<open>P\<close>, splitting that 1-sphere into the boundary arc on \<open>J\<close> and the
+      complementary frontier arc, then using the lower-to-upper subarc outside
+      \<open>N \<union> A2\<close> to put the access positions \<open>Q1,S1\<close> in the same component of
+      \<open>I - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
         \<and> Q1 \<in> B
         \<and> S1 \<in> B"
     (**
-      Remaining Moise frontier-component extraction.  The set \<open>J\<^sub>N\<close> is the
-      component of the frontier of the fine carrier neighborhood through
-      \<open>P\<close>.  The book proves this component is a polygonal 1-sphere, splits it
-      into the boundary arc on \<open>J\<close> and the complementary frontier arc, then
-      takes the lower-to-upper subarc outside \<open>N \<union> A2\<close> and attaches it to the
-      already chosen access positions \<open>Q1,S1\<close>. **)
-    sorry
+      Broken-line extraction from the component form of Moise's frontier route.
+      The set \<open>?Ncut\<close> is open, so the Section 1 broken-line-connectedness
+      bridge turns the same-component statement into the literal broken line
+      route used by the theorem statement. **)
+    by (rule hD44_same_component_in_Ncut_suffices
+        [OF hD44_central_same_component_in_Ncut_book_step])
   have hD44_Q1S1_same_component_in_Ncut:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
