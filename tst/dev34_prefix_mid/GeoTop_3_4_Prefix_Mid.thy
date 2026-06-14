@@ -40235,6 +40235,318 @@ proof -
     show ?thesis
       using h\<eta>_pos hsmall by (by100 blast)
   qed
+  have hCO_endpoint_balls_sub_local_segments:
+      "C\<^sub>O \<inter> (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))
+        \<subseteq> {v\<^sub>0, v\<^sub>2}
+          \<union> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+  proof
+    fix x
+    assume hx:
+      "x \<in> C\<^sub>O \<inter>
+        (ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<union> ball v\<^sub>2 (\<delta>\<^sub>2 / 2))"
+    have hxCO: "x \<in> C\<^sub>O"
+      using hx by (by100 blast)
+    have hx_ball_cases:
+      "x \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2) \<or>
+       x \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+      using hx by (by100 blast)
+    show "x \<in> {v\<^sub>0, v\<^sub>2}
+          \<union> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2})"
+    proof (rule disjE[OF hx_ball_cases])
+      assume hx_ball0: "x \<in> ball v\<^sub>0 (\<delta>\<^sub>0 / 2)"
+      have hx_ball0_big: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+        using hx_ball0 h\<delta>\<^sub>0_pos by (by100 simp)
+      have hx_seg0: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+        using hCO_local_v\<^sub>0 hxCO hx_ball0_big by (by100 blast)
+      show ?thesis
+      proof (cases "x = v\<^sub>0")
+        case True
+        show ?thesis
+          using True by (by100 simp)
+      next
+        case False
+        have "x \<in> closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}"
+          using hx_seg0 False by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      qed
+    next
+      assume hx_ball2: "x \<in> ball v\<^sub>2 (\<delta>\<^sub>2 / 2)"
+      have hx_ball2_big: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+        using hx_ball2 h\<delta>\<^sub>2_pos by (by100 simp)
+      have hx_seg2: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+        using hCO_local_v\<^sub>2 hxCO hx_ball2_big by (by100 blast)
+      show ?thesis
+      proof (cases "x = v\<^sub>2")
+        case True
+        show ?thesis
+          using True by (by100 simp)
+      next
+        case False
+        have "x \<in> closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}"
+          using hx_seg2 False by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hv\<^sub>0v\<^sub>2_dist_pos: "0 < dist v\<^sub>0 v\<^sub>2"
+    using hv\<^sub>0v\<^sub>2 by (by100 simp)
+  define \<rho>\<^sub>0 where "\<rho>\<^sub>0 = min (\<delta>\<^sub>0 / 4) (dist v\<^sub>0 v\<^sub>2 / 4)"
+  define \<rho>\<^sub>2 where "\<rho>\<^sub>2 = min (\<delta>\<^sub>2 / 4) (dist v\<^sub>0 v\<^sub>2 / 4)"
+  have h\<rho>\<^sub>0_pos: "0 < \<rho>\<^sub>0"
+    unfolding \<rho>\<^sub>0_def using h\<delta>\<^sub>0_pos hv\<^sub>0v\<^sub>2_dist_pos by (by100 simp)
+  have h\<rho>\<^sub>2_pos: "0 < \<rho>\<^sub>2"
+    unfolding \<rho>\<^sub>2_def using h\<delta>\<^sub>2_pos hv\<^sub>0v\<^sub>2_dist_pos by (by100 simp)
+  have h\<rho>\<^sub>0_lt_\<delta>\<^sub>0: "\<rho>\<^sub>0 < \<delta>\<^sub>0"
+    unfolding \<rho>\<^sub>0_def using h\<delta>\<^sub>0_pos hv\<^sub>0v\<^sub>2_dist_pos by (by100 simp)
+  have h\<rho>\<^sub>2_lt_\<delta>\<^sub>2: "\<rho>\<^sub>2 < \<delta>\<^sub>2"
+    unfolding \<rho>\<^sub>2_def using h\<delta>\<^sub>2_pos hv\<^sub>0v\<^sub>2_dist_pos by (by100 simp)
+  have h\<rho>\<^sub>0_le_v\<^sub>0v\<^sub>2_quarter:
+      "\<rho>\<^sub>0 \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+    unfolding \<rho>\<^sub>0_def by (by100 simp)
+  have h\<rho>\<^sub>2_le_v\<^sub>0v\<^sub>2_quarter:
+      "\<rho>\<^sub>2 \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+    unfolding \<rho>\<^sub>2_def by (by100 simp)
+  have hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0:
+      "v\<^sub>2 \<notin> ball v\<^sub>0 \<rho>\<^sub>0"
+  proof
+    assume hv\<^sub>2_ball: "v\<^sub>2 \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+    have "dist v\<^sub>0 v\<^sub>2 < \<rho>\<^sub>0"
+      using hv\<^sub>2_ball by (by100 simp)
+    also have "\<dots> \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+      using h\<rho>\<^sub>0_le_v\<^sub>0v\<^sub>2_quarter .
+    finally show False
+      using hv\<^sub>0v\<^sub>2_dist_pos by (by100 linarith)
+  qed
+  have hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2:
+      "v\<^sub>0 \<notin> ball v\<^sub>2 \<rho>\<^sub>2"
+  proof
+    assume hv\<^sub>0_ball: "v\<^sub>0 \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+    have "dist v\<^sub>0 v\<^sub>2 < \<rho>\<^sub>2"
+      using hv\<^sub>0_ball by (simp add: dist_commute)
+    also have "\<dots> \<le> dist v\<^sub>0 v\<^sub>2 / 4"
+      using h\<rho>\<^sub>2_le_v\<^sub>0v\<^sub>2_quarter .
+    finally show False
+      using hv\<^sub>0v\<^sub>2_dist_pos by (by100 linarith)
+  qed
+  have hendpoint_germ_v\<^sub>0_theta_disj:
+      "((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+          ball v\<^sub>0 \<rho>\<^sub>0) \<inter> \<theta> = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx:
+      "x \<in> ((closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+        ball v\<^sub>0 \<rho>\<^sub>0) \<inter> \<theta>"
+    have hx_seg: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+      using hx by (by100 blast)
+    have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+      using hx by (by100 blast)
+    have hx_ball_\<rho>: "x \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+      using hx by (by100 blast)
+    have hx_ball_\<delta>: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+      using hx_ball_\<rho> h\<rho>\<^sub>0_lt_\<delta>\<^sub>0 by (by100 simp)
+    have hxCO: "x \<in> C\<^sub>O"
+      using hCO_local_v\<^sub>0 hx_ball_\<delta> hx_seg by (by100 blast)
+    have hx\<theta>: "x \<in> \<theta>"
+      using hx by (by100 blast)
+    have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+      using hxCO hx\<theta> hCO_\<theta> by (by100 blast)
+    show False
+      using hx_end hx_ne_v\<^sub>0 hx_ball_\<rho> hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0
+      by (by100 blast)
+  qed
+  have hendpoint_germ_v\<^sub>2_theta_disj:
+      "((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+          ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta> = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx:
+      "x \<in> ((closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+        ball v\<^sub>2 \<rho>\<^sub>2) \<inter> \<theta>"
+    have hx_seg: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+      using hx by (by100 blast)
+    have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+      using hx by (by100 blast)
+    have hx_ball_\<rho>: "x \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+      using hx by (by100 blast)
+    have hx_ball_\<delta>: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+      using hx_ball_\<rho> h\<rho>\<^sub>2_lt_\<delta>\<^sub>2 by (by100 simp)
+    have hxCO: "x \<in> C\<^sub>O"
+      using hCO_local_v\<^sub>2 hx_ball_\<delta> hx_seg by (by100 blast)
+    have hx\<theta>: "x \<in> \<theta>"
+      using hx by (by100 blast)
+    have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+      using hxCO hx\<theta> hCO_\<theta> by (by100 blast)
+    show False
+      using hx_end hx_ne_v\<^sub>2 hx_ball_\<rho> hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2
+      by (by100 blast)
+  qed
+  have hendpoint_germ_v\<^sub>0_sub_C\<^sub>O_arc:
+      "(closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+          ball v\<^sub>0 \<rho>\<^sub>0
+        \<subseteq> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+  proof
+    fix x
+    assume hx:
+      "x \<in> (closed_segment v\<^sub>0 p\<^sub>0 - {v\<^sub>0}) \<inter>
+        ball v\<^sub>0 \<rho>\<^sub>0"
+    have hx_seg: "x \<in> closed_segment v\<^sub>0 p\<^sub>0"
+      using hx by (by100 blast)
+    have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+      using hx by (by100 blast)
+    have hx_ball_\<rho>: "x \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+      using hx by (by100 blast)
+    have hx_ball_\<delta>: "x \<in> ball v\<^sub>0 \<delta>\<^sub>0"
+      using hx_ball_\<rho> h\<rho>\<^sub>0_lt_\<delta>\<^sub>0 by (by100 simp)
+    have hxCO: "x \<in> C\<^sub>O"
+      using hCO_local_v\<^sub>0 hx_ball_\<delta> hx_seg by (by100 blast)
+    have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+      using hx_ball_\<rho> hv\<^sub>2_notin_ball_v\<^sub>0_\<rho>\<^sub>0 by (by100 blast)
+    show "x \<in> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      using hxCO hx_ne_v\<^sub>0 hx_ne_v\<^sub>2
+      unfolding geotop_arc_interior_def by (by100 blast)
+  qed
+  have hendpoint_germ_v\<^sub>2_sub_C\<^sub>O_arc:
+      "(closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+          ball v\<^sub>2 \<rho>\<^sub>2
+        \<subseteq> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+  proof
+    fix x
+    assume hx:
+      "x \<in> (closed_segment v\<^sub>2 p\<^sub>2 - {v\<^sub>2}) \<inter>
+        ball v\<^sub>2 \<rho>\<^sub>2"
+    have hx_seg: "x \<in> closed_segment v\<^sub>2 p\<^sub>2"
+      using hx by (by100 blast)
+    have hx_ne_v\<^sub>2: "x \<noteq> v\<^sub>2"
+      using hx by (by100 blast)
+    have hx_ball_\<rho>: "x \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+      using hx by (by100 blast)
+    have hx_ball_\<delta>: "x \<in> ball v\<^sub>2 \<delta>\<^sub>2"
+      using hx_ball_\<rho> h\<rho>\<^sub>2_lt_\<delta>\<^sub>2 by (by100 simp)
+    have hxCO: "x \<in> C\<^sub>O"
+      using hCO_local_v\<^sub>2 hx_ball_\<delta> hx_seg by (by100 blast)
+    have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+      using hx_ball_\<rho> hv\<^sub>0_notin_ball_v\<^sub>2_\<rho>\<^sub>2 by (by100 blast)
+    show "x \<in> geotop_arc_interior C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+      using hxCO hx_ne_v\<^sub>0 hx_ne_v\<^sub>2
+      unfolding geotop_arc_interior_def by (by100 blast)
+  qed
+  let ?C\<^sub>O_out_tiny =
+    "C\<^sub>O - (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
+  have hC\<^sub>O_out_tiny_compact: "compact ?C\<^sub>O_out_tiny"
+  proof -
+    have hopen: "open (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
+      by (intro open_Un open_ball)
+    have hclosed_compl: "closed (- (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2))"
+      by (rule closed_Compl[OF hopen])
+    have h_eq:
+        "?C\<^sub>O_out_tiny =
+          C\<^sub>O \<inter> - (ball v\<^sub>0 \<rho>\<^sub>0 \<union> ball v\<^sub>2 \<rho>\<^sub>2)"
+      by (by100 blast)
+    show ?thesis
+      using compact_Int_closed[OF hCO_compact hclosed_compl] h_eq
+      by (by100 simp)
+  qed
+  have hC\<^sub>O_out_tiny_theta_disj:
+      "?C\<^sub>O_out_tiny \<inter> \<theta> = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> ?C\<^sub>O_out_tiny \<inter> \<theta>"
+    have hxCO: "x \<in> C\<^sub>O"
+      using hx by (by100 blast)
+    have hx\<theta>: "x \<in> \<theta>"
+      using hx by (by100 blast)
+    have hx_end: "x \<in> {v\<^sub>0, v\<^sub>2}"
+      using hxCO hx\<theta> hCO_\<theta> by (by100 blast)
+    have hx_not_ball:
+        "x \<notin> ball v\<^sub>0 \<rho>\<^sub>0 \<and> x \<notin> ball v\<^sub>2 \<rho>\<^sub>2"
+      using hx by (by100 blast)
+    have hv\<^sub>0_ball: "v\<^sub>0 \<in> ball v\<^sub>0 \<rho>\<^sub>0"
+      using h\<rho>\<^sub>0_pos by (by100 simp)
+    have hv\<^sub>2_ball: "v\<^sub>2 \<in> ball v\<^sub>2 \<rho>\<^sub>2"
+      using h\<rho>\<^sub>2_pos by (by100 simp)
+    show False
+      using hx_end hx_not_ball hv\<^sub>0_ball hv\<^sub>2_ball by (by100 blast)
+  qed
+  have hC\<^sub>O_out_tiny_setdist_gap:
+      "?C\<^sub>O_out_tiny = {} \<or> 0 < setdist ?C\<^sub>O_out_tiny \<theta>"
+  proof (cases "?C\<^sub>O_out_tiny = {}")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case False
+    have "setdist ?C\<^sub>O_out_tiny \<theta> > 0"
+      using setdist_gt_0_compact_closed
+          [OF hC\<^sub>O_out_tiny_compact h\<theta>_closed]
+        False h\<theta>_nonempty hC\<^sub>O_out_tiny_theta_disj
+      by (by100 simp)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  have hfigure33_source_carrier_avoids_C\<^sub>O_outside_tiny_small_scalar:
+      "\<exists>\<eta>>0. \<forall>t>0.
+        t < \<eta> \<longrightarrow>
+        ?C\<^sub>O_out_tiny \<inter> geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        = {}"
+  proof (cases "?C\<^sub>O_out_tiny = {}")
+    case True
+    have hsmall:
+        "\<forall>t>0.
+          t < (1::real) \<longrightarrow>
+          ?C\<^sub>O_out_tiny \<inter> geotop_polyhedron
+            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+          = {}"
+      using True by (by100 blast)
+    show ?thesis
+      using hsmall by (intro exI[of _ 1] conjI) (by100 simp_all)
+  next
+    case False
+    have hgap_pos: "0 < setdist ?C\<^sub>O_out_tiny \<theta>"
+      using hC\<^sub>O_out_tiny_setdist_gap False by (by100 blast)
+    let ?D = "norm (?v\<^sub>5 - v\<^sub>1)"
+    have hD_pos: "0 < ?D"
+      using hv\<^sub>1_mid_ne by (simp add: norm_minus_commute)
+    define \<eta> where "\<eta> = setdist ?C\<^sub>O_out_tiny \<theta> / (2 * ?D)"
+    have h\<eta>_pos: "0 < \<eta>"
+      unfolding \<eta>_def using hgap_pos hD_pos by (by100 simp)
+    have hsmall:
+        "\<forall>t>0.
+          t < \<eta> \<longrightarrow>
+          ?C\<^sub>O_out_tiny \<inter> geotop_polyhedron
+            (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+          = {}"
+    proof (intro allI impI)
+      fix t :: real
+      assume ht_pos: "0 < t"
+      assume ht_lt: "t < \<eta>"
+      have htD_gap:
+          "t * ?D < setdist ?C\<^sub>O_out_tiny \<theta>"
+      proof -
+        have "t * ?D < \<eta> * ?D"
+          using ht_lt hD_pos by (by100 simp)
+        also have "\<dots> = setdist ?C\<^sub>O_out_tiny \<theta> / 2"
+          unfolding \<eta>_def using hD_pos by (simp add: field_simps)
+        also have "\<dots> < setdist ?C\<^sub>O_out_tiny \<theta>"
+          using hgap_pos by (by100 simp)
+        finally show ?thesis .
+      qed
+      have hv\<^sub>5_mid_eq: "?v\<^sub>5 = midpoint v\<^sub>0 v\<^sub>2"
+        by (by100 simp)
+      show "?C\<^sub>O_out_tiny \<inter> geotop_polyhedron
+          (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
+        = {}"
+        by (rule geotop_figure33_source_carrier_avoids_set_bound_scalar_prefix
+            [OF hv\<^sub>5_mid_eq hv\<^sub>1_mid_ne h\<theta>_conv hv\<^sub>0_\<theta>
+              hv\<^sub>1_\<theta> hv\<^sub>2_\<theta> ht_pos htD_gap])
+    qed
+    show ?thesis
+      using h\<eta>_pos hsmall by (by100 blast)
+  qed
   have hfigure33_source_carrier_support_bound_scalar:
       "\<exists>\<eta>>0. \<forall>t>0.
         t < \<eta> \<longrightarrow>
