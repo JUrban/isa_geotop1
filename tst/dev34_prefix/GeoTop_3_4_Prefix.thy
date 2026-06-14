@@ -2605,6 +2605,87 @@ proof -
       show "\<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> P \<in> e"
         by (rule hJ\<^sub>N_carrier_dim0_incident_edge[OF hP_J\<^sub>N hdim0])
     qed
+    have hJ\<^sub>N_uncovered_all_imp_incident_edge_not_one:
+        "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N \<Longrightarrow>
+          e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> P \<in> e \<Longrightarrow>
+          card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<noteq> 1"
+      for e
+    proof
+      assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+        and heK: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hP_e: "P \<in> e"
+        and hcard1:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} = 1"
+      have heBdK: "e \<in> BdK\<^sub>N"
+        by (rule hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N
+            [OF heK hedge hcard1])
+      have hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+        using hP_e hP_J\<^sub>N by (by100 blast)
+      have heBdJ: "e \<in> BdJ\<^sub>N"
+        by (rule hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N[OF heBdK hedge hmeet])
+      have hP_BdJ: "P \<in> geotop_polyhedron BdJ\<^sub>N"
+        unfolding geotop_polyhedron_def using heBdJ hP_e by (by100 blast)
+      have hP_not_BdJ: "P \<notin> geotop_polyhedron BdJ\<^sub>N"
+        by (rule hJ\<^sub>N_uncovered_all_imp_P_not_BdJ[OF hall])
+      show False
+        using hP_BdJ hP_not_BdJ by (by100 blast)
+    qed
+    have hJ\<^sub>N_uncovered_all_imp_incident_edge_two:
+        "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N \<Longrightarrow>
+          e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> P \<in> e \<Longrightarrow>
+          card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} = 2"
+      for e
+    proof -
+      assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+        and heK: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hP_e: "P \<in> e"
+      have he_simplex: "geotop_is_simplex e"
+        using hedge unfolding geotop_is_edge_def
+        by (rule geotop_simplex_dim_imp_is_simplex)
+      obtain q where hq_rel: "q \<in> rel_interior e"
+        using geotop_simplex_rel_interior_nonempty[OF he_simplex] by (by100 blast)
+      have hge1:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<ge> 1"
+        by (rule hK\<^sub>N_edge_rel_interior_incident_count_ge1
+            [OF heK hedge hq_rel])
+      have hle2:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<le> 2"
+        by (rule hK\<^sub>N_edge_incident_2faces_card_le2[OF heK hedge])
+      have hnot1:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} \<noteq> 1"
+        by (rule hJ\<^sub>N_uncovered_all_imp_incident_edge_not_one
+            [OF hall heK hedge hP_e])
+      show ?thesis
+        using hge1 hle2 hnot1 by (by100 linarith)
+    qed
+    have hJ\<^sub>N_uncovered_all_imp_P_two_incident_edge:
+        "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N \<Longrightarrow>
+          \<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> P \<in> e
+            \<and> card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+              \<and> geotop_is_face e \<sigma>} = 2"
+    proof -
+      assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+      obtain e where heK: "e \<in> K\<^sub>N"
+        and hedge: "geotop_is_edge e"
+        and hP_e: "P \<in> e"
+        using hJ\<^sub>N_uncovered_all_imp_P_incident_edge[OF hall]
+        by (by100 blast)
+      have htwo:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+            \<and> geotop_is_face e \<sigma>} = 2"
+        by (rule hJ\<^sub>N_uncovered_all_imp_incident_edge_two
+            [OF hall heK hedge hP_e])
+      show ?thesis
+        using heK hedge hP_e htwo by (intro bexI[where x=e] conjI)
+    qed
     have hBdJ\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
