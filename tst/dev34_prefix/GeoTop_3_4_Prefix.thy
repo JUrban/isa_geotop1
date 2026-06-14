@@ -7354,32 +7354,33 @@ proof -
         its closure contains the two access witnesses chosen near \<open>Q\<close> and
         \<open>S\<close>. **)
     proof -
-      have hD44_moise_polygon_adjacent_corridor_book_step:
+      have hD44_moise_polygon_adjacent_component_book_step:
           "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-          \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Q1 \<in> closure Z
-            \<and> S1 \<in> closure Z)"
+          \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+                ?Ncut Q1"
         (**
           Literal remaining book obligation.  Moise's "then \<open>J\<close> is a
           1-sphere" is represented by polygonality of the frontier component
           carrier \<open>geotop_polyhedron BdJ\<^sub>N\<close>; the adjacent component of
-          \<open>I - (N \<union> A2)\<close> along the complementary frontier arc supplies the
-          connected corridor \<open>Z\<close> whose closure contains the two access points. **)
+          \<open>I - (N \<union> A2)\<close> along the complementary frontier arc puts the two
+          access points \<open>Q1\<close> and \<open>S1\<close> in the same outside-carrier component. **)
         sorry
       have hpolygon:
           "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-        using hD44_moise_polygon_adjacent_corridor_book_step
+        using hD44_moise_polygon_adjacent_component_book_step
         by (rule conjunct1)
+      have hS1_comp:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut Q1"
+        using hD44_moise_polygon_adjacent_component_book_step
+        by (rule conjunct2)
       have hZ_ex:
           "\<exists>Z. Z \<subseteq> ?Ncut
             \<and> top1_connected_on Z
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Q1 \<in> closure Z
             \<and> S1 \<in> closure Z"
-        using hD44_moise_polygon_adjacent_corridor_book_step
-        by (rule conjunct2)
+        by (rule hD44_same_component_gives_closed_corridor[OF hS1_comp])
       obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
         and hZ_conn:
           "top1_connected_on Z
