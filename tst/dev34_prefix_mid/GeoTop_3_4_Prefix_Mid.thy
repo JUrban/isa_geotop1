@@ -39306,6 +39306,46 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_figure33_case1_local_supported_fold_map_prefix:
+  fixes U \<theta> C\<^sub>O :: "(real^2) set" and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+  assumes hv\<^sub>1_not: "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2}"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_sub_U: "\<theta> \<subseteq> U"
+  assumes h\<theta>vertices_sub: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} \<subseteq> \<theta>"
+  assumes hfigure33_local_triangle_package:
+      "v\<^sub>0 \<noteq> v\<^sub>1
+      \<and> v\<^sub>2 \<noteq> v\<^sub>1
+      \<and> \<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}
+      \<and> \<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}
+      \<and> frontier \<theta> =
+          closed_segment v\<^sub>0 v\<^sub>1 \<union>
+            (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)
+      \<and> geotop_is_polygon (frontier \<theta>)
+      \<and> geotop_arc_endpoints (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_endpoints
+          (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior
+            (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>2} = {}"
+  assumes hCO_bl: "geotop_is_broken_line C\<^sub>O"
+  assumes hCO_E: "geotop_arc_endpoints C\<^sub>O {v\<^sub>0, v\<^sub>2}"
+  assumes hCO_\<theta>: "C\<^sub>O \<inter> \<theta> = {v\<^sub>0, v\<^sub>2}"
+  shows "\<exists>f.
+      top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology f
+      \<and> (\<forall>P\<in>UNIV - U. f P = P)
+      \<and> f ` (closed_segment v\<^sub>0 v\<^sub>2) =
+        closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>2 v\<^sub>1
+      \<and> f ` C\<^sub>O = C\<^sub>O"
+  (**
+    Exported Moise Figure 3.3 Case 1 local fold.  This is the local carrier
+    construction already used inside the one-boundary fold: choose the small
+    vertices \<open>v\<^sub>3,v\<^sub>4,v\<^sub>5\<close>, keep the retained broken line fixed, and send the
+    old chord \<open>v\<^sub>0v\<^sub>2\<close> to the two-edge corner arc through \<open>v\<^sub>1\<close>. **)
+  sorry
+
 lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
   fixes U \<theta> C\<^sub>O :: "(real^2) set" and x y z :: "real^2"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
@@ -39334,7 +39374,96 @@ lemma geotop_figure33_local_supported_chord_to_corner_arc_map_prefix:
     \<open>v\<^sub>1 = x\<close>, \<open>v\<^sub>2 = z\<close>: choose the auxiliary vertices in a small carrier
     contained in \<open>U\<close>, fix the retained outside arc \<open>C\<^sub>O\<close>, and send the
     chord \<open>yz\<close> to the two-edge corner arc \<open>yx \<union> xz\<close>. **)
-  sorry
+proof -
+  have hpackage:
+      "y \<noteq> x
+      \<and> z \<noteq> x
+      \<and> \<not> collinear {y, x, z}
+      \<and> \<not> collinear {y, z, x}
+      \<and> frontier \<theta> =
+          closed_segment y x \<union>
+            (closed_segment y z \<union> closed_segment z x)
+      \<and> geotop_is_polygon (frontier \<theta>)
+      \<and> geotop_arc_endpoints (closed_segment y z) {y, z}
+      \<and> geotop_arc_endpoints
+          (closed_segment y x \<union> closed_segment z x) {y, z}
+      \<and> geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+          geotop_arc_interior
+            (closed_segment y x \<union> closed_segment z x) {y, z} = {}"
+    by (rule geotop_figure33_chord_corner_triangle_package_prefix
+        [OF hxy hxz hyz hnot_col_xyz h\<theta>2 h\<theta>front])
+  have hyx: "y \<noteq> x"
+    using hpackage by (by100 blast)
+  have hzx: "z \<noteq> x"
+    using hpackage by (by100 blast)
+  have hfront_yxz:
+      "frontier \<theta> =
+        closed_segment y x \<union> (closed_segment y z \<union> closed_segment z x)"
+    using hpackage by (by100 blast)
+  have hlocal_package:
+      "y \<noteq> x
+      \<and> z \<noteq> x
+      \<and> \<not> collinear {y, x, z}
+      \<and> \<not> collinear {y, z, x}
+      \<and> frontier \<theta> =
+          closed_segment y x \<union>
+            (closed_segment y z \<union> closed_segment z x)
+      \<and> geotop_is_polygon (frontier \<theta>)
+      \<and> geotop_arc_endpoints (closed_segment y z) {y, z}
+      \<and> geotop_arc_endpoints
+          (closed_segment y x \<union> closed_segment z x) {y, z}
+      \<and> geotop_arc_interior (closed_segment y z) {y, z} \<inter>
+          geotop_arc_interior
+            (closed_segment y x \<union> closed_segment z x) {y, z} = {}"
+    by (rule hpackage)
+  have h\<theta>_simplex: "geotop_is_simplex \<theta>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<theta>2])
+  have h\<theta>_compact: "compact \<theta>"
+    by (rule GeoTopBase0.geotop_simplex_compact[OF h\<theta>_simplex])
+  have h\<theta>_closed: "closed \<theta>"
+    using h\<theta>_compact compact_imp_closed by (by100 blast)
+  have hfront_sub_\<theta>: "frontier \<theta> \<subseteq> \<theta>"
+    by (rule frontier_subset_closed[OF h\<theta>_closed])
+  have hvertices_sub: "{y, z, x} \<subseteq> \<theta>"
+  proof -
+    have hy_front: "y \<in> frontier \<theta>"
+      using hfront_yxz by (by100 simp)
+    have hz_front: "z \<in> frontier \<theta>"
+      using hfront_yxz by (by100 simp)
+    have hx_front: "x \<in> frontier \<theta>"
+      using hfront_yxz by (by100 simp)
+    show ?thesis
+      using hfront_sub_\<theta> hy_front hz_front hx_front by (by100 blast)
+  qed
+  have hfold:
+      "\<exists>f.
+        top1_homeomorphism_on UNIV geotop_euclidean_topology
+          UNIV geotop_euclidean_topology f
+        \<and> (\<forall>P\<in>UNIV - U. f P = P)
+        \<and> f ` (closed_segment y z) =
+          closed_segment y x \<union> closed_segment z x
+        \<and> f ` C\<^sub>O = C\<^sub>O"
+    by (rule geotop_figure33_case1_local_supported_fold_map_prefix
+        [OF hU_open hyz _ h\<theta>2 h\<theta>_sub_U hvertices_sub hlocal_package
+          hCO_bl hCO_E hCO_\<theta>])
+      (use hyx hzx in \<open>by (by100 blast)\<close>)
+  obtain f where hf_homeo:
+      "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology f"
+    and hf_fix: "\<forall>P\<in>UNIV - U. f P = P"
+    and hf_chord:
+      "f ` (closed_segment y z) =
+        closed_segment y x \<union> closed_segment z x"
+    and hf_CO: "f ` C\<^sub>O = C\<^sub>O"
+    using hfold by (elim exE conjE)
+  have hf_chord_target:
+      "f ` (closed_segment y z) =
+        closed_segment x y \<union> closed_segment x z"
+    using hf_chord closed_segment_commute[of y x]
+      closed_segment_commute[of z x] by (by100 simp)
+  show ?thesis
+    using hf_homeo hf_fix hf_chord_target hf_CO by (by100 blast)
+qed
 
 lemma geotop_polygon_disk_boundary_edge_unique_incident_2simplex_core_prefix:
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
