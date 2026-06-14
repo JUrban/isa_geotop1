@@ -944,6 +944,25 @@ proof -
       using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
     have hJ\<^sub>N_compact: "compact J\<^sub>N"
       by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
+    have hJ\<^sub>N_closed: "closed J\<^sub>N"
+      by (rule compact_imp_closed[OF hJ\<^sub>N_compact])
+    have hJ\<^sub>N_forbidden_setdist_pos:
+        "0 < setdist J\<^sub>N (A2 \<union> {Q, S})"
+    proof -
+      have hA2_closed: "closed A2"
+        using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
+      have hF_closed: "closed (A2 \<union> {Q, S})"
+        using hA2_closed by (by100 simp)
+      have hF_nonempty: "A2 \<union> {Q, S} \<noteq> {}"
+        by (by100 blast)
+      have hsd_iff:
+          "(0 < setdist J\<^sub>N (A2 \<union> {Q, S})) =
+            (J\<^sub>N \<noteq> {} \<and> A2 \<union> {Q, S} \<noteq> {} \<and>
+              J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {})"
+        by (rule setdist_gt_0_compact_closed[OF hJ\<^sub>N_compact hF_closed])
+      show ?thesis
+        using hsd_iff hJ\<^sub>N_nonempty hF_nonempty hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    qed
     define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
     have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
       unfolding K\<^sub>N_def
