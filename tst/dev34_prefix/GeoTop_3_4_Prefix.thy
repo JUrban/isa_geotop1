@@ -2194,6 +2194,127 @@ proof -
     show ?thesis
       by (rule finite_subset[OF hJ\<^sub>N_uncovered_sub_vertices hverts_fin])
   qed
+  have hJ\<^sub>N_carrier_vertex_edge_germ_point_in_BdJ\<^sub>N_poly:
+      "\<And>p e q. p \<in> J\<^sub>N \<Longrightarrow>
+        geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 0
+        \<Longrightarrow> e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> p \<in> e \<Longrightarrow>
+        q \<in> rel_interior e \<Longrightarrow> q \<in> J\<^sub>N
+        \<Longrightarrow> p \<in> geotop_polyhedron BdJ\<^sub>N"
+  proof -
+    fix p e q
+    assume hpJ: "p \<in> J\<^sub>N"
+      and hdim0: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 0"
+      and heK: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hp_e: "p \<in> e"
+      and hq_rel: "q \<in> rel_interior e"
+      and hqJ: "q \<in> J\<^sub>N"
+    have hpN: "p \<in> N"
+      using hpJ hJ\<^sub>N_sub_N by (by100 blast)
+    have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+      using hpN hK\<^sub>N_poly by (by100 simp)
+    have hcarrierK: "geotop_K_carrier K\<^sub>N p \<in> K\<^sub>N"
+      by (rule geotop_K_carrier_in[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+    have hcarrier_eq: "geotop_K_carrier K\<^sub>N p = {p}"
+      by (rule hJ\<^sub>N_carrier_dim0_singleton[OF hpJ hdim0])
+    have hpK: "{p} \<in> K\<^sub>N"
+      using hcarrierK hcarrier_eq by (by100 simp)
+    have hface_pe: "geotop_is_face {p} e"
+      by (rule geotop_1dim_vertex_in_simplex_is_face
+          [OF hK\<^sub>N_complex hpK heK hp_e])
+    have hge1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_face e \<sigma>} \<ge> 1"
+      by (rule hK\<^sub>N_edge_rel_interior_incident_count_ge1
+          [OF heK hedge hq_rel])
+    have heBdJ: "e \<in> BdJ\<^sub>N"
+      by (rule hK\<^sub>N_edge_J\<^sub>N_rel_interior_member_BdJ\<^sub>N
+          [OF heK hedge hge1 hq_rel hqJ])
+    have hpBdJ: "{p} \<in> BdJ\<^sub>N"
+      using hBdJ\<^sub>N_face_closed heBdJ hface_pe by (by100 blast)
+    show "p \<in> geotop_polyhedron BdJ\<^sub>N"
+      unfolding geotop_polyhedron_def using hpBdJ by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N"
+    unfolding geotop_polyhedron_def using hBdJ\<^sub>N_sub_BdK\<^sub>N by (by100 blast)
+  have hJ\<^sub>N_BdK\<^sub>N_poly_eq_BdJ\<^sub>N_poly:
+      "J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  proof
+    show "J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+    proof
+      fix x
+      assume hx: "x \<in> J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N"
+      obtain \<rho> where h\<rho>Bd: "\<rho> \<in> BdK\<^sub>N" and hx\<rho>: "x \<in> \<rho>"
+        using hx unfolding geotop_polyhedron_def by (by100 blast)
+      have hxJ: "x \<in> J\<^sub>N"
+        using hx by (by100 simp)
+      obtain n where hn_le: "n \<le> 1" and h\<rho>dim: "geotop_simplex_dim \<rho> n"
+        using hBdK\<^sub>N_1dim h\<rho>Bd
+        unfolding geotop_complex_is_1dim_def by (by100 blast)
+      have hcases: "n = 0 \<or> n = 1"
+        using hn_le by (by100 linarith)
+      show "x \<in> geotop_polyhedron BdJ\<^sub>N"
+      proof (rule disjE[OF hcases])
+        assume hn0: "n = 0"
+        have h\<rho>0: "geotop_simplex_dim \<rho> 0"
+          using h\<rho>dim hn0 by (by100 simp)
+        have h\<rho>eq: "\<rho> = {x}"
+          by (rule geotop_0simplex_contains_point_eq_singleton_prefix[OF h\<rho>0 hx\<rho>])
+        have h\<rho>J: "\<rho> \<subseteq> J\<^sub>N"
+          using h\<rho>eq hxJ by (by100 blast)
+        have h\<rho>BdJ: "\<rho> \<in> BdJ\<^sub>N"
+          unfolding BdJ\<^sub>N_def using h\<rho>Bd h\<rho>J by (by100 simp)
+        show "x \<in> geotop_polyhedron BdJ\<^sub>N"
+          unfolding geotop_polyhedron_def using h\<rho>BdJ hx\<rho> by (by100 blast)
+      next
+        assume hn1: "n = 1"
+        have h\<rho>edge: "geotop_is_edge \<rho>"
+          using h\<rho>dim hn1 unfolding geotop_is_edge_def by (by100 simp)
+        have h\<rho>meet: "\<rho> \<inter> J\<^sub>N \<noteq> {}"
+          using hx\<rho> hxJ by (by100 blast)
+        have h\<rho>BdJ: "\<rho> \<in> BdJ\<^sub>N"
+          by (rule hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N[OF h\<rho>Bd h\<rho>edge h\<rho>meet])
+        show "x \<in> geotop_polyhedron BdJ\<^sub>N"
+          unfolding geotop_polyhedron_def using h\<rho>BdJ hx\<rho> by (by100 blast)
+      qed
+    qed
+    show "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N"
+      using hBdJ\<^sub>N_poly_sub_J\<^sub>N hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly by (by100 blast)
+  qed
+  have hBdK\<^sub>N_poly_closedin_FrN\<^sub>I:
+      "closedin (top_of_set FrN\<^sub>I) (geotop_polyhedron BdK\<^sub>N)"
+  proof -
+    have hclosedin_int:
+        "closedin (top_of_set FrN\<^sub>I)
+          (FrN\<^sub>I \<inter> geotop_polyhedron BdK\<^sub>N)"
+      using hBdK\<^sub>N_poly_closed by (rule closedin_closed_Int)
+    have heq:
+        "FrN\<^sub>I \<inter> geotop_polyhedron BdK\<^sub>N =
+          geotop_polyhedron BdK\<^sub>N"
+      using hBdK\<^sub>N_poly_sub_FrN\<^sub>I by (by100 blast)
+    show ?thesis
+      using hclosedin_int heq by (by100 simp)
+  qed
+  have hJ\<^sub>N_BdK\<^sub>N_poly_closedin_J\<^sub>N:
+      "closedin (top_of_set J\<^sub>N) (J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N)"
+    using hBdK\<^sub>N_poly_closed by (rule closedin_closed_Int)
+  have hJ\<^sub>N_BdK\<^sub>N_poly_closed:
+      "closed (J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N)"
+    by (rule closed_Int[OF hJ\<^sub>N_closed hBdK\<^sub>N_poly_closed])
+  have hJ\<^sub>N_BdK\<^sub>N_poly_compact:
+      "compact (J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N)"
+  proof -
+    have hsub: "J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N \<subseteq> J\<^sub>N"
+      by (by100 blast)
+    show ?thesis
+      by (rule closed_subset_compact
+          [OF hJ\<^sub>N_compact hJ\<^sub>N_BdK\<^sub>N_poly_closed hsub])
+  qed
+  have hBdJ\<^sub>N_poly_closedin_J\<^sub>N:
+      "closedin (top_of_set J\<^sub>N) (geotop_polyhedron BdJ\<^sub>N)"
+    using hJ\<^sub>N_BdK\<^sub>N_poly_closedin_J\<^sub>N hJ\<^sub>N_BdK\<^sub>N_poly_eq_BdJ\<^sub>N_poly
+    by (by100 simp)
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
