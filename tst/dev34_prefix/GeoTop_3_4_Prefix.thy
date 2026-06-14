@@ -2155,6 +2155,19 @@ proof -
     have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
         "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
       unfolding BdJ\<^sub>N_def by (by100 simp)
+    have hBdJ\<^sub>N_edge_member_incident_count_one:
+        "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+            geotop_is_face e \<sigma>} = 1"
+    proof -
+      fix e
+      assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+      have heBdK: "e \<in> BdK\<^sub>N"
+        using heBdJ unfolding BdJ\<^sub>N_def by (by100 simp)
+      show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face e \<sigma>} = 1"
+        by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBdK hedge])
+    qed
     have hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N:
         "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<in> BdJ\<^sub>N"
