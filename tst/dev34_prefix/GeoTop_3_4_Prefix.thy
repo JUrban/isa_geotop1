@@ -1460,6 +1460,48 @@ proof -
       show "e \<subseteq> FrN\<^sub>I"
         using he_front hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
     qed
+    have hBdK\<^sub>N_edge_member_incident_count_one:
+        "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+          card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+    proof -
+      fix e
+      assume heBd: "e \<in> BdK\<^sub>N" and hedge: "geotop_is_edge e"
+      let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+          card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+            geotop_is_face \<tau> \<sigma>} = 1}"
+      have he_cases:
+          "e \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+        using heBd unfolding BdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+      show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      proof (rule UnE[OF he_cases])
+        assume heS: "e \<in> ?S"
+        show ?thesis
+          using heS by (by100 simp)
+      next
+        assume he_face_case: "e \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+        obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and he\<tau>: "geotop_is_face e \<tau>"
+          using he_face_case by (by100 blast)
+        have h\<tau>edge: "geotop_is_edge \<tau>"
+          using h\<tau>S unfolding geotop_is_edge_def by (by100 simp)
+        have he_eq: "e = \<tau>"
+          by (rule geotop_edge_face_of_edge_eq_prefix[OF hedge h\<tau>edge he\<tau>])
+        show ?thesis
+          using h\<tau>S he_eq by (by100 simp)
+      qed
+    qed
+    have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
+        "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+    proof -
+      fix e
+      assume heBd: "e \<in> BdK\<^sub>N" and hedge: "geotop_is_edge e"
+      have heK: "e \<in> K\<^sub>N"
+        using hBdK\<^sub>N_sub_K\<^sub>N heBd by (by100 blast)
+      have hcount:
+          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+        by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBd hedge])
+      show "e \<subseteq> FrN\<^sub>I"
+        by (rule hBdK\<^sub>N_one_incident_edge_subset_FrN\<^sub>I[OF heK hedge hcount])
+    qed
     have hBdK\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
     proof
       fix x
