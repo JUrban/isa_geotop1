@@ -1349,6 +1349,38 @@ proof -
           using hx\<rho> h\<rho>sub\<tau> h\<tau>Fr by (by100 blast)
       qed
     qed
+    have hBdK\<^sub>N_poly_closedin_FrN\<^sub>I:
+        "closedin (top_of_set FrN\<^sub>I) (geotop_polyhedron BdK\<^sub>N)"
+    proof -
+      have hclosedin_int:
+          "closedin (top_of_set FrN\<^sub>I)
+            (FrN\<^sub>I \<inter> geotop_polyhedron BdK\<^sub>N)"
+        using hBdK\<^sub>N_poly_closed by (rule closedin_closed_Int)
+      have heq:
+          "FrN\<^sub>I \<inter> geotop_polyhedron BdK\<^sub>N =
+            geotop_polyhedron BdK\<^sub>N"
+        using hBdK\<^sub>N_poly_sub_FrN\<^sub>I by (by100 blast)
+      show ?thesis
+        using hclosedin_int heq by (by100 simp)
+    qed
+    have hBdK\<^sub>N_poly_compact_in_FrN\<^sub>I:
+        "compact (geotop_polyhedron BdK\<^sub>N)"
+      using hBdK\<^sub>N_poly_compact .
+    have hJ\<^sub>N_BdK\<^sub>N_poly_closedin_J\<^sub>N:
+        "closedin (top_of_set J\<^sub>N) (J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N)"
+      using hBdK\<^sub>N_poly_closed by (rule closedin_closed_Int)
+    have hJ\<^sub>N_BdK\<^sub>N_poly_closed:
+        "closed (J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N)"
+      by (rule closed_Int[OF hJ\<^sub>N_closed hBdK\<^sub>N_poly_closed])
+    have hJ\<^sub>N_BdK\<^sub>N_poly_compact:
+        "compact (J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N)"
+    proof -
+      have hsub: "J\<^sub>N \<inter> geotop_polyhedron BdK\<^sub>N \<subseteq> J\<^sub>N"
+        by (by100 blast)
+      show ?thesis
+        by (rule closed_subset_compact
+            [OF hJ\<^sub>N_compact hJ\<^sub>N_BdK\<^sub>N_poly_closed hsub])
+    qed
     have hBdK\<^sub>N_poly_A2_QS_disj:
         "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
       using hBdK\<^sub>N_poly_sub_N hN_A2_QS by (by100 blast)
