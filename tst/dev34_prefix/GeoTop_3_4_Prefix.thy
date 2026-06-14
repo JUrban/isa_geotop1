@@ -7105,6 +7105,31 @@ proof -
         using hZ_sub hZ_conn hZ_CQ hZ_Sball by (intro exI conjI)
     qed
   qed
+  have hD44_moise_complementary_frontier_arc_access_ball_crossings:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>X C\<^sub>F Z. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_is_broken_line C\<^sub>F
+          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+          \<and> P \<in> C\<^sub>F
+          \<and> X \<in> C\<^sub>F
+          \<and> C\<^sub>F \<subseteq> J\<^sub>N
+          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C\<^sub>F \<inter> ?Ncut = {}
+          \<and> Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Final literal Moise corridor construction.  The complementary frontier
+      arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close> arc after removing the boundary component
+      through \<open>P\<close>; for arbitrary lower and upper access collars, choose the
+      adjacent outside component of \<open>I - (N \<union> A2)\<close> along the lower-to-upper
+      subarc of \<open>C\<^sub>F\<close>.  That adjacent component is the connected set \<open>Z\<close>
+      meeting both collars. **)
+    sorry
   have hD44_central_same_component_in_Ncut_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -7136,13 +7161,98 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        (**
-          Final literal Moise corridor construction.  For arbitrary lower and
-          upper access collars, use the frontier component through \<open>P\<close>, the
-          boundary subarc on \<open>J\<close>, and the complementary frontier arc to choose
-          the adjacent outside component in \<open>I - (N \<union> A2)\<close> meeting both
-          collars. **)
-        sorry
+      proof (intro allI impI)
+        fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+        assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+        assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+        have hQ_imp:
+          "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0.
+            \<exists>X C\<^sub>F Z. X \<in> ?B1P
+              \<and> X \<noteq> P
+              \<and> geotop_is_broken_line C\<^sub>F
+              \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+              \<and> P \<in> C\<^sub>F
+              \<and> X \<in> C\<^sub>F
+              \<and> C\<^sub>F \<subseteq> J\<^sub>N
+              \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+              \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+              \<and> C\<^sub>F \<inter> ?Ncut = {}
+              \<and> Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+          by (rule spec[OF hD44_moise_complementary_frontier_arc_access_ball_crossings])
+        have hQ_spec:
+          "\<forall>\<epsilon>\<^sub>S>0.
+            \<exists>X C\<^sub>F Z. X \<in> ?B1P
+              \<and> X \<noteq> P
+              \<and> geotop_is_broken_line C\<^sub>F
+              \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+              \<and> P \<in> C\<^sub>F
+              \<and> X \<in> C\<^sub>F
+              \<and> C\<^sub>F \<subseteq> J\<^sub>N
+              \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+              \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+              \<and> C\<^sub>F \<inter> ?Ncut = {}
+              \<and> Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+        have hS_imp:
+          "0 < \<epsilon>\<^sub>S \<longrightarrow>
+            (\<exists>X C\<^sub>F Z. X \<in> ?B1P
+              \<and> X \<noteq> P
+              \<and> geotop_is_broken_line C\<^sub>F
+              \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+              \<and> P \<in> C\<^sub>F
+              \<and> X \<in> C\<^sub>F
+              \<and> C\<^sub>F \<subseteq> J\<^sub>N
+              \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+              \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+              \<and> C\<^sub>F \<inter> ?Ncut = {}
+              \<and> Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+          by (rule spec[OF hQ_spec])
+        obtain X C\<^sub>F Z where hbook:
+            "X \<in> ?B1P
+              \<and> X \<noteq> P
+              \<and> geotop_is_broken_line C\<^sub>F
+              \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+              \<and> P \<in> C\<^sub>F
+              \<and> X \<in> C\<^sub>F
+              \<and> C\<^sub>F \<subseteq> J\<^sub>N
+              \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+              \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+              \<and> C\<^sub>F \<inter> ?Ncut = {}
+              \<and> Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using mp[OF hS_imp h\<epsilon>\<^sub>S_pos] by (elim exE)
+        have hZ_sub: "Z \<subseteq> ?Ncut"
+          using hbook by blast
+        have hZ_conn:
+            "top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)"
+          using hbook by blast
+        have hZ_Q: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+          using hbook by blast
+        have hZ_S: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using hbook by blast
+        show "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using hZ_sub hZ_conn hZ_Q hZ_S by (intro exI conjI)
+      qed
     qed
   qed
   have hD44_frontier_component_route:
