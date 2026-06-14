@@ -1975,6 +1975,64 @@ proof -
     show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
       by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBdK hedge])
   qed
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<in> BdJ\<^sub>N"
+    unfolding BdJ\<^sub>N_def
+    using hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N by (by100 blast)
+  have hK\<^sub>N_edge_J\<^sub>N_rel_interior_member_BdJ\<^sub>N:
+      "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
+        \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> J\<^sub>N \<Longrightarrow> e \<in> BdJ\<^sub>N"
+  proof -
+    fix e p
+    assume heK: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hge1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
+      and hp_rel: "p \<in> rel_interior e"
+      and hpJ: "p \<in> J\<^sub>N"
+    have hp_Fr: "p \<in> FrN\<^sub>I"
+      using hpJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    have heBd: "e \<in> BdK\<^sub>N"
+      by (rule hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N
+          [OF heK hedge hge1 hp_rel hp_Fr])
+    have hp_e: "p \<in> e"
+      using hp_rel rel_interior_subset by (by100 blast)
+    have hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+      using hp_e hpJ by (by100 blast)
+    show "e \<in> BdJ\<^sub>N"
+      by (rule hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N[OF heBd hedge hmeet])
+  qed
+  have hJ\<^sub>N_carrier_edge_member_BdJ\<^sub>N:
+      "\<And>p. p \<in> J\<^sub>N \<Longrightarrow>
+        geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 1
+        \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_face (geotop_K_carrier K\<^sub>N p) \<sigma>} \<ge> 1
+        \<Longrightarrow> geotop_K_carrier K\<^sub>N p \<in> BdJ\<^sub>N"
+  proof -
+    fix p
+    assume hpJ: "p \<in> J\<^sub>N"
+      and hdim1: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N p) 1"
+      and hge1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_face (geotop_K_carrier K\<^sub>N p) \<sigma>} \<ge> 1"
+    have hpN: "p \<in> N"
+      using hpJ hJ\<^sub>N_sub_N by (by100 blast)
+    have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+      using hpN hK\<^sub>N_poly by (by100 simp)
+    have hcarrierK: "geotop_K_carrier K\<^sub>N p \<in> K\<^sub>N"
+      by (rule geotop_K_carrier_in[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+    have hp_rel:
+        "p \<in> rel_interior (geotop_K_carrier K\<^sub>N p)"
+      by (rule geotop_K_carrier_rel_interior[OF hK\<^sub>N_complex hK\<^sub>N_fin hp_poly])
+    have hedge: "geotop_is_edge (geotop_K_carrier K\<^sub>N p)"
+      using hdim1 unfolding geotop_is_edge_def by (by100 simp)
+    show "geotop_K_carrier K\<^sub>N p \<in> BdJ\<^sub>N"
+      by (rule hK\<^sub>N_edge_J\<^sub>N_rel_interior_member_BdJ\<^sub>N
+          [OF hcarrierK hedge hge1 hp_rel hpJ])
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
