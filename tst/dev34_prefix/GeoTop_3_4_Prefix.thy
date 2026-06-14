@@ -1076,11 +1076,64 @@ proof -
         the outside witnesses \<open>Q'\<close> and \<open>S'\<close> lie in one component of
         \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
     proof -
+      obtain Q1 B\<^sub>Q where hQ1_U\<^sub>Q: "Q1 \<in> U\<^sub>Q"
+        and hQ1_ball: "Q1 \<in> ball Q r"
+        and hB\<^sub>Q_bl: "geotop_is_broken_line B\<^sub>Q"
+        and hB\<^sub>Q_U\<^sub>Q: "B\<^sub>Q \<subseteq> U\<^sub>Q"
+        and hQ1_B\<^sub>Q: "Q1 \<in> B\<^sub>Q"
+        and hQ'_B\<^sub>Q: "Q' \<in> B\<^sub>Q"
+        using geotop_connected_open_frontier_near_broken_access_prefix
+            [OF hU\<^sub>Q_conn hU\<^sub>Q_open hQ_front hQ'_U\<^sub>Q hr_pos]
+        by (elim exE conjE)
+      obtain S1 B\<^sub>S where hS1_U\<^sub>S: "S1 \<in> U\<^sub>S"
+        and hS1_ball: "S1 \<in> ball S r"
+        and hB\<^sub>S_bl: "geotop_is_broken_line B\<^sub>S"
+        and hB\<^sub>S_U\<^sub>S: "B\<^sub>S \<subseteq> U\<^sub>S"
+        and hS1_B\<^sub>S: "S1 \<in> B\<^sub>S"
+        and hS'_B\<^sub>S: "S' \<in> B\<^sub>S"
+        using geotop_connected_open_frontier_near_broken_access_prefix
+            [OF hU\<^sub>S_conn hU\<^sub>S_open hS_front hS'_U\<^sub>S hr_pos]
+        by (elim exE conjE)
+      have hB\<^sub>Q_Ncut: "B\<^sub>Q \<subseteq> ?Ncut"
+        using hB\<^sub>Q_U\<^sub>Q hU\<^sub>Q_sub_Ncut by (by100 blast)
+      have hB\<^sub>S_Ncut: "B\<^sub>S \<subseteq> ?Ncut"
+        using hB\<^sub>S_U\<^sub>S hU\<^sub>S_sub_Ncut by (by100 blast)
+      obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+        and hB\<^sub>0_Ncut: "B\<^sub>0 \<subseteq> ?Ncut"
+        and hQ1_B\<^sub>0: "Q1 \<in> B\<^sub>0"
+        and hS1_B\<^sub>0: "S1 \<in> B\<^sub>0"
+        (**
+          Central Moise D44 regular-neighborhood chord: after analyzing the
+          frontier component of the fine carrier \<open>N\<close>, choose the broken-line
+          subarc in the outside-carrier complement joining the two access
+          endpoints near \<open>Q\<close> and \<open>S\<close>. **)
+        sorry
+      obtain B\<^sub>m where hB\<^sub>m_bl: "geotop_is_broken_line B\<^sub>m"
+        and hB\<^sub>m_sub: "B\<^sub>m \<subseteq> B\<^sub>Q \<union> B\<^sub>0"
+        and hQ'_B\<^sub>m: "Q' \<in> B\<^sub>m"
+        and hS1_B\<^sub>m: "S1 \<in> B\<^sub>m"
+        using geotop_broken_line_arc_reduction
+            [OF hB\<^sub>Q_bl hB\<^sub>0_bl hQ'_B\<^sub>Q hQ1_B\<^sub>Q hQ1_B\<^sub>0 hS1_B\<^sub>0]
+        by (elim exE conjE)
       obtain B where hB_bl: "geotop_is_broken_line B"
         and hB_Ncut: "B \<subseteq> ?Ncut"
         and hQ'_B: "Q' \<in> B"
         and hS'_B: "S' \<in> B"
-        sorry
+      proof -
+        obtain B where hB_bl: "geotop_is_broken_line B"
+          and hB_sub: "B \<subseteq> B\<^sub>m \<union> B\<^sub>S"
+          and hQ'_B: "Q' \<in> B"
+          and hS'_B: "S' \<in> B"
+          using geotop_broken_line_arc_reduction
+              [OF hB\<^sub>m_bl hB\<^sub>S_bl hQ'_B\<^sub>m hS1_B\<^sub>m hS1_B\<^sub>S hS'_B\<^sub>S]
+          by (elim exE conjE)
+        have hB\<^sub>m_Ncut: "B\<^sub>m \<subseteq> ?Ncut"
+          using hB\<^sub>m_sub hB\<^sub>Q_Ncut hB\<^sub>0_Ncut by (by100 blast)
+        have hB_Ncut: "B \<subseteq> ?Ncut"
+          using hB_sub hB\<^sub>m_Ncut hB\<^sub>S_Ncut by (by100 blast)
+        show ?thesis
+          using hB_bl hB_Ncut hQ'_B hS'_B by (rule that)
+      qed
       show ?thesis
         by (rule hD44_broken_line_in_Ncut_suffices
             [OF hB_bl hB_Ncut hQ'_B hS'_B])
