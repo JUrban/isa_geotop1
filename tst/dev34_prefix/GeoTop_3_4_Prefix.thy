@@ -4392,36 +4392,24 @@ proof -
         (**
           Moise's regular-neighborhood boundary assertion for the chosen fine
           carrier: the frontier component through \<open>P\<close> is a polygonal
-          1-sphere.  In the current formal package this should be discharged
-          by proving the finite boundary graph \<open>BdJ\<^sub>N\<close> has degree two at
-          every vertex, or equivalently by activating the existing
-          card-bound/no-endpoint wrappers above. **)
+          1-sphere.  The local degree-two formulation above remains useful
+          for the eventual proof, but the book step itself is the simple
+          closed-curve assertion for this frontier component. **)
       proof -
-        have hD44_BdJ\<^sub>N_vertex_degree_le2_book_step:
-            "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+        have hD44_BdJ\<^sub>N_simple_closed_curve_book_step:
+            "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+              (geotop_polyhedron BdJ\<^sub>N)"
           (**
-            Local regular-neighborhood boundary fact: at a vertex of the
-            frontier component \<open>BdJ\<^sub>N\<close>, at most two boundary edges can remain
-            in that same frontier component.  This should be proved from the
-            finite carrier/star structure and the already available
-            no-three-2-simplexes-share-edge and local linear-graph facts,
-            not as a general graph theorem. **)
-          sorry
-        have hD44_BdJ\<^sub>N_vertex_degree_ge2_book_step:
-            "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-          (**
-            No-endpoint side of Moise's regular-neighborhood boundary fact:
-            the frontier component through \<open>P\<close> is a closed boundary curve,
-            so no vertex of \<open>BdJ\<^sub>N\<close> can be a terminal graph endpoint.  This is
-            the D44-specific place where the 2-manifold-with-boundary / fine
-            carrier neighborhood argument has to enter. **)
+            Regular-neighborhood 1-sphere package: for the fine carrier
+            neighborhood of the arc \<open>A1\<close>, the component of the frontier of
+            \<open>N \<inter> cl I\<close> through the boundary point \<open>P\<close> is a simple closed
+            curve.  Internally this is expected to use the same finite-star
+            facts as the former degree-bound subgoals: no boundary branching
+            and no terminal endpoint in the frontier component. **)
           sorry
         show ?thesis
-          by (rule hBdJ\<^sub>N_polygon_from_card_bounds
-              [OF hD44_BdJ\<^sub>N_vertex_degree_le2_book_step
-                hD44_BdJ\<^sub>N_vertex_degree_ge2_book_step])
+          by (rule hBdJ\<^sub>N_polygon_from_simple_closed_curve
+              [OF hD44_BdJ\<^sub>N_simple_closed_curve_book_step])
       qed
       note hD44_BdJ\<^sub>N_split_ready =
         hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint
