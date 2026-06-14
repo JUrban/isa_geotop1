@@ -899,6 +899,58 @@ lemma geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix:
   using hcyc hP_F\<^sub>1 hsplit hF\<^sub>1E hF\<^sub>2E hdisj
   by (by100 blast)
 
+lemma geotop_polygon_two_endpoint_arcs_fine_carrier_broken_line_access_crossings_prefix:
+  fixes J A1 A2 N :: "(real^2) set"
+    and K :: "(real^2) set set"
+    and P Q R S Q1 S1 :: "real^2"
+    and m :: nat
+    and r :: real
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  assumes hA1_sub:
+    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA2_sub:
+    "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hA1_N: "A1 \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hr: "0 < r"
+  assumes hball_Q_N: "ball Q r \<inter> N = {}"
+  assumes hball_S_N: "ball S r \<inter> N = {}"
+  assumes hQ1_ball: "Q1 \<in> ball Q r"
+  assumes hS1_ball: "S1 \<in> ball S r"
+  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  shows
+    "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+      \<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> geotop_polygon_interior J - (N \<union> A2)
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  (**
+    Named Moise 4.4 regular-neighborhood construction.  This is the remaining
+    book step in its most literal useful form: choose the fine carrier of
+    \<open>A1\<close>, restrict it to the closed polygonal disk, analyze the frontier
+    component through \<open>P\<close> as a polygonal 1-sphere, split it into the boundary
+    arc and complementary frontier arc, choose the lower-to-upper broken-line
+    subarc, and show that the adjacent outside side supplies broken-line
+    crossings of every prescribed pair of access collars around \<open>Q1\<close> and
+    \<open>S1\<close>. **)
+  sorry
+
 lemma geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_prefix:
   fixes J A1 A2 N :: "(real^2) set"
     and K :: "(real^2) set set"
@@ -7495,7 +7547,10 @@ proof -
               frontier arc, chooses the lower-to-upper subarc \<open>B\<close>, and shows
               that this subarc lies in \<open>I - (N \<union> A2)\<close> while meeting every
               prescribed pair of access collars around \<open>Q1\<close> and \<open>S1\<close>. **)
-            sorry
+            by (rule geotop_polygon_two_endpoint_arcs_fine_carrier_broken_line_access_crossings_prefix
+                [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
+                  hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
+                  hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut])
           have hQ_spec:
               "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
                 \<and> B \<subseteq> ?Ncut
