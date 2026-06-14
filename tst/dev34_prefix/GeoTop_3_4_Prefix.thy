@@ -7105,17 +7105,79 @@ proof -
         using hZ_sub hZ_conn hZ_CQ hZ_Sball by (intro exI conjI)
     qed
   qed
+  have hD44_arbitrary_access_ball_crossings_give_S1_ball_witnesses:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> (\<forall>\<epsilon>>0. \<exists>Y.
+          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>)"
+    (**
+      Bookkeeping reduction for the last D44 step.  Once Moise's
+      lower-to-upper frontier corridor supplies connected crossings between
+      arbitrary access collars, the already-proved component-splitting bridge
+      puts \<open>S1\<close> itself in the \<open>Q1\<close> component; this immediately yields the
+      upper-collar point witnesses. **)
+  proof -
+    assume hall:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    have hcollar:
+        "\<forall>\<epsilon>>0. \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter>
+              geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+              \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon> \<noteq> {}"
+      by (rule hD44_arbitrary_access_ball_crossings_give_S1_collar_crossings
+          [OF hall])
+    have hS1_comp:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      by (rule hD44_connected_S1_collar_crossings_suffice[OF hcollar])
+    show "\<forall>\<epsilon>>0. \<exists>Y.
+        Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<and> Y \<in> ball S1 \<epsilon>"
+    proof (intro allI impI)
+      fix \<epsilon> :: real
+      assume h\<epsilon>_pos: "0 < \<epsilon>"
+      have hS1_ball: "S1 \<in> ball S1 \<epsilon>"
+        using h\<epsilon>_pos by (by100 simp)
+      show "\<exists>Y.
+          Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<and> Y \<in> ball S1 \<epsilon>"
+        using hS1_comp hS1_ball by (intro exI[where x=S1] conjI)
+    qed
+  qed
+  have hD44_moise_arbitrary_access_ball_crossings:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    (**
+      Final literal Moise corridor construction.  The complementary frontier
+      arc \<open>C\<^sub>F\<close> is the book's \<open>B\<^sub>2\<close> arc after removing the boundary component
+      through \<open>P\<close>; the adjacent outside component of
+      \<open>I - (N \<union> A2)\<close> supplies a connected lower-to-upper crossing for every
+      prescribed pair of access collars. **)
+    sorry
   have hD44_moise_Q1_component_has_S1_ball_witnesses:
       "\<forall>\<epsilon>>0. \<exists>Y.
           Y \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
           \<and> Y \<in> ball S1 \<epsilon>"
     (**
-      Literal upper-collar form of Moise's final regular-neighborhood step:
-      after the frontier component through \<open>P\<close> is split into the boundary
-      subarc and the complementary frontier arc, the outside component already
-      reached from \<open>Q1\<close> has points in every upper access collar around
-      \<open>S1\<close>. **)
-    sorry
+      Consequence of the literal connected-corridor crossing form. **)
+    by (rule hD44_arbitrary_access_ball_crossings_give_S1_ball_witnesses
+        [OF hD44_moise_arbitrary_access_ball_crossings])
   have hD44_moise_Q1_component_accumulates_at_S1:
       "S1 \<in> closure
         (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
