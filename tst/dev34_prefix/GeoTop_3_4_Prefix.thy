@@ -4444,6 +4444,23 @@ proof -
           "geotop_arc_interior C\<^sub>B {P, X} \<inter>
               geotop_arc_interior C\<^sub>O {P, X} = {}"
         using hD44_BdJ\<^sub>N_split_ready by (elim exE conjE)
+      have hD44_C\<^sub>O_sub_BdJ_poly:
+          "C\<^sub>O \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+        using hD44_BdJ_split by (by100 blast)
+      have hD44_C\<^sub>O_sub_J\<^sub>N: "C\<^sub>O \<subseteq> J\<^sub>N"
+        using hD44_C\<^sub>O_sub_BdJ_poly hBdJ\<^sub>N_poly_sub_J\<^sub>N
+        by (by100 blast)
+      have hD44_C\<^sub>O_sub_FrN\<^sub>I: "C\<^sub>O \<subseteq> FrN\<^sub>I"
+        using hD44_C\<^sub>O_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+      have hD44_C\<^sub>O_sub_N: "C\<^sub>O \<subseteq> N"
+        using hD44_C\<^sub>O_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+      have hD44_C\<^sub>O_A2_QS_disj: "C\<^sub>O \<inter> (A2 \<union> {Q, S}) = {}"
+        using hD44_C\<^sub>O_sub_BdJ_poly hBdJ\<^sub>N_poly_A2_QS_disj
+        by (by100 blast)
+      have hD44_C\<^sub>O_connected:
+          "top1_connected_on C\<^sub>O
+            (subspace_topology UNIV geotop_euclidean_topology C\<^sub>O)"
+        by (rule geotop_broken_line_connected_on_prefix[OF hD44_C\<^sub>O_bl])
       have hD44_complementary_frontier_arc_access_connected_witness:
           "\<exists>W. W \<subseteq> ?Ncut
             \<and> Q1 \<in> W
