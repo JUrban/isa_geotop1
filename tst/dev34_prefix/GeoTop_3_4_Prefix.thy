@@ -790,6 +790,37 @@ proof -
     using hC_sub hC_conn hX_cl hY_cl by (intro exI conjI)
 qed
 
+lemma geotop_component_at_closure_gives_component_closure_pair_prefix:
+  fixes U :: "(real^2) set" and X Y :: "real^2"
+  assumes hXU: "X \<in> U"
+  assumes hY_cl:
+    "Y \<in> closure
+      (geotop_component_at UNIV geotop_euclidean_topology U X)"
+  shows "\<exists>C. C \<in> components U
+      \<and> X \<in> closure C
+      \<and> Y \<in> closure C"
+  (**
+    Fixed-component version of the D44 component-frontier bookkeeping.  Once
+    the adjacent outside component is identified as the component at the lower
+    access point, ordinary closure at the upper access point gives Moise's
+    "same component frontier" form. **)
+proof -
+  let ?C = "connected_component_set U X"
+  have hC_comp: "?C \<in> components U"
+    by (rule componentsI[OF hXU])
+  have hcomponent_eq:
+      "geotop_component_at UNIV geotop_euclidean_topology U X = ?C"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hX_C: "X \<in> ?C"
+    using hXU connected_component_refl by (by100 simp)
+  have hX_cl: "X \<in> closure ?C"
+    using hX_C closure_subset by (by100 blast)
+  have hY_cl_C: "Y \<in> closure ?C"
+    using hY_cl hcomponent_eq by (by100 simp)
+  show ?thesis
+    using hC_comp hX_cl hY_cl_C by (intro exI conjI)
+qed
+
 lemma geotop_same_component_local_access_frontier_transfer_prefix:
   fixes U U\<^sub>Q U\<^sub>S :: "(real^2) set" and Q S Q' S' :: "real^2"
   assumes hUQ_conn: "connected U\<^sub>Q"
@@ -7422,7 +7453,20 @@ proof -
         the outside component adjacent to the complementary frontier subarc;
         the lower and upper access points lie in the frontier, hence in the
         closure, of that one component. **)
-      sorry
+    proof -
+      have hD44_moise_Q1_component_accumulates_at_S1_book_step:
+          "S1 \<in> closure
+            (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
+        (**
+          Literal adjacent-component form of Moise 4.4.  The component of
+          \<open>I - (N \<union> A2)\<close> lying next to the complementary frontier subarc is
+          the lower access component; the upper access point is in its
+          ordinary closure. **)
+        sorry
+      show ?thesis
+        by (rule geotop_component_at_closure_gives_component_closure_pair_prefix
+            [OF hQ1_Ncut hD44_moise_Q1_component_accumulates_at_S1_book_step])
+    qed
     obtain C where hC_comp: "C \<in> components ?Ncut"
       and hQ1_cl: "Q1 \<in> closure C"
       and hS1_cl: "S1 \<in> closure C"
