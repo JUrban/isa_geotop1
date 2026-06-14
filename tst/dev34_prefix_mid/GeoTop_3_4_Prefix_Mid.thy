@@ -38386,6 +38386,86 @@ proof -
     using hsource_poly htarget_poly hsource_union htarget_union by (by100 simp)
 qed
 
+lemma geotop_figure33_source_carrier_outer_union_scalar_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 v\<^sub>5 :: "real^2"
+  assumes hv\<^sub>1v\<^sub>5: "v\<^sub>1 \<noteq> v\<^sub>5"
+  assumes ht: "0 < t"
+  shows
+    "geotop_polyhedron
+      {\<tau>. \<exists>\<sigma>\<in>{
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1), v\<^sub>5},
+        geotop_convex_hull
+          {v\<^sub>0, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)},
+        geotop_convex_hull
+          {v\<^sub>2, v\<^sub>5, v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}}.
+        \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}
+    = geotop_convex_hull
+        {v\<^sub>0, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1),
+          v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}
+      \<union> geotop_convex_hull
+        {v\<^sub>2, v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1),
+          v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)}"
+  (**
+    Figure 3.3 source carrier outer-union form: the source carrier is the
+    union of the two outer triangles after the midpoint split along the
+    moving base segment is forgotten. **)
+proof -
+  let ?v\<^sub>3 = "v\<^sub>1 + t *\<^sub>R (v\<^sub>1 - v\<^sub>5)"
+  let ?v\<^sub>4 = "v\<^sub>5 + t *\<^sub>R (v\<^sub>5 - v\<^sub>1)"
+  let ?source_triangles =
+    "{geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, v\<^sub>5},
+      geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, v\<^sub>5},
+      geotop_convex_hull {v\<^sub>0, v\<^sub>5, ?v\<^sub>3},
+      geotop_convex_hull {v\<^sub>2, v\<^sub>5, ?v\<^sub>3}}"
+  let ?source_carrier =
+    "{\<tau>. \<exists>\<sigma>\<in>?source_triangles. \<tau> = \<sigma> \<or> geotop_is_face \<tau> \<sigma>}"
+  have hbasic:
+      "collinear {v\<^sub>1, ?v\<^sub>3, ?v\<^sub>4, v\<^sub>5}
+      \<and> ?v\<^sub>4 \<noteq> v\<^sub>5
+      \<and> v\<^sub>5 \<noteq> ?v\<^sub>3
+      \<and> ?v\<^sub>4 \<noteq> v\<^sub>1
+      \<and> v\<^sub>1 \<noteq> ?v\<^sub>3
+      \<and> ?v\<^sub>3 \<noteq> ?v\<^sub>4
+      \<and> v\<^sub>1 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4
+      \<and> v\<^sub>5 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4"
+    by (rule geotop_figure33_line_scalar_basic_prefix[OF hv\<^sub>1v\<^sub>5 ht])
+  have hv\<^sub>5_closed43: "v\<^sub>5 \<in> closed_segment ?v\<^sub>4 ?v\<^sub>3"
+  proof -
+    have hopen34: "v\<^sub>5 \<in> open_segment ?v\<^sub>3 ?v\<^sub>4"
+      using hbasic by (by100 blast)
+    have hcomm: "open_segment ?v\<^sub>3 ?v\<^sub>4 = open_segment ?v\<^sub>4 ?v\<^sub>3"
+      by (rule open_segment_commute)
+    have "v\<^sub>5 \<in> open_segment ?v\<^sub>4 ?v\<^sub>3"
+      using hopen34 hcomm by (by100 simp)
+    thus ?thesis
+      unfolding open_segment_def by (by100 blast)
+  qed
+  have hsource_poly: "geotop_polyhedron ?source_carrier = \<Union>?source_triangles"
+    by (rule geotop_simplex_face_closure_polyhedron_eq_union_prefix)
+  have hsource0:
+      "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, v\<^sub>5}
+        \<union> geotop_convex_hull {v\<^sub>0, v\<^sub>5, ?v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, ?v\<^sub>3}"
+    by (rule geotop_triangle_same_apex_base_split_union_prefix
+        [OF hv\<^sub>5_closed43])
+  have hsource2:
+      "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, v\<^sub>5}
+        \<union> geotop_convex_hull {v\<^sub>2, v\<^sub>5, ?v\<^sub>3}
+      = geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, ?v\<^sub>3}"
+    by (rule geotop_triangle_same_apex_base_split_union_prefix
+        [OF hv\<^sub>5_closed43])
+  have hsource_union:
+      "\<Union>?source_triangles
+      = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4, ?v\<^sub>3}
+        \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4, ?v\<^sub>3}"
+    using hsource0 hsource2 by (by100 auto)
+  show ?thesis
+    using hsource_poly hsource_union by (by100 simp)
+qed
+
 lemma geotop_not_collinear_off_affine_hull_pair_prefix:
   fixes p x y :: "real^2"
   assumes hxy: "x \<noteq> y"
@@ -41513,58 +41593,12 @@ proof -
 		          proof -
 		            fix t :: real
 		            assume ht: "0 < t"
-		            have hbasic:
-		                "collinear {v\<^sub>1, ?v\<^sub>3_of t, ?v\<^sub>4_of t, ?v\<^sub>5}
-		                \<and> ?v\<^sub>4_of t \<noteq> ?v\<^sub>5
-		                \<and> ?v\<^sub>5 \<noteq> ?v\<^sub>3_of t
-		                \<and> ?v\<^sub>4_of t \<noteq> v\<^sub>1
-		                \<and> v\<^sub>1 \<noteq> ?v\<^sub>3_of t
-		                \<and> ?v\<^sub>3_of t \<noteq> ?v\<^sub>4_of t
-		                \<and> v\<^sub>1 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
-		                \<and> ?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-		              by (rule hfigure33_book_line_scalar_basic[OF ht])
-		            have hv\<^sub>5_closed43:
-		                "?v\<^sub>5 \<in> closed_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		            proof -
-		              have hopen34:
-		                  "?v\<^sub>5 \<in> open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)"
-		                using hbasic by (by100 blast)
-		              have hcomm:
-		                  "open_segment (?v\<^sub>3_of t) (?v\<^sub>4_of t)
-		                    = open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		                by (rule open_segment_commute)
-		              have "?v\<^sub>5 \<in> open_segment (?v\<^sub>4_of t) (?v\<^sub>3_of t)"
-		                using hopen34 hcomm by (by100 simp)
-		              thus ?thesis
-		                unfolding open_segment_def by (by100 blast)
-		            qed
-		            have hsource_poly:
-		                "geotop_polyhedron
-		                  (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
-		                = \<Union>(?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)"
-		              by (rule geotop_simplex_face_closure_polyhedron_eq_union_prefix)
-		            have hsource0:
-		                "geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>5}
-		                  \<union> geotop_convex_hull {v\<^sub>0, ?v\<^sub>5, ?v\<^sub>3_of t}
-		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              by (rule geotop_triangle_same_apex_base_split_union_prefix
-		                  [OF hv\<^sub>5_closed43])
-		            have hsource2:
-		                "geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>5}
-		                  \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>5, ?v\<^sub>3_of t}
-		                = geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              by (rule geotop_triangle_same_apex_base_split_union_prefix
-		                  [OF hv\<^sub>5_closed43])
-		            have hsource_union:
-		                "\<Union>(?source_triangles (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
-		                = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
-		                  \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              using hsource0 hsource2 by (by100 auto)
 		            show "geotop_polyhedron
 		                    (?source_carrier (?v\<^sub>3_of t) (?v\<^sub>4_of t) ?v\<^sub>5)
 		                  = geotop_convex_hull {v\<^sub>0, ?v\<^sub>4_of t, ?v\<^sub>3_of t}
 		                    \<union> geotop_convex_hull {v\<^sub>2, ?v\<^sub>4_of t, ?v\<^sub>3_of t}"
-		              using hsource_poly hsource_union by (by100 simp)
+		              by (rule geotop_figure33_source_carrier_outer_union_scalar_prefix
+		                  [OF hv\<^sub>1_mid_ne ht])
 		          qed
 		          have hfigure33_source_carrier_near_theta_scalar:
 		              "\<And>t x. 0 < t \<Longrightarrow>
