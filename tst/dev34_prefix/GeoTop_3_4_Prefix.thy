@@ -1931,10 +1931,10 @@ proof -
         by (rule geotop_simplex_dim_unique[OF hek he1])
       have hsame_dim: "geotop_simplex_dim e 1"
         using hek hk1 by (by100 simp)
+      have h\<tau>edge: "geotop_is_edge \<tau>"
+        using h\<tau>1 unfolding geotop_is_edge_def by (by100 simp)
       have he_eq_\<tau>: "e = \<tau>"
-        by (rule geotop_edge_face_of_edge_eq_prefix
-            [OF hedge, of \<tau>])
-           (use h\<tau>1 heface\<tau> in \<open>by (by100 simp_all add: geotop_is_edge_def)\<close>)
+        by (rule geotop_edge_face_of_edge_eq_prefix[OF hedge h\<tau>edge heface\<tau>])
       show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
         using h\<tau>S he_eq_\<tau> by (by100 simp)
     qed
@@ -3473,7 +3473,7 @@ proof -
     using hR_in_A2 hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
   have hBdK\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdK\<^sub>N_poly_sub_N hN_A2_QS by (by100 blast)
+    using hBdK\<^sub>N_poly_sub_N hN_avoid by (by100 blast)
   have hQ_not_BdK\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdK\<^sub>N"
     using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
   have hS_not_BdK\<^sub>N_poly: "S \<notin> geotop_polyhedron BdK\<^sub>N"
