@@ -3610,7 +3610,33 @@ proof -
       boundary of the regular neighborhood of \<open>A1\<close>; the outside boundary
       route then places the two access points in one component of
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close>. **)
-    sorry
+  proof -
+    have hD44_frontier_subarc_connected_witness:
+        "\<exists>W. W \<subseteq> ?Ncut
+          \<and> Q1 \<in> W
+          \<and> S1 \<in> W
+          \<and> top1_connected_on W
+              (subspace_topology UNIV geotop_euclidean_topology W)"
+      (**
+        Remaining Moise regular-neighborhood subarc step.  The component
+        \<open>J\<^sub>N\<close> of the frontier of \<open>N \<inter> cl I\<close> through \<open>P\<close> is a polygonal
+        1-sphere.  Splitting it into the boundary piece through \<open>P\<close> and the
+        complementary frontier arc gives the book's subarc between the last
+        lower and first upper boundary hits; after trimming off its boundary
+        endpoints and attaching the chosen local access positions, one obtains
+        this connected witness inside \<open>I - (N \<union> A2)\<close>. **)
+      sorry
+    obtain W where hW_Ncut: "W \<subseteq> ?Ncut"
+      and hQ1_W: "Q1 \<in> W"
+      and hS1_W: "S1 \<in> W"
+      and hW_conn:
+        "top1_connected_on W
+          (subspace_topology UNIV geotop_euclidean_topology W)"
+      using hD44_frontier_subarc_connected_witness by (elim exE conjE)
+    show ?thesis
+      by (rule hD44_connected_route_component_suffices
+          [OF hW_Ncut hQ1_W hS1_W hW_conn])
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
