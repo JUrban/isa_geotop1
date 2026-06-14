@@ -1098,16 +1098,45 @@ proof -
         using hB\<^sub>Q_U\<^sub>Q hU\<^sub>Q_sub_Ncut by (by100 blast)
       have hB\<^sub>S_Ncut: "B\<^sub>S \<subseteq> ?Ncut"
         using hB\<^sub>S_U\<^sub>S hU\<^sub>S_sub_Ncut by (by100 blast)
+      have hQ1_Ncut: "Q1 \<in> ?Ncut"
+        using hB\<^sub>Q_Ncut hQ1_B\<^sub>Q by (by100 blast)
+      have hS1_Ncut: "S1 \<in> ?Ncut"
+        using hB\<^sub>S_Ncut hS1_B\<^sub>S by (by100 blast)
+      have hD44_central_component_chord_suffices:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+            \<Longrightarrow> \<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
+              \<and> B\<^sub>0 \<subseteq> ?Ncut
+              \<and> Q1 \<in> B\<^sub>0
+              \<and> S1 \<in> B\<^sub>0"
+      proof -
+        assume hS1_comp:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
+          and hB\<^sub>0_Ncut: "B\<^sub>0 \<subseteq> ?Ncut"
+          and hQ1_B\<^sub>0: "Q1 \<in> B\<^sub>0"
+          and hS1_B\<^sub>0: "S1 \<in> B\<^sub>0"
+          using geotop_open_component_broken_line_between_prefix
+              [OF hNcut_open hQ1_Ncut hS1_comp]
+          by (elim exE conjE)
+        show ?thesis
+          using hB\<^sub>0_bl hB\<^sub>0_Ncut hQ1_B\<^sub>0 hS1_B\<^sub>0 by (intro exI conjI)
+      qed
+      have hD44_central_same_component:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        (**
+          Core Moise D44 regular-neighborhood component step: analyze the
+          frontier component of the fine carrier \<open>N\<close> through \<open>P\<close>, extract
+          the outside boundary/frontier route in \<open>geotop_polygon_interior J -
+          (N \<union> A2)\<close>, and show that the two near-boundary access endpoints
+          \<open>Q1\<close> and \<open>S1\<close> are in the same outside-carrier component. **)
+        sorry
       obtain B\<^sub>0 where hB\<^sub>0_bl: "geotop_is_broken_line B\<^sub>0"
         and hB\<^sub>0_Ncut: "B\<^sub>0 \<subseteq> ?Ncut"
         and hQ1_B\<^sub>0: "Q1 \<in> B\<^sub>0"
         and hS1_B\<^sub>0: "S1 \<in> B\<^sub>0"
-        (**
-          Central Moise D44 regular-neighborhood chord: after analyzing the
-          frontier component of the fine carrier \<open>N\<close>, choose the broken-line
-          subarc in the outside-carrier complement joining the two access
-          endpoints near \<open>Q\<close> and \<open>S\<close>. **)
-        sorry
+        using hD44_central_component_chord_suffices
+            [OF hD44_central_same_component]
+        by (elim exE conjE)
       obtain B\<^sub>m where hB\<^sub>m_bl: "geotop_is_broken_line B\<^sub>m"
         and hB\<^sub>m_sub: "B\<^sub>m \<subseteq> B\<^sub>Q \<union> B\<^sub>0"
         and hQ'_B\<^sub>m: "Q' \<in> B\<^sub>m"
