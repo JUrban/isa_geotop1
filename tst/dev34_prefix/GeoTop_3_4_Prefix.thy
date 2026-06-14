@@ -5816,6 +5816,39 @@ proof -
         by (rule hC_conn)
     qed
   qed
+  have hD44_same_component_gives_closed_corridor:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    (**
+      Converts Moise's final same-component statement into the closed-corridor
+      form used by the collar machinery below.  The corridor is simply the
+      \<open>Q1\<close>-component of \<open>I - (N \<union> A2)\<close>; once \<open>S1\<close> lies in it, both access
+      points lie in its ordinary closure. **)
+  proof -
+    assume hS1_comp:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    obtain C where hC_eq:
+        "C = geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      and hC_sub: "C \<subseteq> ?Ncut"
+      and hQ1_C: "Q1 \<in> C"
+      and hC_open: "C \<in> geotop_euclidean_topology"
+      and hC_conn:
+        "top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+      using hD44_Q1_Ncut_component_package by (elim exE conjE)
+    have hS1_C: "S1 \<in> C"
+      using hS1_comp hC_eq by (by100 simp)
+    have hQ1_cl: "Q1 \<in> closure C"
+      using hQ1_C closure_subset by (by100 blast)
+    have hS1_cl: "S1 \<in> closure C"
+      using hS1_C closure_subset by (by100 blast)
+    show ?thesis
+      using hC_sub hC_conn hQ1_cl hS1_cl by (intro exI conjI)
+  qed
   have hD44_Ncut_open_split_if_not_same_component:
       "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> ?Ncut =
@@ -7286,7 +7319,19 @@ proof -
       missing construction is one connected subset of
       \<open>geotop_polygon_interior J - (N \<union> A2)\<close> whose closure contains the two
       access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
-    sorry
+  proof -
+    have hD44_moise_same_component_book_step:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      (**
+        Literal remaining Moise 4.4 same-component sentence.  The book obtains
+        it by taking the component adjacent to the frontier subarc between the
+        last lower and first upper contacts of the complementary frontier arc
+        with \<open>J\<close>. **)
+      sorry
+    show ?thesis
+      by (rule hD44_same_component_gives_closed_corridor
+          [OF hD44_moise_same_component_book_step])
+  qed
   have hD44_moise_boundary_arc_access_ball_crossings_core:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
