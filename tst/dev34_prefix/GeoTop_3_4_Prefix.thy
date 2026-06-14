@@ -585,7 +585,172 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_frontier_route_broken_line_p
     chosen between the last lower and first upper intersections with \<open>J\<close>, is
     a broken line in \<open>geotop_polygon_interior J - (N \<union> A2)\<close> attaching the
     access positions near \<open>Q\<close> and \<open>S\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hP_in_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hR_in_A2: "R \<in> A2"
+    using hA2J by (by100 blast)
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hN_sub_Sd_poly: "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+    unfolding hN_def geotop_polyhedron_def by (by100 blast)
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+  have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_simplex: "geotop_is_simplex B"
+      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
+    show "compact B"
+      by (rule geotop_simplex_compact[OF hB_simplex])
+  qed
+  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_compact: "compact B"
+      using hSd_compact_all hB by (by100 blast)
+    show "closed B"
+      by (rule compact_imp_closed[OF hB_compact])
+  qed
+  have hN_index_fin:
+      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
+    using hSd_fin by (by100 simp)
+  have hN_index_compact:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. compact B"
+    using hSd_compact_all by (by100 blast)
+  have hN_compact: "compact N"
+    unfolding hN_def
+    by (rule compact_Union[OF hN_index_fin hN_index_compact])
+  have hN_index_closed:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
+    using hSd_closed_all by (by100 blast)
+  have hN_closed: "closed N"
+    unfolding hN_def
+    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+  define N\<^sub>I where
+      "N\<^sub>I = N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+    unfolding N\<^sub>I_def using hN_sub_disk by (by100 blast)
+  have hN\<^sub>I_compact: "compact N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_compact by (by100 simp)
+  have hN\<^sub>I_closed: "closed N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  define FrN\<^sub>I where
+      "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
+    unfolding FrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+  have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+    using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+  have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+    by (rule closed_subset_compact[OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
+  have hFrN\<^sub>I_A2_QS_disj: "FrN\<^sub>I \<inter> (A2 \<union> {Q, S}) = {}"
+    using hFrN\<^sub>I_sub_N hN_avoid by (by100 blast)
+  have hQ_not_FrN\<^sub>I: "Q \<notin> FrN\<^sub>I"
+    using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+  have hS_not_FrN\<^sub>I: "S \<notin> FrN\<^sub>I"
+    using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+  have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
+    using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+  have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
+    using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
+  have hP_N\<^sub>I: "P \<in> N\<^sub>I"
+    using hP_in_A1 hA1_N hN\<^sub>I_eq_N by (by100 blast)
+  have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+  have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
+    using hP hK_poly_frontier_eq_J by (by100 simp)
+  have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
+    using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
+  proof
+    assume hP_int: "P \<in> interior N\<^sub>I"
+    have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
+      by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
+    have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
+      using hinter_sub hP_int by (by100 blast)
+    show False
+      using hP_not_int_K_poly hP_int_K by (by100 blast)
+  qed
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+  proof -
+    have hP_cl: "P \<in> closure N\<^sub>I"
+      using hP_N\<^sub>I closure_subset by (by100 blast)
+    have hP_front: "P \<in> frontier N\<^sub>I"
+      using hP_cl hP_not_int_N\<^sub>I
+      unfolding Elementary_Topology.frontier_def by (by100 blast)
+    show ?thesis
+      using hFrN\<^sub>I_HOL hP_front by (by100 simp)
+  qed
+  define J\<^sub>N where
+      "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
+  have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+  proof -
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hP_singleton_conn:
+        "top1_connected_on {P}
+          (subspace_topology UNIV geotop_euclidean_topology {P})"
+      by (rule top1_connected_on_singleton[OF hTU], simp)
+    show ?thesis
+      unfolding J\<^sub>N_def
+      by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
+  qed
+  have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    unfolding J\<^sub>N_def geotop_component_at_def by (by100 blast)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
+  have hQ_not_J\<^sub>N: "Q \<notin> J\<^sub>N"
+    using hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hS_not_J\<^sub>N: "S \<notin> J\<^sub>N"
+    using hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
+    using hR_in_A2 hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hJ\<^sub>N_eq_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding J\<^sub>N_def by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
+  have hJ\<^sub>N_connected:
+      "top1_connected_on J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N)"
+    using hJ\<^sub>N_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hJ\<^sub>N_nonempty: "J\<^sub>N \<noteq> {}"
+    using hP_J\<^sub>N by (by100 blast)
+  have hD44_frontier_component_route:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    (**
+      Remaining Moise frontier-component extraction.  The set \<open>J\<^sub>N\<close> is the
+      component of the frontier of the fine carrier neighborhood through
+      \<open>P\<close>.  The book proves this component is a polygonal 1-sphere, splits it
+      into the boundary arc on \<open>J\<close> and the complementary frontier arc, then
+      takes the lower-to-upper subarc outside \<open>N \<union> A2\<close> and attaches it to the
+      already chosen access positions \<open>Q1,S1\<close>. **)
+    sorry
+  show ?thesis
+    using hD44_frontier_component_route .
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_prefix:
   fixes J A1 A2 N :: "(real^2) set"
