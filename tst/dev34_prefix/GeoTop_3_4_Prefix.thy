@@ -3220,6 +3220,45 @@ proof -
     using hQ1_Ncut by (by100 blast)
   have hS1_not_A2: "S1 \<notin> A2"
     using hS1_Ncut by (by100 blast)
+  have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_I: "S1 \<in> geotop_polygon_interior J"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
+    using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+  have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
+    using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+  have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
+    using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+  have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
+    using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+  have hQ1_not_A1: "Q1 \<notin> A1"
+    using hQ1_not_N hA1_N by (by100 blast)
+  have hS1_not_A1: "S1 \<notin> A1"
+    using hS1_not_N hA1_N by (by100 blast)
+  have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hQ1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hS1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hNcut_N_disj: "?Ncut \<inter> N = {}"
+    by (by100 blast)
+  have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
+    using hFrN\<^sub>I_sub_N by (by100 blast)
+  have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
+    using hJ\<^sub>N_sub_N by (by100 blast)
+  have hNcut_BdJ\<^sub>N_poly_disj:
+      "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+  have hQ1_not_BdJ\<^sub>N_poly:
+      "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hS1_not_BdJ\<^sub>N_poly:
+      "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
   have hA2_closed: "closed A2"
     using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
   have hN_A2_closed: "closed (N \<union> A2)"
@@ -3278,6 +3317,33 @@ proof -
       using hB_sub_C hC_sub_Ncut by (by100 blast)
     show ?thesis
       using hB_bl hB_sub_Ncut hQ1_B hS1_B by (intro exI conjI)
+  qed
+  have hD44_connected_route_component_suffices:
+      "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
+        top1_connected_on W
+          (subspace_topology UNIV geotop_euclidean_topology W) \<Longrightarrow>
+        S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Pure component bookkeeping for Moise's frontier route: once the
+      regular-neighborhood boundary analysis supplies a connected witness in
+      \<open>I - (N \<union> A2)\<close> through the two local access endpoints, the endpoints are
+      in the same ambient component. **)
+  proof -
+    fix W
+    assume hW_Ncut: "W \<subseteq> ?Ncut"
+      and hQ1_W: "Q1 \<in> W"
+      and hS1_W: "S1 \<in> W"
+      and hW_conn:
+        "top1_connected_on W
+          (subspace_topology UNIV geotop_euclidean_topology W)"
+    have hW_witness:
+        "W \<in> {C. C \<subseteq> ?Ncut \<and> Q1 \<in> C \<and>
+          top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)}"
+      using hW_Ncut hQ1_W hW_conn by (by100 simp)
+    show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      unfolding geotop_component_at_def
+      using hW_witness hS1_W by (by100 blast)
   qed
   have hD44_Q1S1_same_component_in_Ncut:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
