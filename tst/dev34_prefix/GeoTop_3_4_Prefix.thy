@@ -834,6 +834,96 @@ proof -
       show ?thesis
         using hr_pos hdisj by (rule that)
     qed
+    have hQ_ne_S: "Q \<noteq> S"
+      using hcard by (auto simp: card_insert_if split: if_splits)
+    obtain r\<^sub>Q\<^sub>S where hr\<^sub>Q\<^sub>S_pos: "0 < r\<^sub>Q\<^sub>S"
+      and hball_QS_disj: "ball Q r\<^sub>Q\<^sub>S \<inter> ball S r\<^sub>Q\<^sub>S = {}"
+      using geotop_distinct_points_disjoint_small_balls_prefix[OF hQ_ne_S]
+      by (elim exE conjE)
+    define r where "r = min r\<^sub>Q\<^sub>S (min r\<^sub>Q\<^sub>N r\<^sub>S\<^sub>N)"
+    have hr_pos: "0 < r"
+      unfolding r_def using hr\<^sub>Q\<^sub>S_pos hr\<^sub>Q\<^sub>N_pos hr\<^sub>S\<^sub>N_pos by (by100 simp)
+    have hr_le_QS: "r \<le> r\<^sub>Q\<^sub>S"
+      unfolding r_def by (by100 simp)
+    have hr_le_QN: "r \<le> r\<^sub>Q\<^sub>N"
+      unfolding r_def by (by100 simp)
+    have hr_le_SN: "r \<le> r\<^sub>S\<^sub>N"
+      unfolding r_def by (by100 simp)
+    have hball_Q_r_QS: "ball Q r \<subseteq> ball Q r\<^sub>Q\<^sub>S"
+      unfolding ball_subset_ball_iff using hr_pos hr_le_QS by (by100 simp)
+    have hball_S_r_QS: "ball S r \<subseteq> ball S r\<^sub>Q\<^sub>S"
+      unfolding ball_subset_ball_iff using hr_pos hr_le_QS by (by100 simp)
+    have hr_disj: "ball Q r \<inter> ball S r = {}"
+      using hball_Q_r_QS hball_S_r_QS hball_QS_disj by (by100 blast)
+    have hball_Q_r_QN: "ball Q r \<subseteq> ball Q r\<^sub>Q\<^sub>N"
+      unfolding ball_subset_ball_iff using hr_pos hr_le_QN by (by100 simp)
+    have hball_S_r_SN: "ball S r \<subseteq> ball S r\<^sub>S\<^sub>N"
+      unfolding ball_subset_ball_iff using hr_pos hr_le_SN by (by100 simp)
+    have hball_Q_r_N: "ball Q r \<inter> N = {}"
+      using hball_Q_r_QN hball_Q_N by (by100 blast)
+    have hball_S_r_N: "ball S r \<inter> N = {}"
+      using hball_S_r_SN hball_S_N by (by100 blast)
+    have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+      using hQ_ne_P hQ_ne_R by (by100 blast)
+    have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+      using hS_ne_P hS_ne_R by (by100 blast)
+    have hQ_S_two_arc_local_access_outside_N:
+        "\<exists>r U\<^sub>Q U\<^sub>S Q' S'.
+          0 < r
+          \<and> connected U\<^sub>Q
+          \<and> connected U\<^sub>S
+          \<and> U\<^sub>Q \<in> geotop_euclidean_topology
+          \<and> U\<^sub>S \<in> geotop_euclidean_topology
+          \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)
+          \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)
+          \<and> U\<^sub>Q \<subseteq> ball Q r
+          \<and> U\<^sub>S \<subseteq> ball S r
+          \<and> ball Q r \<inter> ball S r = {}
+          \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+          \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+          \<and> Q' \<in> U\<^sub>Q
+          \<and> S' \<in> U\<^sub>S
+          \<and> Q' \<in> geotop_polygon_interior J - (A1 \<union> A2)
+          \<and> S' \<in> geotop_polygon_interior J - (A1 \<union> A2)
+          \<and> U\<^sub>Q \<inter> U\<^sub>S = {}
+          \<and> U\<^sub>Q \<inter> N = {}
+          \<and> U\<^sub>S \<inter> N = {}"
+    proof -
+      obtain U\<^sub>Q Q' where hU\<^sub>Q_conn: "connected U\<^sub>Q"
+        and hU\<^sub>Q_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+        and hU\<^sub>Q_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+        and hU\<^sub>Q_ball: "U\<^sub>Q \<subseteq> ball Q r"
+        and hQ_front:
+          "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+        and hQ'_U\<^sub>Q: "Q' \<in> U\<^sub>Q"
+        and hQ'_cut: "Q' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+        using geotop_polygon_interior_minus_two_arcs_connected_frontier_witness_in_ball_prefix
+            [OF hJ hQ hQ_ne_PR hA1 hA2 hA1J hA2J hr_pos]
+        by (elim exE conjE)
+      obtain U\<^sub>S S' where hU\<^sub>S_conn: "connected U\<^sub>S"
+        and hU\<^sub>S_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+        and hU\<^sub>S_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - (A1 \<union> A2)"
+        and hU\<^sub>S_ball: "U\<^sub>S \<subseteq> ball S r"
+        and hS_front:
+          "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+        and hS'_U\<^sub>S: "S' \<in> U\<^sub>S"
+        and hS'_cut: "S' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+        using geotop_polygon_interior_minus_two_arcs_connected_frontier_witness_in_ball_prefix
+            [OF hJ hS hS_ne_PR hA1 hA2 hA1J hA2J hr_pos]
+        by (elim exE conjE)
+      have hU_disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+        using hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj by (by100 blast)
+      have hU\<^sub>Q_N_disj: "U\<^sub>Q \<inter> N = {}"
+        using hU\<^sub>Q_ball hball_Q_r_N by (by100 blast)
+      have hU\<^sub>S_N_disj: "U\<^sub>S \<inter> N = {}"
+        using hU\<^sub>S_ball hball_S_r_N by (by100 blast)
+      show ?thesis
+        using hr_pos hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open
+          hU\<^sub>Q_sub hU\<^sub>S_sub hU\<^sub>Q_ball hU\<^sub>S_ball hr_disj
+          hQ_front hS_front hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
+          hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
+        by (intro exI conjI)
+    qed
     obtain r U\<^sub>Q U\<^sub>S Q' S'
       where hr_pos: "0 < r"
         and hU\<^sub>Q_conn: "connected U\<^sub>Q"
@@ -854,7 +944,9 @@ proof -
         and hQ'_cut: "Q' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
         and hS'_cut: "S' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
         and hU_disj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
-      using hQ_S_two_arc_local_access
+        and hU\<^sub>Q_N_disj: "U\<^sub>Q \<inter> N = {}"
+        and hU\<^sub>S_N_disj: "U\<^sub>S \<inter> N = {}"
+      using hQ_S_two_arc_local_access_outside_N
       by (elim exE conjE)
     have hD44_QS_witnesses_same_component_from_fine_A1_neighborhood:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
@@ -869,6 +961,7 @@ proof -
         \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close>. **)
       using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS hN_A2_only
         hQ_not_N hS_not_N hN_closed hball_Q_N hball_S_N
+        hball_Q_r_N hball_S_r_N hU\<^sub>Q_N_disj hU\<^sub>S_N_disj
         hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
         hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
         hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
