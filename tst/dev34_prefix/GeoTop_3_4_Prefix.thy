@@ -774,6 +774,66 @@ proof -
       using hN_A2_QS by (by100 blast)
     have hS_not_N: "S \<notin> N"
       using hN_A2_QS by (by100 blast)
+    have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+      by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+    have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+      using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+    have hSd_fin: "finite (geotop_iterated_Sd m K)"
+      by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+    have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+    proof
+      fix B
+      assume hB: "B \<in> geotop_iterated_Sd m K"
+      have hB_simplex: "geotop_is_simplex B"
+        using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
+      have hB_compact: "compact B"
+        by (rule geotop_simplex_compact[OF hB_simplex])
+      show "closed B"
+        by (rule compact_imp_closed[OF hB_compact])
+    qed
+    have hN_index_fin:
+        "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
+      using hSd_fin by (by100 simp)
+    have hN_index_closed:
+        "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
+      using hSd_closed_all by (by100 blast)
+    have hN_closed: "closed N"
+      unfolding hN_def
+      by (rule closed_Union[OF hN_index_fin hN_index_closed])
+    obtain r\<^sub>Q\<^sub>N where hr\<^sub>Q\<^sub>N_pos: "0 < r\<^sub>Q\<^sub>N"
+      and hball_Q_N: "ball Q r\<^sub>Q\<^sub>N \<inter> N = {}"
+    proof -
+      have hcompl_open: "open (- N)"
+        by (rule open_Compl[OF hN_closed])
+      have hQ_compl: "Q \<in> - N"
+        using hQ_not_N by (by100 simp)
+      have hQ_ball_ex: "\<exists>e>0. ball Q e \<subseteq> - N"
+        using hcompl_open hQ_compl unfolding open_contains_ball by (by100 simp)
+      obtain r\<^sub>Q\<^sub>N where hr_pos: "0 < r\<^sub>Q\<^sub>N"
+        and hball: "ball Q r\<^sub>Q\<^sub>N \<subseteq> - N"
+        using hQ_ball_ex by (elim exE conjE)
+      have hdisj: "ball Q r\<^sub>Q\<^sub>N \<inter> N = {}"
+        using hball by (by100 auto)
+      show ?thesis
+        using hr_pos hdisj by (rule that)
+    qed
+    obtain r\<^sub>S\<^sub>N where hr\<^sub>S\<^sub>N_pos: "0 < r\<^sub>S\<^sub>N"
+      and hball_S_N: "ball S r\<^sub>S\<^sub>N \<inter> N = {}"
+    proof -
+      have hcompl_open: "open (- N)"
+        by (rule open_Compl[OF hN_closed])
+      have hS_compl: "S \<in> - N"
+        using hS_not_N by (by100 simp)
+      have hS_ball_ex: "\<exists>e>0. ball S e \<subseteq> - N"
+        using hcompl_open hS_compl unfolding open_contains_ball by (by100 simp)
+      obtain r\<^sub>S\<^sub>N where hr_pos: "0 < r\<^sub>S\<^sub>N"
+        and hball: "ball S r\<^sub>S\<^sub>N \<subseteq> - N"
+        using hS_ball_ex by (elim exE conjE)
+      have hdisj: "ball S r\<^sub>S\<^sub>N \<inter> N = {}"
+        using hball by (by100 auto)
+      show ?thesis
+        using hr_pos hdisj by (rule that)
+    qed
     obtain r U\<^sub>Q U\<^sub>S Q' S'
       where hr_pos: "0 < r"
         and hU\<^sub>Q_conn: "connected U\<^sub>Q"
@@ -808,7 +868,7 @@ proof -
         witnesses \<open>Q'\<close> and \<open>S'\<close> lie in the same component of
         \<open>geotop_polygon_interior J - (A1 \<union> A2)\<close>. **)
       using hK_complex hK_fin hK_poly hN_def hA1_N hN_A2_QS hN_A2_only
-        hQ_not_N hS_not_N
+        hQ_not_N hS_not_N hN_closed hball_Q_N hball_S_N
         hU\<^sub>Q_conn hU\<^sub>S_conn hU\<^sub>Q_open hU\<^sub>S_open hU\<^sub>Q_sub hU\<^sub>S_sub
         hU\<^sub>Q_ball hU\<^sub>S_ball hr_pos hr_disj hQ_front hS_front
         hQ'_U\<^sub>Q hS'_U\<^sub>S hQ'_cut hS'_cut hU_disj
