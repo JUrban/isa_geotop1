@@ -1102,6 +1102,22 @@ proof -
         using hB\<^sub>Q_Ncut hQ1_B\<^sub>Q by (by100 blast)
       have hS1_Ncut: "S1 \<in> ?Ncut"
         using hB\<^sub>S_Ncut hS1_B\<^sub>S by (by100 blast)
+      have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
+        using hQ1_Ncut by (by100 blast)
+      have hS1_I: "S1 \<in> geotop_polygon_interior J"
+        using hS1_Ncut by (by100 blast)
+      have hQ1_not_N: "Q1 \<notin> N"
+        using hQ1_Ncut by (by100 blast)
+      have hS1_not_N: "S1 \<notin> N"
+        using hS1_Ncut by (by100 blast)
+      have hQ1_not_A2: "Q1 \<notin> A2"
+        using hQ1_Ncut by (by100 blast)
+      have hS1_not_A2: "S1 \<notin> A2"
+        using hS1_Ncut by (by100 blast)
+      have hQ1_not_A1: "Q1 \<notin> A1"
+        using hQ1_not_N hA1_N by (by100 blast)
+      have hS1_not_A1: "S1 \<notin> A1"
+        using hS1_not_N hA1_N by (by100 blast)
       have hD44_central_component_chord_suffices:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
             \<Longrightarrow> \<exists>B\<^sub>0. geotop_is_broken_line B\<^sub>0
