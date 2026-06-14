@@ -4367,6 +4367,34 @@ proof -
       apply (intro conjI)
       by (by100 blast)+
   qed
+  have hD44_BdJ\<^sub>N_card_le2_no_endpoint_has_book_two_arc_split:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Exact graph-theoretic reduction for Moise's assertion that the frontier
+      component is a 1-sphere: local valence at most two plus absence of a
+      graph endpoint yields polygonality, hence the book two-arc split. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint[OF hle2 hnoend])
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
+  qed
   have hD44_B1P_F\<^sub>2_setdist_pos: "0 < setdist ?B1P F\<^sub>2"
   proof -
     have hsd_iff:
