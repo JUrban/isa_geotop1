@@ -1054,6 +1054,25 @@ proof -
         [OF hW_U hX_W hY_W hW_conn])
 qed
 
+lemma geotop_component_at_UNIV_self_prefix:
+  fixes U :: "(real^2) set" and P :: "real^2"
+  assumes hP: "P \<in> U"
+  shows "P \<in> geotop_component_at UNIV geotop_euclidean_topology U P"
+  (**
+    Prefix-local component bookkeeping: a point belongs to its own Euclidean
+    component.  A similar helper exists downstream, but the D44 prefix layer
+    cannot import it without reversing the dependency stack. **)
+proof -
+  have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hsing_conn:
+      "top1_connected_on {P}
+        (subspace_topology UNIV geotop_euclidean_topology {P})"
+    by (rule top1_connected_on_singleton[OF hTU], by100 simp)
+  show ?thesis
+    by (rule geotop_self_in_component_at[OF hP hsing_conn])
+qed
+
 lemma geotop_component_member_gives_closed_corridor_prefix:
   fixes U :: "(real^2) set" and X Y :: "real^2"
   assumes hY_comp:
@@ -1435,17 +1454,8 @@ proof -
         [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N hN\<^sub>I_def]
       hFrN\<^sub>I_def by (by100 simp)
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
-  proof -
-    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
-      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
-    have hP_singleton_conn:
-        "top1_connected_on {P}
-          (subspace_topology UNIV geotop_euclidean_topology {P})"
-      by (rule top1_connected_on_singleton[OF hTU], simp)
-    show ?thesis
-      unfolding hJ\<^sub>N_def
-      by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
-  qed
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_self_prefix[OF hP_FrN\<^sub>I])
   have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
     unfolding hJ\<^sub>N_def geotop_component_at_def by (by100 blast)
   have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
@@ -4534,17 +4544,8 @@ proof -
   define J\<^sub>N where
       "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
-  proof -
-    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
-      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
-    have hP_singleton_conn:
-        "top1_connected_on {P}
-          (subspace_topology UNIV geotop_euclidean_topology {P})"
-      by (rule top1_connected_on_singleton[OF hTU], simp)
-    show ?thesis
-      unfolding J\<^sub>N_def
-      by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
-  qed
+    unfolding J\<^sub>N_def
+    by (rule geotop_component_at_UNIV_self_prefix[OF hP_FrN\<^sub>I])
   have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
     unfolding J\<^sub>N_def geotop_component_at_def by (by100 blast)
   have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
@@ -10408,17 +10409,8 @@ proof -
   define J\<^sub>N where
       "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
-  proof -
-    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
-      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
-    have hP_singleton_conn:
-        "top1_connected_on {P}
-          (subspace_topology UNIV geotop_euclidean_topology {P})"
-      by (rule top1_connected_on_singleton[OF hTU], simp)
-    show ?thesis
-      unfolding J\<^sub>N_def
-      by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
-  qed
+    unfolding J\<^sub>N_def
+    by (rule geotop_component_at_UNIV_self_prefix[OF hP_FrN\<^sub>I])
   have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
     unfolding J\<^sub>N_def geotop_component_at_def by (by100 blast)
   have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
@@ -17725,17 +17717,8 @@ proof -
     define J\<^sub>N where
         "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
     have hP_J\<^sub>N: "P \<in> J\<^sub>N"
-    proof -
-      have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
-        by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
-      have hP_singleton_conn:
-          "top1_connected_on {P}
-            (subspace_topology UNIV geotop_euclidean_topology {P})"
-        by (rule top1_connected_on_singleton[OF hTU], simp)
-      show ?thesis
-        unfolding J\<^sub>N_def
-        by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
-    qed
+      unfolding J\<^sub>N_def
+      by (rule geotop_component_at_UNIV_self_prefix[OF hP_FrN\<^sub>I])
     have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
       unfolding J\<^sub>N_def geotop_component_at_def by (by100 blast)
     have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
