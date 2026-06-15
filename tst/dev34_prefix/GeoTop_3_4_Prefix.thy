@@ -4183,6 +4183,33 @@ proof -
       by (rule geotop_connected_witness_component_at_intro_prefix
           [OF hW_sub hQ1_W hS1_W hW_conn])
   qed
+  have hD44_broken_line_access_crossings_give_connected_crossings:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Book-facing conversion: Moise constructs a broken-line subarc of the
+      complementary frontier.  Connectedness of broken lines is enough to feed
+      the collar/component bridge above. **)
+  proof -
+    assume hall_broken:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    show ?thesis
+      by (rule geotop_broken_line_access_crossings_connected_crossings_prefix
+          [OF hall_broken])
+  qed
   have hD44_frontier_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4192,17 +4219,16 @@ proof -
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
        \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
     (**
       Remaining Moise 4.4 construction.  The already-open outside carrier is
       fixed; what remains is to formalize the book's regular-neighborhood
       frontier analysis: identify the boundary graph of the component through
       \<open>P\<close>, prove its local valence/no-endpoint properties, and extract the
-      adjacent outside access crossings. **)
+      adjacent outside broken-line access crossings. **)
     sorry
   have hD44_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -4220,6 +4246,13 @@ proof -
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
   proof -
+    have hbroken_crossings:
+        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hD44_frontier_graph_corridor_book_step by (by100 blast)
     have hcrossings:
         "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
           \<exists>Z. Z \<subseteq> ?Ncut
@@ -4227,7 +4260,8 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
             \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hD44_frontier_graph_corridor_book_step by (by100 blast)
+      by (rule hD44_broken_line_access_crossings_give_connected_crossings
+          [OF hbroken_crossings])
     have hsame:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
       by (rule hD44_access_ball_crossings_same_component[OF hcrossings])
