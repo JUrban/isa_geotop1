@@ -3390,6 +3390,67 @@ proof -
     show ?thesis
       by (rule hBdJ\<^sub>N_cycle_split_from_degree_two[OF hdegree])
   qed
+  have hBdJ\<^sub>N_poly_A2_QS_disj:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hQ_not_BdJ\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hS_not_BdJ\<^sub>N_poly: "S \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hR_in_A2 hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hBdK\<^sub>N_poly_A2_QS_disj:
+      "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hBdK\<^sub>N_poly_sub_N hN_avoid by (by100 blast)
+  have hQ_not_BdK\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hS_not_BdK\<^sub>N_poly: "S \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hR_in_A2 hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hQ1_not_N: "Q1 \<notin> N"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_N: "S1 \<notin> N"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_A2: "Q1 \<notin> A2"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_A2: "S1 \<notin> A2"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
+    using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+  have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
+    using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+  have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
+    using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+  have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
+    using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+  have hQ1_not_A1: "Q1 \<notin> A1"
+    using hQ1_not_N hA1_N by (by100 blast)
+  have hS1_not_A1: "S1 \<notin> A1"
+    using hS1_not_N hA1_N by (by100 blast)
+  have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hQ1_not_N hK\<^sub>N_poly by (by100 simp)
+  have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hS1_not_N hK\<^sub>N_poly by (by100 simp)
+  have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hNcut_N_disj: "?Ncut \<inter> N = {}"
+    by (by100 blast)
+  have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
+    using hFrN\<^sub>I_sub_N by (by100 blast)
+  have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
+    using hJ\<^sub>N_sub_N by (by100 blast)
+  have hNcut_BdJ\<^sub>N_poly_disj:
+      "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+  have hQ1_not_BdJ\<^sub>N_poly:
+      "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hS1_not_BdJ\<^sub>N_poly:
+      "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
   have hD44_regular_neighborhood_frontier_component_book_step: ?thesis
     (**
       Remaining Moise 4.4 content after the carrier restriction setup:
