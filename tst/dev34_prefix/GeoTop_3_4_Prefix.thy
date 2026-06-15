@@ -2516,6 +2516,9 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corr
   assumes hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
   assumes hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
   assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_vertex_incident_ge1:
+    "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+      card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
   shows
     "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -2535,8 +2538,6 @@ proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
   have hD44_frontier_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         \<not> geotop_graph_endpoint BdJ\<^sub>N w)
@@ -2547,15 +2548,16 @@ proof -
         \<and> S1 \<in> closure Z)"
     (**
       Moise 4.4 local regular-neighborhood step.  The frontier component of
-      the fine carrier is locally a 1-manifold graph (non-isolated, valence at
-      most two, no endpoint), and the complementary frontier arc has an
+      the fine carrier is locally a 1-manifold graph (valence at most two and
+      no endpoint), and the complementary frontier arc has an
       adjacent outside corridor in \<open>I - (N \<union> A2)\<close> whose closure contains the
-      two access witnesses. **)
+      two access witnesses.  Non-isolation of vertices is proved by the caller
+      from connectedness of the represented frontier component. **)
     sorry
   have hD44_frontier_vertex_incident_ge1:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
-    using hD44_frontier_graph_corridor_book_step by (by100 blast)
+    by (rule hBdJ\<^sub>N_vertex_incident_ge1)
   have hD44_frontier_vertex_incident_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
@@ -4414,7 +4416,8 @@ proof -
           hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
           hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def
           hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
-          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly])
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_edge_card_ge1])
   have hD44_sphere:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
