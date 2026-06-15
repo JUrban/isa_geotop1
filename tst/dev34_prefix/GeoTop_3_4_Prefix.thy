@@ -4416,17 +4416,50 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_frontier_polygon_and_same_component_book_step:
+  have hD44_frontier_polygon_and_route_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+       \<and> (\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> Q1 \<in> B
+          \<and> S1 \<in> B)"
     (**
       Literal remaining Moise 4.4 frontier sentence at the point where the
       carrier and frontier graph have been built.  The book takes the frontier
       component of the fine carrier through \<open>P\<close>, proves it is the polygonal
-      1-sphere bounding the regular neighborhood, and uses the complementary
-      frontier arc to put the lower and upper access witnesses in one component
-      of \<open>I - (N \<union> A2)\<close>. **)
+      1-sphere bounding the regular neighborhood, then chooses the
+      lower-to-upper subarc of the complementary frontier arc as a broken-line
+      route in \<open>I - (N \<union> A2)\<close> through the two access witnesses. **)
     sorry
+  have hD44_frontier_polygon_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    using hD44_frontier_polygon_and_route_book_step by (rule conjunct1)
+  have hD44_route_book_step:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    using hD44_frontier_polygon_and_route_book_step by (rule conjunct2)
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+  proof -
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hQ1_B: "Q1 \<in> B"
+      and hS1_B: "S1 \<in> B"
+      using hD44_route_book_step by (elim exE conjE)
+    have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+    show ?thesis
+      by (rule geotop_connected_witness_component_at_intro_prefix
+          [OF hB_sub hQ1_B hS1_B hB_conn])
+  qed
+  have hD44_frontier_polygon_and_same_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    using hD44_frontier_polygon_book_step hD44_same_component_book_step
+    by (intro conjI)
   have hD44_frontier_bounds_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
