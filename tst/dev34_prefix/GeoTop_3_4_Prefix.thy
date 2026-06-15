@@ -2694,6 +2694,84 @@ proof -
     using connected_clopen[THEN iffD1, OF hJ\<^sub>N_connected_HOL]
       hJ\<^sub>N_uncovered_openin hJ\<^sub>N_uncovered_closedin
     by (by100 blast)
+  have hJ\<^sub>N_uncovered_all_imp_finite:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N \<Longrightarrow> finite J\<^sub>N"
+    using hJ\<^sub>N_uncovered_finite by (by100 simp)
+  have hJ\<^sub>N_uncovered_all_imp_singleton:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N \<Longrightarrow> \<exists>x. J\<^sub>N = {x}"
+  proof -
+    assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+    have hfin: "finite J\<^sub>N"
+      by (rule hJ\<^sub>N_uncovered_all_imp_finite[OF hall])
+    have hcases: "J\<^sub>N = {} \<or> (\<exists>x. J\<^sub>N = {x})"
+      using connected_finite_iff_sing[OF hJ\<^sub>N_connected_HOL] hfin by (by100 blast)
+    show "\<exists>x. J\<^sub>N = {x}"
+      using hcases hJ\<^sub>N_nonempty by (by100 blast)
+  qed
+  have hJ\<^sub>N_uncovered_all_imp_eq_P:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N \<Longrightarrow> J\<^sub>N = {P}"
+  proof -
+    assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+    obtain x where hx: "J\<^sub>N = {x}"
+      using hJ\<^sub>N_uncovered_all_imp_singleton[OF hall] by (by100 blast)
+    have hxP: "x = P"
+      using hx hP_J\<^sub>N by (by100 blast)
+    show "J\<^sub>N = {P}"
+      using hx hxP by (by100 simp)
+  qed
+  have hJ\<^sub>N_uncovered_all_imp_P_uncovered:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N
+        \<Longrightarrow> P \<in> J\<^sub>N - geotop_polyhedron BdJ\<^sub>N"
+    using hP_J\<^sub>N by (by100 simp)
+  have hJ\<^sub>N_uncovered_all_imp_P_not_BdJ:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N
+        \<Longrightarrow> P \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hJ\<^sub>N_uncovered_all_imp_P_uncovered by (by100 blast)
+  have hJ\<^sub>N_uncovered_all_imp_P_vertex:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N
+        \<Longrightarrow> P \<in> geotop_complex_vertices K\<^sub>N"
+  proof -
+    assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+    have hP_unc: "P \<in> J\<^sub>N - geotop_polyhedron BdJ\<^sub>N"
+      by (rule hJ\<^sub>N_uncovered_all_imp_P_uncovered[OF hall])
+    show "P \<in> geotop_complex_vertices K\<^sub>N"
+      by (rule subsetD[OF hJ\<^sub>N_uncovered_sub_vertices hP_unc])
+  qed
+  have hJ\<^sub>N_uncovered_all_imp_P_carrier_dim0:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N
+        \<Longrightarrow> geotop_simplex_dim (geotop_K_carrier K\<^sub>N P) 0"
+  proof -
+    assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+    obtain n where hn_le: "n \<le> 1"
+      and hdim: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N P) n"
+      using hJ\<^sub>N_carrier_dim_le1[OF hP_J\<^sub>N] by (by100 blast)
+    have hn_not1: "n \<noteq> 1"
+    proof
+      assume hn1: "n = 1"
+      have hdim1: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N P) 1"
+        using hdim hn1 by (by100 simp)
+      have hP_BdJ: "P \<in> geotop_polyhedron BdJ\<^sub>N"
+        by (rule hJ\<^sub>N_carrier_edge_point_in_BdJ\<^sub>N_poly[OF hP_J\<^sub>N hdim1])
+      have hP_not_BdJ: "P \<notin> geotop_polyhedron BdJ\<^sub>N"
+        by (rule hJ\<^sub>N_uncovered_all_imp_P_not_BdJ[OF hall])
+      show False
+        using hP_BdJ hP_not_BdJ by (by100 blast)
+    qed
+    have hn0: "n = 0"
+      using hn_le hn_not1 by (by100 linarith)
+    show "geotop_simplex_dim (geotop_K_carrier K\<^sub>N P) 0"
+      using hdim hn0 by (by100 simp)
+  qed
+  have hJ\<^sub>N_uncovered_all_imp_P_incident_edge:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N
+        \<Longrightarrow> \<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> P \<in> e"
+  proof -
+    assume hall: "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+    have hdim0: "geotop_simplex_dim (geotop_K_carrier K\<^sub>N P) 0"
+      by (rule hJ\<^sub>N_uncovered_all_imp_P_carrier_dim0[OF hall])
+    show "\<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> P \<in> e"
+      by (rule hJ\<^sub>N_carrier_dim0_incident_edge[OF hP_J\<^sub>N hdim0])
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
