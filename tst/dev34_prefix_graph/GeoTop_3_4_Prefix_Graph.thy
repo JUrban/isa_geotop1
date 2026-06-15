@@ -6017,5 +6017,111 @@ proof (intro allI impI)
   qed
 qed
 
+lemma geotop_nonempty_complex_polyhedron_nonempty_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hne: "K \<noteq> {}"
+  shows "geotop_polyhedron K \<noteq> {}"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    using hne by (by100 blast)
+  have h\<sigma>ne: "\<sigma> \<noteq> {}"
+    by (rule geotop_complex_simplex_nonempty[OF hK h\<sigma>K])
+  show ?thesis
+    unfolding geotop_polyhedron_def using h\<sigma>K h\<sigma>ne by (by100 blast)
+qed
+
+lemma geotop_nonempty_polyhedron_has_complex_vertex_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hpoly: "geotop_polyhedron K \<noteq> {}"
+  shows "\<exists>w. {w} \<in> K"
+proof -
+  obtain x where hx: "x \<in> geotop_polyhedron K"
+    using hpoly by (by100 blast)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have hsimplex_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    using hsimplex_all h\<sigma>K by (by100 blast)
+  obtain V m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>simplex unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_ne: "V \<noteq> {}"
+    using hV_card by (by100 force)
+  obtain w where hwV: "w \<in> V"
+    using hV_ne by (by100 blast)
+  have hsingle_hull: "{w} = geotop_convex_hull {w}"
+    using geotop_convex_hull_eq_HOL[of "{w}"] by (by100 simp)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card hn_le_m hgp h\<sigma>_eq by (by100 blast)
+  have hface: "geotop_is_face {w} \<sigma>"
+    unfolding geotop_is_face_def using h\<sigma>V hwV hsingle_hull by (by100 blast)
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+  have "{w} \<in> K"
+    using hface_closed h\<sigma>K hface by (by100 blast)
+  show ?thesis
+    using \<open>{w} \<in> K\<close> by (by100 blast)
+qed
+
+lemma geotop_finite_connected_degree_two_linear_graph_polygon_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hnonempty: "L \<noteq> {}"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "geotop_is_polygon (geotop_polyhedron L)"
+  (**
+    Moise boundary-cycle package for the D44 regular-neighborhood frontier:
+    a finite connected linear graph with degree two at every vertex is a
+    polygonal 1-sphere. **)
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hpoly_nonempty: "geotop_polyhedron L \<noteq> {}"
+    by (rule geotop_nonempty_complex_polyhedron_nonempty_prefix
+        [OF hcomplex hnonempty])
+  obtain w where hwL: "{w} \<in> L"
+    using geotop_nonempty_polyhedron_has_complex_vertex_prefix
+      [OF hcomplex hpoly_nonempty] by (by100 blast)
+  have hnonisolated: "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    by (rule geotop_degree_two_vertices_nonisolated_prefix[OF hdegree])
+  obtain e where heL: "e \<in> L" and hedge: "geotop_is_edge e" and hwe: "w \<in> e"
+    using hnonisolated hwL by (by100 blast)
+  obtain P Q where hPQ: "P \<noteq> Q" and hePQ: "e = closed_segment P Q"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hfaceP: "geotop_is_face {P} e"
+    using geotop_closed_segment_is_face_endpoint[OF hPQ, of P] hePQ
+    by (by100 simp)
+  have hfaceQ: "geotop_is_face {Q} e"
+    using geotop_closed_segment_is_face_endpoint[OF hPQ, of Q] hePQ
+    by (by100 simp)
+  have hPL: "{P} \<in> L"
+    using hcomplex heL hfaceP unfolding geotop_is_complex_def by (by100 blast)
+  have hQL: "{Q} \<in> L"
+    using hcomplex heL hfaceQ unfolding geotop_is_complex_def by (by100 blast)
+  obtain C\<^sub>1 C\<^sub>2 where hpoly_eq: "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2"
+      and hC\<^sub>1: "geotop_is_broken_line C\<^sub>1"
+      and hC\<^sub>2: "geotop_is_broken_line C\<^sub>2"
+      and hE\<^sub>1: "geotop_arc_endpoints C\<^sub>1 {P, Q}"
+      and hE\<^sub>2: "geotop_arc_endpoints C\<^sub>2 {P, Q}"
+      and hdisj: "geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    using geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+      [OF hL hfin hconn hdegree hPL hQL hPQ] by (by100 blast)
+  have hpolygon: "geotop_is_polygon (C\<^sub>1 \<union> C\<^sub>2)"
+    by (rule pair_of_arcs_is_polygon[OF hC\<^sub>1 hC\<^sub>2 hE\<^sub>1 hE\<^sub>2 hdisj])
+  show ?thesis
+    using hpoly_eq hpolygon by (by100 simp)
+qed
 
 end
