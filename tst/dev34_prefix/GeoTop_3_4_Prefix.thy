@@ -2366,6 +2366,178 @@ proof -
   qed
 qed
 
+lemma geotop_frontier_graph_corridor_sphere_and_access_route_prefix:
+  fixes U J\<^sub>N :: "(real^2) set"
+    and L :: "(real^2) set set"
+    and Q1 S1 :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hQ1U: "Q1 \<in> U"
+  assumes hS1U: "S1 \<in> U"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes hJ_eq: "J\<^sub>N = geotop_polyhedron L"
+  assumes hge1:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  assumes hle2:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  assumes hnoend:
+    "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  assumes hZ:
+    "\<exists>Z. Z \<subseteq> U
+      \<and> top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)
+      \<and> Q1 \<in> closure Z
+      \<and> S1 \<in> closure Z"
+  shows
+    "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+     \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> U
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+  (**
+    Moise 4.4 packaging bridge.  After the book regular-neighborhood
+    construction supplies the frontier graph bounds/no-endpoints and the
+    adjacent outside corridor, existing graph classification and open-component
+    broken-line connectedness give the literal sphere-and-route conclusion. **)
+proof -
+  have hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+        [OF hL_linear hL_fin hL_nonempty hL_connected hJ_eq hge1 hle2 hnoend])
+  obtain Z where hZ_sub: "Z \<subseteq> U"
+    and hZ_conn:
+      "top1_connected_on Z
+        (subspace_topology UNIV geotop_euclidean_topology Z)"
+    and hQ1_cl: "Q1 \<in> closure Z"
+    and hS1_cl: "S1 \<in> closure Z"
+    using hZ by (elim exE conjE)
+  have hsame:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+    by (rule geotop_connected_closure_corridor_same_component_open_prefix
+        [OF hUopen hQ1U hS1U hZ_sub hZ_conn hQ1_cl hS1_cl])
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub: "B \<subseteq> U"
+    and hQ1_B: "Q1 \<in> B"
+    and hS1_B: "S1 \<in> B"
+    using geotop_same_component_open_broken_line_route_prefix
+      [OF hUopen hQ1U hsame]
+    by (elim exE conjE)
+  have hroute:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> U
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  proof (intro allI impI)
+    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+    assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+    assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+    have hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    proof -
+      have hQ_mem: "Q1 \<in> B \<inter> ball Q1 \<epsilon>\<^sub>Q"
+        using hQ1_B h\<epsilon>\<^sub>Q_pos by (by100 simp)
+      show ?thesis
+        unfolding ex_in_conv[symmetric]
+        by (rule exI[where x=Q1], rule hQ_mem)
+    qed
+    have hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have hS_mem: "S1 \<in> B \<inter> ball S1 \<epsilon>\<^sub>S"
+        using hS1_B h\<epsilon>\<^sub>S_pos by (by100 simp)
+      show ?thesis
+        unfolding ex_in_conv[symmetric]
+        by (rule exI[where x=S1], rule hS_mem)
+    qed
+    show "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hB_bl hB_sub hB_Q hB_S by (intro exI conjI)
+  qed
+  show ?thesis
+    by (rule conjI[OF hsphere hroute])
+qed
+
+lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_graph_corridor_package_prefix:
+  fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
+    and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and P Q R S Q1 S1 :: "real^2"
+    and m :: nat
+    and r :: real
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  assumes hA1_sub:
+    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA2_sub:
+    "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hA1_N: "A1 \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hr: "0 < r"
+  assumes hball_Q_N: "ball Q r \<inter> N = {}"
+  assumes hball_S_N: "ball S r \<inter> N = {}"
+  assumes hQ1_ball: "Q1 \<in> ball Q r"
+  assumes hS1_ball: "S1 \<in> ball S r"
+  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hFrN\<^sub>I_def:
+    "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  assumes hJ\<^sub>N_def:
+    "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
+  assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  shows
+    "(geotop_polygon_interior J - (N \<union> A2)) \<in> geotop_euclidean_topology
+     \<and> geotop_is_linear_graph BdJ\<^sub>N
+     \<and> finite BdJ\<^sub>N
+     \<and> BdJ\<^sub>N \<noteq> {}
+     \<and> geotop_complex_connected BdJ\<^sub>N
+     \<and> J\<^sub>N = geotop_polyhedron BdJ\<^sub>N
+     \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1)
+     \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+     \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+     \<and> (\<exists>Z. Z \<subseteq> geotop_polygon_interior J - (N \<union> A2)
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z)"
+  (**
+    The remaining literal Moise 4.4 regular-neighborhood package, separated
+    from the pure graph/component conversion.  In book terms: the frontier
+    component through \<open>P\<close> is represented by the boundary graph \<open>BdJ\<^sub>N\<close>;
+    every vertex has upper valence at most two and no graph endpoint; and the
+    complementary frontier subarc has an adjacent outside corridor in
+    \<open>I - (N \<union> A2)\<close> accumulating at the lower and upper access witnesses. **)
+  sorry
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -2427,7 +2599,69 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_
     component through \<open>P\<close> is a 1-sphere.  Its complementary frontier subarc,
     after removing the boundary arc on \<open>J\<close>, gives the lower-to-upper broken
     line route through \<open>I - (N \<union> A2)\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hpack:
+      "?Ncut \<in> geotop_euclidean_topology
+       \<and> geotop_is_linear_graph BdJ\<^sub>N
+       \<and> finite BdJ\<^sub>N
+       \<and> BdJ\<^sub>N \<noteq> {}
+       \<and> geotop_complex_connected BdJ\<^sub>N
+       \<and> J\<^sub>N = geotop_polyhedron BdJ\<^sub>N
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    by (rule
+      geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_graph_corridor_package_prefix
+        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
+          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
+          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
+          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+  have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
+    using hpack by (by100 blast)
+  have hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+    using hpack by (by100 blast)
+  have hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+    using hpack by (by100 blast)
+  have hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
+    using hpack by (by100 blast)
+  have hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
+    using hpack by (by100 blast)
+  have hJ\<^sub>N_eq_BdJ\<^sub>N_poly:
+      "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+    using hpack by (by100 blast)
+  have hge1:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+    using hpack by (by100 blast)
+  have hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hpack by (by100 blast)
+  have hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hpack by (by100 blast)
+  have hZ:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hpack by (by100 blast)
+  show ?thesis
+    by (rule geotop_frontier_graph_corridor_sphere_and_access_route_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
+          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hge1 hle2 hnoend hZ])
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_component_package_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
