@@ -3177,40 +3177,70 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
     witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_frontier_valence_at_most_two_book_step:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  have hD44_frontier_1sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
     (**
-      Moise's local regular-neighborhood frontier incidence: at any vertex of
-      the selected frontier component, the brick/fine-carrier boundary has at
-      most the two incident boundary edges expected for a 1-manifold boundary.
+      Moise's regular-neighborhood frontier assertion: the component of the
+      fine-carrier boundary through \<open>P\<close> is the simple closed polygonal
+      frontier of the selected regular neighborhood.
     **)
     sorry
-  have hD44_frontier_no_endpoint_book_step:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+  have hD44_frontier_polygon_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     (**
-      Moise's assertion that the frontier component through \<open>P\<close> is closed:
-      no vertex of \<open>BdJ\<^sub>N\<close> is a graph endpoint of the boundary component.
+      Conversion of Moise's frontier 1-sphere to the polygonal carrier form
+      used by the finite graph classifier.
+    **)
+  proof -
+    have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+      by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
+    have hsphere_BdJ:
+        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hD44_frontier_1sphere_book_step hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+      by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+  qed
+  have hD44_frontier_route_book_step:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    (**
+      Moise's complementary-frontier-arc step: the outside component adjacent
+      to the other frontier arc contains a broken-line route between the two
+      access witnesses in \<open>I - (N \<union> A2)\<close>.
     **)
     sorry
-  have hD44_adjacent_outside_corridor_book_step:
-      "\<exists>Z. Z \<subseteq> ?Ncut
-        \<and> top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)
-        \<and> Q1 \<in> closure Z
-        \<and> S1 \<in> closure Z"
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Moise's complementary-frontier-arc step: the other arc in the frontier
-      component has an adjacent outside component in \<open>I - (N \<union> A2)\<close> whose
-      closure reaches the lower and upper access witnesses.
+      Conversion of the book's broken-line route to the same-component form
+      used by the downstream corridor package.
     **)
-    sorry
+  proof -
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hQ1_B: "Q1 \<in> B"
+      and hS1_B: "S1 \<in> B"
+      using hD44_frontier_route_book_step by (elim exE conjE)
+    have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+    show ?thesis
+      by (rule geotop_connected_witness_component_at_intro_prefix
+          [OF hB_sub hQ1_B hS1_B hB_conn])
+  qed
   show ?thesis
-    using hD44_frontier_valence_at_most_two_book_step
-      hD44_frontier_no_endpoint_book_step
-      hD44_adjacent_outside_corridor_book_step
-    by (intro conjI)
+    by (rule geotop_polygon_frontier_component_same_component_graph_corridor_package_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+          hD44_frontier_polygon_book_step hD44_same_component_book_step])
 qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_broken_line_access_book_step_prefix:
