@@ -362,6 +362,40 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_iterated_Sd_selected_arc_carrier_compact_prefix:
+  fixes K :: "(real^2) set set" and A N :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  shows "compact N"
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hSd_sub])
+  have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_simplex: "geotop_is_simplex B"
+      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
+    show "compact B"
+      by (rule geotop_simplex_compact[OF hB_simplex])
+  qed
+  have hN_index_fin:
+      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}"
+    using hSd_fin by (by100 simp)
+  have hN_index_compact:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}. compact B"
+    using hSd_compact_all by (by100 blast)
+  show ?thesis
+    unfolding hN_def
+    by (rule compact_Union[OF hN_index_fin hN_index_compact])
+qed
+
 lemma geotop_iterated_Sd_selected_arc_carrier_closed_prefix:
   fixes K :: "(real^2) set set" and A N :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -370,32 +404,11 @@ lemma geotop_iterated_Sd_selected_arc_carrier_closed_prefix:
     "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
   shows "closed N"
 proof -
-  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
-    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
-  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
-    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
-  have hSd_fin: "finite (geotop_iterated_Sd m K)"
-    by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hSd_sub])
-  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
-  proof
-    fix B
-    assume hB: "B \<in> geotop_iterated_Sd m K"
-    have hB_simplex: "geotop_is_simplex B"
-      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
-    have hB_compact: "compact B"
-      by (rule geotop_simplex_compact[OF hB_simplex])
-    show "closed B"
-      by (rule compact_imp_closed[OF hB_compact])
-  qed
-  have hN_index_fin:
-      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}"
-    using hSd_fin by (by100 simp)
-  have hN_index_closed:
-      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}. closed B"
-    using hSd_closed_all by (by100 blast)
+  have hN_compact: "compact N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK hKfin hN_def])
   show ?thesis
-    unfolding hN_def
-    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+    by (rule compact_imp_closed[OF hN_compact])
 qed
 
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_cut_open_prefix:
@@ -1104,39 +1117,12 @@ proof -
       "N \<subseteq> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
     using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
-  have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
-  proof
-    fix B
-    assume hB: "B \<in> geotop_iterated_Sd m K"
-    have hB_simplex: "geotop_is_simplex B"
-      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
-    show "compact B"
-      by (rule geotop_simplex_compact[OF hB_simplex])
-  qed
-  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
-  proof
-    fix B
-    assume hB: "B \<in> geotop_iterated_Sd m K"
-    have hB_compact: "compact B"
-      using hSd_compact_all hB by (by100 blast)
-    show "closed B"
-      by (rule compact_imp_closed[OF hB_compact])
-  qed
-  have hN_index_fin:
-      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-    using hSd_fin by (by100 simp)
-  have hN_index_compact:
-      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. compact B"
-    using hSd_compact_all by (by100 blast)
   have hN_compact: "compact N"
-    unfolding hN_def
-    by (rule compact_Union[OF hN_index_fin hN_index_compact])
-  have hN_index_closed:
-      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
-    using hSd_closed_all by (by100 blast)
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN_closed: "closed N"
-    unfolding hN_def
-    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN_connected_HOL: "connected N"
   proof -
     let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
@@ -7123,39 +7109,12 @@ proof -
       "N \<subseteq> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
     using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
-  have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
-  proof
-    fix B
-    assume hB: "B \<in> geotop_iterated_Sd m K"
-    have hB_simplex: "geotop_is_simplex B"
-      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
-    show "compact B"
-      by (rule geotop_simplex_compact[OF hB_simplex])
-  qed
-  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
-  proof
-    fix B
-    assume hB: "B \<in> geotop_iterated_Sd m K"
-    have hB_compact: "compact B"
-      using hSd_compact_all hB by (by100 blast)
-    show "closed B"
-      by (rule compact_imp_closed[OF hB_compact])
-  qed
-  have hN_index_fin:
-      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-    using hSd_fin by (by100 simp)
-  have hN_index_compact:
-      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. compact B"
-    using hSd_compact_all by (by100 blast)
   have hN_compact: "compact N"
-    unfolding hN_def
-    by (rule compact_Union[OF hN_index_fin hN_index_compact])
-  have hN_index_closed:
-      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
-    using hSd_closed_all by (by100 blast)
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN_closed: "closed N"
-    unfolding hN_def
-    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN_connected_HOL: "connected N"
   proof -
     let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
@@ -14565,39 +14524,12 @@ proof -
         "N \<subseteq> closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior J)"
       using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
-    have hSd_compact_all: "\<forall>B\<in>geotop_iterated_Sd m K. compact B"
-    proof
-      fix B
-      assume hB: "B \<in> geotop_iterated_Sd m K"
-      have hB_simplex: "geotop_is_simplex B"
-        using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
-      show "compact B"
-        by (rule geotop_simplex_compact[OF hB_simplex])
-    qed
-    have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
-    proof
-      fix B
-      assume hB: "B \<in> geotop_iterated_Sd m K"
-      have hB_compact: "compact B"
-        using hSd_compact_all hB by (by100 blast)
-      show "closed B"
-        by (rule compact_imp_closed[OF hB_compact])
-    qed
-    have hN_index_fin:
-        "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-      using hSd_fin by (by100 simp)
-    have hN_index_compact:
-        "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. compact B"
-      using hSd_compact_all by (by100 blast)
     have hN_compact: "compact N"
-      unfolding hN_def
-      by (rule compact_Union[OF hN_index_fin hN_index_compact])
-    have hN_index_closed:
-        "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
-      using hSd_closed_all by (by100 blast)
+      by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+          [OF hK_complex hK_fin hN_def])
     have hN_closed: "closed N"
-      unfolding hN_def
-      by (rule closed_Union[OF hN_index_fin hN_index_closed])
+      by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+          [OF hK_complex hK_fin hN_def])
     have hN_connected_HOL: "connected N"
     proof -
       let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
