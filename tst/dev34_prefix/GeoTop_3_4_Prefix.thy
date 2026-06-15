@@ -4215,17 +4215,18 @@ proof -
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
     (**
       Remaining Moise 4.4 construction.  The already-open outside carrier is
       fixed; what remains is to formalize the book's regular-neighborhood
       frontier analysis: identify the boundary graph of the component through
       \<open>P\<close>, prove its local valence/no-endpoint properties, and extract the
-      adjacent outside broken-line access crossings. **)
+      adjacent outside component whose closure contains the two access
+      witnesses. **)
     sorry
   have hD44_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
@@ -4233,29 +4234,7 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-  proof -
-    have hbroken_crossings:
-        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hD44_frontier_graph_corridor_book_step by (by100 blast)
-    have hcrossings:
-        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      by (rule hD44_broken_line_access_crossings_give_connected_crossings
-          [OF hbroken_crossings])
-    have hsame:
-        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      by (rule hD44_access_ball_crossings_same_component[OF hcrossings])
-    show ?thesis
-      by (rule hD44_same_component_gives_closed_corridor[OF hsame])
-  qed
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
   have hD44_card_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
