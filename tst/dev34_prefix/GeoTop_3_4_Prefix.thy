@@ -4232,14 +4232,38 @@ proof -
   have hD44_frontier_no_endpoint_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
     using hD44_frontier_graph_bounds_book_step by (rule conjunct2)
+  have hD44_corridor_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    (**
+      Moise 4.4 complementary-frontier-arc step in corridor form.  After
+      splitting the frontier 1-sphere into the boundary arc and the other
+      frontier arc, the outside side of that other arc gives a connected
+      corridor in \<open>I - (N \<union> A2)\<close> whose closure reaches the lower and upper
+      access witnesses. **)
+    sorry
   have hD44_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Moise 4.4 complementary-frontier-arc step in component form: after
-      splitting the frontier 1-sphere into the boundary arc and the other
-      frontier arc, the outside side of that other arc puts the two local
-      access witnesses in one component of \<open>I - (N \<union> A2)\<close>. **)
-    sorry
+      Component-form repackaging of the Moise corridor step.  The corridor is
+      connected and accumulates at the two access witnesses inside the open cut
+      set, so the existing closure-corridor bridge puts them in the same
+      component. **)
+  proof -
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_corridor_book_step by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
   have hD44_frontier_component_route:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
