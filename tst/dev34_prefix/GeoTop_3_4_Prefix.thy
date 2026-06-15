@@ -3825,11 +3825,33 @@ proof -
     show "card ?E \<ge> 1"
       using hcard_pos by (by100 linarith)
   qed
+  have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    (**
+      Local-star entry point for the remaining regular-neighborhood graph
+      proof.  The book argument can prove the stronger exact-two incidence
+      statement at each vertex; the existing finite-graph bookkeeping then
+      gives the two graph conjuncts required by this package. **)
+    by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
+        [OF hBdJ\<^sub>N_fin])
   have hD44_frontier_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -3842,11 +3864,42 @@ proof -
       \<open>P\<close>, prove its local valence/no-endpoint properties, and extract the
       adjacent outside corridor. **)
     sorry
+  have hD44_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
+  have hD44_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
+  have hD44_graph_bounds:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj
+        [OF hD44_exact_two])
+  have hD44_card_le2:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_graph_bounds by (rule conjunct1)
+  have hD44_no_endpoint:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_graph_bounds by (rule conjunct2)
   show ?thesis
     using hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
       hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
       hBdJ\<^sub>N_vertex_incident_edge_card_ge1
-      hD44_frontier_graph_corridor_book_step by (by100 blast)
+      hD44_card_le2 hD44_no_endpoint hD44_corridor by (by100 blast)
 qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
