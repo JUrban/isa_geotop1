@@ -4088,6 +4088,25 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_regular_neighborhood_exact_two_and_component_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+      \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut Q1"
+    (**
+      Literal local Moise 4.4 regular-neighborhood assertion.  For the chosen
+      fine carrier \<open>N\<close> of \<open>A1\<close>, the restricted carrier is a 2-manifold with
+      boundary near the frontier component through \<open>P\<close>; hence each vertex of
+      the carried frontier component has exactly two incident boundary edges.
+      The complementary frontier arc has an adjacent outside component of
+      \<open>I - (N \<union> A2)\<close>, which is the component of \<open>?Ncut\<close> carrying the lower
+      and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
   have hD44_regular_neighborhood_frontier_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -4104,7 +4123,36 @@ proof -
       component of \<open>I - (N \<union> A2)\<close>; in this local access formulation that
       component is the connected corridor \<open>Z\<close> whose closure contains \<open>Q1\<close>
       and \<open>S1\<close>. **)
-    sorry
+  proof -
+    have htwo:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      using hD44_regular_neighborhood_exact_two_and_component_book_step
+      by (rule conjunct1)
+    have hsphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere[OF htwo])
+    have hsame:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+      using hD44_regular_neighborhood_exact_two_and_component_book_step
+      by (rule conjunct2)
+    have hZ:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      by (rule hD44_same_component_gives_closed_corridor[OF hsame])
+    show ?thesis
+      by (rule conjI[OF hsphere hZ])
+  qed
   have hD44_regular_neighborhood_frontier_component_package_from_book_step:
       ?thesis
   proof -
