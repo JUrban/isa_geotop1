@@ -3098,6 +3098,79 @@ proof -
     unfolding hBdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
   have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  proof -
+    fix e
+    assume heBd: "e \<in> BdK\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+    have he_Fr: "e \<subseteq> FrN\<^sub>I"
+      by (rule hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBd hedge])
+    have he_dim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+    have he_path_connected:
+        "top1_path_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule Theorem_GT_1_3[OF he_simplex])
+    have he_connected_top:
+        "top1_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule top1_path_connected_on_geotop_imp_connected[OF he_path_connected])
+    have he_connected: "connected e"
+      using he_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hunion_connected: "connected (e \<union> J\<^sub>N)"
+      by (rule connected_Un[OF he_connected hJ\<^sub>N_connected_HOL hmeet])
+    have hunion_sub: "e \<union> J\<^sub>N \<subseteq> FrN\<^sub>I"
+      using he_Fr hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    have hP_union: "P \<in> e \<union> J\<^sub>N"
+      using hP_J\<^sub>N by (by100 blast)
+    have hunion_sub_comp: "e \<union> J\<^sub>N \<subseteq> connected_component_set FrN\<^sub>I P"
+      by (rule connected_component_maximal
+          [OF hP_union hunion_connected hunion_sub])
+    show "e \<subseteq> J\<^sub>N"
+      using hunion_sub_comp hJ\<^sub>N_eq_connected_component by (by100 blast)
+  qed
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<in> BdJ\<^sub>N"
+    unfolding hBdJ\<^sub>N_def
+    using hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N by (by100 blast)
+  have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
+      "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
+        \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> FrN\<^sub>I \<Longrightarrow> e \<in> BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_edge_frontier_rel_interior_member_comb_boundary_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly hFrN\<^sub>I_HOL hN\<^sub>I_eq_N
+          hK\<^sub>N_edge_incident_2faces_card_le2])
+  have hK\<^sub>N_edge_J\<^sub>N_rel_interior_member_BdJ\<^sub>N:
+      "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
+        \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> J\<^sub>N \<Longrightarrow> e \<in> BdJ\<^sub>N"
+  proof -
+    fix e p
+    assume heK: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hge1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
+      and hp_rel: "p \<in> rel_interior e"
+      and hpJ: "p \<in> J\<^sub>N"
+    have hp_Fr: "p \<in> FrN\<^sub>I"
+      using hpJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    have heBd: "e \<in> BdK\<^sub>N"
+      by (rule hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N
+          [OF heK hedge hge1 hp_rel hp_Fr])
+    have hp_e: "p \<in> e"
+      using hp_rel rel_interior_subset by (by100 blast)
+    have hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+      using hp_e hpJ by (by100 blast)
+    show "e \<in> BdJ\<^sub>N"
+      by (rule hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N[OF heBd hedge hmeet])
+  qed
   have hD44_frontier_graph_corridor_book_step:
       "BdJ\<^sub>N \<noteq> {}
        \<and> geotop_complex_connected BdJ\<^sub>N
