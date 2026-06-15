@@ -3177,6 +3177,30 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
     witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_degree_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      Local regular-neighborhood frontier incidence: every vertex of the
+      selected boundary component has degree two in the fine-carrier boundary
+      graph.
+    **)
+    sorry
+  have hD44_frontier_exact_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    (**
+      Local regular-neighborhood frontier incidence: every vertex of the
+      selected boundary component has exactly the two adjacent boundary edges
+      of a polygonal 1-manifold frontier.
+    **)
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+        [OF hD44_frontier_degree_two_book_step])
   have hD44_frontier_1sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
@@ -3185,7 +3209,10 @@ proof -
       fine-carrier boundary through \<open>P\<close> is the simple closed polygonal
       frontier of the selected regular neighborhood.
     **)
-    sorry
+    by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hD44_frontier_exact_two_book_step])
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     (**
