@@ -5648,6 +5648,173 @@ proof -
       by (rule hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split
           [OF hpolygon])
   qed
+  have hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Direct book-route package from the local regular-neighborhood incidence
+      statement to Moise's two frontier arcs.  The remaining geometric work can
+      now target exact-two boundary incidence and then immediately recover the
+      split of the frontier component through \<open>P\<close>. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    have hsphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere[OF htwo])
+    show ?thesis
+      by (rule hD44_J\<^sub>N_1sphere_has_book_two_arc_split[OF hsphere])
+  qed
+  have hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split_with_endpoint_members:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}
+          \<and> P \<in> C\<^sub>B
+          \<and> X \<in> C\<^sub>B
+          \<and> P \<in> C\<^sub>O
+          \<and> X \<in> C\<^sub>O"
+    (**
+      Endpoint-explicit exact-two incidence package.  This is the expected
+      formal output of the local regular-neighborhood graph step: exact two
+      incident boundary edges at every frontier vertex give the two Moise arcs,
+      with their shared endpoints available as ordinary membership facts. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    obtain X C\<^sub>B C\<^sub>O where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+      and hC\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
+      and hC\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
+      and hC\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
+      and hC\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
+      and hC_int_disj:
+        "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+      using hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split[OF htwo]
+      by (elim exE conjE)
+    have hP_C\<^sub>B: "P \<in> C\<^sub>B"
+      using hC\<^sub>B_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hX_C\<^sub>B: "X \<in> C\<^sub>B"
+      using hC\<^sub>B_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hP_C\<^sub>O: "P \<in> C\<^sub>O"
+      using hC\<^sub>O_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hX_C\<^sub>O: "X \<in> C\<^sub>O"
+      using hC\<^sub>O_end unfolding geotop_arc_endpoints_def by (by100 blast)
+    show ?thesis
+      apply (rule exI[where x=X])
+      apply (rule exI[where x=C\<^sub>B])
+      apply (rule exI[where x=C\<^sub>O])
+      using hX_B1P hX_ne hBdJ_split hC\<^sub>B_bl hC\<^sub>O_bl hC\<^sub>B_end
+        hC\<^sub>O_end hC_int_disj hP_C\<^sub>B hX_C\<^sub>B hP_C\<^sub>O hX_C\<^sub>O
+      apply (intro conjI)
+      by (by100 blast)+
+  qed
+  have hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split_with_endpoint_inter:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}
+          \<and> C\<^sub>B \<inter> C\<^sub>O = {P, X}
+          \<and> P \<in> C\<^sub>B
+          \<and> X \<in> C\<^sub>B
+          \<and> P \<in> C\<^sub>O
+          \<and> X \<in> C\<^sub>O"
+    (**
+      Endpoint-intersection form of the exact-two frontier split.  Moise's
+      later "other arc" choice uses that the two arcs through \<open>P\<close> and \<open>X\<close>
+      meet only at their endpoints, so record that consequence next to the
+      endpoint-explicit split rather than reproving it at each orientation use.
+    **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    obtain X C\<^sub>B C\<^sub>O where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+      and hC\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
+      and hC\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
+      and hC\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
+      and hC\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
+      and hC_int_disj:
+        "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+      and hP_C\<^sub>B: "P \<in> C\<^sub>B"
+      and hX_C\<^sub>B: "X \<in> C\<^sub>B"
+      and hP_C\<^sub>O: "P \<in> C\<^sub>O"
+      and hX_C\<^sub>O: "X \<in> C\<^sub>O"
+      using hD44_BdJ\<^sub>N_exact_two_has_book_two_arc_split_with_endpoint_members[OF htwo]
+      by (elim exE conjE)
+    have hC_inter: "C\<^sub>B \<inter> C\<^sub>O = {P, X}"
+      by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+          [OF hC\<^sub>B_end hC\<^sub>O_end hC_int_disj])
+    show ?thesis
+      apply (rule exI[where x=X])
+      apply (rule exI[where x=C\<^sub>B])
+      apply (rule exI[where x=C\<^sub>O])
+      using hX_B1P hX_ne hBdJ_split hC\<^sub>B_bl hC\<^sub>O_bl hC\<^sub>B_end
+        hC\<^sub>O_end hC_int_disj hC_inter hP_C\<^sub>B hX_C\<^sub>B hP_C\<^sub>O hX_C\<^sub>O
+      apply (intro conjI)
+      by (by100 blast)+
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
