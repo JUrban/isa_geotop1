@@ -2526,7 +2526,37 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corr
     1-sphere and that the complementary outside side gives one connected
     corridor in \<open>I - (N \<union> A2)\<close> accumulating at the access witnesses near
     \<open>Q\<close> and \<open>S\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_component_1sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Moise 4.4, first frontier sentence: after restricting the fine carrier
+      to the closed disk, the component of \<open>Fr N'\<close> through \<open>P\<close> is a
+      1-sphere. **)
+    sorry
+  have hD44_outside_side_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Moise 4.4, final component sentence: the broken line between the last
+      lower and first upper boundary hits lies on the complementary frontier
+      arc, so the two access witnesses near \<open>Q\<close> and \<open>S\<close> lie on the same
+      outside side of \<open>I - (N \<union> A2)\<close>. **)
+    sorry
+  have hD44_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    by (rule geotop_component_member_gives_closed_corridor_prefix
+        [OF hD44_outside_side_same_component_book_step])
+  show ?thesis
+    by (intro conjI,
+        rule hD44_frontier_component_1sphere_book_step,
+        rule hD44_corridor)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_graph_corridor_package_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
