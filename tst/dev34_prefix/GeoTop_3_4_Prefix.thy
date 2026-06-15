@@ -4213,6 +4213,68 @@ proof -
     show ?thesis
       using hX_B1P hX_F1int hX_ne by (intro exI conjI)
   qed
+  have hD44_F\<^sub>1_boundary_subarc_from_P_to_B1P:
+      "\<exists>X C. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> F\<^sub>1
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P"
+      and hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      and hX_ne: "X \<noteq> P"
+      using hD44_B1P_other_F\<^sub>1_arc_interior by (elim exE conjE)
+    have hP_F1: "P \<in> F\<^sub>1"
+      using hD44_P_F\<^sub>1 unfolding geotop_arc_interior_def by (by100 blast)
+    have hX_F1: "X \<in> F\<^sub>1"
+      using hX_F1int unfolding geotop_arc_interior_def by (by100 blast)
+    have hP_ne_X: "P \<noteq> X"
+      using hX_ne by (by100 blast)
+    obtain C where hC_bl: "geotop_is_broken_line C"
+      and hC_sub: "C \<subseteq> F\<^sub>1"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      using geotop_broken_line_subarc_with_endpoints_prefix
+        [OF hD44_F\<^sub>1_bl hP_F1 hX_F1 hP_ne_X]
+      by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
+      by (intro exI conjI)
+  qed
+  have hD44_B1P_boundary_subarc_inside_B1P:
+      "\<exists>X C. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> ?B1P
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P"
+      and hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      and hX_ne: "X \<noteq> P"
+      using hD44_B1P_other_F\<^sub>1_arc_interior by (elim exE conjE)
+    have hB1P_conn_HOL: "connected ?B1P"
+      using hD44_B1P_conn top1_connected_on_geotop_iff_connected
+      by (by100 blast)
+    have hP_ne_X: "P \<noteq> X"
+      using hX_ne by (by100 blast)
+    obtain C where hC_bl: "geotop_is_broken_line C"
+      and hC_sub: "C \<subseteq> ?B1P"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      using geotop_connected_subset_broken_line_subarc_with_endpoints_prefix
+          [OF hD44_F\<^sub>1_bl hD44_B1P_sub_F\<^sub>1 hB1P_conn_HOL
+            hD44_P_B1P hX_B1P hP_ne_X]
+      by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
+      by (intro exI conjI)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
