@@ -4416,8 +4416,9 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_frontier_polygon_and_route_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+  have hD44_frontier_sphere_and_route_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
        \<and> (\<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> ?Ncut
           \<and> Q1 \<in> B
@@ -4425,20 +4426,34 @@ proof -
     (**
       Literal remaining Moise 4.4 frontier sentence at the point where the
       carrier and frontier graph have been built.  The book takes the frontier
-      component of the fine carrier through \<open>P\<close>, proves it is the polygonal
-      1-sphere bounding the regular neighborhood, then chooses the
-      lower-to-upper subarc of the complementary frontier arc as a broken-line
-      route in \<open>I - (N \<union> A2)\<close> through the two access witnesses. **)
+      component of the fine carrier through \<open>P\<close>, proves it is the 1-sphere
+      bounding the regular neighborhood, then chooses the lower-to-upper
+      subarc of the complementary frontier arc as a broken-line route in
+      \<open>I - (N \<union> A2)\<close> through the two access witnesses. **)
     sorry
+  have hD44_frontier_sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_frontier_sphere_and_route_book_step by (rule conjunct1)
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-    using hD44_frontier_polygon_and_route_book_step by (rule conjunct1)
+  proof -
+    have hsphere_BdJ:
+        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hD44_frontier_sphere_book_step hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+  qed
   have hD44_route_book_step:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
         \<and> Q1 \<in> B
         \<and> S1 \<in> B"
-    using hD44_frontier_polygon_and_route_book_step by (rule conjunct2)
+    using hD44_frontier_sphere_and_route_book_step by (rule conjunct2)
   have hD44_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
   proof -
