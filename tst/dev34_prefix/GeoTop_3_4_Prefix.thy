@@ -1049,6 +1049,60 @@ proof -
         [OF heK hedge hcard1])
 qed
 
+lemma geotop_exact_two_incident_edges_imp_graph_bounds_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hfin: "finite L"
+  assumes htwo:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  shows
+    "(\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+     \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+        \<not> geotop_graph_endpoint L w)"
+  (**
+    Finite graph bookkeeping for the Moise 4.4 frontier component: the local
+    regular-neighborhood proof often naturally produces exact two incident
+    boundary edges at every vertex, while the downstream graph package uses
+    the degree-bound/no-endpoint form. **)
+proof -
+  have hdegree:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_exact_two_incident_edges_card_eq_two_prefix
+        [OF hfin htwo])
+  have hle2:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  proof (intro allI impI)
+    fix w
+    assume hwL: "{w} \<in> L"
+    have hwdeg:
+        "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    proof -
+      have himp:
+          "{w} \<in> L \<longrightarrow>
+            card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+        using hdegree by (rule spec)
+      show ?thesis
+        using himp hwL by (by100 simp)
+    qed
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hwdeg by (by100 simp)
+  qed
+  have hnoend:
+      "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    by (rule geotop_exact_two_incident_edges_no_graph_endpoint_prefix
+        [OF hfin htwo])
+  show ?thesis
+    by (intro conjI, rule hle2, rule hnoend)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3820,46 +3874,8 @@ proof -
       proof.  The book argument can prove the stronger exact-two incidence
       statement at each vertex; the existing finite-graph bookkeeping then
       gives the two graph conjuncts required by this package. **)
-  proof -
-    assume htwo:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    have hdegree:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      by (rule geotop_exact_two_incident_edges_card_eq_two_prefix
-          [OF hBdJ\<^sub>N_fin htwo])
-    have hle2:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    proof (intro allI impI)
-      fix w
-      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-      have hwdeg:
-          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      proof -
-        have himp:
-            "{w} \<in> BdJ\<^sub>N \<longrightarrow>
-              card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-          using hdegree by (rule spec)
-        show ?thesis
-          using himp hwBdJ by (by100 simp)
-      qed
-      show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-        using hwdeg by (by100 simp)
-    qed
-    have hnoend:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      by (rule geotop_exact_two_incident_edges_no_graph_endpoint_prefix
-          [OF hBdJ\<^sub>N_fin htwo])
-    show ?thesis
-      by (intro conjI, rule hle2, rule hnoend)
-  qed
+    by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
+        [OF hBdJ\<^sub>N_fin])
   have hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
