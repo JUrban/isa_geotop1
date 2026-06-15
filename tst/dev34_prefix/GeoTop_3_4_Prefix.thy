@@ -3119,6 +3119,28 @@ proof -
     show ?thesis
       using heBdJ hedge hP_e heJ by (intro bexI[where x=e] conjI)
   qed
+  have hBdJ\<^sub>N_poly_not_singleton:
+      "\<And>w. geotop_polyhedron BdJ\<^sub>N \<noteq> {w}"
+  proof
+    fix w
+    assume hpoly_single: "geotop_polyhedron BdJ\<^sub>N = {w}"
+    obtain e where heBdJ: "e \<in> BdJ\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hP_e: "P \<in> e"
+      using hBdJ\<^sub>N_P_incident_edge by (by100 blast)
+    have he_sub_poly: "e \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+      unfolding geotop_polyhedron_def using heBdJ by (by100 blast)
+    have hP_w: "P = w"
+      using hP_e he_sub_poly hpoly_single by (by100 blast)
+    have he_sub_singleP: "e \<subseteq> {P}"
+      using he_sub_poly hpoly_single hP_w by (by100 simp)
+    have he_eq_singleP: "e = {P}"
+      using hP_e he_sub_singleP by (by100 blast)
+    have "geotop_is_edge {P}"
+      using hedge he_eq_singleP by (by100 simp)
+    thus False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
