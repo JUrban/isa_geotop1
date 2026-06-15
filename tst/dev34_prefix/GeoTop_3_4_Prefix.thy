@@ -3923,6 +3923,89 @@ proof -
       using hR_in_A2 hD44_R_F\<^sub>2
       unfolding geotop_arc_interior_def by (by100 blast)
   qed
+  have hD44_P_not_Ncut: "P \<notin> ?Ncut"
+    using hP_in_A1 hA1_N by (by100 blast)
+  have hD44_Q_not_Ncut: "Q \<notin> ?Ncut"
+  proof
+    assume hQcut: "Q \<in> ?Ncut"
+    have hQint: "Q \<in> geotop_polygon_interior J"
+      using hQcut by (by100 blast)
+    have "Q \<notin> geotop_polygon_interior J"
+      using hQ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hQint by (by100 blast)
+  qed
+  have hD44_R_not_Ncut: "R \<notin> ?Ncut"
+    using hR_in_A2 by (by100 blast)
+  have hD44_S_not_Ncut: "S \<notin> ?Ncut"
+  proof
+    assume hScut: "S \<in> ?Ncut"
+    have hSint: "S \<in> geotop_polygon_interior J"
+      using hScut by (by100 blast)
+    have "S \<notin> geotop_polygon_interior J"
+      using hS polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hSint by (by100 blast)
+  qed
+  have hD44_F\<^sub>1_Ncut_disj: "F\<^sub>1 \<inter> ?Ncut = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> F\<^sub>1 \<inter> ?Ncut"
+    have hxJ: "x \<in> J"
+      using hx hD44_F\<^sub>1_sub_J by (by100 blast)
+    have hxI: "x \<in> geotop_polygon_interior J"
+      using hx by (by100 blast)
+    have "x \<notin> geotop_polygon_interior J"
+      using hxJ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hxI by (by100 blast)
+  qed
+  have hD44_F\<^sub>2_Ncut_disj: "F\<^sub>2 \<inter> ?Ncut = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> F\<^sub>2 \<inter> ?Ncut"
+    have hxJ: "x \<in> J"
+      using hx hD44_F\<^sub>2_sub_J by (by100 blast)
+    have hxI: "x \<in> geotop_polygon_interior J"
+      using hx by (by100 blast)
+    have "x \<notin> geotop_polygon_interior J"
+      using hxJ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    thus False
+      using hxI by (by100 blast)
+  qed
+  let ?B\<^sub>1 = "geotop_polyhedron BdJ\<^sub>N \<inter> J"
+  have hD44_B\<^sub>1_eq_J\<^sub>N_boundary: "?B\<^sub>1 = J\<^sub>N \<inter> J"
+    using hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  have hD44_P_BdJ\<^sub>N_F\<^sub>1:
+      "P \<in> geotop_polyhedron BdJ\<^sub>N \<inter> F\<^sub>1"
+    using hP_BdJ\<^sub>N_poly hD44_P_F\<^sub>1
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_B\<^sub>1: "P \<in> ?B\<^sub>1"
+    using hP_BdJ\<^sub>N_poly hP by (by100 blast)
+  have hD44_B\<^sub>1_nonempty: "?B\<^sub>1 \<noteq> {}"
+    using hD44_P_B\<^sub>1 by (by100 blast)
+  have hD44_B\<^sub>1_sub_boundary_arcs:
+      "?B\<^sub>1 \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_B\<^sub>1_A2_QS_disj:
+      "?B\<^sub>1 \<inter> (A2 \<union> {Q, S}) = {}"
+    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  have hD44_B\<^sub>1_R_notin: "R \<notin> ?B\<^sub>1"
+    using hD44_B\<^sub>1_A2_QS_disj hR_in_A2 by (by100 blast)
+  have hD44_B\<^sub>1_Q_notin: "Q \<notin> ?B\<^sub>1"
+    using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
+  have hD44_B\<^sub>1_S_notin: "S \<notin> ?B\<^sub>1"
+    using hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
+  have hD44_B\<^sub>1_Ncut_disj: "?B\<^sub>1 \<inter> ?Ncut = {}"
+    using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hD44_B\<^sub>1_sub_J\<^sub>N: "?B\<^sub>1 \<subseteq> J\<^sub>N"
+    using hD44_B\<^sub>1_eq_J\<^sub>N_boundary by (by100 blast)
+  have hD44_J_closed: "closed J"
+    by (rule polygon_closed[OF hJ])
+  have hD44_B\<^sub>1_closed: "closed ?B\<^sub>1"
+    by (rule closed_Int[OF hBdJ\<^sub>N_poly_closed hD44_J_closed])
+  have hD44_B\<^sub>1_compact: "compact ?B\<^sub>1"
+    using hBdJ\<^sub>N_poly_compact hD44_J_closed by (rule compact_Int_closed)
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
