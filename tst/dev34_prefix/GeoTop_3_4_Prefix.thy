@@ -4148,6 +4148,21 @@ proof -
   have hD44_frontier_no_endpoint_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
     using hD44_frontier_graph_bounds_book_step by (rule conjunct2)
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Moise 4.4 complementary-frontier-arc step in component form: after
+      splitting the frontier 1-sphere into the boundary arc and the other
+      frontier arc, the outside side of that other arc puts the two local
+      access witnesses in one component of \<open>I - (N \<union> A2)\<close>. **)
+    sorry
+  have hD44_frontier_component_route:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut hD44_same_component_book_step])
   have hD44_corridor_book_step:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
@@ -4155,11 +4170,27 @@ proof -
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
     (**
-      Moise 4.4 complementary-frontier-arc step: split the 1-sphere frontier
-      component into the boundary arc in \<open>Fr I\<close> and the other frontier arc;
-      the outside side of that other arc gives one connected corridor in
-      \<open>I - (N \<union> A2)\<close> accumulating at the two local access witnesses. **)
-    sorry
+      Corridor packaging of the component-form Moise step.  Since \<open>?Ncut\<close> is
+      open, same-component access points are joined by a broken line in
+      \<open>?Ncut\<close>; that broken line is the connected corridor and contains both
+      access witnesses, hence its closure contains them. **)
+  proof -
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hQ1_B: "Q1 \<in> B"
+      and hS1_B: "S1 \<in> B"
+      using hD44_frontier_component_route by (elim exE conjE)
+    have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+    have hQ1_cl: "Q1 \<in> closure B"
+      using hQ1_B closure_subset by (by100 blast)
+    have hS1_cl: "S1 \<in> closure B"
+      using hS1_B closure_subset by (by100 blast)
+    show ?thesis
+      using hB_sub hB_conn hQ1_cl hS1_cl by (intro exI conjI)
+  qed
   have hD44_frontier_sphere_and_corridor_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
