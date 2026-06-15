@@ -1067,87 +1067,6 @@ lemma geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix:
   using hcyc hP_F\<^sub>1 hsplit hF\<^sub>1E hF\<^sub>2E hdisj
   by (by100 blast)
 
-lemma geotop_polygon_two_endpoint_arcs_fine_carrier_regular_neighborhood_book_step_prefix:
-  fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
-    and K :: "(real^2) set set"
-    and P Q R S Q1 S1 :: "real^2"
-    and m :: nat
-    and r :: real
-  assumes hJ: "geotop_is_polygon J"
-  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
-  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
-  assumes hcard: "card {P, Q, R, S} = 4"
-  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
-  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
-  assumes hA12: "A1 \<inter> A2 = {}"
-  assumes hA1_sub:
-    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  assumes hA2_sub:
-    "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  assumes hA1J: "A1 \<inter> J = {P}"
-  assumes hA2J: "A2 \<inter> J = {R}"
-  assumes hK_complex: "geotop_is_complex K"
-  assumes hK_fin: "finite K"
-  assumes hK_poly:
-    "geotop_polyhedron K =
-      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  assumes hN_def:
-    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
-  assumes hA1_N: "A1 \<subseteq> N"
-  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
-  assumes hr: "0 < r"
-  assumes hball_Q_N: "ball Q r \<inter> N = {}"
-  assumes hball_S_N: "ball S r \<inter> N = {}"
-  assumes hQ1_ball: "Q1 \<in> ball Q r"
-  assumes hS1_ball: "S1 \<in> ball S r"
-  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
-  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
-  assumes hN\<^sub>I_def:
-    "N\<^sub>I =
-      N \<inter> closure_on UNIV geotop_euclidean_topology
-        (geotop_polygon_interior J)"
-  assumes hFrN\<^sub>I_def:
-    "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
-  assumes hJ\<^sub>N_def:
-    "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
-  shows
-    "geotop_is_n_sphere J\<^sub>N
-        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
-    \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-          (geotop_polygon_interior J - (N \<union> A2)) Q1"
-  (**
-    Named Moise 4.4 brick/regular-neighborhood step.  After reducing to the
-    rectangular picture, choose the fine carrier of \<open>A1\<close>, restrict it to the
-    closed disk, and take the frontier component through \<open>P\<close>.  The book's
-    brick-neighborhood paragraph proves that this frontier component is a
-    1-sphere and that the adjacent outside corridor in
-    \<open>geotop_polygon_interior J - (N \<union> A2)\<close> carries the lower and upper access
-    witnesses \<open>Q1\<close> and \<open>S1\<close> in one component. **)
-proof -
-  have hfrontier_component_1sphere:
-    "geotop_is_n_sphere J\<^sub>N
-        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-    (**
-      Moise 4.4, first regular-neighborhood sentence after defining
-      \<open>N' = N \<inter> \<bar>I\<close>: the component of \<open>Fr N'\<close> through the boundary
-      point \<open>P\<close> is a 1-sphere.  In the triangulated carrier formulation this
-      is the assertion that the selected fine carrier of \<open>A1\<close>, restricted to
-      the closed polygonal disk, has a polygonal boundary component through
-      \<open>P\<close>. **)
-    sorry
-  have houtside_access_same_component:
-    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-          (geotop_polygon_interior J - (N \<union> A2)) Q1"
-    (**
-      Moise 4.4, final corridor sentence: split the frontier 1-sphere into the
-      boundary arc and the complementary frontier arc, choose the lower-to-upper
-      subarc outside \<open>N \<union> A2\<close>, and use the adjacent outside component to carry
-      the two local access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-    sorry
-  show ?thesis
-    by (rule conjI[OF hfrontier_component_1sphere houtside_access_same_component])
-qed
-
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_component_package_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4111,25 +4030,6 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
-  have hD44_regular_neighborhood_1sphere_and_component_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
-      \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-            ?Ncut Q1"
-    (**
-      Literal local Moise 4.4 regular-neighborhood assertion.  For the chosen
-      fine carrier \<open>N\<close> of \<open>A1\<close>, the restricted carrier is a 2-manifold with
-      boundary, and the frontier component \<open>J\<^sub>N\<close> through \<open>P\<close> is the book's
-      1-sphere.  The complementary frontier arc has an adjacent outside
-      component of
-      \<open>I - (N \<union> A2)\<close>, which is the component of \<open>?Ncut\<close> carrying the lower
-      and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-    by (rule
-        geotop_polygon_two_endpoint_arcs_fine_carrier_regular_neighborhood_book_step_prefix
-          [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-            hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-            hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-            hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def])
   have hD44_regular_neighborhood_exact_two_and_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4141,28 +4041,13 @@ proof -
       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
             ?Ncut Q1"
     (**
-      Graph translation of the literal book step above.  Moise states that the
-      frontier component is a 1-sphere; the existing finite linear-graph
-      classifier turns that polygonal frontier carrier into degree two, and
-      degree two expands to the exact two incident boundary edges at every
-      vertex. **)
+      Literal Moise 4.4 regular-neighborhood content in the rich carrier
+      context.  The component of the frontier through \<open>P\<close> is represented by
+      the boundary subcomplex \<open>BdJ\<^sub>N\<close>; the book's sentence that it is a
+      1-sphere is formalized here as exact-two incident boundary edges at every
+      boundary vertex.  The complementary frontier arc supplies the outside
+      component of \<open>I - (N \<union> A2)\<close> carrying \<open>Q1\<close> and \<open>S1\<close>. **)
   proof -
-    have hsphere:
-        "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-      using hD44_regular_neighborhood_1sphere_and_component_book_step
-      by (rule conjunct1)
-    have hsame:
-        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      using hD44_regular_neighborhood_1sphere_and_component_book_step
-      by (rule conjunct2)
-    have hpolygon:
-        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-      by (rule hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon[OF hsphere])
-    have hdegree:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      by (rule hD44_BdJ\<^sub>N_polygon_imp_degree_two[OF hpolygon])
     have htwo:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4171,7 +4056,20 @@ proof -
             \<and> e\<^sub>1 \<noteq> e\<^sub>2
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
+      (**
+        Moise 4.4, regular-neighborhood frontier sentence: the selected fine
+        carrier is locally a 2-manifold with boundary, so the boundary
+        component through \<open>P\<close> has exactly two incident frontier edges at every
+        vertex. **)
+      sorry
+    have hsame:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      (**
+        Moise 4.4, final corridor sentence: split the frontier circle into the
+        boundary arc and complementary frontier arc, then use the adjacent
+        outside component of \<open>I - (N \<union> A2)\<close> to carry the lower and upper access
+        witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+      sorry
     show ?thesis
       by (rule conjI[OF htwo hsame])
   qed
