@@ -1501,6 +1501,56 @@ proof (intro allI impI)
     by (by100 blast)
 qed
 
+lemma geotop_incident_ge1_le2_no_endpoint_degree_two_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hge1:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  assumes hle2:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  assumes hnoend:
+    "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  shows
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  (**
+    Pure finite-graph bookkeeping for the Moise 4.4 frontier component:
+    once the local regular-neighborhood argument supplies no branching and no
+    frontier endpoints, the existing at-least-one incidence gives degree two. **)
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  have hge:
+      "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+    by (rule hge1[OF hwL])
+  have hle:
+      "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    by (rule hle2[OF hwL])
+  have hcase:
+      "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1
+       \<or> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    using hge hle by (by100 linarith)
+  show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (rule disjE[OF hcase])
+    assume hcard1:
+      "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    have hend: "geotop_graph_endpoint L w"
+      by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+          [OF hL hwL hcard1])
+    have hnot: "\<not> geotop_graph_endpoint L w"
+      using hnoend hwL by (by100 blast)
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hend hnot by (by100 blast)
+  next
+    assume hcard2:
+      "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hcard2)
+  qed
+qed
+
 lemma geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix:
   fixes L :: "(real^2) set set" and X :: "(real^2) set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -4121,6 +4171,22 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_no_branch_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    (**
+      Moise 4.4 local regular-neighborhood boundary analysis: the selected
+      component of \<open>Fr N\<^sub>I\<close> has no branching at a frontier vertex.  In the
+      local star of such a vertex, at most the two frontier boundary arcs of
+      the 2-manifold-with-boundary carrier can pass through. **)
+    sorry
+  have hD44_frontier_no_endpoint_regular_neighborhood_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    (**
+      Moise 4.4 local regular-neighborhood boundary analysis: the frontier
+      component through \<open>P\<close> is a boundary component of the carrier
+      2-manifold-with-boundary, so it has no graph endpoint. **)
+    sorry
   have hD44_frontier_degree_two_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
@@ -4128,7 +4194,16 @@ proof -
       Moise 4.4 regular-neighborhood local boundary analysis: each vertex of
       the selected component of \<open>Fr N\<^sub>I\<close> has degree two in the frontier
       boundary graph of the fine carrier neighborhood. **)
-    sorry
+  proof -
+    have hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_frontier_no_branch_book_step by (by100 blast)
+    show ?thesis
+      by (rule geotop_incident_ge1_le2_no_endpoint_degree_two_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_vertex_incident_ge1 hle2
+            hD44_frontier_no_endpoint_regular_neighborhood_book_step])
+  qed
   have hD44_frontier_exact_two_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
