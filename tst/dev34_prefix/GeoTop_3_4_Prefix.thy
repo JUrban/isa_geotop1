@@ -362,6 +362,73 @@ proof -
     by (intro exI conjI)
 qed
 
+lemma geotop_iterated_Sd_selected_arc_carrier_closed_prefix:
+  fixes K :: "(real^2) set set" and A N :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  shows "closed N"
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hSd_sub])
+  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
+  proof
+    fix B
+    assume hB: "B \<in> geotop_iterated_Sd m K"
+    have hB_simplex: "geotop_is_simplex B"
+      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
+    have hB_compact: "compact B"
+      by (rule geotop_simplex_compact[OF hB_simplex])
+    show "closed B"
+      by (rule compact_imp_closed[OF hB_compact])
+  qed
+  have hN_index_fin:
+      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}"
+    using hSd_fin by (by100 simp)
+  have hN_index_closed:
+      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}. closed B"
+    using hSd_closed_all by (by100 blast)
+  show ?thesis
+    unfolding hN_def
+    by (rule closed_Union[OF hN_index_fin hN_index_closed])
+qed
+
+lemma geotop_polygon_iterated_Sd_selected_arc_carrier_cut_open_prefix:
+  fixes J A1 A2 N :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hA2:
+    "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  shows "geotop_polygon_interior J - (N \<union> A2) \<in> geotop_euclidean_topology"
+proof -
+  have hN_closed: "closed N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK hKfin hN_def])
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+    and h\<gamma>_img: "path_image \<gamma> = A2"
+    using geotop_is_arc_imp_HOL_arc[OF hA2] by (by100 blast)
+  have hA2_closed: "closed A2"
+    using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+  have hI_open_HOL: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hN_A2_closed: "closed (N \<union> A2)"
+    by (rule closed_Un[OF hN_closed hA2_closed])
+  have hNcut_open_HOL: "open (geotop_polygon_interior J - (N \<union> A2))"
+    by (rule open_Diff[OF hI_open_HOL hN_A2_closed])
+  show ?thesis
+    using hNcut_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+qed
+
 lemma geotop_polygon_boundary_point_two_arcs_avoiding_ball_prefix:
   fixes J A1 A2 :: "(real^2) set"
   assumes hX: "X \<in> J"
@@ -14179,44 +14246,9 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_access_component_transfer_pr
     D42 separation package to put the two access points in one component. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
-    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
-  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
-    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
-  have hSd_fin: "finite (geotop_iterated_Sd m K)"
-    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
-  have hSd_closed_all: "\<forall>B\<in>geotop_iterated_Sd m K. closed B"
-  proof
-    fix B
-    assume hB: "B \<in> geotop_iterated_Sd m K"
-    have hB_simplex: "geotop_is_simplex B"
-      using geotop_is_complex_simplex[OF hSd_complex] hB by (by100 blast)
-    have hB_compact: "compact B"
-      by (rule geotop_simplex_compact[OF hB_simplex])
-    show "closed B"
-      by (rule compact_imp_closed[OF hB_compact])
-  qed
-  have hN_index_fin:
-      "finite {B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-    using hSd_fin by (by100 simp)
-  have hN_index_closed:
-      "\<forall>B\<in>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}. closed B"
-    using hSd_closed_all by (by100 blast)
-  have hN_closed: "closed N"
-    unfolding hN_def
-    by (rule closed_Union[OF hN_index_fin hN_index_closed])
-  have hA2_closed: "closed A2"
-    using geotop_two_arcs_compact_closed_prefix[OF hA1 hA2] by (by100 blast)
-  have hI_open_HOL: "open (geotop_polygon_interior J)"
-    by (rule polygon_interior_open[OF hJ])
-  have hN_A2_closed: "closed (N \<union> A2)"
-    by (rule closed_Un[OF hN_closed hA2_closed])
-  have hNcut_open_HOL: "open ?Ncut"
-    by (rule open_Diff[OF hI_open_HOL hN_A2_closed])
   have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
-    using hNcut_open_HOL
-    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
-    by (by100 simp)
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_cut_open_prefix
+        [OF hJ hA2 hK_complex hK_fin hN_def])
   have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
     using hQ1_Ncut by (by100 blast)
   have hS1_I: "S1 \<in> geotop_polygon_interior J"
