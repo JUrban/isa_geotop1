@@ -1100,7 +1100,57 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_component_p
     lower and upper access witnesses.  The surrounding proof turns this package
     into the lower-to-upper broken-line route and then into the final component
     transfer for Theorem 4.4. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hP_in_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hP_N: "P \<in> N"
+    using hP_in_A1 hA1_N by (by100 blast)
+  have hN_compact: "compact N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN_closed: "closed N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK_complex hK_fin hK_poly hN_def])
+  have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def])
+  have hP_N\<^sub>I: "P \<in> N\<^sub>I"
+    using hP_N hN\<^sub>I_eq_N by (by100 simp)
+  have hN\<^sub>I_compact: "compact N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_compact by (by100 simp)
+  have hN\<^sub>I_closed: "closed N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hNcut_open: "?Ncut \<in> geotop_euclidean_topology"
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_cut_open_prefix
+        [OF hJ hA2 hK_complex hK_fin hN_def])
+  have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
+    unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+  have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+  have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+    by (rule closed_subset_compact
+        [OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
+  have hD44_regular_neighborhood_frontier_component_book_step: ?thesis
+    (**
+      Remaining Moise 4.4 content after the carrier restriction setup:
+      prove that the frontier component of \<open>N\<^sub>I = N \<inter> cl I\<close> through \<open>P\<close>
+      is the polygonal regular-neighborhood boundary component, with the
+      restricted boundary graph locally valence at most two and no endpoints,
+      and prove that the complementary frontier arc has an adjacent connected
+      outside corridor in \<open>?Ncut\<close> whose closure contains \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
+  show ?thesis
+    by (rule hD44_regular_neighborhood_frontier_component_book_step)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_fine_carrier_broken_line_access_crossings_prefix:
   fixes J A1 A2 N :: "(real^2) set"
