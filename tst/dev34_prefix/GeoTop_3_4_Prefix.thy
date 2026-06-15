@@ -2064,6 +2064,27 @@ lemma geotop_subset_avoids_A2_QS_points_prefix:
     boundary access points, hence also avoids \<open>R\<close> because \<open>R \<in> A2\<close>. **)
   using hX_sub hN_avoid hR_A2 by (by100 blast)
 
+lemma geotop_Ncut_frontier_boundary_disjoint_package_prefix:
+  fixes I N A2 Fr JN Bd :: "'a set" and Q1 S1 :: "'a"
+  assumes hFr_sub_N: "Fr \<subseteq> N"
+  assumes hJN_sub_N: "JN \<subseteq> N"
+  assumes hBd_sub_JN: "Bd \<subseteq> JN"
+  assumes hQ1_Ncut: "Q1 \<in> I - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> I - (N \<union> A2)"
+  shows
+    "(I - (N \<union> A2)) \<inter> N = {}
+     \<and> (I - (N \<union> A2)) \<inter> Fr = {}
+     \<and> (I - (N \<union> A2)) \<inter> JN = {}
+     \<and> (I - (N \<union> A2)) \<inter> Bd = {}
+     \<and> Q1 \<notin> Bd
+     \<and> S1 \<notin> Bd"
+  (**
+    D44 cut/frontier bookkeeping: the route carrier
+    \<open>I - (N \<union> A2)\<close> is disjoint from the neighborhood, hence from the
+    frontier component and its boundary-cycle carrier, and the two access
+    witnesses in the cut cannot lie on that boundary-cycle carrier. **)
+  using hFr_sub_N hJN_sub_N hBd_sub_JN hQ1_Ncut hS1_Ncut by (by100 blast)
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4084,21 +4105,30 @@ proof -
     using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
     using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hNcut_disjoint_package:
+      "?Ncut \<inter> N = {}
+       \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+       \<and> ?Ncut \<inter> J\<^sub>N = {}
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_Ncut_frontier_boundary_disjoint_package_prefix
+        [OF hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hBdJ\<^sub>N_poly_sub_J\<^sub>N hQ1_Ncut hS1_Ncut])
   have hNcut_N_disj: "?Ncut \<inter> N = {}"
-    by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
-    using hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
-    using hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_BdJ\<^sub>N_poly_disj:
       "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
-    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hQ1_not_BdJ\<^sub>N_poly:
       "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -7128,21 +7158,30 @@ proof -
     using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
     using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hNcut_disjoint_package:
+      "?Ncut \<inter> N = {}
+       \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+       \<and> ?Ncut \<inter> J\<^sub>N = {}
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_Ncut_frontier_boundary_disjoint_package_prefix
+        [OF hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hBdJ\<^sub>N_poly_sub_J\<^sub>N hQ1_Ncut hS1_Ncut])
   have hNcut_N_disj: "?Ncut \<inter> N = {}"
-    by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
-    using hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
-    using hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_BdJ\<^sub>N_poly_disj:
       "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
-    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hNcut_J\<^sub>N_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hQ1_not_BdJ\<^sub>N_poly:
       "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hD44_card_distinct:
       "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
     by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
@@ -12582,21 +12621,30 @@ proof -
     using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
     using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hNcut_disjoint_package:
+      "?Ncut \<inter> N = {}
+       \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+       \<and> ?Ncut \<inter> J\<^sub>N = {}
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_Ncut_frontier_boundary_disjoint_package_prefix
+        [OF hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hBdJ\<^sub>N_poly_sub_J\<^sub>N hQ1_Ncut hS1_Ncut])
   have hNcut_N_disj: "?Ncut \<inter> N = {}"
-    by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
-    using hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
-    using hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hNcut_BdJ\<^sub>N_poly_disj:
       "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
-    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hQ1_not_BdJ\<^sub>N_poly:
       "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+    using hNcut_disjoint_package by (by100 blast)
   have hD44_card_distinct:
       "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
     by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
@@ -19588,21 +19636,30 @@ proof -
         using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
       have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
         using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+      have hNcut_disjoint_package:
+          "?Ncut \<inter> N = {}
+           \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+           \<and> ?Ncut \<inter> J\<^sub>N = {}
+           \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+           \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+           \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+        by (rule geotop_Ncut_frontier_boundary_disjoint_package_prefix
+            [OF hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hBdJ\<^sub>N_poly_sub_J\<^sub>N hQ1_Ncut hS1_Ncut])
       have hNcut_N_disj: "?Ncut \<inter> N = {}"
-        by (by100 blast)
+        using hNcut_disjoint_package by (by100 blast)
       have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
-        using hFrN\<^sub>I_sub_N by (by100 blast)
+        using hNcut_disjoint_package by (by100 blast)
       have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
-        using hJ\<^sub>N_sub_N by (by100 blast)
+        using hNcut_disjoint_package by (by100 blast)
       have hNcut_BdJ\<^sub>N_poly_disj:
           "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
-        using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+        using hNcut_disjoint_package by (by100 blast)
       have hQ1_not_BdJ\<^sub>N_poly:
           "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-        using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+        using hNcut_disjoint_package by (by100 blast)
       have hS1_not_BdJ\<^sub>N_poly:
           "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-        using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+        using hNcut_disjoint_package by (by100 blast)
       have hD44_connected_route_component_suffices:
           "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
             top1_connected_on W
