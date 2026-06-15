@@ -2665,6 +2665,35 @@ proof -
       "closedin (top_of_set J\<^sub>N) (geotop_polyhedron BdJ\<^sub>N)"
     using hJ\<^sub>N_BdK\<^sub>N_poly_closedin_J\<^sub>N hJ\<^sub>N_BdK\<^sub>N_poly_eq_BdJ\<^sub>N_poly
     by (by100 simp)
+  have hJ\<^sub>N_uncovered_openin:
+      "openin (top_of_set J\<^sub>N)
+        (J\<^sub>N - geotop_polyhedron BdJ\<^sub>N)"
+    using hBdJ\<^sub>N_poly_closedin_J\<^sub>N
+    unfolding closedin_def by (by100 simp)
+  have hJ\<^sub>N_uncovered_closed:
+      "closed (J\<^sub>N - geotop_polyhedron BdJ\<^sub>N)"
+    using hJ\<^sub>N_uncovered_finite by (rule finite_imp_closed)
+  have hJ\<^sub>N_uncovered_closedin:
+      "closedin (top_of_set J\<^sub>N)
+        (J\<^sub>N - geotop_polyhedron BdJ\<^sub>N)"
+  proof -
+    have hclosedin_int:
+        "closedin (top_of_set J\<^sub>N)
+          (J\<^sub>N \<inter> (J\<^sub>N - geotop_polyhedron BdJ\<^sub>N))"
+      using hJ\<^sub>N_uncovered_closed by (rule closedin_closed_Int)
+    have heq:
+        "J\<^sub>N \<inter> (J\<^sub>N - geotop_polyhedron BdJ\<^sub>N) =
+          J\<^sub>N - geotop_polyhedron BdJ\<^sub>N"
+      by (by100 blast)
+    show ?thesis
+      using hclosedin_int heq by (by100 simp)
+  qed
+  have hJ\<^sub>N_uncovered_empty_or_all:
+      "J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = {}
+        \<or> J\<^sub>N - geotop_polyhedron BdJ\<^sub>N = J\<^sub>N"
+    using connected_clopen[THEN iffD1, OF hJ\<^sub>N_connected_HOL]
+      hJ\<^sub>N_uncovered_openin hJ\<^sub>N_uncovered_closedin
+    by (by100 blast)
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
