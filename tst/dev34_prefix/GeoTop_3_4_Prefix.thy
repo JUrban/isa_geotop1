@@ -4171,6 +4171,37 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_1sphere_regular_neighborhood_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Moise 4.4 regular-neighborhood sentence in its direct form: after
+      taking \<open>N\<^sub>I = N \<inter> closure I\<close>, the component of \<open>Fr N\<^sub>I\<close> that
+      contains \<open>P\<close> is a 1-sphere.  The local graph incidence facts below are
+      consequences of this statement, not independent book assertions. **)
+    sorry
+  have hD44_frontier_polygon_from_1sphere:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+  proof -
+    have hBdJ\<^sub>N_complex_from_linear: "geotop_is_complex BdJ\<^sub>N"
+      by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
+    have hsphere_BdJ:
+        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hD44_frontier_1sphere_regular_neighborhood_book_step
+        hJ\<^sub>N_eq_BdJ\<^sub>N_poly_from_coverage by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex_from_linear, by100 simp, rule hsphere_BdJ)
+  qed
+  have hD44_frontier_degree_two_from_1sphere:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+          hD44_frontier_polygon_from_1sphere])
   have hD44_frontier_no_branch_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
@@ -4179,14 +4210,23 @@ proof -
       component of \<open>Fr N\<^sub>I\<close> has no branching at a frontier vertex.  In the
       local star of such a vertex, at most the two frontier boundary arcs of
       the 2-manifold-with-boundary carrier can pass through. **)
-    sorry
+  proof (intro allI impI)
+    fix w
+    assume hw: "{w} \<in> BdJ\<^sub>N"
+    have hdegree:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hD44_frontier_degree_two_from_1sphere hw by (by100 blast)
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hdegree by (by100 simp)
+  qed
   have hD44_frontier_no_endpoint_regular_neighborhood_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
     (**
       Moise 4.4 local regular-neighborhood boundary analysis: the frontier
       component through \<open>P\<close> is a boundary component of the carrier
       2-manifold-with-boundary, so it has no graph endpoint. **)
-    sorry
+    by (rule geotop_degree_two_vertices_no_graph_endpoint_prefix
+        [OF hD44_frontier_degree_two_from_1sphere])
   have hD44_frontier_degree_two_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
