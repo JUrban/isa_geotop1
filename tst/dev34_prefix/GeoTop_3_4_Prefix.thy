@@ -4105,6 +4105,22 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_sphere_and_corridor_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
+      and boundary graph have been identified above, prove the book sentence
+      that the frontier component through \<open>P\<close> is a 1-sphere, and construct the
+      complementary lower-to-upper outside corridor in \<open>I - (N \<union> A2)\<close> whose
+      closure contains the two access witnesses.  The finite graph classifiers
+      below then derive the local no-branch and no-endpoint consequences. **)
+    sorry
   have hD44_graph_bounds_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4115,15 +4131,57 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    (**
-      Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
-      and boundary graph have been identified above, prove that the frontier
-      component is locally a 1-manifold: every boundary vertex has no branching
-      and no graph endpoint.  Then construct the complementary lower-to-upper
-      outside corridor in \<open>I - (N \<union> A2)\<close> whose closure contains the two access
-      witnesses.  The already proved graph/corridor package then gives the
-      1-sphere and arbitrary broken-line access conclusions. **)
-    sorry
+  proof -
+    have hD44_frontier_1sphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      using hD44_frontier_sphere_and_corridor_book_step by (rule conjunct1)
+    have hD44_corridor_book:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      using hD44_frontier_sphere_and_corridor_book_step by (rule conjunct2)
+    have hD44_BdJ\<^sub>N_polygon:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      have hsphere_BdJ:
+          "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron BdJ\<^sub>N)) 1"
+        using hD44_frontier_1sphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+      show ?thesis
+        unfolding geotop_is_polygon_def
+        by (intro exI[where x=BdJ\<^sub>N] conjI,
+            rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+    qed
+    have hD44_BdJ\<^sub>N_degree_two:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+            hD44_BdJ\<^sub>N_polygon])
+    have hD44_card_le2_all:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    proof (intro allI impI)
+      fix w
+      assume hw: "{w} \<in> BdJ\<^sub>N"
+      have hcard:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        using hD44_BdJ\<^sub>N_degree_two hw by (by100 blast)
+      show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+        using hcard by (by100 simp)
+    qed
+    have hD44_no_endpoint_all:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      by (rule geotop_degree_two_vertices_no_graph_endpoint_prefix
+          [OF hD44_BdJ\<^sub>N_degree_two])
+    show ?thesis
+      using hD44_card_le2_all hD44_no_endpoint_all hD44_corridor_book
+      by (intro conjI)
+  qed
   have hD44_graph_bounds:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
