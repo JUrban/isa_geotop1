@@ -756,6 +756,28 @@ proof (rule ccontr)
     using hA_not_singleton[of p] hA_sub_single by (by100 blast)
 qed
 
+lemma geotop_comb_boundary_edge_one_incident_2simplex_member_prefix:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  shows "e \<in> geotop_comb_boundary K 2"
+  (**
+    Direct unpacking of the combinatorial boundary definition: an edge with
+    exactly one incident 2-simplex is one of the boundary 1-simplexes. **)
+proof -
+  let ?S = "{\<tau> \<in> K. geotop_simplex_dim \<tau> (2 - 1) \<and>
+      card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and>
+        geotop_is_face \<tau> \<sigma>} = 1}"
+  have he_dim: "geotop_simplex_dim e (2 - 1)"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have heS: "e \<in> ?S"
+    using heK he_dim hcard by (by100 simp)
+  show ?thesis
+    unfolding geotop_comb_boundary_def using heS by (by100 simp)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -2372,22 +2394,8 @@ proof -
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
         \<Longrightarrow> e \<in> BdK\<^sub>N"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hcard1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
-        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
-          geotop_is_face \<tau> \<sigma>} = 1}"
-    have he_dim: "geotop_simplex_dim e (2 - 1)"
-      using hedge unfolding geotop_is_edge_def by (by100 simp)
-    have heS: "e \<in> ?S"
-      using heK he_dim hcard1 by (by100 simp)
-    show "e \<in> BdK\<^sub>N"
-      unfolding hBdK\<^sub>N_def geotop_comb_boundary_def using heS by (by100 simp)
-  qed
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_edge_one_incident_2simplex_member_prefix)
   have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
       "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
   proof -
@@ -5453,22 +5461,8 @@ proof -
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
         \<Longrightarrow> e \<in> BdK\<^sub>N"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hcard1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
-        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
-          geotop_is_face \<tau> \<sigma>} = 1}"
-    have he_dim: "geotop_simplex_dim e (2 - 1)"
-      using hedge unfolding geotop_is_edge_def by (by100 simp)
-    have heS: "e \<in> ?S"
-      using heK he_dim hcard1 by (by100 simp)
-    show "e \<in> BdK\<^sub>N"
-      unfolding BdK\<^sub>N_def geotop_comb_boundary_def using heS by (by100 simp)
-  qed
+    unfolding BdK\<^sub>N_def
+    by (rule geotop_comb_boundary_edge_one_incident_2simplex_member_prefix)
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
@@ -11214,22 +11208,8 @@ proof -
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
         \<Longrightarrow> e \<in> BdK\<^sub>N"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hcard1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
-        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
-          geotop_is_face \<tau> \<sigma>} = 1}"
-    have he_dim: "geotop_simplex_dim e (2 - 1)"
-      using hedge unfolding geotop_is_edge_def by (by100 simp)
-    have heS: "e \<in> ?S"
-      using heK he_dim hcard1 by (by100 simp)
-    show "e \<in> BdK\<^sub>N"
-      unfolding BdK\<^sub>N_def geotop_comb_boundary_def using heS by (by100 simp)
-  qed
+    unfolding BdK\<^sub>N_def
+    by (rule geotop_comb_boundary_edge_one_incident_2simplex_member_prefix)
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
@@ -18382,22 +18362,8 @@ proof -
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
           \<Longrightarrow> e \<in> BdK\<^sub>N"
-    proof -
-      fix e
-      assume heK: "e \<in> K\<^sub>N"
-        and hedge: "geotop_is_edge e"
-        and hcard1:
-          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-      let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
-          card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
-            geotop_is_face \<tau> \<sigma>} = 1}"
-      have he_dim: "geotop_simplex_dim e (2 - 1)"
-        using hedge unfolding geotop_is_edge_def by (by100 simp)
-      have heS: "e \<in> ?S"
-        using heK he_dim hcard1 by (by100 simp)
-      show "e \<in> BdK\<^sub>N"
-        unfolding BdK\<^sub>N_def geotop_comb_boundary_def using heS by (by100 simp)
-    qed
+      unfolding BdK\<^sub>N_def
+      by (rule geotop_comb_boundary_edge_one_incident_2simplex_member_prefix)
     have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
         "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
