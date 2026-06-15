@@ -2226,6 +2226,50 @@ proof -
         [OF hB_sub hX_B hY_B hB_conn])
 qed
 
+lemma geotop_component_at_open_connected_package_prefix:
+  fixes U :: "(real^2) set" and X :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hXU: "X \<in> U"
+  shows
+    "\<exists>C. C = geotop_component_at UNIV geotop_euclidean_topology U X
+      \<and> C \<subseteq> U
+      \<and> X \<in> C
+      \<and> C \<in> geotop_euclidean_topology
+      \<and> top1_connected_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)"
+  (**
+    Pure component package used in Moise 4.4: in an open Euclidean carrier,
+    the component of a point is open, contained in the carrier, contains the
+    point, and is connected in the induced topology. **)
+proof -
+  let ?C = "geotop_component_at UNIV geotop_euclidean_topology U X"
+  have hC_open: "?C \<in> geotop_euclidean_topology"
+    by (rule geotop_component_at_open_in_euclidean[OF hUopen hXU])
+  have hC_eq: "?C = connected_component_set U X"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hC_sub: "?C \<subseteq> U"
+    using hC_eq connected_component_subset by (by100 simp)
+  have hX_C: "X \<in> ?C"
+    using hC_eq hXU connected_component_refl by (by100 simp)
+  have hC_conn_HOL: "connected ?C"
+    using hC_eq connected_connected_component by (by100 simp)
+  have hC_conn:
+      "top1_connected_on ?C
+        (subspace_topology UNIV geotop_euclidean_topology ?C)"
+    using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  show ?thesis
+  proof (rule exI[where x="?C"], intro conjI)
+    show "?C = geotop_component_at UNIV geotop_euclidean_topology U X"
+      by (by100 simp)
+    show "?C \<subseteq> U" by (rule hC_sub)
+    show "X \<in> ?C" by (rule hX_C)
+    show "?C \<in> geotop_euclidean_topology" by (rule hC_open)
+    show "top1_connected_on ?C
+      (subspace_topology UNIV geotop_euclidean_topology ?C)"
+      by (rule hC_conn)
+  qed
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -9384,35 +9428,8 @@ proof -
       frontier subarc must enter.  The final book step is now precisely to
       show that the access point near \<open>S\<close> lies in this open connected
       component of \<open>I - (N \<union> A2)\<close>. **)
-  proof -
-    let ?C = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    have hC_open: "?C \<in> geotop_euclidean_topology"
-      by (rule geotop_component_at_open_in_euclidean[OF hNcut_open hQ1_Ncut])
-    have hC_eq: "?C = connected_component_set ?Ncut Q1"
-      by (rule geotop_component_at_UNIV_eq_connected_component_set)
-    have hC_sub: "?C \<subseteq> ?Ncut"
-      using hC_eq connected_component_subset by (by100 simp)
-    have hQ1_C: "Q1 \<in> ?C"
-      using hC_eq hQ1_Ncut connected_component_refl by (by100 simp)
-    have hC_conn_HOL: "connected ?C"
-      using hC_eq connected_connected_component by (by100 simp)
-    have hC_conn:
-        "top1_connected_on ?C
-          (subspace_topology UNIV geotop_euclidean_topology ?C)"
-      using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
-    show ?thesis
-    proof (rule exI[where x="?C"], intro conjI)
-      show "?C = geotop_component_at UNIV geotop_euclidean_topology
-          ?Ncut Q1"
-        by (by100 simp)
-      show "?C \<subseteq> ?Ncut" by (rule hC_sub)
-      show "Q1 \<in> ?C" by (rule hQ1_C)
-      show "?C \<in> geotop_euclidean_topology" by (rule hC_open)
-      show "top1_connected_on ?C
-          (subspace_topology UNIV geotop_euclidean_topology ?C)"
-        by (rule hC_conn)
-    qed
-  qed
+    by (rule geotop_component_at_open_connected_package_prefix
+        [OF hNcut_open hQ1_Ncut])
   have hD44_same_component_gives_closed_corridor:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
@@ -14824,35 +14841,8 @@ proof -
       frontier subarc must enter.  The final book step is now precisely to
       show that the access point near \<open>S\<close> lies in this open connected
       component of \<open>I - (N \<union> A2)\<close>. **)
-  proof -
-    let ?C = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    have hC_open: "?C \<in> geotop_euclidean_topology"
-      by (rule geotop_component_at_open_in_euclidean[OF hNcut_open hQ1_Ncut])
-    have hC_eq: "?C = connected_component_set ?Ncut Q1"
-      by (rule geotop_component_at_UNIV_eq_connected_component_set)
-    have hC_sub: "?C \<subseteq> ?Ncut"
-      using hC_eq connected_component_subset by (by100 simp)
-    have hQ1_C: "Q1 \<in> ?C"
-      using hC_eq hQ1_Ncut connected_component_refl by (by100 simp)
-    have hC_conn_HOL: "connected ?C"
-      using hC_eq connected_connected_component by (by100 simp)
-    have hC_conn:
-        "top1_connected_on ?C
-          (subspace_topology UNIV geotop_euclidean_topology ?C)"
-      using hC_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
-    show ?thesis
-    proof (rule exI[where x="?C"], intro conjI)
-      show "?C = geotop_component_at UNIV geotop_euclidean_topology
-          ?Ncut Q1"
-        by (by100 simp)
-      show "?C \<subseteq> ?Ncut" by (rule hC_sub)
-      show "Q1 \<in> ?C" by (rule hQ1_C)
-      show "?C \<in> geotop_euclidean_topology" by (rule hC_open)
-      show "top1_connected_on ?C
-          (subspace_topology UNIV geotop_euclidean_topology ?C)"
-        by (rule hC_conn)
-    qed
-  qed
+    by (rule geotop_component_at_open_connected_package_prefix
+        [OF hNcut_open hQ1_Ncut])
   have hD44_same_component_gives_closed_corridor:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
         \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
