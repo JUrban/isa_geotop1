@@ -3693,6 +3693,29 @@ proof -
     using hQ1_not_N hA1_N by (by100 blast)
   have hS1_not_A1: "S1 \<notin> A1"
     using hS1_not_N hA1_N by (by100 blast)
+  have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hQ1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hS1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+  have hNcut_N_disj: "?Ncut \<inter> N = {}"
+    by (by100 blast)
+  have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
+    using hFrN\<^sub>I_sub_N by (by100 blast)
+  have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
+    using hJ\<^sub>N_sub_N by (by100 blast)
+  have hNcut_BdJ\<^sub>N_poly_disj:
+      "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hNcut_J\<^sub>N_disj by (by100 blast)
+  have hQ1_not_BdJ\<^sub>N_poly:
+      "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hQ1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hS1_not_BdJ\<^sub>N_poly:
+      "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
