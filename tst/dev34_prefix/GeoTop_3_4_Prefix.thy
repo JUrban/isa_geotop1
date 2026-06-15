@@ -411,6 +411,62 @@ proof -
     by (rule compact_imp_closed[OF hN_compact])
 qed
 
+lemma geotop_iterated_Sd_selected_arc_carrier_subset_polyhedron_prefix:
+  fixes K :: "(real^2) set set" and A N :: "(real^2) set"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  shows "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+  unfolding hN_def geotop_polyhedron_def by (by100 blast)
+
+lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
+  fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  shows
+    "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J)"
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hN_sub_Sd_poly: "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_subset_polyhedron_prefix
+        [OF hN_def])
+  show ?thesis
+    using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+qed
+
+lemma geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix:
+  fixes J A N N\<^sub>I :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  shows "N\<^sub>I = N"
+proof -
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK hKfin hK_poly hN_def])
+  show ?thesis
+    unfolding hN\<^sub>I_def using hN_sub_disk by (by100 blast)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_cut_open_prefix:
   fixes J A1 A2 N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -1116,7 +1172,8 @@ proof -
   have hN_sub_disk:
       "N \<subseteq> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
-    using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK_complex hK_fin hK_poly hN_def])
   have hN_compact: "compact N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
         [OF hK_complex hK_fin hN_def])
@@ -1229,7 +1286,9 @@ proof -
       "N\<^sub>I = N \<inter> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
   have hN\<^sub>I_eq_N: "N\<^sub>I = N"
-    unfolding N\<^sub>I_def using hN_sub_disk by (by100 blast)
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK_complex hK_fin hK_poly hN_def N\<^sub>I_def])
   have hN\<^sub>I_compact: "compact N\<^sub>I"
     using hN\<^sub>I_eq_N hN_compact by (by100 simp)
   have hN\<^sub>I_closed: "closed N\<^sub>I"
@@ -7108,7 +7167,8 @@ proof -
   have hN_sub_disk:
       "N \<subseteq> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
-    using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK_complex hK_fin hK_poly hN_def])
   have hN_compact: "compact N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
         [OF hK_complex hK_fin hN_def])
@@ -7203,7 +7263,9 @@ proof -
       "N\<^sub>I = N \<inter> closure_on UNIV geotop_euclidean_topology
         (geotop_polygon_interior J)"
   have hN\<^sub>I_eq_N: "N\<^sub>I = N"
-    unfolding N\<^sub>I_def using hN_sub_disk by (by100 blast)
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK_complex hK_fin hK_poly hN_def N\<^sub>I_def])
   have hN\<^sub>I_compact: "compact N\<^sub>I"
     using hN\<^sub>I_eq_N hN_compact by (by100 simp)
   have hN\<^sub>I_closed: "closed N\<^sub>I"
@@ -14523,7 +14585,8 @@ proof -
     have hN_sub_disk:
         "N \<subseteq> closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior J)"
-      using hN_sub_Sd_poly hSd_poly hK_poly by (by100 simp)
+      by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+          [OF hK_complex hK_fin hK_poly hN_def])
     have hN_compact: "compact N"
       by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
           [OF hK_complex hK_fin hN_def])
@@ -14618,7 +14681,9 @@ proof -
         "N\<^sub>I = N \<inter> closure_on UNIV geotop_euclidean_topology
           (geotop_polygon_interior J)"
     have hN\<^sub>I_eq_N: "N\<^sub>I = N"
-      unfolding N\<^sub>I_def using hN_sub_disk by (by100 blast)
+      by (rule
+          geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+            [OF hK_complex hK_fin hK_poly hN_def N\<^sub>I_def])
     have hN\<^sub>I_compact: "compact N\<^sub>I"
       using hN\<^sub>I_eq_N hN_compact by (by100 simp)
     have hN\<^sub>I_closed: "closed N\<^sub>I"
