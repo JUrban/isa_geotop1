@@ -2533,47 +2533,54 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corr
     \<open>Q\<close> and \<open>S\<close>. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_frontier_degree_two_book_step:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+  have hD44_frontier_graph_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z)"
     (**
-      Moise 4.4 local frontier step.  The regular-neighborhood frontier is
-      locally a 1-manifold: every vertex of the boundary component has degree
-      two in the frontier graph. **)
+      Moise 4.4 local regular-neighborhood step.  The frontier component of
+      the fine carrier is locally a 1-manifold graph (non-isolated, valence at
+      most two, no endpoint), and the complementary frontier arc has an
+      adjacent outside corridor in \<open>I - (N \<union> A2)\<close> whose closure contains the
+      two access witnesses. **)
     sorry
-  have hD44_frontier_exact_two_incidence_book_step:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
-        [OF hD44_frontier_degree_two_book_step])
+  have hD44_frontier_vertex_incident_ge1:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
+  have hD44_frontier_vertex_incident_le2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
   have hD44_frontier_component_1sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
     (**
-      Moise 4.4, first frontier sentence: exact local frontier incidence on
-      the finite connected boundary graph makes the component of \<open>Fr N'\<close>
-      through \<open>P\<close> a 1-sphere. **)
-    by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
+      Moise 4.4, first frontier sentence: the finite connected boundary graph
+      with valence at most two and no endpoint is a polygonal 1-sphere. **)
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
         [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
           hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-          hD44_frontier_exact_two_incidence_book_step])
+          hD44_frontier_vertex_incident_ge1 hD44_frontier_vertex_incident_le2
+          hD44_frontier_no_endpoint])
   have hD44_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    (**
-      Moise 4.4, final corridor sentence: the broken line between the last
-      lower and first upper boundary hits lies on the complementary frontier
-      arc, and the adjacent outside component gives a connected corridor whose
-      closure contains the access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
-    sorry
+    using hD44_frontier_graph_corridor_book_step by (by100 blast)
   show ?thesis
     by (intro conjI,
         rule hD44_frontier_component_1sphere_book_step,
