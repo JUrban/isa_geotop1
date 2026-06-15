@@ -3006,6 +3006,26 @@ proof -
     using hBdJ\<^sub>N_poly_nonempty unfolding geotop_polyhedron_def by (by100 blast)
   have hP_BdJ\<^sub>N_poly: "P \<in> geotop_polyhedron BdJ\<^sub>N"
     using hP_J\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  have hBdJ\<^sub>N_P_incident_edge:
+      "\<exists>e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> P \<in> e"
+  proof -
+    obtain e where heK: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hP_e: "P \<in> e"
+      and hcard1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_face e \<sigma>} = 1"
+      using hP_boundary_K\<^sub>N_one_incident_edge by (by100 blast)
+    have heBdK: "e \<in> BdK\<^sub>N"
+      by (rule hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N
+          [OF heK hedge hcard1])
+    have hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+      using hP_e hP_J\<^sub>N by (by100 blast)
+    have heBdJ: "e \<in> BdJ\<^sub>N"
+      by (rule hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N[OF heBdK hedge hmeet])
+    show ?thesis
+      using heBdJ hedge hP_e by (intro bexI[where x=e] conjI)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
