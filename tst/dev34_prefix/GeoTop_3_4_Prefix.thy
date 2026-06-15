@@ -572,6 +572,77 @@ proof -
     unfolding hN\<^sub>I_def using hN_sub_disk by (by100 blast)
 qed
 
+lemma geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix:
+  fixes J A N N\<^sub>I :: "(real^2) set"
+    and K :: "(real^2) set set"
+    and P :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hAJ: "A \<inter> J = {P}"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  assumes hA_N: "A \<subseteq> N"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  shows "P \<in> geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  (**
+    Moise 4.4 carrier setup: the unique polygon-boundary endpoint of the
+    selected arc lies in the restricted carrier, but cannot lie in its ordinary
+    interior because it already lies on the frontier of the closed polygonal
+    disk. **)
+proof -
+  have hP_A: "P \<in> A"
+    using hAJ by (by100 blast)
+  have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK hKfin hK_poly hN_def hN\<^sub>I_def])
+  have hP_N: "P \<in> N"
+    using hP_A hA_N by (by100 blast)
+  have hP_N\<^sub>I: "P \<in> N\<^sub>I"
+    using hP_N hN\<^sub>I_eq_N by (by100 simp)
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK hKfin hK_poly hN_def])
+  have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
+    using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
+  have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+  have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
+    using hP hK_poly_frontier_eq_J by (by100 simp)
+  have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
+    using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
+  proof
+    assume hP_int: "P \<in> interior N\<^sub>I"
+    have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
+      by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
+    have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
+      using hinter_sub hP_int by (by100 blast)
+    show False
+      using hP_not_int_K_poly hP_int_K by (by100 blast)
+  qed
+  have hP_cl: "P \<in> closure N\<^sub>I"
+    using hP_N\<^sub>I closure_subset by (by100 blast)
+  have hP_front: "P \<in> frontier N\<^sub>I"
+    using hP_cl hP_not_int_N\<^sub>I
+    unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hFr_eq:
+      "geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I = frontier N\<^sub>I"
+    by (rule geotop_frontier_UNIV_eq_frontier)
+  show ?thesis
+    using hP_front hFr_eq by (by100 simp)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_cut_open_prefix:
   fixes J A1 A2 N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -1360,33 +1431,9 @@ proof -
   have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
     using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
   have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
-  proof -
-    have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
-      using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
-    have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
-      by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
-    have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
-      using hP hK_poly_frontier_eq_J by (by100 simp)
-    have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
-      using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
-    have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
-    proof
-      assume hP_int: "P \<in> interior N\<^sub>I"
-      have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
-        by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
-      have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
-        using hinter_sub hP_int by (by100 blast)
-      show False
-        using hP_not_int_K_poly hP_int_K by (by100 blast)
-    qed
-    have hP_cl: "P \<in> closure N\<^sub>I"
-      using hP_N\<^sub>I closure_subset by (by100 blast)
-    have hP_front: "P \<in> frontier N\<^sub>I"
-      using hP_cl hP_not_int_N\<^sub>I
-      unfolding Elementary_Topology.frontier_def by (by100 blast)
-    show ?thesis
-      using hFrN\<^sub>I_HOL hP_front by (by100 simp)
-  qed
+    using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
+        [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N hN\<^sub>I_def]
+      hFrN\<^sub>I_def by (by100 simp)
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
   proof -
     have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
@@ -4480,36 +4527,10 @@ proof -
     using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
   have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
     using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
-  have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
-    using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
-  have hP_N\<^sub>I: "P \<in> N\<^sub>I"
-    using hP_in_A1 hA1_N hN\<^sub>I_eq_N by (by100 blast)
-  have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
-    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
-  have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
-    using hP hK_poly_frontier_eq_J by (by100 simp)
-  have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
-    using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
-  have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
-  proof
-    assume hP_int: "P \<in> interior N\<^sub>I"
-    have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
-      by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
-    have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
-      using hinter_sub hP_int by (by100 blast)
-    show False
-      using hP_not_int_K_poly hP_int_K by (by100 blast)
-  qed
   have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
-  proof -
-    have hP_cl: "P \<in> closure N\<^sub>I"
-      using hP_N\<^sub>I closure_subset by (by100 blast)
-    have hP_front: "P \<in> frontier N\<^sub>I"
-      using hP_cl hP_not_int_N\<^sub>I
-      unfolding Elementary_Topology.frontier_def by (by100 blast)
-    show ?thesis
-      using hFrN\<^sub>I_HOL hP_front by (by100 simp)
-  qed
+    using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
+        [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N N\<^sub>I_def]
+      FrN\<^sub>I_def by (by100 simp)
   define J\<^sub>N where
       "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
@@ -10380,36 +10401,10 @@ proof -
     using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
   have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
     using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
-  have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
-    using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
-  have hP_N\<^sub>I: "P \<in> N\<^sub>I"
-    using hP_in_A1 hA1_N hN\<^sub>I_eq_N by (by100 blast)
-  have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
-    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
-  have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
-    using hP hK_poly_frontier_eq_J by (by100 simp)
-  have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
-    using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
-  have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
-  proof
-    assume hP_int: "P \<in> interior N\<^sub>I"
-    have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
-      by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
-    have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
-      using hinter_sub hP_int by (by100 blast)
-    show False
-      using hP_not_int_K_poly hP_int_K by (by100 blast)
-  qed
   have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
-  proof -
-    have hP_cl: "P \<in> closure N\<^sub>I"
-      using hP_N\<^sub>I closure_subset by (by100 blast)
-    have hP_front: "P \<in> frontier N\<^sub>I"
-      using hP_cl hP_not_int_N\<^sub>I
-      unfolding Elementary_Topology.frontier_def by (by100 blast)
-    show ?thesis
-      using hFrN\<^sub>I_HOL hP_front by (by100 simp)
-  qed
+    using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
+        [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N N\<^sub>I_def]
+      FrN\<^sub>I_def by (by100 simp)
   define J\<^sub>N where
       "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
@@ -17723,36 +17718,10 @@ proof -
       using hFrN\<^sub>I_A2_QS_disj by (by100 blast)
     have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
       using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
-    have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
-      using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
-    have hP_N\<^sub>I: "P \<in> N\<^sub>I"
-      using hP_in_A1 hA1_N hN\<^sub>I_eq_N by (by100 blast)
-    have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
-      by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
-    have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
-      using hP hK_poly_frontier_eq_J by (by100 simp)
-    have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
-      using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
-    have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
-    proof
-      assume hP_int: "P \<in> interior N\<^sub>I"
-      have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
-        by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
-      have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
-        using hinter_sub hP_int by (by100 blast)
-      show False
-        using hP_not_int_K_poly hP_int_K by (by100 blast)
-    qed
     have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
-    proof -
-      have hP_cl: "P \<in> closure N\<^sub>I"
-        using hP_N\<^sub>I closure_subset by (by100 blast)
-      have hP_front: "P \<in> frontier N\<^sub>I"
-        using hP_cl hP_not_int_N\<^sub>I
-        unfolding Elementary_Topology.frontier_def by (by100 blast)
-      show ?thesis
-        using hFrN\<^sub>I_HOL hP_front by (by100 simp)
-    qed
+      using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
+          [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N N\<^sub>I_def]
+        FrN\<^sub>I_def by (by100 simp)
     define J\<^sub>N where
         "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
     have hP_J\<^sub>N: "P \<in> J\<^sub>N"
