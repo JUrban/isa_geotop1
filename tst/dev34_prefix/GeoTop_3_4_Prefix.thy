@@ -2190,6 +2190,42 @@ proof (intro allI impI)
     using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
 qed
 
+lemma geotop_same_component_open_broken_line_route_prefix:
+  fixes U :: "(real^2) set" and X Y :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hXU: "X \<in> U"
+  assumes hY_comp: "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  shows "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> X \<in> B \<and> Y \<in> B"
+  (**
+    D44 route extraction bookkeeping: in an open Euclidean carrier, component
+    membership gives the literal broken-line route used in Moise's proof. **)
+  by (rule geotop_open_component_broken_line_between_prefix
+      [OF hUopen hXU hY_comp])
+
+lemma geotop_broken_line_route_component_at_prefix:
+  fixes U :: "(real^2) set" and X Y :: "real^2"
+  assumes hB_ex:
+    "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> X \<in> B \<and> Y \<in> B"
+  shows "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  (**
+    D44 route-to-component bookkeeping: the book's broken-line route is a
+    connected witness inside the outside carrier, hence puts its endpoints in
+    the same component. **)
+proof -
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub: "B \<subseteq> U"
+    and hX_B: "X \<in> B"
+    and hY_B: "Y \<in> B"
+    using hB_ex by (elim exE conjE)
+  have hB_conn:
+      "top1_connected_on B
+        (subspace_topology UNIV geotop_euclidean_topology B)"
+    by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+  show ?thesis
+    by (rule geotop_connected_witness_component_at_intro_prefix
+        [OF hB_sub hX_B hY_B hB_conn])
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -9309,13 +9345,8 @@ proof -
           \<and> B \<subseteq> ?Ncut
           \<and> Q1 \<in> B
           \<and> S1 \<in> B"
-  proof -
-    assume hS1_comp:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    show ?thesis
-      by (rule geotop_open_component_broken_line_between_prefix
-          [OF hNcut_open hQ1_Ncut hS1_comp])
-  qed
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut])
   have hD44_connected_route_component_suffices:
       "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
         top1_connected_on W
@@ -9339,26 +9370,7 @@ proof -
       target exactly the book's broken line \<open>B\<close> in
       \<open>I - (N \<union> A2)\<close>.  Once such a broken line is constructed, connectedness
       of broken lines supplies the component relation. **)
-  proof -
-    assume hB_ex:
-      "\<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> Q1 \<in> B
-        \<and> S1 \<in> B"
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_sub: "B \<subseteq> ?Ncut"
-      and hQ1_B: "Q1 \<in> B"
-      and hS1_B: "S1 \<in> B"
-      using hB_ex by (elim exE conjE)
-    have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-    show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-        ?Ncut Q1"
-      by (rule hD44_connected_route_component_suffices
-          [OF hB_sub hQ1_B hS1_B hB_conn])
-  qed
+    by (rule geotop_broken_line_route_component_at_prefix)
   have hD44_Q1_Ncut_component_package:
       "\<exists>C. C = geotop_component_at UNIV geotop_euclidean_topology
               ?Ncut Q1
@@ -14773,13 +14785,8 @@ proof -
           \<and> B \<subseteq> ?Ncut
           \<and> Q1 \<in> B
           \<and> S1 \<in> B"
-  proof -
-    assume hS1_comp:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    show ?thesis
-      by (rule geotop_open_component_broken_line_between_prefix
-          [OF hNcut_open hQ1_Ncut hS1_comp])
-  qed
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut])
   have hD44_connected_route_component_suffices:
       "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
         top1_connected_on W
@@ -14803,26 +14810,7 @@ proof -
       target exactly the book's broken line \<open>B\<close> in
       \<open>I - (N \<union> A2)\<close>.  Once such a broken line is constructed, connectedness
       of broken lines supplies the component relation. **)
-  proof -
-    assume hB_ex:
-      "\<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> Q1 \<in> B
-        \<and> S1 \<in> B"
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_sub: "B \<subseteq> ?Ncut"
-      and hQ1_B: "Q1 \<in> B"
-      and hS1_B: "S1 \<in> B"
-      using hB_ex by (elim exE conjE)
-    have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-    show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-        ?Ncut Q1"
-      by (rule hD44_connected_route_component_suffices
-          [OF hB_sub hQ1_B hS1_B hB_conn])
-  qed
+    by (rule geotop_broken_line_route_component_at_prefix)
   have hD44_Q1_Ncut_component_package:
       "\<exists>C. C = geotop_component_at UNIV geotop_euclidean_topology
               ?Ncut Q1
@@ -19812,7 +19800,7 @@ proof -
           Section 1/D42 broken-line-connectedness bridge turns same-component
           membership into the literal broken line used by the surrounding
           component bookkeeping. **)
-        by (rule geotop_open_component_broken_line_between_prefix
+        by (rule geotop_same_component_open_broken_line_route_prefix
             [OF hNcut_open hQ1_Ncut hD44_central_same_component_in_Ncut_book_step])
       have hD44_central_frontier_route_exists:
           "\<exists>W. W \<subseteq> ?Ncut
