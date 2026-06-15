@@ -1992,6 +1992,62 @@ proof -
     using hsplit hL_poly by (by100 blast)
 qed
 
+lemma geotop_four_boundary_points_card_distinct_QS_PR_prefix:
+  fixes P Q R S :: "'a"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  shows
+    "Q \<noteq> S
+     \<and> Q \<noteq> P
+     \<and> Q \<noteq> R
+     \<and> S \<noteq> P
+     \<and> S \<noteq> R"
+  (**
+    Endpoint hygiene for the D44 boundary access arguments.  The book assumes
+    the four boundary points are distinct in cyclic order; in the formal
+    statements this is carried as \<open>card {P,Q,R,S} = 4\<close>. **)
+proof (intro conjI)
+  show "Q \<noteq> S"
+  proof
+    assume hQS: "Q = S"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQS card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  show "Q \<noteq> P"
+  proof
+    assume hQP: "Q = P"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQP card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  show "Q \<noteq> R"
+  proof
+    assume hQR: "Q = R"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQR card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  show "S \<noteq> P"
+  proof
+    assume hSP: "S = P"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hSP card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  show "S \<noteq> R"
+  proof
+    assume hSR: "S = R"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hSR card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -7043,52 +7099,15 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hD44_card_distinct:
+      "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
+    by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
   have hQ_ne_S: "Q \<noteq> S"
-  proof
-    assume hQS: "Q = S"
-    have "card {P, Q, R, S} \<le> 3"
-      by (simp add: hQS card_insert_if)
-    thus False
-      using hcard by (by100 simp)
-  qed
+    using hD44_card_distinct by (by100 blast)
   have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
-  proof
-    show "Q \<noteq> P"
-    proof
-      assume hQP: "Q = P"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hQP card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-    show "Q \<noteq> R"
-    proof
-      assume hQR: "Q = R"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hQR card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-  qed
+    using hD44_card_distinct by (by100 blast)
   have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
-  proof
-    show "S \<noteq> P"
-    proof
-      assume hSP: "S = P"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hSP card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-    show "S \<noteq> R"
-    proof
-      assume hSR: "S = R"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hSR card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-  qed
+    using hD44_card_distinct by (by100 blast)
   have hD44_QS_broken_boundary_arc_split:
       "\<exists>F\<^sub>1 F\<^sub>2.
         J = F\<^sub>1 \<union> F\<^sub>2
@@ -12520,52 +12539,15 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hD44_card_distinct:
+      "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
+    by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
   have hQ_ne_S: "Q \<noteq> S"
-  proof
-    assume hQS: "Q = S"
-    have "card {P, Q, R, S} \<le> 3"
-      by (simp add: hQS card_insert_if)
-    thus False
-      using hcard by (by100 simp)
-  qed
+    using hD44_card_distinct by (by100 blast)
   have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
-  proof
-    show "Q \<noteq> P"
-    proof
-      assume hQP: "Q = P"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hQP card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-    show "Q \<noteq> R"
-    proof
-      assume hQR: "Q = R"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hQR card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-  qed
+    using hD44_card_distinct by (by100 blast)
   have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
-  proof
-    show "S \<noteq> P"
-    proof
-      assume hSP: "S = P"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hSP card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-    show "S \<noteq> R"
-    proof
-      assume hSR: "S = R"
-      have "card {P, Q, R, S} \<le> 3"
-        by (simp add: hSR card_insert_if)
-      thus False
-        using hcard by (by100 simp)
-    qed
-  qed
+    using hD44_card_distinct by (by100 blast)
   have hD44_QS_broken_boundary_arc_split:
       "\<exists>F\<^sub>1 F\<^sub>2.
         J = F\<^sub>1 \<union> F\<^sub>2
@@ -16884,14 +16866,17 @@ lemma geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix:
     subarc, obtain one component whose frontier contains the subarc endpoints,
     and transfer that component-frontier statement to \<open>Q,S\<close> by cyclic order. **)
 proof -
+  have hD44_card_distinct:
+      "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
+    by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
   have hQ_ne_P: "Q \<noteq> P"
-    using hcard by (auto simp: card_insert_if split: if_splits)
+    using hD44_card_distinct by (by100 blast)
   have hQ_ne_R: "Q \<noteq> R"
-    using hcard by (auto simp: card_insert_if split: if_splits)
+    using hD44_card_distinct by (by100 blast)
   have hS_ne_P: "S \<noteq> P"
-    using hcard by (auto simp: card_insert_if split: if_splits)
+    using hD44_card_distinct by (by100 blast)
   have hS_ne_R: "S \<noteq> R"
-    using hcard by (auto simp: card_insert_if split: if_splits)
+    using hD44_card_distinct by (by100 blast)
   have hP_in_A1: "P \<in> A1"
     using hA1J by (by100 blast)
   have hR_in_A2: "R \<in> A2"
@@ -17034,7 +17019,8 @@ proof -
         \<and> U\<^sub>Q \<inter> U\<^sub>S = {}"
   proof -
     have hQ_ne_S: "Q \<noteq> S"
-      using hcard by (auto simp: card_insert_if split: if_splits)
+      using geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard]
+      by (by100 blast)
     obtain r where hr_pos: "0 < r"
       and hr_disj: "ball Q r \<inter> ball S r = {}"
       using geotop_distinct_points_disjoint_small_balls_prefix[OF hQ_ne_S]
@@ -19306,7 +19292,8 @@ proof -
         using hr_pos hdisj by (rule that)
     qed
     have hQ_ne_S: "Q \<noteq> S"
-      using hcard by (auto simp: card_insert_if split: if_splits)
+      using geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard]
+      by (by100 blast)
     obtain r\<^sub>Q\<^sub>S where hr\<^sub>Q\<^sub>S_pos: "0 < r\<^sub>Q\<^sub>S"
       and hball_QS_disj: "ball Q r\<^sub>Q\<^sub>S \<inter> ball S r\<^sub>Q\<^sub>S = {}"
       using geotop_distinct_points_disjoint_small_balls_prefix[OF hQ_ne_S]
