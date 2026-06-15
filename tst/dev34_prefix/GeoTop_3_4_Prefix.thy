@@ -4088,6 +4088,23 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_regular_neighborhood_card_le2_noendpoint_and_broken_crossings_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+      \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+      \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Remaining Moise 4.4 content after the carrier restriction setup:
+      prove that every vertex of the regular-neighborhood frontier component
+      through \<open>P\<close> has at most two incident frontier edges and is not a graph
+      endpoint, and take the complementary frontier arc to get broken-line
+      lower-to-upper crossings of every pair of access collars in \<open>?Ncut\<close>. **)
+    sorry
   have hD44_regular_neighborhood_card_bounds_and_broken_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4099,12 +4116,42 @@ proof -
             \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
             \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
     (**
-      Remaining Moise 4.4 content after the carrier restriction setup:
-      prove that every vertex of the regular-neighborhood frontier component
-      through \<open>P\<close> has at most two and at least two incident frontier edges,
-      and take the complementary frontier arc to get broken-line lower-to-upper
-      crossings of every pair of access collars in \<open>?Ncut\<close>. **)
-    sorry
+      Converts the no-endpoint form of Moise's local frontier statement into
+      the lower cardinal bound used by the degree-two classifier. **)
+  proof -
+    have hle2:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_regular_neighborhood_card_le2_noendpoint_and_broken_crossings_book_step
+      by (rule conjunct1)
+    have htail:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+        \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+      using hD44_regular_neighborhood_card_le2_noendpoint_and_broken_crossings_book_step
+      by (rule conjunct2)
+    have hnoend:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      using htail by (rule conjunct1)
+    have hge2:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      by (rule hBdJ\<^sub>N_vertex_card_ge2_from_no_endpoint[OF hnoend])
+    have hbroken:
+        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using htail by (rule conjunct2)
+    show ?thesis
+      by (intro conjI, rule hle2, rule hge2, rule hbroken)
+  qed
   have hD44_regular_neighborhood_degree_two_and_broken_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2)
