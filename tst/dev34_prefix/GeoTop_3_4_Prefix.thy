@@ -4088,30 +4088,6 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
-  have hD44_regular_neighborhood_local_incidence_broken_line_book_step:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
-      \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-        \<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-    (**
-      Remaining Moise 4.4 content after the carrier restriction setup:
-      prove the local regular-neighborhood incidence statement on the frontier
-      component through \<open>P\<close> (two and only two incident frontier edges at every
-      vertex), then use the complementary frontier arc to construct Moise's
-      lower-to-upper broken-line subarc through every pair of access collars in
-      \<open>?Ncut\<close>.  The preceding finite-graph bridge turns the local
-      1-manifold statement into Moise's sentence that the component is a
-      1-sphere, and the collar/component lemmas above turn the broken-line
-      crossings into the required adjacent outside corridor. **)
-    sorry
   have hD44_regular_neighborhood_local_incidence_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4125,48 +4101,17 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z)"
-  proof -
-    have htwo:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-            \<and> e\<^sub>1 \<noteq> e\<^sub>2
-            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      using hD44_regular_neighborhood_local_incidence_broken_line_book_step
-      by (rule conjunct1)
-    have hbroken:
-        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hD44_regular_neighborhood_local_incidence_broken_line_book_step
-      by (rule conjunct2)
-    have hconnected_crossings:
-        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      by (rule hD44_broken_line_access_crossings_give_connected_crossings
-          [OF hbroken])
-    have hsame_component:
-        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-      by (rule hD44_access_ball_crossings_same_component
-          [OF hconnected_crossings])
-    have hZ:
-        "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-      by (rule hD44_same_component_gives_closed_corridor[OF hsame_component])
-    show ?thesis
-      by (rule conjI[OF htwo hZ])
-  qed
+    (**
+      Remaining Moise 4.4 content after the carrier restriction setup:
+      prove the local regular-neighborhood incidence statement on the frontier
+      component through \<open>P\<close> (two and only two incident frontier edges at every
+      vertex), and take the outside component adjacent to the complementary
+      frontier arc as the connected corridor whose closure contains the two
+      access witnesses in \<open>?Ncut\<close>.  The preceding finite-graph bridge turns
+      this local 1-manifold statement into Moise's sentence that the component
+      is a 1-sphere; the later frontier-route lemma then converts this
+      corridor into the lower-to-upper broken-line access crossings. **)
+    sorry
   have hD44_regular_neighborhood_frontier_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
