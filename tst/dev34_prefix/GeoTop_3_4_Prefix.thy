@@ -4088,6 +4088,23 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_regular_neighborhood_card_bounds_and_broken_crossings_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+      \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
+      \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Remaining Moise 4.4 content after the carrier restriction setup:
+      prove that every vertex of the regular-neighborhood frontier component
+      through \<open>P\<close> has at most two and at least two incident frontier edges,
+      and take the complementary frontier arc to get broken-line lower-to-upper
+      crossings of every pair of access collars in \<open>?Ncut\<close>. **)
+    sorry
   have hD44_regular_neighborhood_degree_two_and_broken_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2)
@@ -4097,12 +4114,35 @@ proof -
             \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
             \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
     (**
-      Remaining Moise 4.4 content after the carrier restriction setup:
-      prove that every vertex of the regular-neighborhood frontier component
-      through \<open>P\<close> has degree two in \<open>BdJ\<^sub>N\<close>, and take the complementary
-      frontier arc to get broken-line lower-to-upper crossings of every pair
-      of access collars in \<open>?Ncut\<close>. **)
-    sorry
+      Combines the two local-star incidence bounds into the degree-two
+      frontier statement.  This is pure arithmetic/graph bookkeeping; the
+      geometric work remains in the preceding book step. **)
+  proof -
+    have hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_regular_neighborhood_card_bounds_and_broken_crossings_book_step
+      by (by100 blast)
+    have hge2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      using hD44_regular_neighborhood_card_bounds_and_broken_crossings_book_step
+      by (by100 blast)
+    have hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_bounds[OF hle2 hge2])
+    have hbroken:
+        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hD44_regular_neighborhood_card_bounds_and_broken_crossings_book_step
+      by (by100 blast)
+    show ?thesis
+      by (intro conjI, rule hdegree, rule hbroken)
+  qed
   have hD44_regular_neighborhood_exact_two_and_broken_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
