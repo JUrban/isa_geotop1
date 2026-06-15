@@ -2366,6 +2366,60 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_frontier_component_same_component_graph_corridor_package_prefix:
+  fixes U :: "(real^2) set" and L :: "(real^2) set set"
+    and Q1 S1 :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  assumes hsame:
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  shows
+    "(\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+     \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)
+     \<and> (\<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z)"
+  (**
+    Pure D44 conversion.  Once the book proves that the selected frontier
+    component is a polygonal 1-sphere and that the two access witnesses are in
+    the same outside component, existing graph and component lemmas supply the
+    exact degree/corridor package used downstream. **)
+proof -
+  have hcorridor:
+      "\<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    by (rule geotop_component_member_gives_closed_corridor_prefix[OF hsame])
+  have hdegree:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hL_linear hL_fin hL_connected hL_polygon])
+  have hle2:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  proof (intro allI impI)
+    fix w
+    assume hw: "{w} \<in> L"
+    have hcard: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hdegree hw by (by100 blast)
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hcard by (by100 simp)
+  qed
+  have hnoend:
+      "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    by (rule geotop_degree_two_vertices_no_graph_endpoint_prefix[OF hdegree])
+  show ?thesis
+    using hle2 hnoend hcorridor by (intro conjI)
+qed
+
 lemma geotop_frontier_graph_corridor_sphere_and_access_route_prefix:
   fixes U J\<^sub>N :: "(real^2) set"
     and L :: "(real^2) set set"
@@ -4134,39 +4188,11 @@ proof -
     have hD44_same_component_book:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
       using hD44_frontier_polygon_and_component_book_step by (rule conjunct2)
-    have hD44_corridor_book:
-        "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-      by (rule geotop_component_member_gives_closed_corridor_prefix
-          [OF hD44_same_component_book])
-    have hD44_BdJ\<^sub>N_degree_two:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
-          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
-            hD44_BdJ\<^sub>N_polygon])
-    have hD44_card_le2_all:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    proof (intro allI impI)
-      fix w
-      assume hw: "{w} \<in> BdJ\<^sub>N"
-      have hcard:
-          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-        using hD44_BdJ\<^sub>N_degree_two hw by (by100 blast)
-      show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-        using hcard by (by100 simp)
-    qed
-    have hD44_no_endpoint_all:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      by (rule geotop_degree_two_vertices_no_graph_endpoint_prefix
-          [OF hD44_BdJ\<^sub>N_degree_two])
     show ?thesis
-      using hD44_card_le2_all hD44_no_endpoint_all hD44_corridor_book
-      by (intro conjI)
+      by (rule
+          geotop_polygon_frontier_component_same_component_graph_corridor_package_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+            hD44_BdJ\<^sub>N_polygon hD44_same_component_book])
   qed
   have hD44_graph_bounds:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
