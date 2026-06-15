@@ -4416,6 +4416,68 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_bounds_and_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
+      and boundary graph have been identified above, prove the local form of
+      the book sentence that the frontier component through \<open>P\<close> is a
+      polygonal 1-sphere: every boundary vertex has valence at most two and no
+      graph endpoint.  Prove also that the complementary frontier arc has an
+      adjacent outside corridor in \<open>I - (N \<union> A2)\<close> accumulating at the lower
+      and upper access witnesses. **)
+    sorry
+  have hD44_frontier_card_le2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
+  have hD44_frontier_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
+  have hD44_frontier_sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_edge_card_ge1 hD44_frontier_card_le2
+          hD44_frontier_no_endpoint])
+  have hD44_same_component_from_corridor:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+  proof -
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_frontier_corridor by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
+  have hD44_route_book_step:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut hD44_same_component_from_corridor])
   have hD44_frontier_sphere_and_route_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -4423,18 +4485,7 @@ proof -
           \<and> B \<subseteq> ?Ncut
           \<and> Q1 \<in> B
           \<and> S1 \<in> B)"
-    (**
-      Literal remaining Moise 4.4 frontier sentence at the point where the
-      carrier and frontier graph have been built.  The book takes the frontier
-      component of the fine carrier through \<open>P\<close>, proves it is the 1-sphere
-      bounding the regular neighborhood, then chooses the lower-to-upper
-      subarc of the complementary frontier arc as a broken-line route in
-      \<open>I - (N \<union> A2)\<close> through the two access witnesses. **)
-    sorry
-  have hD44_frontier_sphere_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-    using hD44_frontier_sphere_and_route_book_step by (rule conjunct1)
+    using hD44_frontier_sphere_book_step hD44_route_book_step by (intro conjI)
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
   proof -
@@ -4448,12 +4499,6 @@ proof -
       by (intro exI[where x=BdJ\<^sub>N] conjI,
           rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
   qed
-  have hD44_route_book_step:
-      "\<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> Q1 \<in> B
-        \<and> S1 \<in> B"
-    using hD44_frontier_sphere_and_route_book_step by (rule conjunct2)
   have hD44_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
   proof -
@@ -4475,37 +4520,6 @@ proof -
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     using hD44_frontier_polygon_book_step hD44_same_component_book_step
     by (intro conjI)
-  have hD44_frontier_bounds_and_corridor_book_step:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
-    (**
-      Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
-      and boundary graph have been identified above, prove the local form of
-      the book sentence that the frontier component through \<open>P\<close> is a
-      polygonal 1-sphere: every boundary vertex has valence at most two and no
-      graph endpoint.  Prove also that the complementary frontier arc has an
-      adjacent outside corridor in \<open>I - (N \<union> A2)\<close> accumulating at the lower
-      and upper access witnesses.  The graph and component classifiers below
-      turn these local frontier facts into exact-two incidence and the
-      polygonal 1-sphere package needed downstream. **)
-    by (rule
-        geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corridor_book_step_prefix
-          [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-            hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-            hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-            hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-            hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
-            hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-            hBdJ\<^sub>N_vertex_incident_edge_card_ge1
-            conjunct1[OF hD44_frontier_polygon_and_same_component_book_step]
-            conjunct2[OF hD44_frontier_polygon_and_same_component_book_step]])
   have hD44_frontier_exact_two_and_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
