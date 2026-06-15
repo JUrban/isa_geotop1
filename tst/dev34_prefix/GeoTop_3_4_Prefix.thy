@@ -4105,10 +4105,33 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_graph_bounds_and_corridor_book_step:
+  have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    (**
+      Exact local-boundary incidence is the formal graph version of Moise's
+      sentence that the frontier component is locally a 1-manifold.  Once it is
+      known, the finite-graph bookkeeping gives both the upper-valence bound and
+      absence of graph endpoints needed by the route package. **)
+    by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
+        [OF hBdJ\<^sub>N_fin])
+  have hD44_exact_two_and_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -4117,26 +4140,42 @@ proof -
     (**
       Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
       and boundary graph have been identified above, prove that the frontier
-      boundary has local valence at most two and no graph endpoint, and
-      construct the complementary lower-to-upper outside corridor in
-      \<open>I - (N \<union> A2)\<close> whose closure contains the two access witnesses.  The
-      already proved incident-edge lower bound and graph/corridor package then
-      give the 1-sphere and arbitrary broken-line access conclusions. **)
+      component is locally a 1-manifold: every boundary vertex has exactly the
+      two incident frontier edges.  Then construct the complementary
+      lower-to-upper outside corridor in \<open>I - (N \<union> A2)\<close> whose closure contains
+      the two access witnesses.  The already proved graph conversion and
+      graph/corridor package then give the 1-sphere and arbitrary broken-line
+      access conclusions. **)
     sorry
+  have hD44_frontier_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_exact_two_and_corridor_book_step by (by100 blast)
+  have hD44_graph_bounds:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj
+        [OF hD44_frontier_exact_two])
   have hD44_card_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_graph_bounds_and_corridor_book_step by (by100 blast)
+    using hD44_graph_bounds by (by100 blast)
   have hD44_no_endpoint:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    using hD44_graph_bounds_and_corridor_book_step by (by100 blast)
+    using hD44_graph_bounds by (by100 blast)
   have hD44_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_graph_bounds_and_corridor_book_step by (by100 blast)
+    using hD44_exact_two_and_corridor_book_step by (by100 blast)
   have hD44_frontier_sphere_and_broken_line_access:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
