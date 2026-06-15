@@ -4130,6 +4130,89 @@ proof -
     using hD44_B1P_A2_QS_disj by (by100 blast)
   have hD44_B1P_S_notin: "S \<notin> ?B1P"
     using hD44_B1P_A2_QS_disj by (by100 blast)
+  have hD44_F\<^sub>1_closed: "closed F\<^sub>1"
+    by (rule broken_line_closed[OF hD44_F\<^sub>1E])
+  have hD44_F\<^sub>2_closed: "closed F\<^sub>2"
+    by (rule broken_line_closed[OF hD44_F\<^sub>2E])
+  have hD44_F\<^sub>2_nonempty: "F\<^sub>2 \<noteq> {}"
+    using hD44_F\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hD44_UNIV_top:
+      "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets
+        top1_open_sets_is_topology_on_UNIV)
+  let ?F1o = "F\<^sub>1 - {Q, S}"
+  let ?F2o = "F\<^sub>2 - {Q, S}"
+  have hD44_F1o_F2o_separated:
+      "geotop_separated UNIV geotop_euclidean_topology ?F1o ?F2o"
+  proof -
+    have hF1o_closedin:
+        "closedin_on UNIV geotop_euclidean_topology F\<^sub>1"
+      using hD44_F\<^sub>1_closed closedin_on_geotop_UNIV_iff_closed by (by100 blast)
+    have hF2o_closedin:
+        "closedin_on UNIV geotop_euclidean_topology F\<^sub>2"
+      using hD44_F\<^sub>2_closed closedin_on_geotop_UNIV_iff_closed by (by100 blast)
+    have hcl_F1o_sub_F1:
+        "closure_on UNIV geotop_euclidean_topology ?F1o \<subseteq> F\<^sub>1"
+      by (rule closure_on_subset_of_closed[OF hF1o_closedin]) (by100 blast)
+    have hcl_F2o_sub_F2:
+        "closure_on UNIV geotop_euclidean_topology ?F2o \<subseteq> F\<^sub>2"
+      by (rule closure_on_subset_of_closed[OF hF2o_closedin]) (by100 blast)
+    have hcl_F1o_F2o_disj:
+        "closure_on UNIV geotop_euclidean_topology ?F1o \<inter> ?F2o = {}"
+      using hcl_F1o_sub_F1 hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+    have hF1o_cl_F2o_disj:
+        "?F1o \<inter> closure_on UNIV geotop_euclidean_topology ?F2o = {}"
+      using hcl_F2o_sub_F2 hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+    show ?thesis
+      unfolding geotop_separated_def
+      using hcl_F1o_F2o_disj hF1o_cl_F2o_disj by (by100 simp)
+  qed
+  have hD44_B1P_sub_F1_or_F2:
+      "?B1P \<subseteq> ?F1o \<or> ?B1P \<subseteq> ?F2o"
+  proof -
+    have hB1P_sub_F1oF2o: "?B1P \<subseteq> ?F1o \<union> ?F2o"
+      using hD44_B1P_sub_boundary_arcs hD44_B1P_Q_notin hD44_B1P_S_notin
+      by (by100 blast)
+    show ?thesis
+      by (rule Theorem_GT_1_10
+          [OF hD44_UNIV_top hD44_F1o_F2o_separated
+            hB1P_sub_F1oF2o hD44_B1P_conn])
+  qed
+  have hD44_P_F1o: "P \<in> ?F1o"
+    using hD44_P_F\<^sub>1 unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_not_F2o: "P \<notin> ?F2o"
+    using hD44_P_not_F\<^sub>2_set by (by100 blast)
+  have hD44_B1P_sub_F1o: "?B1P \<subseteq> ?F1o"
+  proof (rule ccontr)
+    assume hnot: "\<not> ?B1P \<subseteq> ?F1o"
+    have hsub_F2o: "?B1P \<subseteq> ?F2o"
+      using hD44_B1P_sub_F1_or_F2 hnot by (by100 blast)
+    have "P \<in> ?F2o"
+      using hsub_F2o hD44_P_B1P by (by100 blast)
+    thus False
+      using hD44_P_not_F2o by (by100 blast)
+  qed
+  have hD44_B1P_sub_F\<^sub>1_arc_interior:
+      "?B1P \<subseteq> geotop_arc_interior F\<^sub>1 {Q, S}"
+    using hD44_B1P_sub_F1o unfolding geotop_arc_interior_def by (by100 simp)
+  have hD44_B1P_sub_F\<^sub>1: "?B1P \<subseteq> F\<^sub>1"
+    using hD44_B1P_sub_F1o by (by100 blast)
+  have hD44_B1P_inter_F\<^sub>1: "?B1P \<inter> F\<^sub>1 = ?B1P"
+    using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
+  have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
+    using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+  have hD44_B1P_other_F\<^sub>1_arc_interior:
+      "\<exists>X. X \<in> ?B1P
+        \<and> X \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<and> X \<noteq> P"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P" and hX_ne: "X \<noteq> P"
+      using hD44_B1P_nontrivial by (by100 blast)
+    have hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      using hD44_B1P_sub_F\<^sub>1_arc_interior hX_B1P by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_F1int hX_ne by (intro exI conjI)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
