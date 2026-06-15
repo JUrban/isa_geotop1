@@ -6654,7 +6654,26 @@ proof -
         the outside component adjacent to the complementary frontier subarc;
         that component lies in \<open>I - (N \<union> A2)\<close>, is connected, and has the
         lower and upper access points in its ordinary Euclidean closure. **)
-      sorry
+    proof -
+      have hD44_moise_Q1_component_accumulates_at_S1_book_step:
+          "S1 \<in> closure
+            (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
+        sorry
+      have hD44_moise_same_component_frontier_book_step:
+          "\<exists>C. C \<in> components ?Ncut
+            \<and> Q1 \<in> closure C
+            \<and> S1 \<in> closure C"
+        by (rule geotop_component_at_closure_gives_component_closure_pair_prefix
+            [OF hQ1_Ncut hD44_moise_Q1_component_accumulates_at_S1_book_step])
+      obtain C where hC_comp: "C \<in> components ?Ncut"
+        and hQ1_cl: "Q1 \<in> closure C"
+        and hS1_cl: "S1 \<in> closure C"
+        using hD44_moise_same_component_frontier_book_step
+        by (elim exE conjE)
+      show ?thesis
+        by (rule geotop_component_closure_pair_gives_closed_corridor_prefix
+            [OF hC_comp hQ1_cl hS1_cl])
+    qed
     have hD44_moise_same_component_book_step:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     proof -
