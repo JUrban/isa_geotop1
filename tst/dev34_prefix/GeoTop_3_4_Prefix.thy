@@ -3175,7 +3175,43 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
     complementary frontier arc has one adjacent outside component of
     \<open>I - (N \<union> A2)\<close> whose closure contains the lower and upper access
     witnesses. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_valence_at_most_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    (**
+      Moise's local regular-neighborhood frontier incidence: at any vertex of
+      the selected frontier component, the brick/fine-carrier boundary has at
+      most the two incident boundary edges expected for a 1-manifold boundary.
+    **)
+    sorry
+  have hD44_frontier_no_endpoint_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    (**
+      Moise's assertion that the frontier component through \<open>P\<close> is closed:
+      no vertex of \<open>BdJ\<^sub>N\<close> is a graph endpoint of the boundary component.
+    **)
+    sorry
+  have hD44_adjacent_outside_corridor_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    (**
+      Moise's complementary-frontier-arc step: the other arc in the frontier
+      component has an adjacent outside component in \<open>I - (N \<union> A2)\<close> whose
+      closure reaches the lower and upper access witnesses.
+    **)
+    sorry
+  show ?thesis
+    using hD44_frontier_valence_at_most_two_book_step
+      hD44_frontier_no_endpoint_book_step
+      hD44_adjacent_outside_corridor_book_step
+    by (intro conjI)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_broken_line_access_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
