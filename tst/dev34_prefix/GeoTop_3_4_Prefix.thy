@@ -2511,6 +2511,11 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corr
   assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
   assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
   assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
+  assumes hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
+  assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
   shows
     "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -2528,14 +2533,30 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corr
     \<open>Q\<close> and \<open>S\<close>. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_exact_two_incidence_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    (**
+      Moise 4.4 local frontier step.  The regular-neighborhood frontier is
+      locally a 1-manifold: each vertex of the boundary component has exactly
+      the two incident frontier edges. **)
+    sorry
   have hD44_frontier_component_1sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
     (**
-      Moise 4.4, first frontier sentence: after restricting the fine carrier
-      to the closed disk, the component of \<open>Fr N'\<close> through \<open>P\<close> is a
-      1-sphere. **)
-    sorry
+      Moise 4.4, first frontier sentence: exact local frontier incidence on
+      the finite connected boundary graph makes the component of \<open>Fr N'\<close>
+      through \<open>P\<close> a 1-sphere. **)
+    by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hD44_frontier_exact_two_incidence_book_step])
   have hD44_outside_side_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
@@ -4383,7 +4404,9 @@ proof -
         [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
           hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
           hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def
+          hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly])
   have hD44_sphere:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
