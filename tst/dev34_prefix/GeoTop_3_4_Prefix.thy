@@ -3062,6 +3062,15 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corr
   assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
   assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
   assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hNcut_open: "geotop_polygon_interior J - (N \<union> A2) \<in> geotop_euclidean_topology"
+  assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
+  assumes hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
+  assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_vertex_incident_ge1:
+    "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+      card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
   shows
     "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -3074,11 +3083,13 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corr
         \<and> S1 \<in> closure Z)"
   (**
     Final remaining Moise 4.4 regular-neighborhood assertion.  For the fine
-    carrier neighborhood \<open>N\<close> of \<open>A1\<close>, the component of the frontier through
-    \<open>P\<close> is the book's polygonal 1-sphere: locally the boundary graph has
-    valence at most two and no endpoint.  The complementary frontier arc also
-    has an adjacent outside corridor in \<open>I - (N \<union> A2)\<close> whose closure contains
-    the lower and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+    carrier neighborhood \<open>N\<close> of \<open>A1\<close>, after the already-verified static
+    frontier graph setup has identified \<open>BdJ\<^sub>N\<close> as the finite connected
+    boundary graph of the frontier component through \<open>P\<close>, Moise's remaining
+    book step is local: the boundary graph has valence at most two and no
+    endpoint, and the complementary frontier arc has an adjacent outside
+    corridor in \<open>I - (N \<union> A2)\<close> whose closure contains the lower and upper
+    access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
   sorry
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_broken_line_access_book_step_prefix:
@@ -4423,7 +4434,9 @@ proof -
             hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
             hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
             hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-            hBdJ\<^sub>N_def])
+            hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
+            hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+            hBdJ\<^sub>N_vertex_incident_edge_card_ge1])
   have hD44_frontier_exact_two_and_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -6571,13 +6584,35 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_component_p
     lower and upper access witnesses.  The surrounding proof turns this package
     into the lower-to-upper broken-line route and then into the final component
     transfer for Theorem 4.4. **)
-  by (rule
-      geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corridor_book_step_prefix
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hpack:
+      "?Ncut \<in> geotop_euclidean_topology
+       \<and> geotop_is_linear_graph BdJ\<^sub>N
+       \<and> finite BdJ\<^sub>N
+       \<and> BdJ\<^sub>N \<noteq> {}
+       \<and> geotop_complex_connected BdJ\<^sub>N
+       \<and> J\<^sub>N = geotop_polyhedron BdJ\<^sub>N
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    by (rule
+      geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_graph_corridor_package_prefix
         [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
           hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
           hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-          hBdJ\<^sub>N_def])
+          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+  show ?thesis
+    using hpack by (by100 blast)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_fine_carrier_broken_line_access_crossings_prefix:
   fixes J A1 A2 N :: "(real^2) set"
