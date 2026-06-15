@@ -1104,6 +1104,17 @@ proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
   have hP_in_A1: "P \<in> A1"
     using hA1J by (by100 blast)
+  have hR_in_A2: "R \<in> A2"
+    using hA2J by (by100 blast)
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
   have hP_N: "P \<in> N"
     using hP_in_A1 hA1_N by (by100 blast)
   have hN_compact: "compact N"
@@ -1117,6 +1128,8 @@ proof -
         (geotop_polygon_interior J)"
     by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
         [OF hK_complex hK_fin hK_poly hN_def])
+  have hN_sub_Sd_poly: "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+    unfolding hN_def geotop_polyhedron_def by (by100 blast)
   have hN\<^sub>I_eq_N: "N\<^sub>I = N"
     by (rule
         geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
@@ -1134,11 +1147,231 @@ proof -
     unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
   have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
     using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+    using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
   have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
     using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
   have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
     by (rule closed_subset_compact
         [OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
+  have hFrN\<^sub>I_A2_QS_disj: "FrN\<^sub>I \<inter> (A2 \<union> {Q, S}) = {}"
+    using hFrN\<^sub>I_sub_N hN_avoid by (by100 blast)
+  have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
+    using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+  proof -
+    have hN\<^sub>I_sub_K_poly: "N\<^sub>I \<subseteq> geotop_polyhedron K"
+      using hN\<^sub>I_eq_N hN_sub_disk hK_poly by (by100 simp)
+    have hK_poly_frontier_eq_J: "frontier (geotop_polyhedron K) = J"
+      by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+    have hP_front_K_poly: "P \<in> frontier (geotop_polyhedron K)"
+      using hP hK_poly_frontier_eq_J by (by100 simp)
+    have hP_not_int_K_poly: "P \<notin> interior (geotop_polyhedron K)"
+      using hP_front_K_poly unfolding Elementary_Topology.frontier_def by (by100 blast)
+    have hP_not_int_N\<^sub>I: "P \<notin> interior N\<^sub>I"
+    proof
+      assume hP_int: "P \<in> interior N\<^sub>I"
+      have hinter_sub: "interior N\<^sub>I \<subseteq> interior (geotop_polyhedron K)"
+        by (rule interior_mono[OF hN\<^sub>I_sub_K_poly])
+      have hP_int_K: "P \<in> interior (geotop_polyhedron K)"
+        using hinter_sub hP_int by (by100 blast)
+      show False
+        using hP_not_int_K_poly hP_int_K by (by100 blast)
+    qed
+    have hP_cl: "P \<in> closure N\<^sub>I"
+      using hP_N\<^sub>I closure_subset by (by100 blast)
+    have hP_front: "P \<in> frontier N\<^sub>I"
+      using hP_cl hP_not_int_N\<^sub>I
+      unfolding Elementary_Topology.frontier_def by (by100 blast)
+    show ?thesis
+      using hFrN\<^sub>I_HOL hP_front by (by100 simp)
+  qed
+  have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+  proof -
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hP_singleton_conn:
+        "top1_connected_on {P}
+          (subspace_topology UNIV geotop_euclidean_topology {P})"
+      by (rule top1_connected_on_singleton[OF hTU], simp)
+    show ?thesis
+      unfolding hJ\<^sub>N_def
+      by (rule geotop_self_in_component_at[OF hP_FrN\<^sub>I hP_singleton_conn])
+  qed
+  have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    unfolding hJ\<^sub>N_def geotop_component_at_def by (by100 blast)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
+  have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
+    using hR_in_A2 hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hJ\<^sub>N_eq_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding hJ\<^sub>N_def by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
+  have hJ\<^sub>N_connected:
+      "top1_connected_on J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N)"
+    using hJ\<^sub>N_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hJ\<^sub>N_nonempty: "J\<^sub>N \<noteq> {}"
+    using hP_J\<^sub>N by (by100 blast)
+  have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
+  have hJ\<^sub>N_compact: "compact J\<^sub>N"
+    by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
+  have hJ\<^sub>N_closed: "closed J\<^sub>N"
+    by (rule compact_imp_closed[OF hJ\<^sub>N_compact])
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding hK\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    unfolding hK\<^sub>N_def using hSd_fin by (by100 simp)
+  have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
+  proof
+    fix \<rho>
+    assume h\<rho>: "\<rho> \<in> BdK\<^sub>N"
+    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face \<tau> \<sigma>} = 1}"
+    have hface_closed:
+        "\<forall>\<sigma>\<in>K\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>N"
+      by (rule geotop_is_complex_face_closed[OF hK\<^sub>N_complex])
+    have h\<rho>_cases:
+        "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      using h\<rho> unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+    show "\<rho> \<in> K\<^sub>N"
+    proof (rule UnE[OF h\<rho>_cases])
+      assume "\<rho> \<in> ?S"
+      thus "\<rho> \<in> K\<^sub>N"
+        by (by100 blast)
+    next
+      assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+        by (by100 blast)
+      have h\<tau>K\<^sub>N: "\<tau> \<in> K\<^sub>N"
+        using h\<tau>S by (by100 blast)
+      show "\<rho> \<in> K\<^sub>N"
+        using hface_closed h\<tau>K\<^sub>N h\<rho>\<tau> by (by100 blast)
+    qed
+  qed
+  have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+    by (rule finite_subset[OF hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_fin])
+  have hBdK\<^sub>N_face_closed:
+      "\<forall>\<sigma>\<in>BdK\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> BdK\<^sub>N"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>Bd: "\<sigma> \<in> BdK\<^sub>N"
+      and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+    let ?S = "{\<eta> \<in> K\<^sub>N. geotop_simplex_dim \<eta> (2 - 1) \<and>
+        card {\<omega> \<in> K\<^sub>N. geotop_simplex_dim \<omega> 2 \<and>
+          geotop_is_face \<eta> \<omega>} = 1}"
+    have h\<sigma>_cases:
+        "\<sigma> \<in> ?S \<union> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+      using h\<sigma>Bd unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+    show "\<tau> \<in> BdK\<^sub>N"
+    proof (rule UnE[OF h\<sigma>_cases])
+      assume h\<sigma>S: "\<sigma> \<in> ?S"
+      have "\<tau> \<in> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+        using h\<sigma>S h\<tau>\<sigma> by (by100 blast)
+      thus "\<tau> \<in> BdK\<^sub>N"
+        unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+    next
+      assume "\<sigma> \<in> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+      then obtain \<eta> where h\<eta>S: "\<eta> \<in> ?S" and h\<sigma>\<eta>: "geotop_is_face \<sigma> \<eta>"
+        by (by100 blast)
+      have h\<tau>\<eta>: "geotop_is_face \<tau> \<eta>"
+        by (rule geotop_is_face_trans_prefix[OF h\<tau>\<sigma> h\<sigma>\<eta>])
+      have "\<tau> \<in> {\<rho>. \<exists>\<eta>\<in>?S. geotop_is_face \<rho> \<eta>}"
+        using h\<eta>S h\<tau>\<eta> by (by100 blast)
+      thus "\<tau> \<in> BdK\<^sub>N"
+        unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+    qed
+  qed
+  have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
+    by (rule geotop_complex_subset_is_complex
+        [OF hK\<^sub>N_complex hBdK\<^sub>N_sub_K\<^sub>N hBdK\<^sub>N_face_closed])
+  have hBdK\<^sub>N_1dim: "geotop_complex_is_1dim BdK\<^sub>N"
+  proof -
+    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face \<tau> \<sigma>} = 1}"
+    show ?thesis
+      unfolding geotop_complex_is_1dim_def
+    proof
+      fix \<rho>
+      assume h\<rho>Bd: "\<rho> \<in> BdK\<^sub>N"
+      have h\<rho>_cases:
+          "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+        using h\<rho>Bd unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+      show "\<exists>n\<le>1. geotop_simplex_dim \<rho> n"
+      proof (rule UnE[OF h\<rho>_cases])
+        assume h\<rho>S: "\<rho> \<in> ?S"
+        have h\<rho>1: "geotop_simplex_dim \<rho> 1"
+          using h\<rho>S by (by100 simp)
+        show "\<exists>n\<le>1. geotop_simplex_dim \<rho> n"
+          using h\<rho>1 by (by100 blast)
+      next
+        assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+        then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S"
+          and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+          by (by100 blast)
+        have h\<tau>1: "geotop_simplex_dim \<tau> 1"
+          using h\<tau>S by (by100 simp)
+        obtain k where hk_le: "k \<le> 1"
+          and h\<rho>k: "geotop_simplex_dim \<rho> k"
+          using geotop_face_dim_le_prefix[OF h\<tau>1 h\<rho>\<tau>] by (by100 blast)
+        show "\<exists>n\<le>1. geotop_simplex_dim \<rho> n"
+          using hk_le h\<rho>k by (by100 blast)
+      qed
+    qed
+  qed
+  have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix
+        [OF hBdK\<^sub>N_complex hBdK\<^sub>N_1dim])
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    unfolding hBdJ\<^sub>N_def by (by100 blast)
+  have hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+    by (rule finite_subset[OF hBdJ\<^sub>N_sub_BdK\<^sub>N hBdK\<^sub>N_fin])
+  have hBdJ\<^sub>N_face_closed:
+      "\<forall>\<sigma>\<in>BdJ\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> BdJ\<^sub>N"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>BdJ: "\<sigma> \<in> BdJ\<^sub>N"
+      and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>Bd: "\<sigma> \<in> BdK\<^sub>N"
+      using h\<sigma>BdJ unfolding hBdJ\<^sub>N_def by (by100 simp)
+    have h\<sigma>J: "\<sigma> \<subseteq> J\<^sub>N"
+      using h\<sigma>BdJ unfolding hBdJ\<^sub>N_def by (by100 simp)
+    have h\<tau>Bd: "\<tau> \<in> BdK\<^sub>N"
+      using hBdK\<^sub>N_face_closed h\<sigma>Bd h\<tau>\<sigma> by (by100 blast)
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF h\<tau>\<sigma>])
+    have h\<tau>J: "\<tau> \<subseteq> J\<^sub>N"
+      using h\<tau>sub\<sigma> h\<sigma>J by (by100 blast)
+    show "\<tau> \<in> BdJ\<^sub>N"
+      unfolding hBdJ\<^sub>N_def using h\<tau>Bd h\<tau>J by (by100 simp)
+  qed
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    by (rule geotop_complex_subset_is_complex
+        [OF hBdK\<^sub>N_complex hBdJ\<^sub>N_sub_BdK\<^sub>N hBdJ\<^sub>N_face_closed])
+  have hBdJ\<^sub>N_1dim: "geotop_complex_is_1dim BdJ\<^sub>N"
+    using hBdK\<^sub>N_1dim hBdJ\<^sub>N_sub_BdK\<^sub>N
+    unfolding geotop_complex_is_1dim_def by (by100 blast)
+  have hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_1dim])
+  have hBdJ\<^sub>N_poly_compact: "compact (geotop_polyhedron BdJ\<^sub>N)"
+    by (rule geotop_complex_polyhedron_compact
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
+  have hBdJ\<^sub>N_poly_closed: "closed (geotop_polyhedron BdJ\<^sub>N)"
+    by (rule geotop_complex_polyhedron_closed
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
+  have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+    unfolding hBdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
   have hD44_regular_neighborhood_frontier_component_book_step: ?thesis
     (**
       Remaining Moise 4.4 content after the carrier restriction setup:
