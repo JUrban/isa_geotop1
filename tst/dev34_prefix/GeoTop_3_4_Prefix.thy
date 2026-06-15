@@ -417,6 +417,105 @@ proof -
     by (rule compact_imp_closed[OF hN_compact])
 qed
 
+lemma geotop_iterated_Sd_selected_arc_carrier_connected_prefix:
+  fixes K :: "(real^2) set set" and A N :: "(real^2) set"
+    and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hpA: "p \<in> A"
+  assumes hA_N: "A \<subseteq> N"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  shows "connected N"
+  (**
+    Moise 4.4 carrier setup: the selected fine carrier meeting an arc is one
+    connected carrier, since every selected simplex is connected and meets the
+    common connected arc. **)
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}}"
+  let ?S = "(\<lambda>B. A \<union> B) ` ?I"
+  have hA_connected: "connected A"
+  proof -
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A"
+      using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+    have h\<gamma>_path: "path \<gamma>"
+      using h\<gamma>_arc unfolding arc_def by (by100 simp)
+    show ?thesis
+      using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
+  qed
+  have hS_connected: "\<And>T. T \<in> ?S \<Longrightarrow> connected T"
+  proof -
+    fix T
+    assume hT: "T \<in> ?S"
+    obtain B where hB_I: "B \<in> ?I" and hT_eq: "T = A \<union> B"
+      using hT by (by100 blast)
+    have hB_Sd: "B \<in> geotop_iterated_Sd m K"
+      using hB_I by (by100 simp)
+    have hB_meets_A: "A \<inter> B \<noteq> {}"
+      using hB_I by (by100 blast)
+    have hB_simplex: "geotop_is_simplex B"
+      using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
+    have hB_path_connected:
+        "top1_path_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule Theorem_GT_1_3[OF hB_simplex])
+    have hB_connected_top:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule top1_path_connected_on_geotop_imp_connected[OF hB_path_connected])
+    have hB_connected: "connected B"
+      using hB_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hAB_meet: "A \<inter> B \<noteq> {}"
+      using hB_meets_A by (by100 blast)
+    show "connected T"
+      unfolding hT_eq
+      by (rule connected_Un[OF hA_connected hB_connected hAB_meet])
+  qed
+  have hInter_nonempty: "\<Inter>?S \<noteq> {}"
+  proof -
+    have hp_all: "\<And>T. T \<in> ?S \<Longrightarrow> p \<in> T"
+      using hpA by (by100 blast)
+    have "p \<in> \<Inter>?S"
+      using hp_all by (by100 blast)
+    thus ?thesis by (by100 blast)
+  qed
+  have hUnion_connected: "connected (\<Union>?S)"
+    by (rule connected_Union[OF hS_connected hInter_nonempty])
+  have hUnion_eq_N: "\<Union>?S = N"
+  proof
+    show "\<Union>?S \<subseteq> N"
+    proof
+      fix x
+      assume hx: "x \<in> \<Union>?S"
+      then obtain B where hB_I: "B \<in> ?I" and hxAB: "x \<in> A \<union> B"
+        by (by100 blast)
+      have hB_sub_N: "B \<subseteq> N"
+        unfolding hN_def using hB_I by (by100 blast)
+      show "x \<in> N"
+        using hxAB hA_N hB_sub_N by (by100 blast)
+    qed
+    show "N \<subseteq> \<Union>?S"
+    proof
+      fix x
+      assume hxN: "x \<in> N"
+      obtain B where hB_I: "B \<in> ?I" and hxB: "x \<in> B"
+        using hxN unfolding hN_def by (by100 blast)
+      have "x \<in> A \<union> B"
+        using hxB by (by100 blast)
+      thus "x \<in> \<Union>?S"
+        using hB_I by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hUnion_connected hUnion_eq_N by (by100 simp)
+qed
+
 lemma geotop_iterated_Sd_selected_arc_carrier_subset_polyhedron_prefix:
   fixes K :: "(real^2) set set" and A N :: "(real^2) set"
   assumes hN_def:
@@ -1226,85 +1325,8 @@ proof -
   have hN_sub_Sd_poly: "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
     unfolding hN_def geotop_polyhedron_def by (by100 blast)
   have hN_connected_HOL: "connected N"
-  proof -
-    let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-    let ?S = "(\<lambda>B. A1 \<union> B) ` ?I"
-    have hA1_connected: "connected A1"
-    proof -
-      obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
-        and h\<gamma>_img: "path_image \<gamma> = A1"
-        using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
-      have h\<gamma>_path: "path \<gamma>"
-        using h\<gamma>_arc unfolding arc_def by (by100 simp)
-      show ?thesis
-        using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
-    qed
-    have hS_connected: "\<And>T. T \<in> ?S \<Longrightarrow> connected T"
-    proof -
-      fix T
-      assume hT: "T \<in> ?S"
-      obtain B where hB_I: "B \<in> ?I" and hT_eq: "T = A1 \<union> B"
-        using hT by (by100 blast)
-      have hB_Sd: "B \<in> geotop_iterated_Sd m K"
-        using hB_I by (by100 simp)
-      have hB_meets_A1: "A1 \<inter> B \<noteq> {}"
-        using hB_I by (by100 blast)
-      have hB_simplex: "geotop_is_simplex B"
-        using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
-      have hB_path_connected:
-          "top1_path_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule Theorem_GT_1_3[OF hB_simplex])
-      have hB_connected_top:
-          "top1_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule top1_path_connected_on_geotop_imp_connected[OF hB_path_connected])
-      have hB_connected: "connected B"
-        using hB_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
-      have hA1B_meet: "A1 \<inter> B \<noteq> {}"
-        using hB_meets_A1 by (by100 blast)
-      show "connected T"
-        unfolding hT_eq
-        by (rule connected_Un[OF hA1_connected hB_connected hA1B_meet])
-    qed
-    have hInter_nonempty: "\<Inter>?S \<noteq> {}"
-    proof -
-      have hP_all: "\<And>T. T \<in> ?S \<Longrightarrow> P \<in> T"
-        using hP_in_A1 by (by100 blast)
-      have "P \<in> \<Inter>?S"
-        using hP_all by (by100 blast)
-      thus ?thesis by (by100 blast)
-    qed
-    have hUnion_connected: "connected (\<Union>?S)"
-      by (rule connected_Union[OF hS_connected hInter_nonempty])
-    have hUnion_eq_N: "\<Union>?S = N"
-    proof
-      show "\<Union>?S \<subseteq> N"
-      proof
-        fix x
-        assume hx: "x \<in> \<Union>?S"
-        then obtain B where hB_I: "B \<in> ?I" and hxAB: "x \<in> A1 \<union> B"
-          by (by100 blast)
-        have hB_sub_N: "B \<subseteq> N"
-          unfolding hN_def using hB_I by (by100 blast)
-        show "x \<in> N"
-          using hxAB hA1_N hB_sub_N by (by100 blast)
-      qed
-      show "N \<subseteq> \<Union>?S"
-      proof
-        fix x
-        assume hxN: "x \<in> N"
-        obtain B where hB_I: "B \<in> ?I" and hxB: "x \<in> B"
-          using hxN unfolding hN_def by (by100 blast)
-        have "x \<in> A1 \<union> B"
-          using hxB by (by100 blast)
-        thus "x \<in> \<Union>?S"
-          using hB_I by (by100 blast)
-      qed
-    qed
-    show ?thesis
-      using hUnion_connected hUnion_eq_N by (by100 simp)
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
   have hN_connected:
       "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
@@ -4397,85 +4419,8 @@ proof -
     by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
         [OF hK_complex hK_fin hN_def])
   have hN_connected_HOL: "connected N"
-  proof -
-    let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-    let ?S = "(\<lambda>B. A1 \<union> B) ` ?I"
-    have hA1_connected: "connected A1"
-    proof -
-      obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
-        and h\<gamma>_img: "path_image \<gamma> = A1"
-        using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
-      have h\<gamma>_path: "path \<gamma>"
-        using h\<gamma>_arc unfolding arc_def by (by100 simp)
-      show ?thesis
-        using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
-    qed
-    have hS_connected: "\<And>T. T \<in> ?S \<Longrightarrow> connected T"
-    proof -
-      fix T
-      assume hT: "T \<in> ?S"
-      obtain B where hB_I: "B \<in> ?I" and hT_eq: "T = A1 \<union> B"
-        using hT by (by100 blast)
-      have hB_Sd: "B \<in> geotop_iterated_Sd m K"
-        using hB_I by (by100 simp)
-      have hB_meets_A1: "A1 \<inter> B \<noteq> {}"
-        using hB_I by (by100 blast)
-      have hB_simplex: "geotop_is_simplex B"
-        using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
-      have hB_path_connected:
-          "top1_path_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule Theorem_GT_1_3[OF hB_simplex])
-      have hB_connected_top:
-          "top1_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule top1_path_connected_on_geotop_imp_connected[OF hB_path_connected])
-      have hB_connected: "connected B"
-        using hB_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
-      have hA1B_meet: "A1 \<inter> B \<noteq> {}"
-        using hB_meets_A1 by (by100 blast)
-      show "connected T"
-        unfolding hT_eq
-        by (rule connected_Un[OF hA1_connected hB_connected hA1B_meet])
-    qed
-    have hInter_nonempty: "\<Inter>?S \<noteq> {}"
-    proof -
-      have hP_all: "\<And>T. T \<in> ?S \<Longrightarrow> P \<in> T"
-        using hP_in_A1 by (by100 blast)
-      have "P \<in> \<Inter>?S"
-        using hP_all by (by100 blast)
-      thus ?thesis by (by100 blast)
-    qed
-    have hUnion_connected: "connected (\<Union>?S)"
-      by (rule connected_Union[OF hS_connected hInter_nonempty])
-    have hUnion_eq_N: "\<Union>?S = N"
-    proof
-      show "\<Union>?S \<subseteq> N"
-      proof
-        fix x
-        assume hx: "x \<in> \<Union>?S"
-        then obtain B where hB_I: "B \<in> ?I" and hxAB: "x \<in> A1 \<union> B"
-          by (by100 blast)
-        have hB_sub_N: "B \<subseteq> N"
-          unfolding hN_def using hB_I by (by100 blast)
-        show "x \<in> N"
-          using hxAB hA1_N hB_sub_N by (by100 blast)
-      qed
-      show "N \<subseteq> \<Union>?S"
-      proof
-        fix x
-        assume hxN: "x \<in> N"
-        obtain B where hB_I: "B \<in> ?I" and hxB: "x \<in> B"
-          using hxN unfolding hN_def by (by100 blast)
-        have "x \<in> A1 \<union> B"
-          using hxB by (by100 blast)
-        thus "x \<in> \<Union>?S"
-          using hB_I by (by100 blast)
-      qed
-    qed
-    show ?thesis
-      using hUnion_connected hUnion_eq_N by (by100 simp)
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
   have hN_connected:
       "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
@@ -10392,85 +10337,8 @@ proof -
     by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
         [OF hK_complex hK_fin hN_def])
   have hN_connected_HOL: "connected N"
-  proof -
-    let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-    let ?S = "(\<lambda>B. A1 \<union> B) ` ?I"
-    have hA1_connected: "connected A1"
-    proof -
-      obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
-        and h\<gamma>_img: "path_image \<gamma> = A1"
-        using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
-      have h\<gamma>_path: "path \<gamma>"
-        using h\<gamma>_arc unfolding arc_def by (by100 simp)
-      show ?thesis
-        using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
-    qed
-    have hS_connected: "\<And>T. T \<in> ?S \<Longrightarrow> connected T"
-    proof -
-      fix T
-      assume hT: "T \<in> ?S"
-      obtain B where hB_I: "B \<in> ?I" and hT_eq: "T = A1 \<union> B"
-        using hT by (by100 blast)
-      have hB_Sd: "B \<in> geotop_iterated_Sd m K"
-        using hB_I by (by100 simp)
-      have hB_meets_A1: "A1 \<inter> B \<noteq> {}"
-        using hB_I by (by100 blast)
-      have hB_simplex: "geotop_is_simplex B"
-        using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
-      have hB_path_connected:
-          "top1_path_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule Theorem_GT_1_3[OF hB_simplex])
-      have hB_connected_top:
-          "top1_connected_on B
-            (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule top1_path_connected_on_geotop_imp_connected[OF hB_path_connected])
-      have hB_connected: "connected B"
-        using hB_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
-      have hA1B_meet: "A1 \<inter> B \<noteq> {}"
-        using hB_meets_A1 by (by100 blast)
-      show "connected T"
-        unfolding hT_eq
-        by (rule connected_Un[OF hA1_connected hB_connected hA1B_meet])
-    qed
-    have hInter_nonempty: "\<Inter>?S \<noteq> {}"
-    proof -
-      have hP_all: "\<And>T. T \<in> ?S \<Longrightarrow> P \<in> T"
-        using hP_in_A1 by (by100 blast)
-      have "P \<in> \<Inter>?S"
-        using hP_all by (by100 blast)
-      thus ?thesis by (by100 blast)
-    qed
-    have hUnion_connected: "connected (\<Union>?S)"
-      by (rule connected_Union[OF hS_connected hInter_nonempty])
-    have hUnion_eq_N: "\<Union>?S = N"
-    proof
-      show "\<Union>?S \<subseteq> N"
-      proof
-        fix x
-        assume hx: "x \<in> \<Union>?S"
-        then obtain B where hB_I: "B \<in> ?I" and hxAB: "x \<in> A1 \<union> B"
-          by (by100 blast)
-        have hB_sub_N: "B \<subseteq> N"
-          unfolding hN_def using hB_I by (by100 blast)
-        show "x \<in> N"
-          using hxAB hA1_N hB_sub_N by (by100 blast)
-      qed
-      show "N \<subseteq> \<Union>?S"
-      proof
-        fix x
-        assume hxN: "x \<in> N"
-        obtain B where hB_I: "B \<in> ?I" and hxB: "x \<in> B"
-          using hxN unfolding hN_def by (by100 blast)
-        have "x \<in> A1 \<union> B"
-          using hxB by (by100 blast)
-        thus "x \<in> \<Union>?S"
-          using hB_I by (by100 blast)
-      qed
-    qed
-    show ?thesis
-      using hUnion_connected hUnion_eq_N by (by100 simp)
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
   have hN_connected:
       "top1_connected_on N
         (subspace_topology UNIV geotop_euclidean_topology N)"
@@ -17810,85 +17678,8 @@ proof -
       by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
           [OF hK_complex hK_fin hN_def])
     have hN_connected_HOL: "connected N"
-    proof -
-      let ?I = "{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}}"
-      let ?S = "(\<lambda>B. A1 \<union> B) ` ?I"
-      have hA1_connected: "connected A1"
-      proof -
-        obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
-          and h\<gamma>_img: "path_image \<gamma> = A1"
-          using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
-        have h\<gamma>_path: "path \<gamma>"
-          using h\<gamma>_arc unfolding arc_def by (by100 simp)
-        show ?thesis
-          using connected_path_image[OF h\<gamma>_path] h\<gamma>_img by (by100 simp)
-      qed
-      have hS_connected: "\<And>T. T \<in> ?S \<Longrightarrow> connected T"
-      proof -
-        fix T
-        assume hT: "T \<in> ?S"
-        obtain B where hB_I: "B \<in> ?I" and hT_eq: "T = A1 \<union> B"
-          using hT by (by100 blast)
-        have hB_Sd: "B \<in> geotop_iterated_Sd m K"
-          using hB_I by (by100 simp)
-        have hB_meets_A1: "A1 \<inter> B \<noteq> {}"
-          using hB_I by (by100 blast)
-        have hB_simplex: "geotop_is_simplex B"
-          using geotop_is_complex_simplex[OF hSd_complex] hB_Sd by (by100 blast)
-        have hB_path_connected:
-            "top1_path_connected_on B
-              (subspace_topology UNIV geotop_euclidean_topology B)"
-          by (rule Theorem_GT_1_3[OF hB_simplex])
-        have hB_connected_top:
-            "top1_connected_on B
-              (subspace_topology UNIV geotop_euclidean_topology B)"
-          by (rule top1_path_connected_on_geotop_imp_connected[OF hB_path_connected])
-        have hB_connected: "connected B"
-          using hB_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
-        have hA1B_meet: "A1 \<inter> B \<noteq> {}"
-          using hB_meets_A1 by (by100 blast)
-        show "connected T"
-          unfolding hT_eq
-          by (rule connected_Un[OF hA1_connected hB_connected hA1B_meet])
-      qed
-      have hInter_nonempty: "\<Inter>?S \<noteq> {}"
-      proof -
-        have hP_all: "\<And>T. T \<in> ?S \<Longrightarrow> P \<in> T"
-          using hP_in_A1 by (by100 blast)
-        have "P \<in> \<Inter>?S"
-          using hP_all by (by100 blast)
-        thus ?thesis by (by100 blast)
-      qed
-      have hUnion_connected: "connected (\<Union>?S)"
-        by (rule connected_Union[OF hS_connected hInter_nonempty])
-      have hUnion_eq_N: "\<Union>?S = N"
-      proof
-        show "\<Union>?S \<subseteq> N"
-        proof
-          fix x
-          assume hx: "x \<in> \<Union>?S"
-          then obtain B where hB_I: "B \<in> ?I" and hxAB: "x \<in> A1 \<union> B"
-            by (by100 blast)
-          have hB_sub_N: "B \<subseteq> N"
-            unfolding hN_def using hB_I by (by100 blast)
-          show "x \<in> N"
-            using hxAB hA1_N hB_sub_N by (by100 blast)
-        qed
-        show "N \<subseteq> \<Union>?S"
-        proof
-          fix x
-          assume hxN: "x \<in> N"
-          obtain B where hB_I: "B \<in> ?I" and hxB: "x \<in> B"
-            using hxN unfolding hN_def by (by100 blast)
-          have "x \<in> A1 \<union> B"
-            using hxB by (by100 blast)
-          thus "x \<in> \<Union>?S"
-            using hB_I by (by100 blast)
-        qed
-      qed
-      show ?thesis
-        using hUnion_connected hUnion_eq_N by (by100 simp)
-    qed
+      by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+          [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
     have hN_connected:
         "top1_connected_on N
           (subspace_topology UNIV geotop_euclidean_topology N)"
