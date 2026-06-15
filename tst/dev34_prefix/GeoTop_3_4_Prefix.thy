@@ -4388,48 +4388,57 @@ proof -
     show ?thesis
       by (intro conjI, rule hle2, rule hnoend)
   qed
-  have hD44_frontier_graph_corridor_book_step:
+  have hD44_exact_frontier_and_same_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
       Remaining Moise 4.4 construction.  The already-open outside carrier is
       fixed; what remains is to formalize the book's regular-neighborhood
-      frontier analysis in the detailed carrier context above: the component
-      through \<open>P\<close> has local valence at most two and no graph endpoints, and
-      the complementary frontier subarc has an adjacent outside component whose
-      closure contains the two access witnesses. **)
+      frontier analysis in the detailed carrier context above: exact local
+      frontier incidence at every vertex of the component through \<open>P\<close>, and
+      the complementary frontier subarc's adjacent outside component joining
+      the two access witnesses. **)
     sorry
+  have hD44_frontier_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_exact_frontier_and_same_component_book_step by (rule conjunct1)
+  have hD44_graph_bounds:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj
+        [OF hD44_frontier_exact_two])
+  have hD44_same_component:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    using hD44_exact_frontier_and_same_component_book_step by (rule conjunct2)
   have hD44_card_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_frontier_graph_corridor_book_step by (rule conjunct1)
-  have hD44_tail:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
-    using hD44_frontier_graph_corridor_book_step by (rule conjunct2)
+    using hD44_graph_bounds by (rule conjunct1)
   have hD44_no_endpoint:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    using hD44_tail by (rule conjunct1)
+    using hD44_graph_bounds by (rule conjunct2)
   have hD44_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_tail by (rule conjunct2)
+    by (rule hD44_same_component_gives_closed_corridor[OF hD44_same_component])
   have hD44_frontier_sphere_corridor_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
