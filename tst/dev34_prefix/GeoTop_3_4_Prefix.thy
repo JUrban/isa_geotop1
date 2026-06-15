@@ -3762,6 +3762,167 @@ proof -
         using hcard by (by100 simp)
     qed
   qed
+  have hD44_QS_broken_boundary_arc_split:
+      "\<exists>F\<^sub>1 F\<^sub>2.
+        J = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}
+        \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+  proof -
+    obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_conn: "geotop_complex_connected L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hQL: "{Q} \<in> L"
+      and hSL: "{S} \<in> L"
+      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+        [OF hJ hQ hS]
+      by (by100 blast)
+    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+      using hJ hL_poly by (by100 simp)
+    have hP_not_QS: "P \<notin> {Q, S}"
+      using hQ_ne_PR hS_ne_PR by (by100 blast)
+    have hP_poly_L: "P \<in> geotop_polyhedron L"
+      using hP hL_poly by (by100 simp)
+    obtain F\<^sub>1 F\<^sub>2 where hsplit:
+        "geotop_polyhedron L = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}
+        \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hQL hSL hQ_ne_S hP_poly_L hP_not_QS]
+      by (by100 blast)
+    show ?thesis
+      using hsplit hL_poly by (by100 blast)
+  qed
+  obtain F\<^sub>1 F\<^sub>2 where hD44_F_J_split: "J = F\<^sub>1 \<union> F\<^sub>2"
+    and hD44_F\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
+    and hD44_F\<^sub>2_bl: "geotop_is_broken_line F\<^sub>2"
+    and hD44_F\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
+    and hD44_F\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+    and hD44_F\<^sub>1F\<^sub>2_int_disj:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    and hD44_P_F\<^sub>1:
+      "P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+    using hD44_QS_broken_boundary_arc_split
+    by (elim exE conjE)
+  have hD44_F\<^sub>1F\<^sub>2_inter: "F\<^sub>1 \<inter> F\<^sub>2 = {Q, S}"
+    by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+        [OF hD44_F\<^sub>1E hD44_F\<^sub>2E hD44_F\<^sub>1F\<^sub>2_int_disj])
+  have hD44_PR_on_QS_boundary_arc_interiors:
+      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> P \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<and> (R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})"
+    using hD44_F_J_split hP hR hQ_ne_PR hS_ne_PR
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_PR_unique_QS_boundary_arc_interiors:
+      "((P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (P \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> P \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))
+        \<and> ((R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<or> (R \<in> geotop_arc_interior F\<^sub>2 {Q, S}
+          \<and> R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}))"
+    using hD44_PR_on_QS_boundary_arc_interiors hD44_F\<^sub>1F\<^sub>2_int_disj
+    by (by100 blast)
+  have hD44_P_not_F\<^sub>2:
+      "P \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD44_F\<^sub>1F\<^sub>2_int_disj hD44_P_F\<^sub>1
+    by (by100 blast)
+  have hD44_R_on_QS_boundary_arc:
+      "R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD44_PR_on_QS_boundary_arc_interiors
+    by (by100 blast)
+  have hD44_R_F\<^sub>2_if_not_F\<^sub>1:
+      "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S} \<Longrightarrow>
+        R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD44_R_on_QS_boundary_arc
+    by (by100 blast)
+  have hD44_R_not_F\<^sub>1_from_cyclic:
+      "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+    by (rule geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix
+        [OF hcyc hD44_P_F\<^sub>1 hD44_F_J_split hD44_F\<^sub>1E hD44_F\<^sub>2E
+          hD44_F\<^sub>1F\<^sub>2_int_disj])
+  have hD44_R_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    by (rule hD44_R_F\<^sub>2_if_not_F\<^sub>1[OF hD44_R_not_F\<^sub>1_from_cyclic])
+  have hD44_F\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_F\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_R_not_F\<^sub>1: "R \<notin> F\<^sub>1"
+    using hD44_R_not_F\<^sub>1_from_cyclic hD44_R_F\<^sub>2 hD44_F\<^sub>1F\<^sub>2_inter
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_not_F\<^sub>2_set: "P \<notin> F\<^sub>2"
+    using hD44_P_not_F\<^sub>2 hD44_P_F\<^sub>1 hD44_F\<^sub>1F\<^sub>2_inter
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_A1_F\<^sub>2_disj: "A1 \<inter> F\<^sub>2 = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> A1 \<inter> F\<^sub>2"
+    have hxA1J: "x \<in> A1 \<inter> J"
+      using hx hD44_F\<^sub>2_sub_J by (by100 blast)
+    have hxP: "x = P"
+      using hxA1J hA1J by (by100 blast)
+    have "P \<in> F\<^sub>2"
+      using hx hxP by (by100 blast)
+    thus False
+      using hD44_P_not_F\<^sub>2_set by (by100 blast)
+  qed
+  have hD44_A1_F\<^sub>1_inter: "A1 \<inter> F\<^sub>1 = {P}"
+  proof
+    show "A1 \<inter> F\<^sub>1 \<subseteq> {P}"
+    proof
+      fix x
+      assume hx: "x \<in> A1 \<inter> F\<^sub>1"
+      have hxA1J: "x \<in> A1 \<inter> J"
+        using hx hD44_F\<^sub>1_sub_J by (by100 blast)
+      show "x \<in> {P}"
+        using hxA1J hA1J by (by100 blast)
+    qed
+    show "{P} \<subseteq> A1 \<inter> F\<^sub>1"
+      using hP_in_A1 hD44_P_F\<^sub>1
+      unfolding geotop_arc_interior_def by (by100 blast)
+  qed
+  have hD44_A2_F\<^sub>1_disj: "A2 \<inter> F\<^sub>1 = {}"
+  proof (rule equals0I)
+    fix x
+    assume hx: "x \<in> A2 \<inter> F\<^sub>1"
+    have hxA2J: "x \<in> A2 \<inter> J"
+      using hx hD44_F\<^sub>1_sub_J by (by100 blast)
+    have hxR: "x = R"
+      using hxA2J hA2J by (by100 blast)
+    have "R \<in> F\<^sub>1"
+      using hx hxR by (by100 blast)
+    thus False
+      using hD44_R_not_F\<^sub>1 by (by100 blast)
+  qed
+  have hD44_A2_F\<^sub>2_inter: "A2 \<inter> F\<^sub>2 = {R}"
+  proof
+    show "A2 \<inter> F\<^sub>2 \<subseteq> {R}"
+    proof
+      fix x
+      assume hx: "x \<in> A2 \<inter> F\<^sub>2"
+      have hxA2J: "x \<in> A2 \<inter> J"
+        using hx hD44_F\<^sub>2_sub_J by (by100 blast)
+      show "x \<in> {R}"
+        using hxA2J hA2J by (by100 blast)
+    qed
+    show "{R} \<subseteq> A2 \<inter> F\<^sub>2"
+      using hR_in_A2 hD44_R_F\<^sub>2
+      unfolding geotop_arc_interior_def by (by100 blast)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
