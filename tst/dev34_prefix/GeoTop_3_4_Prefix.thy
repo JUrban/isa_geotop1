@@ -4048,6 +4048,29 @@ proof -
       boundary vertex.  The complementary frontier arc supplies the outside
       component of \<open>I - (N \<union> A2)\<close> carrying \<open>Q1\<close> and \<open>S1\<close>. **)
   proof -
+    have hfrontier_graph:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+      (**
+        Moise 4.4, regular-neighborhood frontier sentence: the selected fine
+        carrier is locally a 2-manifold with boundary, so the boundary
+        component through \<open>P\<close> has no branch vertex and no endpoint. **)
+      sorry
+    have hle2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hfrontier_graph by (by100 blast)
+    have hnoend:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      using hfrontier_graph by (rule conjunct2)
+    have hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_le2_no_endpoint
+          [OF hle2 hnoend])
     have htwo:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4056,12 +4079,7 @@ proof -
             \<and> e\<^sub>1 \<noteq> e\<^sub>2
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      (**
-        Moise 4.4, regular-neighborhood frontier sentence: the selected fine
-        carrier is locally a 2-manifold with boundary, so the boundary
-        component through \<open>P\<close> has exactly two incident frontier edges at every
-        vertex. **)
-      sorry
+      by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
     have hsame:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
       (**
