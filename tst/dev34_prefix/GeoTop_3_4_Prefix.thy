@@ -1198,6 +1198,63 @@ proof -
     using hsphere_poly hX_eq by (by100 simp)
 qed
 
+lemma geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix:
+  fixes L :: "(real^2) set set" and X :: "(real^2) set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes hX_eq: "X = geotop_polyhedron L"
+  assumes hge1:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  assumes hle2:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  assumes hnoend:
+    "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  shows
+    "geotop_is_n_sphere X
+      (subspace_topology UNIV geotop_euclidean_topology X) 1"
+  (**
+    Moise 4.4 graph bridge: valence at most two plus no graph endpoints on a
+    finite connected non-isolated linear graph forces degree two, hence a
+    polygonal 1-sphere carrier. **)
+proof -
+  have hdegree12:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1
+        \<or> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (intro allI impI)
+    fix w
+    assume hwL: "{w} \<in> L"
+    have hge:
+        "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+      by (rule hge1[OF hwL])
+    have hle:
+        "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      by (rule hle2[OF hwL])
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1
+        \<or> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hge hle by (by100 linarith)
+  qed
+  have hdegree:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_degree_one_or_two_no_endpoint_degree_two_prefix
+        [OF hL_linear hdegree12 hnoend])
+  have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+    by (rule geotop_finite_connected_degree_two_linear_graph_polygon_prefix
+        [OF hL_linear hL_fin hL_nonempty hL_connected hdegree])
+  have hsphere_poly:
+      "geotop_is_n_sphere (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L)) 1"
+    using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
+  show ?thesis
+    using hsphere_poly hX_eq by (by100 simp)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -8768,15 +8825,11 @@ proof -
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
     assume hnoend:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-      by (rule hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint[OF hle2 hnoend])
-    have hsphere_BdJ:
-      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N)) 1"
-      using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
     show ?thesis
-      using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+      by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+            hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+            hBdJ\<^sub>N_vertex_incident_edge_card_ge1 hle2 hnoend])
   qed
   have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -14073,15 +14126,11 @@ proof -
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
     assume hnoend:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-      by (rule hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint[OF hle2 hnoend])
-    have hsphere_BdJ:
-      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N)) 1"
-      using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
     show ?thesis
-      using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+      by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+            hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+            hBdJ\<^sub>N_vertex_incident_edge_card_ge1 hle2 hnoend])
   qed
   have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
