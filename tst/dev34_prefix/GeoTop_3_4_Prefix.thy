@@ -3950,6 +3950,19 @@ proof -
       gives the two graph conjuncts required by this package. **)
     by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
         [OF hBdJ\<^sub>N_fin])
+  have hD44_same_component_gives_closed_corridor:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    (**
+      Converts Moise's same-component conclusion for the outside carrier
+      \<open>I - (N \<union> A2)\<close> into the closed-corridor form used by this package.
+      The remaining book work can therefore target the actual component
+      statement supplied by the frontier subarc. **)
+    by (rule geotop_component_member_gives_closed_corridor_prefix)
   have hD44_frontier_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -3958,17 +3971,13 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
       Remaining Moise 4.4 construction.  The already-open outside carrier is
       fixed; what remains is to formalize the book's regular-neighborhood
       frontier analysis: identify the boundary graph of the component through
       \<open>P\<close>, prove its local valence/no-endpoint properties, and extract the
-      adjacent outside corridor. **)
+      adjacent outside component. **)
     sorry
   have hD44_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -3985,7 +3994,13 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_frontier_graph_corridor_book_step by (by100 blast)
+  proof -
+    have hsame:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      using hD44_frontier_graph_corridor_book_step by (by100 blast)
+    show ?thesis
+      by (rule hD44_same_component_gives_closed_corridor[OF hsame])
+  qed
   have hD44_graph_bounds:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
