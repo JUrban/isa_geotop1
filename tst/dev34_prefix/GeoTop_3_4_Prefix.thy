@@ -1228,6 +1228,57 @@ proof -
     by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
   have hK\<^sub>N_fin: "finite K\<^sub>N"
     unfolding hK\<^sub>N_def using hSd_fin by (by100 simp)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+  proof -
+    have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+      unfolding hK\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+    have hcarrier_sub_N:
+        "\<And>x. x \<in> N \<Longrightarrow>
+          geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+    proof -
+      fix x
+      assume hxN: "x \<in> N"
+      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
+        and hB_A1: "B \<inter> A1 \<noteq> {}"
+        and hxB: "x \<in> B"
+        using hxN unfolding hN_def by (by100 blast)
+      have hB_sub_N: "B \<subseteq> N"
+        unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
+      have hcarrier_sub_B:
+          "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
+        by (rule geotop_K_carrier_subset_containing_simplex
+            [OF hSd_complex hSd_fin hB_Sd hxB])
+      show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+        using hcarrier_sub_B hB_sub_N by (by100 blast)
+    qed
+    have hN_sub_K\<^sub>N_poly:
+        "N \<subseteq> geotop_polyhedron K\<^sub>N"
+    proof -
+      have "N \<subseteq>
+          geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+        by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+            [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
+      thus ?thesis
+        unfolding hK\<^sub>N_def by (by100 simp)
+    qed
+    show ?thesis
+      using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
+  qed
+  have hFrN\<^sub>I_frontier_K\<^sub>N_poly:
+      "FrN\<^sub>I = frontier (geotop_polyhedron K\<^sub>N)"
+    using hFrN\<^sub>I_HOL hN\<^sub>I_eq_N hK\<^sub>N_poly by (by100 simp)
+  have hFrN\<^sub>I_geotop_frontier_K\<^sub>N_poly:
+      "FrN\<^sub>I =
+        geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K\<^sub>N)"
+    using hFrN\<^sub>I_frontier_K\<^sub>N_poly
+      geotop_frontier_UNIV_eq_frontier[of "geotop_polyhedron K\<^sub>N"]
+    by (by100 simp)
+  have hJ\<^sub>N_sub_frontier_K\<^sub>N_poly:
+      "J\<^sub>N \<subseteq> frontier (geotop_polyhedron K\<^sub>N)"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
+  have hP_front_K\<^sub>N_poly: "P \<in> frontier (geotop_polyhedron K\<^sub>N)"
+    using hP_FrN\<^sub>I hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
   have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
   proof
     fix \<rho>
@@ -1330,6 +1381,148 @@ proof -
   have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
     by (rule geotop_complex_1dim_imp_linear_graph_prefix
         [OF hBdK\<^sub>N_complex hBdK\<^sub>N_1dim])
+  have hBdK\<^sub>N_poly_compact: "compact (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_complex_polyhedron_compact[OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
+  have hBdK\<^sub>N_poly_closed: "closed (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_complex_polyhedron_closed[OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
+  have hBdK\<^sub>N_poly_sub_N: "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
+    using hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_poly unfolding geotop_polyhedron_def by (by100 blast)
+  have hBdK\<^sub>N_one_incident_edge_subset_FrN\<^sub>I:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
+        \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+  proof -
+    fix e
+    assume heK: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hcard1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+    obtain \<sigma> where hfaces:
+        "{\<rho>\<in>K\<^sub>N. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+      using hcard1 by (rule card_1_singletonE)
+    have h\<sigma>in: "\<sigma> \<in> {\<rho>\<in>K\<^sub>N. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+      using hfaces by (by100 simp)
+    have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
+      using h\<sigma>in by (by100 simp)
+    have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      using h\<sigma>in by (by100 simp)
+    have h\<sigma>face: "geotop_is_face e \<sigma>"
+      using h\<sigma>in by (by100 simp)
+    have hrel_front:
+        "rel_interior e \<subseteq> frontier (geotop_polyhedron K\<^sub>N)"
+      by (rule geotop_unique_incident_edge_rel_interior_subset_polyhedron_frontier_prefix
+          [OF hK\<^sub>N_complex heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces])
+    have hfront_closed: "closed (frontier (geotop_polyhedron K\<^sub>N))"
+      by (rule frontier_closed)
+    have hclosure_sub:
+        "closure (rel_interior e) \<subseteq> frontier (geotop_polyhedron K\<^sub>N)"
+      by (rule closure_minimal[OF hrel_front hfront_closed])
+    have hclosure_e: "closure (rel_interior e) = e"
+      by (rule geotop_edge_closure_rel_interior_prefix[OF hedge])
+    have he_front: "e \<subseteq> frontier (geotop_polyhedron K\<^sub>N)"
+      using hclosure_sub hclosure_e by (by100 simp)
+    show "e \<subseteq> FrN\<^sub>I"
+      using he_front hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
+  qed
+  have hBdK\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    fix e
+    assume heBd: "e \<in> BdK\<^sub>N" and hedge: "geotop_is_edge e"
+    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face \<tau> \<sigma>} = 1}"
+    have he_cases:
+        "e \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      using heBd unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+    show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+    proof (rule UnE[OF he_cases])
+      assume heS: "e \<in> ?S"
+      thus "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+        by (by100 simp)
+    next
+      assume "e \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and heface\<tau>: "geotop_is_face e \<tau>"
+        by (by100 blast)
+      have h\<tau>1: "geotop_simplex_dim \<tau> 1"
+        using h\<tau>S by (by100 simp)
+      have he1: "geotop_simplex_dim e 1"
+        using hedge unfolding geotop_is_edge_def by (by100 simp)
+      obtain k where hk_le: "k \<le> 1" and hek: "geotop_simplex_dim e k"
+        using geotop_face_dim_le_prefix[OF h\<tau>1 heface\<tau>] by (by100 blast)
+      have hk1: "k = 1"
+        by (rule geotop_simplex_dim_unique[OF hek he1])
+      have h\<tau>edge: "geotop_is_edge \<tau>"
+        using h\<tau>1 unfolding geotop_is_edge_def by (by100 simp)
+      have he_eq_\<tau>: "e = \<tau>"
+        by (rule geotop_edge_face_of_edge_eq_prefix[OF hedge h\<tau>edge heface\<tau>])
+      show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+        using h\<tau>S he_eq_\<tau> by (by100 simp)
+    qed
+  qed
+  have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+  proof -
+    fix e
+    assume heBd: "e \<in> BdK\<^sub>N" and hedge: "geotop_is_edge e"
+    have heK: "e \<in> K\<^sub>N"
+      using hBdK\<^sub>N_sub_K\<^sub>N heBd by (by100 blast)
+    have hcount:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBd hedge])
+    show "e \<subseteq> FrN\<^sub>I"
+      by (rule hBdK\<^sub>N_one_incident_edge_subset_FrN\<^sub>I[OF heK hedge hcount])
+  qed
+  have hBdK\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron BdK\<^sub>N"
+    obtain \<rho> where h\<rho>Bd: "\<rho> \<in> BdK\<^sub>N" and hx\<rho>: "x \<in> \<rho>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    let ?S = "{\<tau> \<in> K\<^sub>N. geotop_simplex_dim \<tau> (2 - 1) \<and>
+        card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face \<tau> \<sigma>} = 1}"
+    have h\<rho>_cases:
+        "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      using h\<rho>Bd unfolding hBdK\<^sub>N_def geotop_comb_boundary_def by (by100 simp)
+    show "x \<in> FrN\<^sub>I"
+    proof (rule UnE[OF h\<rho>_cases])
+      assume h\<rho>S: "\<rho> \<in> ?S"
+      have h\<rho>K: "\<rho> \<in> K\<^sub>N"
+        using h\<rho>S by (by100 simp)
+      have h\<rho>edge: "geotop_is_edge \<rho>"
+        using h\<rho>S unfolding geotop_is_edge_def by (by100 simp)
+      have h\<rho>card:
+          "card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+            geotop_is_face \<rho> \<sigma>} = 1"
+        using h\<rho>S by (by100 simp)
+      have h\<rho>Fr: "\<rho> \<subseteq> FrN\<^sub>I"
+        by (rule hBdK\<^sub>N_one_incident_edge_subset_FrN\<^sub>I
+            [OF h\<rho>K h\<rho>edge h\<rho>card])
+      show "x \<in> FrN\<^sub>I"
+        using hx\<rho> h\<rho>Fr by (by100 blast)
+    next
+      assume h\<rho>face_case: "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+        using h\<rho>face_case by (by100 blast)
+      have h\<tau>K: "\<tau> \<in> K\<^sub>N"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>edge: "geotop_is_edge \<tau>"
+        using h\<tau>S unfolding geotop_is_edge_def by (by100 simp)
+      have h\<tau>card:
+          "card {\<sigma> \<in> K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and>
+            geotop_is_face \<tau> \<sigma>} = 1"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>Fr: "\<tau> \<subseteq> FrN\<^sub>I"
+        by (rule hBdK\<^sub>N_one_incident_edge_subset_FrN\<^sub>I
+            [OF h\<tau>K h\<tau>edge h\<tau>card])
+      have h\<rho>sub\<tau>: "\<rho> \<subseteq> \<tau>"
+        by (rule geotop_is_face_imp_subset_prefix[OF h\<rho>\<tau>])
+      show "x \<in> FrN\<^sub>I"
+        using hx\<rho> h\<rho>sub\<tau> h\<tau>Fr by (by100 blast)
+    qed
+  qed
   have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
     unfolding hBdJ\<^sub>N_def by (by100 blast)
   have hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
@@ -1372,6 +1565,71 @@ proof -
     unfolding hBdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
   have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
+    unfolding hBdJ\<^sub>N_def by (by100 simp)
+  have hBdJ\<^sub>N_edge_sub_FrN\<^sub>I:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heJ: "e \<subseteq> J\<^sub>N"
+      by (rule hBdJ\<^sub>N_edge_sub_J\<^sub>N[OF heBdJ hedge])
+    show "e \<subseteq> FrN\<^sub>I"
+      using heJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heBdK: "e \<in> BdK\<^sub>N"
+      using heBdJ unfolding hBdJ\<^sub>N_def by (by100 simp)
+    show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBdK hedge])
+  qed
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  proof -
+    fix e
+    assume heBd: "e \<in> BdK\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+    have he_Fr: "e \<subseteq> FrN\<^sub>I"
+      by (rule hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBd hedge])
+    have he_dim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+    have he_path_connected:
+        "top1_path_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule Theorem_GT_1_3[OF he_simplex])
+    have he_connected_top:
+        "top1_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule top1_path_connected_on_geotop_imp_connected[OF he_path_connected])
+    have he_connected: "connected e"
+      using he_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hunion_connected: "connected (e \<union> J\<^sub>N)"
+      by (rule connected_Un[OF he_connected hJ\<^sub>N_connected_HOL hmeet])
+    have hunion_sub: "e \<union> J\<^sub>N \<subseteq> FrN\<^sub>I"
+      using he_Fr hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+    have hP_union: "P \<in> e \<union> J\<^sub>N"
+      using hP_J\<^sub>N by (by100 blast)
+    have hunion_sub_comp: "e \<union> J\<^sub>N \<subseteq> connected_component_set FrN\<^sub>I P"
+      by (rule connected_component_maximal
+          [OF hP_union hunion_connected hunion_sub])
+    show "e \<subseteq> J\<^sub>N"
+      using hunion_sub_comp hJ\<^sub>N_eq_connected_component by (by100 blast)
+  qed
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<in> BdJ\<^sub>N"
+    unfolding hBdJ\<^sub>N_def
+    using hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N by (by100 blast)
   have hD44_regular_neighborhood_frontier_component_book_step: ?thesis
     (**
       Remaining Moise 4.4 content after the carrier restriction setup:
