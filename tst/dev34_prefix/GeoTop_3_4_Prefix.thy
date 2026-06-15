@@ -1945,6 +1945,53 @@ proof -
     using hsplit hL_poly by (by100 blast)
 qed
 
+lemma geotop_polygon_two_boundary_points_broken_line_split_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hPQ: "P \<noteq> Q"
+  shows
+    "\<exists>C\<^sub>1 C\<^sub>2.
+      J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+  (**
+    Two-endpoint polygon boundary split used by the D44 frontier-component
+    packages.  This is the non-oriented version of the preceding through-point
+    split: realize the polygon as a finite connected linear graph containing
+    the two vertices and apply the graph boundary-split lemma. **)
+proof -
+  obtain L where hL_linear: "geotop_is_linear_graph L"
+    and hL_fin: "finite L"
+    and hL_conn: "geotop_complex_connected L"
+    and hL_poly: "geotop_polyhedron L = J"
+    and hPL: "{P} \<in> L"
+    and hQL: "{Q} \<in> L"
+    using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+      [OF hJ hP hQ]
+    by (by100 blast)
+  have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+    using hJ hL_poly by (by100 simp)
+  obtain C\<^sub>1 C\<^sub>2 where hsplit:
+      "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+      [OF hL_linear hL_fin hL_conn hL_polygon hPL hQL hPQ]
+    by (by100 blast)
+  show ?thesis
+    using hsplit hL_poly by (by100 blast)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -7722,29 +7769,18 @@ proof -
       by (elim exE conjE)
     have hX_BdJ_poly: "X \<in> geotop_polyhedron BdJ\<^sub>N"
       using hX_B1P hD44_B1P_sub_B\<^sub>1 by (by100 blast)
-    obtain LJ where hLJ_linear: "geotop_is_linear_graph LJ"
-      and hLJ_fin: "finite LJ"
-      and hLJ_conn: "geotop_complex_connected LJ"
-      and hLJ_poly: "geotop_polyhedron LJ = geotop_polyhedron BdJ\<^sub>N"
-      and hP_LJ: "{P} \<in> LJ"
-      and hX_LJ: "{X} \<in> LJ"
-      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
-        [OF hpolygon hP_BdJ\<^sub>N_poly hX_BdJ_poly]
-      by (elim exE conjE)
-    have hLJ_polygon: "geotop_is_polygon (geotop_polyhedron LJ)"
-      using hpolygon hLJ_poly by (by100 simp)
     have hP_ne_X: "P \<noteq> X"
       using hX_ne by (by100 blast)
     obtain C\<^sub>B C\<^sub>O where hsplit:
-        "geotop_polyhedron LJ = C\<^sub>B \<union> C\<^sub>O
+        "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
         \<and> geotop_is_broken_line C\<^sub>B
         \<and> geotop_is_broken_line C\<^sub>O
         \<and> geotop_arc_endpoints C\<^sub>B {P, X}
         \<and> geotop_arc_endpoints C\<^sub>O {P, X}
         \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
             geotop_arc_interior C\<^sub>O {P, X} = {}"
-      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
-        [OF hLJ_linear hLJ_fin hLJ_conn hLJ_polygon hP_LJ hX_LJ hP_ne_X]
+      using geotop_polygon_two_boundary_points_broken_line_split_prefix
+        [OF hpolygon hP_BdJ\<^sub>N_poly hX_BdJ_poly hP_ne_X]
       by (by100 blast)
     have hC\<^sub>B_end_split: "geotop_arc_endpoints C\<^sub>B {P, X}"
       using hsplit by (by100 blast)
@@ -7778,7 +7814,7 @@ proof -
         \<and> X \<in> C\<^sub>B
         \<and> P \<in> C\<^sub>O
         \<and> X \<in> C\<^sub>O"
-      using hsplit hLJ_poly hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
+      using hsplit hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
         hP_C\<^sub>O_split hX_C\<^sub>O_split
       by (by100 simp)
     have hBdJ_poly_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
@@ -13210,29 +13246,18 @@ proof -
       by (elim exE conjE)
     have hX_BdJ_poly: "X \<in> geotop_polyhedron BdJ\<^sub>N"
       using hX_B1P hD44_B1P_sub_B\<^sub>1 by (by100 blast)
-    obtain LJ where hLJ_linear: "geotop_is_linear_graph LJ"
-      and hLJ_fin: "finite LJ"
-      and hLJ_conn: "geotop_complex_connected LJ"
-      and hLJ_poly: "geotop_polyhedron LJ = geotop_polyhedron BdJ\<^sub>N"
-      and hP_LJ: "{P} \<in> LJ"
-      and hX_LJ: "{X} \<in> LJ"
-      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
-        [OF hpolygon hP_BdJ\<^sub>N_poly hX_BdJ_poly]
-      by (elim exE conjE)
-    have hLJ_polygon: "geotop_is_polygon (geotop_polyhedron LJ)"
-      using hpolygon hLJ_poly by (by100 simp)
     have hP_ne_X: "P \<noteq> X"
       using hX_ne by (by100 blast)
     obtain C\<^sub>B C\<^sub>O where hsplit:
-        "geotop_polyhedron LJ = C\<^sub>B \<union> C\<^sub>O
+        "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
         \<and> geotop_is_broken_line C\<^sub>B
         \<and> geotop_is_broken_line C\<^sub>O
         \<and> geotop_arc_endpoints C\<^sub>B {P, X}
         \<and> geotop_arc_endpoints C\<^sub>O {P, X}
         \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
             geotop_arc_interior C\<^sub>O {P, X} = {}"
-      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
-        [OF hLJ_linear hLJ_fin hLJ_conn hLJ_polygon hP_LJ hX_LJ hP_ne_X]
+      using geotop_polygon_two_boundary_points_broken_line_split_prefix
+        [OF hpolygon hP_BdJ\<^sub>N_poly hX_BdJ_poly hP_ne_X]
       by (by100 blast)
     have hC\<^sub>B_end_split: "geotop_arc_endpoints C\<^sub>B {P, X}"
       using hsplit by (by100 blast)
@@ -13266,7 +13291,7 @@ proof -
         \<and> X \<in> C\<^sub>B
         \<and> P \<in> C\<^sub>O
         \<and> X \<in> C\<^sub>O"
-      using hsplit hLJ_poly hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
+      using hsplit hC_inter hP_C\<^sub>B_split hX_C\<^sub>B_split
         hP_C\<^sub>O_split hX_C\<^sub>O_split
       by (by100 simp)
     have hBdJ_poly_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
