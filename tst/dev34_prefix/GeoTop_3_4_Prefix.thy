@@ -2048,6 +2048,22 @@ proof (intro conjI)
   qed
 qed
 
+lemma geotop_subset_avoids_A2_QS_points_prefix:
+  fixes X N A2 :: "'a set" and Q R S :: "'a"
+  assumes hX_sub: "X \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hR_A2: "R \<in> A2"
+  shows
+    "X \<inter> (A2 \<union> {Q, S}) = {}
+     \<and> Q \<notin> X
+     \<and> S \<notin> X
+     \<and> R \<notin> X"
+  (**
+    D44 carrier/frontier avoidance bookkeeping: any subcarrier of the chosen
+    neighborhood or frontier piece inherits avoidance of \<open>A2\<close> and the two
+    boundary access points, hence also avoids \<open>R\<close> because \<open>R \<in> A2\<close>. **)
+  using hX_sub hN_avoid hR_A2 by (by100 blast)
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4008,24 +4024,38 @@ proof -
     show ?thesis
       by (rule hBdJ\<^sub>N_cycle_split_from_degree_two[OF hdegree])
   qed
+  have hBdJ\<^sub>N_poly_avoid_points:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> Q \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_subset_avoids_A2_QS_points_prefix
+        [OF hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj hR_in_A2])
   have hBdJ\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ_not_BdJ\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hS_not_BdJ\<^sub>N_poly: "S \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hR_in_A2 hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
+  have hBdK\<^sub>N_poly_avoid_points:
+      "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> Q \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> R \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_subset_avoids_A2_QS_points_prefix
+        [OF hBdK\<^sub>N_poly_sub_N hN_avoid hR_in_A2])
   have hBdK\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdK\<^sub>N_poly_sub_N hN_avoid by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ_not_BdK\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hS_not_BdK\<^sub>N_poly: "S \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hR_in_A2 hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ1_not_N: "Q1 \<notin> N"
     using hQ1_Ncut by (by100 blast)
   have hS1_not_N: "S1 \<notin> N"
@@ -7020,9 +7050,16 @@ proof -
     show ?thesis
       by (rule hBdJ\<^sub>N_cycle_split_from_polygon[OF hpolygon])
   qed
+  have hBdJ\<^sub>N_poly_avoid_points:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> Q \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_subset_avoids_A2_QS_points_prefix
+        [OF hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj hR_in_A2])
   have hBdJ\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hball_Q_FrN\<^sub>I_disj: "ball Q r \<inter> FrN\<^sub>I = {}"
     using hball_Q_N hFrN\<^sub>I_sub_N by (by100 blast)
   have hball_S_FrN\<^sub>I_disj: "ball S r \<inter> FrN\<^sub>I = {}"
@@ -7038,20 +7075,27 @@ proof -
       "ball S r \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
     using hball_S_J\<^sub>N_disj hBdJ\<^sub>N_poly_sub_J\<^sub>N by (by100 blast)
   have hQ_not_BdJ\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hS_not_BdJ\<^sub>N_poly: "S \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hR_in_A2 hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
+  have hBdK\<^sub>N_poly_avoid_points:
+      "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> Q \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> R \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_subset_avoids_A2_QS_points_prefix
+        [OF hBdK\<^sub>N_poly_sub_N hN_avoid hR_in_A2])
   have hBdK\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdK\<^sub>N_poly_sub_N hN_avoid by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ_not_BdK\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hS_not_BdK\<^sub>N_poly: "S \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hR_in_A2 hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ1_not_N: "Q1 \<notin> N"
     using hQ1_Ncut by (by100 blast)
   have hS1_not_N: "S1 \<notin> N"
@@ -12460,9 +12504,16 @@ proof -
     show ?thesis
       by (rule hBdJ\<^sub>N_cycle_split_from_polygon[OF hpolygon])
   qed
+  have hBdJ\<^sub>N_poly_avoid_points:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> Q \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_subset_avoids_A2_QS_points_prefix
+        [OF hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj hR_in_A2])
   have hBdJ\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hball_Q_FrN\<^sub>I_disj: "ball Q r \<inter> FrN\<^sub>I = {}"
     using hball_Q_N hFrN\<^sub>I_sub_N by (by100 blast)
   have hball_S_FrN\<^sub>I_disj: "ball S r \<inter> FrN\<^sub>I = {}"
@@ -12478,20 +12529,27 @@ proof -
       "ball S r \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
     using hball_S_J\<^sub>N_disj hBdJ\<^sub>N_poly_sub_J\<^sub>N by (by100 blast)
   have hQ_not_BdJ\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hS_not_BdJ\<^sub>N_poly: "S \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
-    using hR_in_A2 hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdJ\<^sub>N_poly_avoid_points by (by100 blast)
+  have hBdK\<^sub>N_poly_avoid_points:
+      "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> Q \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> R \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_subset_avoids_A2_QS_points_prefix
+        [OF hBdK\<^sub>N_poly_sub_N hN_avoid hR_in_A2])
   have hBdK\<^sub>N_poly_A2_QS_disj:
       "geotop_polyhedron BdK\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
-    using hBdK\<^sub>N_poly_sub_N hN_avoid by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ_not_BdK\<^sub>N_poly: "Q \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hS_not_BdK\<^sub>N_poly: "S \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hR_in_A2 hBdK\<^sub>N_poly_A2_QS_disj by (by100 blast)
+    using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hQ1_not_N: "Q1 \<notin> N"
     using hQ1_Ncut by (by100 blast)
   have hS1_not_N: "S1 \<notin> N"
