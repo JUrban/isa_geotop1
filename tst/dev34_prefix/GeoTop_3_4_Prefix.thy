@@ -3146,6 +3146,16 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
   assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
   assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
   assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hNcut_open:
+    "geotop_polygon_interior J - (N \<union> A2) \<in> geotop_euclidean_topology"
+  assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
+  assumes hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
+  assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_vertex_incident_ge1:
+    "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+      card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
   shows
     "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -3159,10 +3169,12 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
   (**
     The remaining literal Moise 4.4 regular-neighborhood package.  For the
     chosen fine carrier of \<open>A1\<close>, the component of the carrier frontier through
-    \<open>P\<close> is represented by a boundary graph with local valence at most two and
-    no endpoints.  The complementary frontier arc has one adjacent outside
-    component of \<open>I - (N \<union> A2)\<close> whose closure contains the lower and upper
-    access witnesses. **)
+    \<open>P\<close> has already been represented by the finite connected boundary graph
+    \<open>BdJ\<^sub>N\<close>.  What remains is the book's local regular-neighborhood analysis:
+    every boundary vertex has valence at most two and no endpoint, and the
+    complementary frontier arc has one adjacent outside component of
+    \<open>I - (N \<union> A2)\<close> whose closure contains the lower and upper access
+    witnesses. **)
   sorry
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_broken_line_access_book_step_prefix:
@@ -4505,7 +4517,9 @@ proof -
           hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
           hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
           hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-          hBdJ\<^sub>N_def])
+          hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
+          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_edge_card_ge1])
   have hD44_frontier_card_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
