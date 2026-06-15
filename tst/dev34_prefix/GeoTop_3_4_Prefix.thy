@@ -5598,6 +5598,56 @@ proof -
       by (rule hD44_BdJ\<^sub>N_degree_two_boundary_subarc_complement_split
           [OF hdegree])
   qed
+  have hD44_BdJ\<^sub>N_simple_closed_curve_boundary_subarc_complement_split:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<exists>X C L C\<^sub>F. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_is_broken_line C
+          \<and> C \<subseteq> ?B1P
+          \<and> C \<subseteq> F\<^sub>1
+          \<and> C \<subseteq> J\<^sub>N
+          \<and> C \<subseteq> FrN\<^sub>I
+          \<and> C \<inter> F\<^sub>2 = {}
+          \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C \<inter> ?Ncut = {}
+          \<and> P \<in> C
+          \<and> X \<in> C
+          \<and> geotop_arc_endpoints C {P, X}
+          \<and> connected (geotop_arc_interior C {P, X})
+          \<and> geotop_arc_interior C {P, X} \<noteq> {}
+          \<and> geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> {P} \<in> L
+          \<and> {X} \<in> L
+          \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+          \<and> geotop_is_broken_line C\<^sub>F
+          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+          \<and> geotop_arc_interior C {P, X} \<inter>
+              geotop_arc_interior C\<^sub>F {P, X} = {}
+          \<and> C \<inter> C\<^sub>F = {P, X}
+          \<and> P \<in> C\<^sub>F
+          \<and> X \<in> C\<^sub>F
+          \<and> C\<^sub>F \<subseteq> J\<^sub>N
+          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C\<^sub>F \<inter> ?Ncut = {}"
+    (**
+      Direct simple-closed-curve entry point for the same Moise frontier split.
+      If the frontier component is proved as a simple closed curve first, the
+      existing polygon conversion immediately gives the C/C_F package. **)
+  proof -
+    assume hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+        (geotop_polyhedron BdJ\<^sub>N)"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_simple_closed_curve[OF hSCC])
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split
+          [OF hpolygon])
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
