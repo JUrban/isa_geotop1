@@ -4088,6 +4088,20 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_regular_neighborhood_1sphere_and_component_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+      \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut Q1"
+    (**
+      Literal local Moise 4.4 regular-neighborhood assertion.  For the chosen
+      fine carrier \<open>N\<close> of \<open>A1\<close>, the restricted carrier is a 2-manifold with
+      boundary, and the frontier component \<open>J\<^sub>N\<close> through \<open>P\<close> is the book's
+      1-sphere.  The complementary frontier arc has an adjacent outside
+      component of
+      \<open>I - (N \<union> A2)\<close>, which is the component of \<open>?Ncut\<close> carrying the lower
+      and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
   have hD44_regular_neighborhood_exact_two_and_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4099,14 +4113,40 @@ proof -
       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
             ?Ncut Q1"
     (**
-      Literal local Moise 4.4 regular-neighborhood assertion.  For the chosen
-      fine carrier \<open>N\<close> of \<open>A1\<close>, the restricted carrier is a 2-manifold with
-      boundary near the frontier component through \<open>P\<close>; hence each vertex of
-      the carried frontier component has exactly two incident boundary edges.
-      The complementary frontier arc has an adjacent outside component of
-      \<open>I - (N \<union> A2)\<close>, which is the component of \<open>?Ncut\<close> carrying the lower
-      and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-    sorry
+      Graph translation of the literal book step above.  Moise states that the
+      frontier component is a 1-sphere; the existing finite linear-graph
+      classifier turns that polygonal frontier carrier into degree two, and
+      degree two expands to the exact two incident boundary edges at every
+      vertex. **)
+  proof -
+    have hsphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      using hD44_regular_neighborhood_1sphere_and_component_book_step
+      by (rule conjunct1)
+    have hsame:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      using hD44_regular_neighborhood_1sphere_and_component_book_step
+      by (rule conjunct2)
+    have hpolygon:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon[OF hsphere])
+    have hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hD44_BdJ\<^sub>N_polygon_imp_degree_two[OF hpolygon])
+    have htwo:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
+    show ?thesis
+      by (rule conjI[OF htwo hsame])
+  qed
   have hD44_regular_neighborhood_frontier_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
