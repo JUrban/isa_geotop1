@@ -3071,6 +3071,11 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corr
   assumes hBdJ\<^sub>N_vertex_incident_ge1:
     "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
       card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  assumes hD44_frontier_polygon_book_step:
+    "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+  assumes hD44_same_component_book_step:
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+      (geotop_polygon_interior J - (N \<union> A2)) Q1"
   shows
     "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -3082,31 +3087,17 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corr
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z)"
   (**
-    Final remaining Moise 4.4 regular-neighborhood assertion.  For the fine
-    carrier neighborhood \<open>N\<close> of \<open>A1\<close>, after the already-verified static
-    frontier graph setup has identified \<open>BdJ\<^sub>N\<close> as the finite connected
-    boundary graph of the frontier component through \<open>P\<close>, Moise's remaining
-    book step is local: the boundary graph has valence at most two and no
-    endpoint, and the complementary frontier arc has an adjacent outside
-    corridor in \<open>I - (N \<union> A2)\<close> whose closure contains the lower and upper
-    access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+    Pure D44 conversion step.  Once Moise's regular-neighborhood proof has
+    supplied the literal frontier sentence -- the selected frontier component
+    is polygonal and the two access witnesses lie in the same outside component
+    of \<open>I - (N \<union> A2)\<close> -- the existing finite-graph and component bookkeeping
+    gives the graph bounds/no-endpoint/corridor package used downstream. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_frontier_polygon_and_same_component_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    (**
-      Literal remaining Moise 4.4 frontier sentence.  The book takes the
-      frontier component of the fine carrier through \<open>P\<close>, proves it is the
-      polygonal 1-sphere bounding the regular neighborhood, and uses the
-      complementary frontier arc to put the lower and upper access witnesses in
-      one component of \<open>I - (N \<union> A2)\<close>. **)
-    sorry
   show ?thesis
     by (rule geotop_polygon_frontier_component_same_component_graph_corridor_package_prefix
         [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
-          conjunct1[OF hD44_frontier_polygon_and_same_component_book_step]
-          conjunct2[OF hD44_frontier_polygon_and_same_component_book_step]])
+          hD44_frontier_polygon_book_step hD44_same_component_book_step])
 qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_broken_line_access_book_step_prefix:
@@ -4425,6 +4416,17 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_polygon_and_same_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Literal remaining Moise 4.4 frontier sentence at the point where the
+      carrier and frontier graph have been built.  The book takes the frontier
+      component of the fine carrier through \<open>P\<close>, proves it is the polygonal
+      1-sphere bounding the regular neighborhood, and uses the complementary
+      frontier arc to put the lower and upper access witnesses in one component
+      of \<open>I - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_frontier_bounds_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4453,7 +4455,9 @@ proof -
             hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
             hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
             hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-            hBdJ\<^sub>N_vertex_incident_edge_card_ge1])
+            hBdJ\<^sub>N_vertex_incident_edge_card_ge1
+            conjunct1[OF hD44_frontier_polygon_and_same_component_book_step]
+            conjunct2[OF hD44_frontier_polygon_and_same_component_book_step]])
   have hD44_frontier_exact_two_and_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
