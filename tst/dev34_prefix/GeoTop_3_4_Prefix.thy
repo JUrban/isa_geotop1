@@ -3598,6 +3598,61 @@ proof -
     show ?thesis
       by (intro conjI, rule hle2, rule hnoend)
   qed
+  have hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+      (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))"
+    (**
+      Degree-two form of the local regular-neighborhood incidence statement.
+      The book proves the boundary component is locally a 1-manifold; the
+      finite-graph helper expands cardinality two at a vertex into the two
+      explicit incident boundary edges needed by the package. **)
+  proof (intro allI impI)
+    assume hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
+      and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
+      and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
+      and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
+      and hwe\<^sub>1: "w \<in> e\<^sub>1"
+      and hwe\<^sub>2: "w \<in> e\<^sub>2"
+      and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
+      and hE_eq:
+        "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
+      using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
+        [OF hdegree hwBdJ]
+      by (elim exE conjE)
+    have hexhaust:
+        "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+    proof (intro allI impI)
+      fix e
+      assume he: "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e"
+      have "e \<in> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+        using he by (by100 simp)
+      hence "e \<in> {e\<^sub>1, e\<^sub>2}"
+        using hE_eq by (by100 simp)
+      thus "e = e\<^sub>1 \<or> e = e\<^sub>2"
+        by (by100 simp)
+    qed
+    show "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+      using he\<^sub>1BdJ he\<^sub>2BdJ he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
+      by (by100 blast)
+  qed
   have hD44_BdJ\<^sub>N_exact_two_and_corridor_imp_package:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -3659,20 +3714,15 @@ proof -
     by (rule geotop_component_member_gives_closed_corridor_prefix)
   have hD44_regular_neighborhood_exact_two_and_same_component_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2)
       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
       Remaining Moise 4.4 content after the carrier restriction setup:
       prove that the frontier component of \<open>N\<^sub>I = N \<inter> cl I\<close> through \<open>P\<close>
-      is the polygonal regular-neighborhood boundary component.  In the local
-      star form needed here, every vertex of \<open>BdJ\<^sub>N\<close> has exactly two incident
-      boundary edges; the complementary frontier arc puts the upper access
-      point \<open>S1\<close> in the same outside component of \<open>?Ncut\<close> as \<open>Q1\<close>. **)
+      is the polygonal regular-neighborhood boundary component.  In the graph
+      form needed here, every vertex of \<open>BdJ\<^sub>N\<close> has degree two; the
+      complementary frontier arc puts the upper access point \<open>S1\<close> in the same
+      outside component of \<open>?Ncut\<close> as \<open>Q1\<close>. **)
     sorry
   have hD44_regular_neighborhood_exact_two_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -3688,6 +3738,11 @@ proof -
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z)"
   proof -
+    have hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hD44_regular_neighborhood_exact_two_and_same_component_book_step
+      by (rule conjunct1)
     have htwo:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -3696,8 +3751,7 @@ proof -
             \<and> e\<^sub>1 \<noteq> e\<^sub>2
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      using hD44_regular_neighborhood_exact_two_and_same_component_book_step
-      by (rule conjunct1)
+      by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges[OF hdegree])
     have hS1_comp:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
       using hD44_regular_neighborhood_exact_two_and_same_component_book_step
