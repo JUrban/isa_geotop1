@@ -2420,6 +2420,44 @@ proof -
     using hle2 hnoend hcorridor by (intro conjI)
 qed
 
+lemma geotop_exact_two_frontier_component_same_component_polygon_package_prefix:
+  fixes U :: "(real^2) set" and L :: "(real^2) set set"
+    and Q1 S1 :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes htwo:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  assumes hsame:
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  shows
+    "geotop_is_polygon (geotop_polyhedron L)
+     \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  (**
+    Pure D44 classifier.  The regular-neighborhood proof naturally proves a
+    local exact-two frontier-edge statement; finite connected graph
+    classification converts that local statement to the polygonal 1-sphere
+    form used by the earlier package. **)
+proof -
+  have hdegree:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_exact_two_incident_edges_card_eq_two_prefix
+        [OF hL_fin htwo])
+  have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+    by (rule geotop_finite_connected_degree_two_linear_graph_polygon_prefix
+        [OF hL_linear hL_fin hL_nonempty hL_connected hdegree])
+  show ?thesis
+    using hpolygon hsame by (intro conjI)
+qed
+
 lemma geotop_frontier_graph_corridor_sphere_and_access_route_prefix:
   fixes U J\<^sub>N :: "(real^2) set"
     and L :: "(real^2) set set"
@@ -4159,18 +4197,48 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_frontier_polygon_and_component_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+  have hD44_frontier_exact_two_and_component_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
       Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
-      and boundary graph have been identified above, prove the book sentence
-      that the frontier component through \<open>P\<close> is a polygonal 1-sphere, and
-      prove that the lower and upper access witnesses lie in the same outside
-      component of \<open>I - (N \<union> A2)\<close>.  The component/corridor and finite graph
-      classifiers below turn those book facts into the exact package needed
+      and boundary graph have been identified above, prove the local form of
+      the book sentence that the frontier component through \<open>P\<close> is a
+      polygonal 1-sphere: every boundary vertex has exactly two incident
+      frontier edges.  Prove also that the lower and upper access witnesses lie
+      in the same outside component of \<open>I - (N \<union> A2)\<close>.  The graph classifiers
+      below turn exact-two incidence into the polygonal 1-sphere package needed
       downstream. **)
     sorry
+  have hD44_frontier_polygon_and_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+  proof -
+    have hD44_frontier_exact_two:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      using hD44_frontier_exact_two_and_component_book_step by (rule conjunct1)
+    have hD44_same_component_book:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      using hD44_frontier_exact_two_and_component_book_step by (rule conjunct2)
+    show ?thesis
+      by (rule
+          geotop_exact_two_frontier_component_same_component_polygon_package_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+            hBdJ\<^sub>N_connected hD44_frontier_exact_two
+            hD44_same_component_book])
+  qed
   have hD44_graph_bounds_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
