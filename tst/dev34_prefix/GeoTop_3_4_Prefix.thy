@@ -3191,6 +3191,30 @@ proof -
     unfolding hBdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
   have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
+    unfolding hBdJ\<^sub>N_def by (by100 simp)
+  have hBdJ\<^sub>N_edge_sub_FrN\<^sub>I:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heJ: "e \<subseteq> J\<^sub>N"
+      by (rule hBdJ\<^sub>N_edge_sub_J\<^sub>N[OF heBdJ hedge])
+    show "e \<subseteq> FrN\<^sub>I"
+      using heJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heBdK: "e \<in> BdK\<^sub>N"
+      using heBdJ unfolding hBdJ\<^sub>N_def by (by100 simp)
+    show "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      by (rule hBdK\<^sub>N_edge_member_incident_count_one[OF heBdK hedge])
+  qed
   have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
       "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
@@ -3917,6 +3941,106 @@ proof -
     qed
     show "card ?E \<ge> 1"
       using hcard_pos by (by100 linarith)
+  qed
+  have hBdJ\<^sub>N_vertex_degree_one_or_two_from_card_le2:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+          \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (intro allI impI)
+    fix w
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hge1:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+      by (rule hBdJ\<^sub>N_vertex_incident_edge_card_ge1[OF hwBdJ])
+    have hle:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      by (rule hle2[OF hwBdJ])
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+        \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hge1 hle by (by100 linarith)
+  qed
+  have hBdJ\<^sub>N_vertex_no_endpoint_from_card_ge2:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+  proof (intro allI impI)
+    fix w
+    assume hge2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    show "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    proof
+      assume hend: "geotop_graph_endpoint BdJ\<^sub>N w"
+      have hcard1:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1"
+        using geotop_graph_endpoint_singleton_and_card_one_prefix
+          [OF hBdJ\<^sub>N_linear_graph hend]
+        by (by100 blast)
+      have hcard_ge2:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+        by (rule hge2[OF hwBdJ])
+      show False
+        using hcard1 hcard_ge2 by (by100 linarith)
+    qed
+  qed
+  have hBdJ\<^sub>N_vertex_card_ge2_from_no_endpoint:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+  proof (intro allI impI)
+    fix w
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hge1:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+      by (rule hBdJ\<^sub>N_vertex_incident_edge_card_ge1[OF hwBdJ])
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    proof (rule ccontr)
+      assume hnot_ge2:
+        "\<not> 2 \<le> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      have hcard1:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1"
+        using hge1 hnot_ge2 by (by100 linarith)
+      have hend: "geotop_graph_endpoint BdJ\<^sub>N w"
+        by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+            [OF hBdJ\<^sub>N_linear_graph hwBdJ hcard1])
+      have hnot: "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+        using hnoend hwBdJ by (by100 blast)
+      show False
+        using hend hnot by (by100 blast)
+    qed
+  qed
+  have hBdJ\<^sub>N_vertex_degree_two_from_card_bounds:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+      (\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (intro allI impI)
+    fix w
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hge2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hle:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      by (rule hle2[OF hwBdJ])
+    have hge:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      by (rule hge2[OF hwBdJ])
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hle hge by (by100 linarith)
   qed
   have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
     using hK\<^sub>N_poly by (by100 simp)
