@@ -3090,7 +3090,24 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corr
     endpoint, and the complementary frontier arc has an adjacent outside
     corridor in \<open>I - (N \<union> A2)\<close> whose closure contains the lower and upper
     access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_polygon_and_same_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Literal remaining Moise 4.4 frontier sentence.  The book takes the
+      frontier component of the fine carrier through \<open>P\<close>, proves it is the
+      polygonal 1-sphere bounding the regular neighborhood, and uses the
+      complementary frontier arc to put the lower and upper access witnesses in
+      one component of \<open>I - (N \<union> A2)\<close>. **)
+    sorry
+  show ?thesis
+    by (rule geotop_polygon_frontier_component_same_component_graph_corridor_package_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+          conjunct1[OF hD44_frontier_polygon_and_same_component_book_step]
+          conjunct2[OF hD44_frontier_polygon_and_same_component_book_step]])
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_broken_line_access_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
