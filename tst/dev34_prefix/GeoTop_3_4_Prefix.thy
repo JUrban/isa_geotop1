@@ -6641,7 +6641,70 @@ proof -
       it is a polygonal 1-sphere, take the complementary lower-to-upper
       frontier subarc, and push it to the adjacent outside side of \<open>?Ncut\<close>
       so it crosses every pair of access collars. **)
-    sorry
+  proof -
+    have hD44_moise_closed_corridor_book_step:
+        "\<exists>C. C \<subseteq> ?Ncut
+          \<and> top1_connected_on C
+              (subspace_topology UNIV geotop_euclidean_topology C)
+          \<and> Q1 \<in> closure C
+          \<and> S1 \<in> closure C"
+      (**
+        Remaining Moise 4.4 frontier construction in its component-frontier
+        form.  The book's fine carrier/regular-neighborhood analysis supplies
+        the outside component adjacent to the complementary frontier subarc;
+        that component lies in \<open>I - (N \<union> A2)\<close>, is connected, and has the
+        lower and upper access points in its ordinary Euclidean closure. **)
+      sorry
+    have hD44_moise_same_component_book_step:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    proof -
+      obtain C where hC_sub: "C \<subseteq> ?Ncut"
+        and hC_conn:
+          "top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)"
+        and hQ1_cl: "Q1 \<in> closure C"
+        and hS1_cl: "S1 \<in> closure C"
+        using hD44_moise_closed_corridor_book_step
+        by (elim exE conjE)
+      show ?thesis
+        by (rule geotop_connected_closure_corridor_same_component_open_prefix
+            [OF hNcut_open hQ1_Ncut hS1_Ncut hC_sub hC_conn hQ1_cl hS1_cl])
+    qed
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hQ1_B: "Q1 \<in> B"
+      and hS1_B: "S1 \<in> B"
+      using hD44_same_component_in_Ncut_suffices
+        [OF hD44_moise_same_component_book_step]
+      by (elim exE conjE)
+    show ?thesis
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      have hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      proof -
+        have hQ_mem: "Q1 \<in> B \<inter> ball Q1 \<epsilon>\<^sub>Q"
+          using hQ1_B h\<epsilon>\<^sub>Q_pos by (by100 simp)
+        show ?thesis
+          unfolding ex_in_conv[symmetric]
+          by (rule exI[where x = Q1], rule hQ_mem)
+      qed
+      have hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      proof -
+        have hS_mem: "S1 \<in> B \<inter> ball S1 \<epsilon>\<^sub>S"
+          using hS1_B h\<epsilon>\<^sub>S_pos by (by100 simp)
+        show ?thesis
+          unfolding ex_in_conv[symmetric]
+          by (rule exI[where x = S1], rule hS_mem)
+      qed
+      show "\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hB_bl hB_sub hB_Q hB_S by (intro exI conjI)
+    qed
+  qed
   show ?thesis
     by (rule hD44_moise_broken_line_access_crossings_book_step)
 qed
