@@ -948,6 +948,65 @@ proof -
   qed
 qed
 
+lemma geotop_complex_edge_incident_2simplex_count_le2_prefix:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+  (**
+    Planar carrier incidence bound for the Moise regular-neighborhood proof:
+    a complex embedded in \<open>real\<^sup>2\<close> cannot have three distinct 2-simplexes
+    sharing the same edge. **)
+proof -
+  let ?F = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  show "card ?F \<le> 2"
+  proof (rule ccontr)
+    assume hnot: "\<not> card ?F \<le> 2"
+    have hge3: "3 \<le> card ?F"
+      using hnot by (by100 linarith)
+    obtain W where hW_sub: "W \<subseteq> ?F" and hW_card: "card W = 3"
+      by (rule obtain_subset_with_card_n[OF hge3])
+    have hW_three:
+        "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
+          \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
+      by (rule iffD1[OF card_3_iff hW_card])
+    obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
+      and h12: "\<sigma>1 \<noteq> \<sigma>2"
+      and h23: "\<sigma>2 \<noteq> \<sigma>3"
+      and h13: "\<sigma>1 \<noteq> \<sigma>3"
+      using hW_three by (elim exE conjE)
+    have h\<sigma>1F: "\<sigma>1 \<in> ?F"
+      using hW_sub hW_eq by (by100 blast)
+    have h\<sigma>2F: "\<sigma>2 \<in> ?F"
+      using hW_sub hW_eq by (by100 blast)
+    have h\<sigma>3F: "\<sigma>3 \<in> ?F"
+      using hW_sub hW_eq by (by100 blast)
+    have h\<sigma>1K: "\<sigma>1 \<in> K"
+      using h\<sigma>1F by (by100 simp)
+    have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+      using h\<sigma>1F by (by100 simp)
+    have h\<sigma>1face: "geotop_is_face e \<sigma>1"
+      using h\<sigma>1F by (by100 simp)
+    have h\<sigma>2K: "\<sigma>2 \<in> K"
+      using h\<sigma>2F by (by100 simp)
+    have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+      using h\<sigma>2F by (by100 simp)
+    have h\<sigma>2face: "geotop_is_face e \<sigma>2"
+      using h\<sigma>2F by (by100 simp)
+    have h\<sigma>3K: "\<sigma>3 \<in> K"
+      using h\<sigma>3F by (by100 simp)
+    have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+      using h\<sigma>3F by (by100 simp)
+    have h\<sigma>3face: "geotop_is_face e \<sigma>3"
+      using h\<sigma>3F by (by100 simp)
+    show False
+      by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
+          [OF hK hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
+            h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
+  qed
+qed
+
 lemma geotop_one_incident_edge_subset_frontier_polyhedron_prefix:
   fixes K :: "(real^2) set set" and e F :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -3052,56 +3111,8 @@ proof -
   have hK\<^sub>N_edge_incident_2faces_card_le2:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N" and hedge: "geotop_is_edge e"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    show "card ?F \<le> 2"
-    proof (rule ccontr)
-      assume hnot: "\<not> card ?F \<le> 2"
-      have hge3: "3 \<le> card ?F"
-        using hnot by (by100 linarith)
-      obtain W where hW_sub: "W \<subseteq> ?F" and hW_card: "card W = 3"
-        by (rule obtain_subset_with_card_n[OF hge3])
-      have hW_three:
-          "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
-            \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
-        by (rule iffD1[OF card_3_iff hW_card])
-      obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
-        and h12: "\<sigma>1 \<noteq> \<sigma>2"
-        and h23: "\<sigma>2 \<noteq> \<sigma>3"
-        and h13: "\<sigma>1 \<noteq> \<sigma>3"
-        using hW_three by (elim exE conjE)
-      have h\<sigma>1F: "\<sigma>1 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>2F: "\<sigma>2 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>3F: "\<sigma>3 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>1K: "\<sigma>1 \<in> K\<^sub>N"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1face: "geotop_is_face e \<sigma>1"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>2K: "\<sigma>2 \<in> K\<^sub>N"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2face: "geotop_is_face e \<sigma>2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>3K: "\<sigma>3 \<in> K\<^sub>N"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3face: "geotop_is_face e \<sigma>3"
-        using h\<sigma>3F by (by100 simp)
-      show False
-        by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
-            [OF hK\<^sub>N_complex hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
-              h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
-    qed
-  qed
+    by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+        [OF hK\<^sub>N_complex])
   have hK\<^sub>N_edge_owned_by_Sd_2simplex:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         \<exists>\<sigma>\<in>geotop_iterated_Sd m K.
@@ -4682,56 +4693,8 @@ proof -
   have hK\<^sub>N_edge_incident_2faces_card_le2:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N" and hedge: "geotop_is_edge e"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    show "card ?F \<le> 2"
-    proof (rule ccontr)
-      assume hnot: "\<not> card ?F \<le> 2"
-      have hge3: "3 \<le> card ?F"
-        using hnot by (by100 linarith)
-      obtain W where hW_sub: "W \<subseteq> ?F" and hW_card: "card W = 3"
-        by (rule obtain_subset_with_card_n[OF hge3])
-      have hW_three:
-          "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
-            \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
-        by (rule iffD1[OF card_3_iff hW_card])
-      obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
-        and h12: "\<sigma>1 \<noteq> \<sigma>2"
-        and h23: "\<sigma>2 \<noteq> \<sigma>3"
-        and h13: "\<sigma>1 \<noteq> \<sigma>3"
-        using hW_three by (elim exE conjE)
-      have h\<sigma>1F: "\<sigma>1 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>2F: "\<sigma>2 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>3F: "\<sigma>3 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>1K: "\<sigma>1 \<in> K\<^sub>N"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1face: "geotop_is_face e \<sigma>1"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>2K: "\<sigma>2 \<in> K\<^sub>N"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2face: "geotop_is_face e \<sigma>2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>3K: "\<sigma>3 \<in> K\<^sub>N"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3face: "geotop_is_face e \<sigma>3"
-        using h\<sigma>3F by (by100 simp)
-      show False
-        by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
-            [OF hK\<^sub>N_complex hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
-              h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
-    qed
-  qed
+    by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+        [OF hK\<^sub>N_complex])
   have hK\<^sub>N_edge_owned_by_Sd_2simplex:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         \<exists>\<sigma>\<in>geotop_iterated_Sd m K.
@@ -6957,56 +6920,8 @@ proof -
   have hK\<^sub>N_edge_incident_2faces_card_le2:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N" and hedge: "geotop_is_edge e"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    show "card ?F \<le> 2"
-    proof (rule ccontr)
-      assume hnot: "\<not> card ?F \<le> 2"
-      have hge3: "3 \<le> card ?F"
-        using hnot by (by100 linarith)
-      obtain W where hW_sub: "W \<subseteq> ?F" and hW_card: "card W = 3"
-        by (rule obtain_subset_with_card_n[OF hge3])
-      have hW_three:
-          "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
-            \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
-        by (rule iffD1[OF card_3_iff hW_card])
-      obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
-        and h12: "\<sigma>1 \<noteq> \<sigma>2"
-        and h23: "\<sigma>2 \<noteq> \<sigma>3"
-        and h13: "\<sigma>1 \<noteq> \<sigma>3"
-        using hW_three by (elim exE conjE)
-      have h\<sigma>1F: "\<sigma>1 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>2F: "\<sigma>2 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>3F: "\<sigma>3 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>1K: "\<sigma>1 \<in> K\<^sub>N"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1face: "geotop_is_face e \<sigma>1"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>2K: "\<sigma>2 \<in> K\<^sub>N"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2face: "geotop_is_face e \<sigma>2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>3K: "\<sigma>3 \<in> K\<^sub>N"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3face: "geotop_is_face e \<sigma>3"
-        using h\<sigma>3F by (by100 simp)
-      show False
-        by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
-            [OF hK\<^sub>N_complex hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
-              h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
-    qed
-  qed
+    by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+        [OF hK\<^sub>N_complex])
   have hK\<^sub>N_edge_incident_2faces_one_or_two_cases:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
@@ -12258,56 +12173,8 @@ proof -
   have hK\<^sub>N_edge_incident_2faces_card_le2:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N" and hedge: "geotop_is_edge e"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    show "card ?F \<le> 2"
-    proof (rule ccontr)
-      assume hnot: "\<not> card ?F \<le> 2"
-      have hge3: "3 \<le> card ?F"
-        using hnot by (by100 linarith)
-      obtain W where hW_sub: "W \<subseteq> ?F" and hW_card: "card W = 3"
-        by (rule obtain_subset_with_card_n[OF hge3])
-      have hW_three:
-          "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
-            \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
-        by (rule iffD1[OF card_3_iff hW_card])
-      obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
-        and h12: "\<sigma>1 \<noteq> \<sigma>2"
-        and h23: "\<sigma>2 \<noteq> \<sigma>3"
-        and h13: "\<sigma>1 \<noteq> \<sigma>3"
-        using hW_three by (elim exE conjE)
-      have h\<sigma>1F: "\<sigma>1 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>2F: "\<sigma>2 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>3F: "\<sigma>3 \<in> ?F"
-        using hW_sub hW_eq by (by100 blast)
-      have h\<sigma>1K: "\<sigma>1 \<in> K\<^sub>N"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>1face: "geotop_is_face e \<sigma>1"
-        using h\<sigma>1F by (by100 simp)
-      have h\<sigma>2K: "\<sigma>2 \<in> K\<^sub>N"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>2face: "geotop_is_face e \<sigma>2"
-        using h\<sigma>2F by (by100 simp)
-      have h\<sigma>3K: "\<sigma>3 \<in> K\<^sub>N"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
-        using h\<sigma>3F by (by100 simp)
-      have h\<sigma>3face: "geotop_is_face e \<sigma>3"
-        using h\<sigma>3F by (by100 simp)
-      show False
-        by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
-            [OF hK\<^sub>N_complex hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
-              h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
-    qed
-  qed
+    by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+        [OF hK\<^sub>N_complex])
   have hK\<^sub>N_edge_incident_2faces_one_or_two_cases:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
@@ -18974,56 +18841,8 @@ proof -
     have hK\<^sub>N_edge_incident_2faces_card_le2:
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-    proof -
-      fix e
-      assume heK: "e \<in> K\<^sub>N" and hedge: "geotop_is_edge e"
-      let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-      show "card ?F \<le> 2"
-      proof (rule ccontr)
-        assume hnot: "\<not> card ?F \<le> 2"
-        have hge3: "3 \<le> card ?F"
-          using hnot by (by100 linarith)
-        obtain W where hW_sub: "W \<subseteq> ?F" and hW_card: "card W = 3"
-          by (rule obtain_subset_with_card_n[OF hge3])
-        have hW_three:
-            "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
-              \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
-          by (rule iffD1[OF card_3_iff hW_card])
-        obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
-          and h12: "\<sigma>1 \<noteq> \<sigma>2"
-          and h23: "\<sigma>2 \<noteq> \<sigma>3"
-          and h13: "\<sigma>1 \<noteq> \<sigma>3"
-          using hW_three by (elim exE conjE)
-        have h\<sigma>1F: "\<sigma>1 \<in> ?F"
-          using hW_sub hW_eq by (by100 blast)
-        have h\<sigma>2F: "\<sigma>2 \<in> ?F"
-          using hW_sub hW_eq by (by100 blast)
-        have h\<sigma>3F: "\<sigma>3 \<in> ?F"
-          using hW_sub hW_eq by (by100 blast)
-        have h\<sigma>1K: "\<sigma>1 \<in> K\<^sub>N"
-          using h\<sigma>1F by (by100 simp)
-        have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
-          using h\<sigma>1F by (by100 simp)
-        have h\<sigma>1face: "geotop_is_face e \<sigma>1"
-          using h\<sigma>1F by (by100 simp)
-        have h\<sigma>2K: "\<sigma>2 \<in> K\<^sub>N"
-          using h\<sigma>2F by (by100 simp)
-        have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
-          using h\<sigma>2F by (by100 simp)
-        have h\<sigma>2face: "geotop_is_face e \<sigma>2"
-          using h\<sigma>2F by (by100 simp)
-        have h\<sigma>3K: "\<sigma>3 \<in> K\<^sub>N"
-          using h\<sigma>3F by (by100 simp)
-        have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
-          using h\<sigma>3F by (by100 simp)
-        have h\<sigma>3face: "geotop_is_face e \<sigma>3"
-          using h\<sigma>3F by (by100 simp)
-        show False
-          by (rule geotop_complex_no_three_2simplexes_share_edge_prefix
-              [OF hK\<^sub>N_complex hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
-                h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
-      qed
-    qed
+      by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+          [OF hK\<^sub>N_complex])
     have hK\<^sub>N_edge_incident_2faces_one_or_two_cases:
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
