@@ -6065,6 +6065,347 @@ proof -
       qed
     qed
   qed
+  have hD44_Ncut_open_split_forbids_connected_crossing:
+      "\<And>Z. S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> Z \<subseteq> ?Ncut
+        \<Longrightarrow> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<Longrightarrow> Z \<inter> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<noteq> {}
+        \<Longrightarrow> Z \<inter>
+              (?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+              \<noteq> {}
+        \<Longrightarrow> False"
+    (**
+      Separation form of the remaining contradiction.  Once the negation of the
+      desired component relation has split \<open>Ncut\<close>, no connected set contained
+      in \<open>Ncut\<close> can meet both the \<open>Q1\<close> side and the complementary \<open>S1\<close> side.
+      The unfinished Moise frontier subarc should supply exactly such a
+      connected crossing, thereby closing the central route step. **)
+  proof -
+    fix Z
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    assume hZ_sub: "Z \<subseteq> ?Ncut"
+    assume hZ_conn:
+      "top1_connected_on Z
+        (subspace_topology UNIV geotop_euclidean_topology Z)"
+    assume hZ_CQ:
+      "Z \<inter> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<noteq> {}"
+    assume hZ_rest:
+      "Z \<inter>
+        (?Ncut - geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+        \<noteq> {}"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?R = "?Ncut - ?CQ"
+    have hsplit:
+        "?Ncut = ?CQ \<union> ?R
+        \<and> ?CQ \<inter> ?R = {}
+        \<and> ?CQ \<in> geotop_euclidean_topology
+        \<and> ?R \<in> geotop_euclidean_topology
+        \<and> Q1 \<in> ?CQ
+        \<and> S1 \<in> ?R"
+      by (rule hD44_Ncut_open_split_if_not_same_component[OF hnot])
+    have hNcut_union: "?Ncut = ?CQ \<union> ?R"
+    proof -
+      from hsplit show ?thesis
+        apply (elim conjE)
+        apply assumption
+        done
+    qed
+    have hdisj: "?CQ \<inter> ?R = {}"
+    proof -
+      from hsplit show ?thesis
+        apply (elim conjE)
+        apply assumption
+        done
+    qed
+    have hCQ_open_top: "?CQ \<in> geotop_euclidean_topology"
+    proof -
+      from hsplit show ?thesis
+        apply (elim conjE)
+        apply assumption
+        done
+    qed
+    have hR_open_top: "?R \<in> geotop_euclidean_topology"
+    proof -
+      from hsplit show ?thesis
+        apply (elim conjE)
+        apply assumption
+        done
+    qed
+    have hQ1_CQ: "Q1 \<in> ?CQ"
+    proof -
+      from hsplit show ?thesis
+        apply (elim conjE)
+        apply assumption
+        done
+    qed
+    have hS1_R: "S1 \<in> ?R"
+      by (rule DiffI[OF hS1_Ncut hnot])
+    have hCQ_sub_Ncut: "?CQ \<subseteq> ?Ncut"
+    proof
+      fix x
+      assume hx: "x \<in> ?CQ"
+      let ?F = "{C. C \<subseteq> ?Ncut \<and> Q1 \<in> C
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)}"
+      have hxU: "x \<in> \<Union>?F"
+        using hx unfolding geotop_component_at_def .
+      obtain C where hxC: "x \<in> C" and hCF: "C \<in> ?F"
+        using hxU by (rule UnionE)
+      have hC_all:
+          "C \<subseteq> ?Ncut \<and> Q1 \<in> C
+            \<and> top1_connected_on C
+              (subspace_topology UNIV geotop_euclidean_topology C)"
+        using hCF by (rule CollectD)
+      have hC_sub: "C \<subseteq> ?Ncut"
+        using hC_all by (rule conjunct1)
+      show "x \<in> ?Ncut"
+        by (rule hC_sub[THEN subsetD, OF hxC])
+    qed
+    have hR_sub_Ncut: "?R \<subseteq> ?Ncut"
+      by (rule Diff_subset)
+    have hCQ_inter_eq: "?Ncut \<inter> ?CQ = ?CQ"
+    proof (rule antisym)
+      show "?Ncut \<inter> ?CQ \<subseteq> ?CQ"
+        by (rule Int_lower2)
+      show "?CQ \<subseteq> ?Ncut \<inter> ?CQ"
+      proof
+        fix x
+        assume hx: "x \<in> ?CQ"
+        have hxN: "x \<in> ?Ncut"
+          by (rule hCQ_sub_Ncut[THEN subsetD, OF hx])
+        show "x \<in> ?Ncut \<inter> ?CQ"
+          by (rule IntI[OF hxN hx])
+      qed
+    qed
+    have hR_inter_eq: "?Ncut \<inter> ?R = ?R"
+    proof (rule antisym)
+      show "?Ncut \<inter> ?R \<subseteq> ?R"
+        by (rule Int_lower2)
+      show "?R \<subseteq> ?Ncut \<inter> ?R"
+      proof
+        fix x
+        assume hx: "x \<in> ?R"
+        have hxN: "x \<in> ?Ncut"
+          by (rule hR_sub_Ncut[THEN subsetD, OF hx])
+        show "x \<in> ?Ncut \<inter> ?R"
+          by (rule IntI[OF hxN hx])
+      qed
+    qed
+    have hCQ_open_sub:
+        "?CQ \<in> subspace_topology UNIV geotop_euclidean_topology ?Ncut"
+      unfolding subspace_topology_def
+    proof (rule CollectI)
+      show "\<exists>U. ?CQ = ?Ncut \<inter> U \<and> U \<in> geotop_euclidean_topology"
+      proof (rule exI[where x = ?CQ], intro conjI)
+        show "?CQ = ?Ncut \<inter> ?CQ"
+          by (rule hCQ_inter_eq[symmetric])
+        show "?CQ \<in> geotop_euclidean_topology"
+          by (rule hCQ_open_top)
+      qed
+    qed
+    have hR_open_sub:
+        "?R \<in> subspace_topology UNIV geotop_euclidean_topology ?Ncut"
+      unfolding subspace_topology_def
+    proof (rule CollectI)
+      show "\<exists>U. ?R = ?Ncut \<inter> U \<and> U \<in> geotop_euclidean_topology"
+      proof (rule exI[where x = ?R], intro conjI)
+        show "?R = ?Ncut \<inter> ?R"
+          by (rule hR_inter_eq[symmetric])
+        show "?R \<in> geotop_euclidean_topology"
+          by (rule hR_open_top)
+      qed
+    qed
+    have hsep:
+        "top1_is_separation_on ?Ncut
+          (subspace_topology UNIV geotop_euclidean_topology ?Ncut) ?CQ ?R"
+      unfolding top1_is_separation_on_def
+    proof (intro conjI)
+      show "?CQ \<in> subspace_topology UNIV geotop_euclidean_topology ?Ncut"
+        by (rule hCQ_open_sub)
+      show "?R \<in> subspace_topology UNIV geotop_euclidean_topology ?Ncut"
+        by (rule hR_open_sub)
+      show "?CQ \<noteq> {}"
+      proof
+        assume hCQ_empty: "?CQ = {}"
+        have "Q1 \<in> {}"
+          by (subst hCQ_empty[symmetric], rule hQ1_CQ)
+        thus False
+          by (rule emptyE)
+      qed
+      show "?R \<noteq> {}"
+      proof
+        assume hR_empty: "?R = {}"
+        have "S1 \<in> {}"
+          by (subst hR_empty[symmetric], rule hS1_R)
+        thus False
+          by (rule emptyE)
+      qed
+      show "?CQ \<inter> ?R = {}"
+        by (rule hdisj)
+      show "?CQ \<union> ?R = ?Ncut"
+        by (rule hNcut_union[symmetric])
+    qed
+    have hUNIV_top:
+        "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets
+          top1_open_sets_is_topology_on_UNIV)
+    have htop_Ncut:
+        "is_topology_on ?Ncut
+          (subspace_topology UNIV geotop_euclidean_topology ?Ncut)"
+      by (rule subspace_topology_is_topology_on[OF hUNIV_top subset_UNIV])
+    have hZ_subspace:
+        "subspace_topology ?Ncut
+          (subspace_topology UNIV geotop_euclidean_topology ?Ncut) Z =
+         subspace_topology UNIV geotop_euclidean_topology Z"
+      by (rule subspace_topology_trans[OF hZ_sub])
+    have hZ_conn_Ncut:
+        "top1_connected_on Z
+          (subspace_topology ?Ncut
+            (subspace_topology UNIV geotop_euclidean_topology ?Ncut) Z)"
+      by (subst hZ_subspace, rule hZ_conn)
+    have hZ_side: "Z \<subseteq> ?CQ \<or> Z \<subseteq> ?R"
+      by (rule Lemma_23_2[OF htop_Ncut hsep hZ_sub hZ_conn_Ncut])
+    from hZ_side show False
+    proof
+      assume hZ_CQ_sub: "Z \<subseteq> ?CQ"
+      have hZ_rest_ex: "\<exists>x. x \<in> Z \<inter> ?R"
+        unfolding ex_in_conv by (rule hZ_rest)
+      obtain x where hxZR: "x \<in> Z \<inter> ?R"
+        using hZ_rest_ex by (elim exE)
+      have hxZ: "x \<in> Z"
+        by (rule IntD1[OF hxZR])
+      have hxR: "x \<in> ?R"
+        by (rule IntD2[OF hxZR])
+      have hxCQ: "x \<in> ?CQ"
+        by (rule hZ_CQ_sub[THEN subsetD, OF hxZ])
+      have hxCQR: "x \<in> ?CQ \<inter> ?R"
+        by (rule IntI[OF hxCQ hxR])
+      have "x \<in> {}"
+        by (subst hdisj[symmetric], rule hxCQR)
+      thus False
+        by (rule emptyE)
+    next
+      assume hZ_R: "Z \<subseteq> ?R"
+      have hZ_CQ_ex: "\<exists>x. x \<in> Z \<inter> ?CQ"
+        unfolding ex_in_conv by (rule hZ_CQ)
+      obtain x where hxZCQ: "x \<in> Z \<inter> ?CQ"
+        using hZ_CQ_ex by (elim exE)
+      have hxZ: "x \<in> Z"
+        by (rule IntD1[OF hxZCQ])
+      have hxCQ: "x \<in> ?CQ"
+        by (rule IntD2[OF hxZCQ])
+      have hxR: "x \<in> ?R"
+        by (rule hZ_R[THEN subsetD, OF hxZ])
+      have hxCQR: "x \<in> ?CQ \<inter> ?R"
+        by (rule IntI[OF hxCQ hxR])
+      have "x \<in> {}"
+        by (subst hdisj[symmetric], rule hxCQR)
+      thus False
+        by (rule emptyE)
+    qed
+  qed
+  have hD44_Ncut_open_split_forbids_connected_access_ball_crossing:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>\<epsilon>\<^sub>Q>0. \<exists>\<epsilon>\<^sub>S>0.
+          (\<forall>Z. Z \<subseteq> ?Ncut
+            \<longrightarrow> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+            \<longrightarrow> False)"
+    (**
+      Access-ball contradiction form of the same split.  After negating the
+      desired component relation, choose the component-side collars around
+      \<open>Q1\<close> and \<open>S1\<close>.  Any connected subset of \<open>Ncut\<close> meeting both collars
+      would cross the open component separation, contradicting the previous
+      separation bridge.  This is the exact target for the final Moise
+      lower-to-upper frontier witness. **)
+  proof -
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?R = "?Ncut - ?CQ"
+    obtain \<epsilon>\<^sub>Q \<epsilon>\<^sub>S where h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+      and h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+      and hball_Q_CQ: "ball Q1 \<epsilon>\<^sub>Q \<subseteq> ?CQ"
+      and hball_S_R: "ball S1 \<epsilon>\<^sub>S \<subseteq> ?R"
+      using hD44_Ncut_open_split_access_balls_if_not_same_component[OF hnot]
+      by (elim exE conjE)
+    have hall:
+        "\<forall>Z. Z \<subseteq> ?Ncut
+          \<longrightarrow> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<longrightarrow> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<longrightarrow> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}
+          \<longrightarrow> False"
+    proof (intro allI impI)
+      fix Z
+      assume hZ_sub: "Z \<subseteq> ?Ncut"
+      assume hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      assume hZ_Qball: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      assume hZ_Sball: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      have hZ_CQ: "Z \<inter> ?CQ \<noteq> {}"
+      proof -
+        have hZ_Qball_ex: "\<exists>x. x \<in> Z \<inter> ball Q1 \<epsilon>\<^sub>Q"
+          unfolding ex_in_conv by (rule hZ_Qball)
+        obtain x where hxZQ: "x \<in> Z \<inter> ball Q1 \<epsilon>\<^sub>Q"
+          using hZ_Qball_ex by (elim exE)
+        have hxZ: "x \<in> Z"
+          by (rule IntD1[OF hxZQ])
+        have hxball: "x \<in> ball Q1 \<epsilon>\<^sub>Q"
+          by (rule IntD2[OF hxZQ])
+        have hxCQ: "x \<in> ?CQ"
+          by (rule hball_Q_CQ[THEN subsetD, OF hxball])
+        have hxZCQ: "x \<in> Z \<inter> ?CQ"
+          by (rule IntI[OF hxZ hxCQ])
+        show ?thesis
+          unfolding ex_in_conv[symmetric] by (rule exI[where x = x], rule hxZCQ)
+      qed
+      have hZ_R: "Z \<inter> ?R \<noteq> {}"
+      proof -
+        have hZ_Sball_ex: "\<exists>x. x \<in> Z \<inter> ball S1 \<epsilon>\<^sub>S"
+          unfolding ex_in_conv by (rule hZ_Sball)
+        obtain x where hxZS: "x \<in> Z \<inter> ball S1 \<epsilon>\<^sub>S"
+          using hZ_Sball_ex by (elim exE)
+        have hxZ: "x \<in> Z"
+          by (rule IntD1[OF hxZS])
+        have hxball: "x \<in> ball S1 \<epsilon>\<^sub>S"
+          by (rule IntD2[OF hxZS])
+        have hxR: "x \<in> ?R"
+          by (rule hball_S_R[THEN subsetD, OF hxball])
+        have hxZR: "x \<in> Z \<inter> ?R"
+          by (rule IntI[OF hxZ hxR])
+        show ?thesis
+          unfolding ex_in_conv[symmetric] by (rule exI[where x = x], rule hxZR)
+      qed
+      show False
+        by (rule hD44_Ncut_open_split_forbids_connected_crossing
+            [OF hnot hZ_sub hZ_conn hZ_CQ hZ_R])
+    qed
+    show ?thesis
+    proof (rule exI[where x=\<epsilon>\<^sub>Q], intro conjI)
+      show "0 < \<epsilon>\<^sub>Q" by (rule h\<epsilon>\<^sub>Q_pos)
+      show "\<exists>\<epsilon>\<^sub>S>0.
+          (\<forall>Z. Z \<subseteq> ?Ncut \<longrightarrow>
+            top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z) \<longrightarrow>
+            Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {} \<longrightarrow>
+            Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {} \<longrightarrow> False)"
+      proof (rule exI[where x=\<epsilon>\<^sub>S], intro conjI)
+        show "0 < \<epsilon>\<^sub>S" by (rule h\<epsilon>\<^sub>S_pos)
+        show "\<forall>Z. Z \<subseteq> ?Ncut \<longrightarrow>
+            top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z) \<longrightarrow>
+            Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {} \<longrightarrow>
+            Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {} \<longrightarrow> False"
+          by (rule hall)
+      qed
+    qed
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
