@@ -4121,6 +4121,45 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_exact_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    (**
+      Moise 4.4 regular-neighborhood local boundary analysis: each vertex of
+      the selected component of \<open>Fr N\<^sub>I\<close> has exactly the two incident frontier
+      edges belonging to that 2-manifold-with-boundary frontier component. **)
+    sorry
+  have hD44_frontier_graph_bounds_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
+        [OF hBdJ\<^sub>N_fin hD44_frontier_exact_two_book_step])
+  have hD44_frontier_card_le2_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_frontier_graph_bounds_book_step by (rule conjunct1)
+  have hD44_frontier_no_endpoint_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_frontier_graph_bounds_book_step by (rule conjunct2)
+  have hD44_corridor_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    (**
+      Moise 4.4 complementary-frontier-arc step: split the 1-sphere frontier
+      component into the boundary arc in \<open>Fr I\<close> and the other frontier arc;
+      the outside side of that other arc gives one connected corridor in
+      \<open>I - (N \<union> A2)\<close> accumulating at the two local access witnesses. **)
+    sorry
   have hD44_frontier_sphere_and_corridor_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -4130,13 +4169,20 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
     (**
-      Remaining Moise 4.4 book construction in its literal form.  Use the
-      manifold-with-boundary regular-neighborhood analysis of \<open>N\<^sub>I\<close> to show
-      the selected frontier component through \<open>P\<close> is a 1-sphere, split that
-      sphere into the boundary arc and complementary frontier arc, and use the
-      complementary arc to give a connected outside corridor accumulating at
-      \<open>Q1\<close> and \<open>S1\<close>. **)
-    sorry
+      Package the local regular-neighborhood facts in the form already used by
+      the D44 graph/corridor bridge: valence bounds and no endpoints make the
+      selected frontier graph a polygonal 1-sphere, and the corridor gives the
+      same-component access conclusion. **)
+    by (rule
+        geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corridor_book_step_prefix
+        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
+          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
+          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
+          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
+          hBdJ\<^sub>N_def hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
+          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly_from_coverage
+          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2_book_step
+          hD44_frontier_no_endpoint_book_step hD44_corridor_book_step])
   have hD44_frontier_sphere:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
