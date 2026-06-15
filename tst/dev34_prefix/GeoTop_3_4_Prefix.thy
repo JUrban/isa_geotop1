@@ -4275,6 +4275,67 @@ proof -
       using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
       by (intro exI conjI)
   qed
+  have hD44_F\<^sub>1_boundary_subarc_vertex_refinement_from_P_to_B1P:
+      "\<exists>X C L. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> ?B1P
+        \<and> C \<subseteq> F\<^sub>1
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}
+        \<and> connected (geotop_arc_interior C {P, X})
+        \<and> geotop_arc_interior C {P, X} \<noteq> {}
+        \<and> geotop_is_complex L
+        \<and> geotop_complex_is_1dim L
+        \<and> finite L
+        \<and> geotop_polyhedron L = C
+        \<and> {P} \<in> L
+        \<and> {X} \<in> L"
+  proof -
+    obtain X C where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hC_bl: "geotop_is_broken_line C"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      and hC_sub_B1P: "C \<subseteq> ?B1P"
+      using hD44_B1P_boundary_subarc_inside_B1P by (elim exE conjE)
+    have hC_sub_F1: "C \<subseteq> F\<^sub>1"
+      using hC_sub_B1P hD44_B1P_sub_F\<^sub>1 by (by100 blast)
+    obtain L0 where hL0_complex: "geotop_is_complex L0"
+      and hL0_1dim: "geotop_complex_is_1dim L0"
+      and hL0_poly: "geotop_polyhedron L0 = C"
+      and hP_L0: "{P} \<in> L0"
+      and hL0_fin: "finite L0"
+      using geotop_broken_line_vertex_at[OF hC_bl hP_C] by (by100 blast)
+    have hX_poly_L0: "X \<in> geotop_polyhedron L0"
+      using hX_C hL0_poly by (by100 simp)
+    obtain L where hL_complex: "geotop_is_complex L"
+      and hL_1dim: "geotop_complex_is_1dim L"
+      and hL_poly: "geotop_polyhedron L = geotop_polyhedron L0"
+      and hX_L: "{X} \<in> L"
+      and hvertices_preserved: "\<forall>v. {v} \<in> L0 \<longrightarrow> {v} \<in> L"
+      and hL_fin_if: "finite L0 \<longrightarrow> finite L"
+      using geotop_complex_subdivide_at
+        [OF hL0_complex hL0_1dim hX_poly_L0]
+      by (by100 blast)
+    have hP_L: "{P} \<in> L"
+      using hvertices_preserved hP_L0 by (by100 blast)
+    have hL_fin: "finite L"
+      using hL_fin_if hL0_fin by (by100 blast)
+    have hL_poly_C: "geotop_polyhedron L = C"
+      using hL_poly hL0_poly by (by100 simp)
+    have hC_int_connected: "connected (geotop_arc_interior C {P, X})"
+      by (rule arc_interior_connected[OF hC_end])
+    have hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
+      by (rule arc_interior_nonempty[OF hC_end])
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hP_C hX_C hC_end
+        hC_int_connected hC_int_nonempty
+        hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
+      by (intro exI conjI)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
