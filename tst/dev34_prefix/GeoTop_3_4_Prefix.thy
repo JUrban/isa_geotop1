@@ -633,6 +633,31 @@ proof -
           hK\<^sub>N_poly_path_connected])
 qed
 
+lemma geotop_complex_connected_of_connected_polyhedron_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hconn: "connected (geotop_polyhedron K)"
+  shows "geotop_complex_connected K"
+  (**
+    Generic graph/complex conversion used in the Moise 4.4 frontier package:
+    after the frontier component has been identified with a boundary
+    subcomplex polyhedron, ordinary connectedness of that carrier gives
+    combinatorial connectedness of the subcomplex. **)
+proof -
+  have htop_conn:
+      "top1_connected_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron K))"
+    using hconn top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hpath_conn:
+      "top1_path_connected_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron K))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK] htop_conn])
+  show ?thesis
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK] hpath_conn])
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3089,21 +3114,9 @@ proof -
   have hBdJ\<^sub>N_poly_connected_HOL:
       "connected (geotop_polyhedron BdJ\<^sub>N)"
     using hJ\<^sub>N_connected_HOL hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
-  have hBdJ\<^sub>N_poly_connected:
-      "top1_connected_on (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N))"
-    using hBdJ\<^sub>N_poly_connected_HOL top1_connected_on_geotop_iff_connected
-    by (by100 blast)
-  have hBdJ\<^sub>N_poly_path_connected:
-      "top1_path_connected_on (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N))"
-    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hBdJ\<^sub>N_complex]
-          hBdJ\<^sub>N_poly_connected])
   have hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
-    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hBdJ\<^sub>N_complex]
-          hBdJ\<^sub>N_poly_path_connected])
+    by (rule geotop_complex_connected_of_connected_polyhedron_prefix
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_poly_connected_HOL])
   have hBdJ\<^sub>N_poly_nonempty: "geotop_polyhedron BdJ\<^sub>N \<noteq> {}"
     using hP_J\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 blast)
   have hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
@@ -6363,21 +6376,9 @@ proof -
   have hBdJ\<^sub>N_poly_connected_HOL:
       "connected (geotop_polyhedron BdJ\<^sub>N)"
     using hJ\<^sub>N_connected_HOL hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
-  have hBdJ\<^sub>N_poly_connected:
-      "top1_connected_on (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N))"
-    using hBdJ\<^sub>N_poly_connected_HOL top1_connected_on_geotop_iff_connected
-    by (by100 blast)
-  have hBdJ\<^sub>N_poly_path_connected:
-      "top1_path_connected_on (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N))"
-    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hBdJ\<^sub>N_complex]
-          hBdJ\<^sub>N_poly_connected])
   have hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
-    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hBdJ\<^sub>N_complex]
-          hBdJ\<^sub>N_poly_path_connected])
+    by (rule geotop_complex_connected_of_connected_polyhedron_prefix
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_poly_connected_HOL])
   have hBdJ\<^sub>N_poly_nonempty: "geotop_polyhedron BdJ\<^sub>N \<noteq> {}"
     using hP_J\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 blast)
   have hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
@@ -12213,21 +12214,9 @@ proof -
   have hBdJ\<^sub>N_poly_connected_HOL:
       "connected (geotop_polyhedron BdJ\<^sub>N)"
     using hJ\<^sub>N_connected_HOL hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
-  have hBdJ\<^sub>N_poly_connected:
-      "top1_connected_on (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N))"
-    using hBdJ\<^sub>N_poly_connected_HOL top1_connected_on_geotop_iff_connected
-    by (by100 blast)
-  have hBdJ\<^sub>N_poly_path_connected:
-      "top1_path_connected_on (geotop_polyhedron BdJ\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron BdJ\<^sub>N))"
-    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hBdJ\<^sub>N_complex]
-          hBdJ\<^sub>N_poly_connected])
   have hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
-    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hBdJ\<^sub>N_complex]
-          hBdJ\<^sub>N_poly_path_connected])
+    by (rule geotop_complex_connected_of_connected_polyhedron_prefix
+        [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_poly_connected_HOL])
   have hBdJ\<^sub>N_poly_nonempty: "geotop_polyhedron BdJ\<^sub>N \<noteq> {}"
     using hP_J\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 blast)
   have hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
@@ -19481,21 +19470,9 @@ proof -
     have hBdJ\<^sub>N_poly_connected_HOL:
         "connected (geotop_polyhedron BdJ\<^sub>N)"
       using hJ\<^sub>N_connected_HOL hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
-    have hBdJ\<^sub>N_poly_connected:
-        "top1_connected_on (geotop_polyhedron BdJ\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron BdJ\<^sub>N))"
-      using hBdJ\<^sub>N_poly_connected_HOL top1_connected_on_geotop_iff_connected
-      by (by100 blast)
-    have hBdJ\<^sub>N_poly_path_connected:
-        "top1_path_connected_on (geotop_polyhedron BdJ\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron BdJ\<^sub>N))"
-      by (rule iffD2[OF Theorem_GT_1_12(2)[OF hBdJ\<^sub>N_complex]
-            hBdJ\<^sub>N_poly_connected])
     have hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
-      by (rule iffD2[OF Theorem_GT_1_12(1)[OF hBdJ\<^sub>N_complex]
-            hBdJ\<^sub>N_poly_path_connected])
+      by (rule geotop_complex_connected_of_connected_polyhedron_prefix
+          [OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_poly_connected_HOL])
     have hBdJ\<^sub>N_poly_nonempty: "geotop_polyhedron BdJ\<^sub>N \<noteq> {}"
       using hP_J\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 blast)
     have hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
