@@ -3474,6 +3474,66 @@ proof -
     show ?thesis
       by (rule hBdJ\<^sub>N_polygon_from_degree_two[OF hdegree])
   qed
+  have hBdJ\<^sub>N_polygon_from_simple_closed_curve:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+        (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+  proof -
+    let ?C = "geotop_polyhedron BdJ\<^sub>N"
+    let ?TC = "subspace_topology UNIV geotop_euclidean_topology ?C"
+    let ?S = "(geotop_std_sphere::(real^2) set)"
+    let ?TS = "subspace_topology UNIV geotop_euclidean_topology ?S"
+    assume hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology ?C"
+    obtain f where hf_cont_UNIV:
+        "top1_continuous_map_on top1_S1 top1_S1_topology
+          UNIV geotop_euclidean_topology f"
+      and hfinj: "inj_on f top1_S1"
+      and hf_img: "f ` top1_S1 = ?C"
+      using hSCC unfolding top1_simple_closed_curve_on_def
+      by (by100 blast)
+    have hf_cont_C:
+        "top1_continuous_map_on top1_S1 top1_S1_topology ?C ?TC f"
+    proof -
+      have hf_img_sub: "f ` top1_S1 \<subseteq> ?C"
+        using hf_img by (by100 simp)
+      show ?thesis
+        by (rule top1_continuous_map_on_codomain_shrink
+            [OF hf_cont_UNIV hf_img_sub subset_UNIV])
+    qed
+    have hS1_top: "is_topology_on top1_S1 top1_S1_topology"
+      using S1_compact by (rule compact_is_topology)
+    have hUNIV_top:
+        "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      unfolding geotop_euclidean_topology_eq_open_sets
+      using top1_open_sets_is_topology_on_UNIV by (by100 simp)
+    have hC_top: "is_topology_on ?C ?TC"
+      by (rule subspace_topology_is_topology_on[OF hUNIV_top subset_UNIV])
+    have hC_haus: "is_hausdorff_on ?C ?TC"
+      by (rule hausdorff_subspace
+          [OF geotop_euclidean_topology_UNIV_hausdorff subset_UNIV])
+    have hf_bij: "bij_betw f top1_S1 ?C"
+      using hfinj hf_img unfolding bij_betw_def by (by100 blast)
+    have hS1_C: "top1_homeomorphism_on top1_S1 top1_S1_topology ?C ?TC f"
+      by (rule Theorem_26_6
+          [OF hS1_top hC_top S1_compact hC_haus hf_cont_C hf_bij])
+    have hC_S1: "top1_homeomorphism_on ?C ?TC top1_S1 top1_S1_topology
+        (inv_into top1_S1 f)"
+      by (rule top1_homeomorphism_on_sym[OF hS1_C])
+    have hS1_std: "top1_homeomorphism_on top1_S1 top1_S1_topology ?S ?TS
+        (inv_into ?S R2_to_pair)"
+      by (rule top1_homeomorphism_on_sym
+          [OF R2_pair_top1_homeomorphism_std_sphere_prefix])
+    have hC_std: "top1_homeomorphism_on ?C ?TC ?S ?TS
+        (inv_into ?S R2_to_pair \<circ> inv_into top1_S1 f)"
+      by (rule top1_homeomorphism_on_comp[OF hC_S1 hS1_std])
+    have hC_sphere: "geotop_is_n_sphere ?C ?TC 1"
+      unfolding geotop_is_n_sphere_def
+      using hC_top hC_std by (by100 blast)
+    show "geotop_is_polygon ?C"
+      unfolding geotop_is_polygon_def
+      using hBdJ\<^sub>N_complex hC_sphere by (by100 blast)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
