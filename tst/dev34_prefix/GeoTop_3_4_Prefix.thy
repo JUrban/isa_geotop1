@@ -4388,14 +4388,43 @@ proof -
     show ?thesis
       by (intro conjI, rule hle2, rule hnoend)
   qed
-  have hD44_exact_frontier_and_broken_line_access_book_step:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+  have hD44_BdJ\<^sub>N_polygon_imp_degree_two:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      Converts Moise's polygonal frontier component into the exact local
+      degree statement used by the finite graph bookkeeping. **)
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected])
+  have hD44_J\<^sub>N_1sphere_imp_exact_two:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+        \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon[OF hsphere])
+    have hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hD44_BdJ\<^sub>N_polygon_imp_degree_two[OF hpolygon])
+    show ?thesis
+      by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+          [OF hdegree])
+  qed
+  have hD44_frontier_sphere_and_broken_line_access_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
        \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
           \<exists>B. geotop_is_broken_line B
             \<and> B \<subseteq> ?Ncut
@@ -4405,11 +4434,16 @@ proof -
       Remaining Moise 4.4 construction.  The already-open outside carrier is
       fixed; what remains is to formalize the book's regular-neighborhood
       frontier analysis in the detailed carrier context above.  This is now
-      stated in the book's order: exact local frontier incidence at every
-      vertex of the component through \<open>P\<close>, and the complementary frontier
+      stated in the book's order: the component \<open>J\<^sub>N\<close> of the frontier is a
+      1-sphere, and the complementary frontier
       broken line between \<open>V\<close> and \<open>W\<close> crossing arbitrary lower and upper
       access collars. **)
     sorry
+  have hD44_frontier_1sphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_frontier_sphere_and_broken_line_access_book_step
+    by (rule conjunct1)
   have hD44_frontier_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4418,7 +4452,7 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    using hD44_exact_frontier_and_broken_line_access_book_step by (rule conjunct1)
+    by (rule hD44_J\<^sub>N_1sphere_imp_exact_two[OF hD44_frontier_1sphere])
   have hD44_graph_bounds:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4432,7 +4466,8 @@ proof -
           \<and> B \<subseteq> ?Ncut
           \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    using hD44_exact_frontier_and_broken_line_access_book_step by (rule conjunct2)
+    using hD44_frontier_sphere_and_broken_line_access_book_step
+    by (rule conjunct2)
   have hD44_connected_access_crossings:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>Z. Z \<subseteq> ?Ncut
