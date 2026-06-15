@@ -1555,6 +1555,113 @@ proof -
               h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
     qed
   qed
+  have hK\<^sub>N_edge_incident_2faces_one_or_two_cases:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
+        \<Longrightarrow>
+        (\<exists>!\<sigma>. \<sigma> \<in> K\<^sub>N \<and> geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face e \<sigma>)
+        \<or> (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+          \<and> \<sigma> \<in> K\<^sub>N \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+          \<and> \<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+          \<and> {\<rho>\<in>K\<^sub>N. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} =
+            {\<sigma>, \<tau>})"
+  proof -
+    fix e
+    assume heK: "e \<in> K\<^sub>N" and hedge: "geotop_is_edge e"
+      and hge1:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}
+          \<ge> 1"
+    have hle2:
+        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}
+          \<le> 2"
+      by (rule hK\<^sub>N_edge_incident_2faces_card_le2[OF heK hedge])
+    show
+        "(\<exists>!\<sigma>. \<sigma> \<in> K\<^sub>N \<and> geotop_simplex_dim \<sigma> 2 \<and>
+          geotop_is_face e \<sigma>)
+        \<or> (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+          \<and> \<sigma> \<in> K\<^sub>N \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+          \<and> \<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+          \<and> {\<rho>\<in>K\<^sub>N. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} =
+            {\<sigma>, \<tau>})"
+    proof -
+      let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+      have hcard_cases: "card ?F = 1 \<or> card ?F = 2"
+        using hge1 hle2 by (by100 linarith)
+      show ?thesis
+      proof (rule disjE[OF hcard_cases])
+        assume hcard1: "card ?F = 1"
+        obtain \<sigma> where hF_eq: "?F = {\<sigma>}"
+          by (rule card_1_singletonE[OF hcard1])
+        have h\<sigma>F: "\<sigma> \<in> ?F"
+          using hF_eq by (by100 simp)
+        have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
+          using h\<sigma>F by (by100 simp)
+        have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+          using h\<sigma>F by (by100 simp)
+        have h\<sigma>face: "geotop_is_face e \<sigma>"
+          using h\<sigma>F by (by100 simp)
+        have huniq:
+            "\<forall>\<tau>. \<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2
+              \<and> geotop_is_face e \<tau> \<longrightarrow> \<tau> = \<sigma>"
+        proof (intro allI impI)
+          fix \<tau>
+          assume h\<tau>:
+            "\<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>"
+          have h\<tau>F: "\<tau> \<in> ?F"
+            using h\<tau> by (by100 simp)
+          show "\<tau> = \<sigma>"
+            using hF_eq h\<tau>F by (by100 simp)
+        qed
+        have hone: "\<exists>!\<tau>. \<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2
+            \<and> geotop_is_face e \<tau>"
+        proof (rule ex1I[of _ \<sigma>])
+          show "\<sigma> \<in> K\<^sub>N \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+            using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+        next
+          fix \<tau>
+          assume h\<tau>:
+            "\<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>"
+          show "\<tau> = \<sigma>"
+            using huniq h\<tau> by (by100 simp)
+        qed
+        show ?thesis
+          using hone by (rule disjI1)
+      next
+        assume hcard2: "card ?F = 2"
+        have hcard2_ex:
+            "\<exists>\<sigma> \<tau>. ?F = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>"
+          by (rule iffD1[OF card_2_iff hcard2])
+        obtain \<sigma> \<tau> where hF_eq: "?F = {\<sigma>, \<tau>}" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+          using hcard2_ex by (elim exE conjE)
+        have h\<sigma>F: "\<sigma> \<in> ?F"
+          using hF_eq by (by100 simp)
+        have h\<tau>F: "\<tau> \<in> ?F"
+          using hF_eq by (by100 simp)
+        have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
+          using h\<sigma>F by (by100 simp)
+        have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+          using h\<sigma>F by (by100 simp)
+        have h\<sigma>face: "geotop_is_face e \<sigma>"
+          using h\<sigma>F by (by100 simp)
+        have h\<tau>K: "\<tau> \<in> K\<^sub>N"
+          using h\<tau>F by (by100 simp)
+        have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+          using h\<tau>F by (by100 simp)
+        have h\<tau>face: "geotop_is_face e \<tau>"
+          using h\<tau>F by (by100 simp)
+        show ?thesis
+        proof (rule disjI2)
+          show "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+            \<and> \<sigma> \<in> K\<^sub>N \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+            \<and> \<tau> \<in> K\<^sub>N \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+            \<and> ?F = {\<sigma>, \<tau>}"
+            using h\<sigma>\<tau> h\<sigma>K h\<sigma>2 h\<sigma>face h\<tau>K h\<tau>2 h\<tau>face hF_eq
+            by (intro exI conjI)
+        qed
+      qed
+    qed
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
