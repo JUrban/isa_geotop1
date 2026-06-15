@@ -4121,9 +4121,11 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_frontier_degree_two_and_corridor_book_step:
+  have hD44_frontier_bounds_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2)
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -4132,15 +4134,42 @@ proof -
     (**
       Remaining Moise 4.4 book construction: use the manifold-with-boundary
       regular-neighborhood analysis of \<open>N\<^sub>I\<close> to prove the selected frontier
-      component has exactly two incident boundary edges at each vertex, split
-      it into the boundary arc and complementary frontier arc, and use that
-      complementary arc to put \<open>Q1\<close> and \<open>S1\<close> in the same component of
-      \<open>?Ncut\<close>. **)
+      component has at most two incident boundary edges at each vertex and no
+      graph endpoint, split it into the boundary arc and complementary
+      frontier arc, and use that complementary arc to put \<open>Q1\<close> and \<open>S1\<close> in
+      the same component of \<open>?Ncut\<close>. **)
     sorry
+  have hD44_frontier_card_le2_all:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint_all:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
+  have hD44_frontier_degree_one_or_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+          \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (intro allI impI)
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hge1:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+      by (rule hBdJ\<^sub>N_vertex_incident_ge1[OF hwBdJ])
+    have hle2:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_frontier_card_le2_all hwBdJ by (by100 blast)
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
+        \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hge1 hle2 by (by100 linarith)
+  qed
   have hD44_frontier_degree_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-    using hD44_frontier_degree_two_and_corridor_book_step by (by100 blast)
+    by (rule geotop_degree_one_or_two_no_endpoint_degree_two_prefix
+        [OF hBdJ\<^sub>N_linear_graph hD44_frontier_degree_one_or_two
+          hD44_frontier_no_endpoint_all])
   have hD44_frontier_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4156,8 +4185,8 @@ proof -
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
-    by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
-        [OF hBdJ\<^sub>N_fin hD44_frontier_exact_two])
+    using hD44_frontier_card_le2_all hD44_frontier_no_endpoint_all
+    by (by100 blast)
   have hD44_frontier_card_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
@@ -4171,7 +4200,7 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_frontier_degree_two_and_corridor_book_step by (by100 blast)
+    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
   have hD44_frontier_sphere:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
