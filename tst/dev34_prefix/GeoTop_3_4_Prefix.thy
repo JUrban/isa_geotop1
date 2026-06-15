@@ -582,6 +582,57 @@ proof -
     using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
 qed
 
+lemma geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix:
+  fixes K K\<^sub>N :: "(real^2) set set" and A N :: "(real^2) set"
+    and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hpA: "p \<in> A"
+  assumes hA_N: "A \<subseteq> N"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  assumes hK\<^sub>N_def:
+    "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  shows "geotop_complex_connected K\<^sub>N"
+  (**
+    Moise 4.4 selected-carrier setup: the subcomplex carried by the bricks
+    meeting the endpoint arc has connected polyhedron, hence is a connected
+    complex. **)
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding hK\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hN_connected_HOL: "connected N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK hKfin hA hpA hA_N hN_def])
+  have hN_connected:
+      "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+    using hN_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK hKfin hN_def hK\<^sub>N_def])
+  have hK\<^sub>N_poly_connected:
+      "top1_connected_on (geotop_polyhedron K\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron K\<^sub>N))"
+    using hN_connected hK\<^sub>N_poly by (by100 simp)
+  have hK\<^sub>N_poly_path_connected:
+      "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron K\<^sub>N))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
+          hK\<^sub>N_poly_connected])
+  show ?thesis
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
+          hK\<^sub>N_poly_path_connected])
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -1548,23 +1599,9 @@ proof -
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
         [OF hK_complex hK_fin hN_def hK\<^sub>N_def])
-  have hK\<^sub>N_poly_connected:
-      "top1_connected_on (geotop_polyhedron K\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron K\<^sub>N))"
-    using hN_connected hK\<^sub>N_poly by (by100 simp)
   have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
-  proof -
-    have hK\<^sub>N_poly_path_connected:
-        "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron K\<^sub>N))"
-      by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
-            hK\<^sub>N_poly_connected])
-    show ?thesis
-      by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
-            hK\<^sub>N_poly_path_connected])
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def hK\<^sub>N_def])
   have hA1_not_subset_singleton:
       "\<And>x. \<not> A1 \<subseteq> {x}"
   proof
@@ -4610,23 +4647,9 @@ proof -
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
         [OF hK_complex hK_fin hN_def K\<^sub>N_def])
-  have hK\<^sub>N_poly_connected:
-      "top1_connected_on (geotop_polyhedron K\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron K\<^sub>N))"
-    using hN_connected hK\<^sub>N_poly by (by100 simp)
   have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
-  proof -
-    have hK\<^sub>N_poly_path_connected:
-        "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron K\<^sub>N))"
-      by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
-            hK\<^sub>N_poly_connected])
-    show ?thesis
-      by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
-            hK\<^sub>N_poly_path_connected])
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def K\<^sub>N_def])
   have hA1_not_subset_singleton:
       "\<And>x. \<not> A1 \<subseteq> {x}"
   proof
@@ -10474,23 +10497,9 @@ proof -
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
         [OF hK_complex hK_fin hN_def K\<^sub>N_def])
-  have hK\<^sub>N_poly_connected:
-      "top1_connected_on (geotop_polyhedron K\<^sub>N)
-        (subspace_topology UNIV geotop_euclidean_topology
-          (geotop_polyhedron K\<^sub>N))"
-    using hN_connected hK\<^sub>N_poly by (by100 simp)
   have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
-  proof -
-    have hK\<^sub>N_poly_path_connected:
-        "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron K\<^sub>N))"
-      by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
-            hK\<^sub>N_poly_connected])
-    show ?thesis
-      by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
-            hK\<^sub>N_poly_path_connected])
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def K\<^sub>N_def])
   have hA1_not_subset_singleton:
       "\<And>x. \<not> A1 \<subseteq> {x}"
   proof
@@ -17749,23 +17758,9 @@ proof -
     have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
       by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
           [OF hK_complex hK_fin hN_def K\<^sub>N_def])
-    have hK\<^sub>N_poly_connected:
-        "top1_connected_on (geotop_polyhedron K\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron K\<^sub>N))"
-      using hN_connected hK\<^sub>N_poly by (by100 simp)
     have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
-    proof -
-      have hK\<^sub>N_poly_path_connected:
-          "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
-            (subspace_topology UNIV geotop_euclidean_topology
-              (geotop_polyhedron K\<^sub>N))"
-        by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
-              hK\<^sub>N_poly_connected])
-      show ?thesis
-        by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
-              hK\<^sub>N_poly_path_connected])
-    qed
+      by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+          [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def K\<^sub>N_def])
     have hA1_not_subset_singleton:
         "\<And>x. \<not> A1 \<subseteq> {x}"
     proof
