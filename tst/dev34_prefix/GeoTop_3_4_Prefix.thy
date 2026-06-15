@@ -6658,7 +6658,168 @@ proof -
       have hD44_moise_Q1_component_accumulates_at_S1_book_step:
           "S1 \<in> closure
             (geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)"
-        sorry
+      proof -
+        have hD44_moise_boundary_subarc_adjacent_corridor_book_step:
+            "\<exists>X C L C\<^sub>F Z. X \<in> ?B1P
+              \<and> X \<noteq> P
+              \<and> geotop_is_broken_line C
+              \<and> C \<subseteq> ?B1P
+              \<and> C \<subseteq> F\<^sub>1
+              \<and> C \<subseteq> J\<^sub>N
+              \<and> C \<subseteq> FrN\<^sub>I
+              \<and> C \<inter> F\<^sub>2 = {}
+              \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+              \<and> C \<inter> ?Ncut = {}
+              \<and> P \<in> C
+              \<and> X \<in> C
+              \<and> geotop_arc_endpoints C {P, X}
+              \<and> connected (geotop_arc_interior C {P, X})
+              \<and> geotop_arc_interior C {P, X} \<noteq> {}
+              \<and> geotop_is_complex L
+              \<and> geotop_complex_is_1dim L
+              \<and> finite L
+              \<and> geotop_polyhedron L = C
+              \<and> {P} \<in> L
+              \<and> {X} \<in> L
+              \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+              \<and> geotop_is_broken_line C\<^sub>F
+              \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+              \<and> geotop_arc_interior C {P, X} \<inter>
+                  geotop_arc_interior C\<^sub>F {P, X} = {}
+              \<and> C \<inter> C\<^sub>F = {P, X}
+              \<and> P \<in> C\<^sub>F
+              \<and> X \<in> C\<^sub>F
+              \<and> C\<^sub>F \<subseteq> J\<^sub>N
+              \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+              \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+              \<and> C\<^sub>F \<inter> ?Ncut = {}
+              \<and> Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Q1 \<in> closure Z
+              \<and> S1 \<in> closure Z"
+          (**
+            Remaining literal Moise 4.4 step.  First prove the local
+            regular-neighborhood frontier component through \<open>P\<close> is a
+            polygonal 1-sphere, split it into the boundary subarc \<open>C\<close> and
+            complementary frontier arc \<open>C\<^sub>F\<close>, then take the outside component
+            of \<open>I - (N \<union> A2)\<close> adjacent to \<open>C\<^sub>F\<close>.  That adjacent component is
+            the connected corridor \<open>Z\<close> whose closure contains the two access
+            witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+        proof -
+          have hD44_moise_exact_two_incidence_and_adjacent_corridor_book_step:
+              "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+                  geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+                  \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+                  \<and> e\<^sub>1 \<noteq> e\<^sub>2
+                  \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                      \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+              \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+                \<and> top1_connected_on Z
+                    (subspace_topology UNIV geotop_euclidean_topology Z)
+                \<and> Q1 \<in> closure Z
+                \<and> S1 \<in> closure Z)"
+            (**
+              Remaining local regular-neighborhood content of Moise 4.4.  The
+              frontier graph \<open>BdJ\<^sub>N\<close> must be a 1-manifold at every vertex
+              (exactly two incident frontier edges), and the complementary
+              outside side of the resulting frontier arc must provide the
+              connected corridor accumulating at the two access witnesses. **)
+            sorry
+          have htwo:
+              "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+                  geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+                  \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+                  \<and> e\<^sub>1 \<noteq> e\<^sub>2
+                  \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                      \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+            using hD44_moise_exact_two_incidence_and_adjacent_corridor_book_step
+            by (rule conjunct1)
+          have hZ_ex:
+              "\<exists>Z. Z \<subseteq> ?Ncut
+                \<and> top1_connected_on Z
+                    (subspace_topology UNIV geotop_euclidean_topology Z)
+                \<and> Q1 \<in> closure Z
+                \<and> S1 \<in> closure Z"
+            using hD44_moise_exact_two_incidence_and_adjacent_corridor_book_step
+            by (rule conjunct2)
+          obtain X C L C\<^sub>F where hsplit:
+              "X \<in> ?B1P
+                \<and> X \<noteq> P
+                \<and> geotop_is_broken_line C
+                \<and> C \<subseteq> ?B1P
+                \<and> C \<subseteq> F\<^sub>1
+                \<and> C \<subseteq> J\<^sub>N
+                \<and> C \<subseteq> FrN\<^sub>I
+                \<and> C \<inter> F\<^sub>2 = {}
+                \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+                \<and> C \<inter> ?Ncut = {}
+                \<and> P \<in> C
+                \<and> X \<in> C
+                \<and> geotop_arc_endpoints C {P, X}
+                \<and> connected (geotop_arc_interior C {P, X})
+                \<and> geotop_arc_interior C {P, X} \<noteq> {}
+                \<and> geotop_is_complex L
+                \<and> geotop_complex_is_1dim L
+                \<and> finite L
+                \<and> geotop_polyhedron L = C
+                \<and> {P} \<in> L
+                \<and> {X} \<in> L
+                \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+                \<and> geotop_is_broken_line C\<^sub>F
+                \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+                \<and> geotop_arc_interior C {P, X} \<inter>
+                    geotop_arc_interior C\<^sub>F {P, X} = {}
+                \<and> C \<inter> C\<^sub>F = {P, X}
+                \<and> P \<in> C\<^sub>F
+                \<and> X \<in> C\<^sub>F
+                \<and> C\<^sub>F \<subseteq> J\<^sub>N
+                \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+                \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+                \<and> C\<^sub>F \<inter> ?Ncut = {}"
+            using hD44_BdJ\<^sub>N_exact_two_boundary_subarc_complement_split[OF htwo]
+            by (elim exE)
+          obtain Z where hZ:
+              "Z \<subseteq> ?Ncut
+                \<and> top1_connected_on Z
+                    (subspace_topology UNIV geotop_euclidean_topology Z)
+                \<and> Q1 \<in> closure Z
+                \<and> S1 \<in> closure Z"
+            using hZ_ex by (elim exE)
+          show ?thesis
+            using hsplit hZ
+            apply (elim conjE)
+            apply (rule exI[where x=X])
+            apply (rule exI[where x=C])
+            apply (rule exI[where x=L])
+            apply (rule exI[where x=C\<^sub>F])
+            apply (rule exI[where x=Z])
+            apply (intro conjI)
+            apply assumption+
+            done
+        qed
+        show ?thesis
+        proof -
+          obtain X C L C\<^sub>F Z where hZ_sub: "Z \<subseteq> ?Ncut"
+            and hZ_conn:
+              "top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)"
+            and hQ1_cl: "Q1 \<in> closure Z"
+            and hS1_cl: "S1 \<in> closure Z"
+            using hD44_moise_boundary_subarc_adjacent_corridor_book_step
+            by (elim exE conjE)
+          have hS1_comp:
+              "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+                ?Ncut Q1"
+            by (rule geotop_connected_closure_corridor_same_component_open_prefix
+                [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn
+                  hQ1_cl hS1_cl])
+          show ?thesis
+            using hS1_comp closure_subset by (by100 blast)
+        qed
+      qed
       have hD44_moise_same_component_frontier_book_step:
           "\<exists>C. C \<in> components ?Ncut
             \<and> Q1 \<in> closure C
