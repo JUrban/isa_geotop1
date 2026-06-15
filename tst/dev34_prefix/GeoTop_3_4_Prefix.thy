@@ -5292,6 +5292,85 @@ proof -
     show ?thesis
       using hsphere_BdJ hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   qed
+  have hD44_BdJ\<^sub>N_exact_two_boundary_subarc_complement_split:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        \<exists>X C L C\<^sub>F. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_is_broken_line C
+          \<and> C \<subseteq> ?B1P
+          \<and> C \<subseteq> F\<^sub>1
+          \<and> C \<subseteq> J\<^sub>N
+          \<and> C \<subseteq> FrN\<^sub>I
+          \<and> C \<inter> F\<^sub>2 = {}
+          \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C \<inter> ?Ncut = {}
+          \<and> P \<in> C
+          \<and> X \<in> C
+          \<and> geotop_arc_endpoints C {P, X}
+          \<and> connected (geotop_arc_interior C {P, X})
+          \<and> geotop_arc_interior C {P, X} \<noteq> {}
+          \<and> geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> {P} \<in> L
+          \<and> {X} \<in> L
+          \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+          \<and> geotop_is_broken_line C\<^sub>F
+          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+          \<and> geotop_arc_interior C {P, X} \<inter>
+              geotop_arc_interior C\<^sub>F {P, X} = {}
+          \<and> C \<inter> C\<^sub>F = {P, X}
+          \<and> P \<in> C\<^sub>F
+          \<and> X \<in> C\<^sub>F
+          \<and> C\<^sub>F \<subseteq> J\<^sub>N
+          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C\<^sub>F \<inter> ?Ncut = {}"
+    (**
+      Exact-two incidence form of the oriented Moise frontier split.  This is
+      the bridge from the local regular-neighborhood graph statement to the
+      already oriented boundary subarc plus complementary frontier arc package.
+    **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    have hsphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere[OF htwo])
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hsphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      unfolding geotop_is_polygon_def
+    proof (intro exI[where x=BdJ\<^sub>N] conjI)
+      show "geotop_is_complex BdJ\<^sub>N"
+        by (rule hBdJ\<^sub>N_complex)
+      show "geotop_polyhedron BdJ\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+        by (by100 simp)
+      show "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+        by (rule hsphere_BdJ)
+    qed
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split[OF hpolygon])
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
