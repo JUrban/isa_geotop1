@@ -3966,21 +3966,93 @@ proof -
       by (rule geotop_connected_witness_component_at_intro_prefix
           [OF hW_sub hQ1_W hS1_W hW_conn])
   qed
-  have hD44_regular_neighborhood_exact_two_and_same_component_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
-      \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+  have hD44_broken_line_access_crossings_give_connected_crossings:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
           \<exists>Z. Z \<subseteq> ?Ncut
             \<and> top1_connected_on Z
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
             \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
     (**
+      Book-facing conversion: Moise constructs a broken-line subarc of the
+      complementary frontier.  Connectedness of broken lines is enough to feed
+      the collar/component bridge above. **)
+  proof (intro allI impI)
+    assume hall_broken:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+    assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+    assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+    have hQ_spec:
+        "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have hQ_imp:
+          "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0.
+            \<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> ?Ncut
+              \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+        by (rule spec[OF hall_broken])
+      show ?thesis
+        by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+    qed
+    have hB_ex:
+        "\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have hS_imp:
+          "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+        by (rule spec[OF hQ_spec])
+      show ?thesis
+        by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
+    qed
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> ?Ncut"
+      and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hB_ex by (elim exE conjE)
+    have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+    show "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
+  qed
+  have hD44_regular_neighborhood_exact_two_and_same_component_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+      \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
       Remaining Moise 4.4 content after the carrier restriction setup:
       prove that the frontier component of \<open>N\<^sub>I = N \<inter> cl I\<close> through \<open>P\<close>
       is the book's polygonal regular-neighborhood boundary component, hence a
-      1-sphere.  The complementary frontier arc supplies connected lower-to-upper
-      crossings of every pair of access collars in \<open>?Ncut\<close>. **)
+      1-sphere.  The complementary frontier arc supplies broken-line
+      lower-to-upper crossings of every pair of access collars in \<open>?Ncut\<close>. **)
     sorry
   have hD44_regular_neighborhood_exact_two_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -4027,8 +4099,19 @@ proof -
                   (subspace_topology UNIV geotop_euclidean_topology Z)
               \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
               \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hD44_regular_neighborhood_exact_two_and_same_component_book_step
-        by (rule conjunct2)
+      proof -
+        have hbroken:
+            "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+              \<exists>B. geotop_is_broken_line B
+                \<and> B \<subseteq> ?Ncut
+                \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+                \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+          using hD44_regular_neighborhood_exact_two_and_same_component_book_step
+          by (rule conjunct2)
+        show ?thesis
+          by (rule hD44_broken_line_access_crossings_give_connected_crossings
+              [OF hbroken])
+      qed
       show ?thesis
         by (rule hD44_access_ball_crossings_same_component[OF hcross])
     qed
