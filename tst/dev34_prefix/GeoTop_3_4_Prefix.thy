@@ -1123,7 +1123,30 @@ lemma geotop_polygon_two_endpoint_arcs_fine_carrier_regular_neighborhood_book_st
     1-sphere and that the adjacent outside corridor in
     \<open>geotop_polygon_interior J - (N \<union> A2)\<close> carries the lower and upper access
     witnesses \<open>Q1\<close> and \<open>S1\<close> in one component. **)
-  sorry
+proof -
+  have hfrontier_component_1sphere:
+    "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Moise 4.4, first regular-neighborhood sentence after defining
+      \<open>N' = N \<inter> \<bar>I\<close>: the component of \<open>Fr N'\<close> through the boundary
+      point \<open>P\<close> is a 1-sphere.  In the triangulated carrier formulation this
+      is the assertion that the selected fine carrier of \<open>A1\<close>, restricted to
+      the closed polygonal disk, has a polygonal boundary component through
+      \<open>P\<close>. **)
+    sorry
+  have houtside_access_same_component:
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - (N \<union> A2)) Q1"
+    (**
+      Moise 4.4, final corridor sentence: split the frontier 1-sphere into the
+      boundary arc and the complementary frontier arc, choose the lower-to-upper
+      subarc outside \<open>N \<union> A2\<close>, and use the adjacent outside component to carry
+      the two local access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
+  show ?thesis
+    by (rule conjI[OF hfrontier_component_1sphere houtside_access_same_component])
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_component_package_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
