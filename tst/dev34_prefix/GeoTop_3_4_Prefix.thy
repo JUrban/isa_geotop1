@@ -523,6 +523,65 @@ lemma geotop_iterated_Sd_selected_arc_carrier_subset_polyhedron_prefix:
   shows "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
   unfolding hN_def geotop_polyhedron_def by (by100 blast)
 
+lemma geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix:
+  fixes K K\<^sub>N :: "(real^2) set set" and A N :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A \<noteq> {}})"
+  assumes hK\<^sub>N_def:
+    "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  shows "geotop_polyhedron K\<^sub>N = N"
+  (**
+    Moise 4.4 selected-carrier setup: restricting the iterated subdivision to
+    the simplexes lying in the selected carrier recovers exactly the carrier
+    as its polyhedron. **)
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hSd_sub])
+  have hN_sub_Sd_poly:
+      "N \<subseteq> geotop_polyhedron (geotop_iterated_Sd m K)"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_subset_polyhedron_prefix
+        [OF hN_def])
+  have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    unfolding hK\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+  have hcarrier_sub_N:
+      "\<And>x. x \<in> N \<Longrightarrow>
+        geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+  proof -
+    fix x
+    assume hxN: "x \<in> N"
+    obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
+      and hB_A: "B \<inter> A \<noteq> {}"
+      and hxB: "x \<in> B"
+      using hxN unfolding hN_def by (by100 blast)
+    have hB_sub_N: "B \<subseteq> N"
+      unfolding hN_def using hB_Sd hB_A by (by100 blast)
+    have hcarrier_sub_B:
+        "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
+      by (rule geotop_K_carrier_subset_containing_simplex
+          [OF hSd_complex hSd_fin hB_Sd hxB])
+    show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+      using hcarrier_sub_B hB_sub_N by (by100 blast)
+  qed
+  have hN_sub_K\<^sub>N_poly:
+      "N \<subseteq> geotop_polyhedron K\<^sub>N"
+  proof -
+    have "N \<subseteq>
+        geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+      by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+          [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
+    thus ?thesis
+      unfolding hK\<^sub>N_def by (by100 simp)
+  qed
+  show ?thesis
+    using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -1487,41 +1546,8 @@ proof -
   have hK\<^sub>N_fin: "finite K\<^sub>N"
     unfolding hK\<^sub>N_def using hSd_fin by (by100 simp)
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
-  proof -
-    have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
-      unfolding hK\<^sub>N_def geotop_polyhedron_def by (by100 blast)
-    have hcarrier_sub_N:
-        "\<And>x. x \<in> N \<Longrightarrow>
-          geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-    proof -
-      fix x
-      assume hxN: "x \<in> N"
-      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
-        and hB_A1: "B \<inter> A1 \<noteq> {}"
-        and hxB: "x \<in> B"
-        using hxN unfolding hN_def by (by100 blast)
-      have hB_sub_N: "B \<subseteq> N"
-        unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
-      have hcarrier_sub_B:
-          "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
-        by (rule geotop_K_carrier_subset_containing_simplex
-            [OF hSd_complex hSd_fin hB_Sd hxB])
-      show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-        using hcarrier_sub_B hB_sub_N by (by100 blast)
-    qed
-    have hN_sub_K\<^sub>N_poly:
-        "N \<subseteq> geotop_polyhedron K\<^sub>N"
-    proof -
-      have "N \<subseteq>
-          geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
-        by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
-            [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
-      thus ?thesis
-        unfolding hK\<^sub>N_def by (by100 simp)
-    qed
-    show ?thesis
-      using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def])
   have hK\<^sub>N_poly_connected:
       "top1_connected_on (geotop_polyhedron K\<^sub>N)
         (subspace_topology UNIV geotop_euclidean_topology
@@ -4582,41 +4608,8 @@ proof -
   have hK\<^sub>N_fin: "finite K\<^sub>N"
     unfolding K\<^sub>N_def using hSd_fin by (by100 simp)
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
-  proof -
-    have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
-      unfolding K\<^sub>N_def geotop_polyhedron_def by (by100 blast)
-    have hcarrier_sub_N:
-        "\<And>x. x \<in> N \<Longrightarrow>
-          geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-    proof -
-      fix x
-      assume hxN: "x \<in> N"
-      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
-        and hB_A1: "B \<inter> A1 \<noteq> {}"
-        and hxB: "x \<in> B"
-        using hxN unfolding hN_def by (by100 blast)
-      have hB_sub_N: "B \<subseteq> N"
-        unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
-      have hcarrier_sub_B:
-          "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
-        by (rule geotop_K_carrier_subset_containing_simplex
-            [OF hSd_complex hSd_fin hB_Sd hxB])
-      show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-        using hcarrier_sub_B hB_sub_N by (by100 blast)
-    qed
-    have hN_sub_K\<^sub>N_poly:
-        "N \<subseteq> geotop_polyhedron K\<^sub>N"
-    proof -
-      have "N \<subseteq>
-          geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
-        by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
-            [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
-      thus ?thesis
-        unfolding K\<^sub>N_def by (by100 simp)
-    qed
-    show ?thesis
-      using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK_complex hK_fin hN_def K\<^sub>N_def])
   have hK\<^sub>N_poly_connected:
       "top1_connected_on (geotop_polyhedron K\<^sub>N)
         (subspace_topology UNIV geotop_euclidean_topology
@@ -10479,41 +10472,8 @@ proof -
   have hK\<^sub>N_fin: "finite K\<^sub>N"
     unfolding K\<^sub>N_def using hSd_fin by (by100 simp)
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
-  proof -
-    have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
-      unfolding K\<^sub>N_def geotop_polyhedron_def by (by100 blast)
-    have hcarrier_sub_N:
-        "\<And>x. x \<in> N \<Longrightarrow>
-          geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-    proof -
-      fix x
-      assume hxN: "x \<in> N"
-      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
-        and hB_A1: "B \<inter> A1 \<noteq> {}"
-        and hxB: "x \<in> B"
-        using hxN unfolding hN_def by (by100 blast)
-      have hB_sub_N: "B \<subseteq> N"
-        unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
-      have hcarrier_sub_B:
-          "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
-        by (rule geotop_K_carrier_subset_containing_simplex
-            [OF hSd_complex hSd_fin hB_Sd hxB])
-      show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-        using hcarrier_sub_B hB_sub_N by (by100 blast)
-    qed
-    have hN_sub_K\<^sub>N_poly:
-        "N \<subseteq> geotop_polyhedron K\<^sub>N"
-    proof -
-      have "N \<subseteq>
-          geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
-        by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
-            [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
-      thus ?thesis
-        unfolding K\<^sub>N_def by (by100 simp)
-    qed
-    show ?thesis
-      using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
-  qed
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK_complex hK_fin hN_def K\<^sub>N_def])
   have hK\<^sub>N_poly_connected:
       "top1_connected_on (geotop_polyhedron K\<^sub>N)
         (subspace_topology UNIV geotop_euclidean_topology
@@ -17787,41 +17747,8 @@ proof -
     have hK\<^sub>N_fin: "finite K\<^sub>N"
       unfolding K\<^sub>N_def using hSd_fin by (by100 simp)
     have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
-    proof -
-      have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
-        unfolding K\<^sub>N_def geotop_polyhedron_def by (by100 blast)
-      have hcarrier_sub_N:
-          "\<And>x. x \<in> N \<Longrightarrow>
-            geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-      proof -
-        fix x
-        assume hxN: "x \<in> N"
-        obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
-          and hB_A1: "B \<inter> A1 \<noteq> {}"
-          and hxB: "x \<in> B"
-          using hxN unfolding hN_def by (by100 blast)
-        have hB_sub_N: "B \<subseteq> N"
-          unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
-        have hcarrier_sub_B:
-            "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
-          by (rule geotop_K_carrier_subset_containing_simplex
-              [OF hSd_complex hSd_fin hB_Sd hxB])
-        show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
-          using hcarrier_sub_B hB_sub_N by (by100 blast)
-      qed
-      have hN_sub_K\<^sub>N_poly:
-          "N \<subseteq> geotop_polyhedron K\<^sub>N"
-      proof -
-        have "N \<subseteq>
-            geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
-          by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
-              [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
-        thus ?thesis
-          unfolding K\<^sub>N_def by (by100 simp)
-      qed
-      show ?thesis
-        using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
-    qed
+      by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+          [OF hK_complex hK_fin hN_def K\<^sub>N_def])
     have hK\<^sub>N_poly_connected:
         "top1_connected_on (geotop_polyhedron K\<^sub>N)
           (subspace_topology UNIV geotop_euclidean_topology
