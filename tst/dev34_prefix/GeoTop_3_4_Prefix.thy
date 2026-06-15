@@ -1103,6 +1103,62 @@ proof -
     by (intro conjI, rule hle2, rule hnoend)
 qed
 
+lemma geotop_degree_two_imp_exact_two_incident_edges_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hdegree:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  (**
+    Degree-two to explicit-incidence expansion for finite graph packages in
+    D44.  The graph-cache lemma supplies the two incident edges and the
+    equality of the incident-edge set; this helper repackages that equality as
+    the exhaustion predicate used by the regular-neighborhood proof. **)
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1L: "e\<^sub>1 \<in> L"
+    and he\<^sub>2L: "e\<^sub>2 \<in> L"
+    and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
+    and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
+    and hwe\<^sub>1: "w \<in> e\<^sub>1"
+    and hwe\<^sub>2: "w \<in> e\<^sub>2"
+    and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
+    and hE_eq:
+      "{e\<in>L. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
+    using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
+      [OF hdegree hwL]
+    by (elim exE conjE)
+  have hexhaust:
+      "\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+        \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+  proof (intro allI impI)
+    fix e
+    assume he: "e \<in> L \<and> geotop_is_edge e \<and> w \<in> e"
+    have "e \<in> {e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+      using he by (by100 simp)
+    hence "e \<in> {e\<^sub>1, e\<^sub>2}"
+      using hE_eq by (by100 simp)
+    thus "e = e\<^sub>1 \<or> e = e\<^sub>2"
+      by (by100 simp)
+  qed
+  show "\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+      geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+      \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+      \<and> e\<^sub>1 \<noteq> e\<^sub>2
+      \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+    using he\<^sub>1L he\<^sub>2L he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
+    by (by100 blast)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3891,46 +3947,7 @@ proof -
       The book proves the boundary component is locally a 1-manifold; the
       finite-graph helper expands cardinality two at a vertex into the two
       explicit incident boundary edges needed by the package. **)
-  proof (intro allI impI)
-    assume hdegree:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-    fix w
-    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-    obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
-      and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
-      and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
-      and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
-      and hwe\<^sub>1: "w \<in> e\<^sub>1"
-      and hwe\<^sub>2: "w \<in> e\<^sub>2"
-      and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
-      and hE_eq:
-        "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
-      using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
-        [OF hdegree hwBdJ]
-      by (elim exE conjE)
-    have hexhaust:
-        "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
-    proof (intro allI impI)
-      fix e
-      assume he: "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e"
-      have "e \<in> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
-        using he by (by100 simp)
-      hence "e \<in> {e\<^sub>1, e\<^sub>2}"
-        using hE_eq by (by100 simp)
-      thus "e = e\<^sub>1 \<or> e = e\<^sub>2"
-        by (by100 simp)
-    qed
-    show "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-        \<and> e\<^sub>1 \<noteq> e\<^sub>2
-        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
-      using he\<^sub>1BdJ he\<^sub>2BdJ he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
-      by (by100 blast)
-  qed
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix)
   have hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -8596,46 +8613,7 @@ proof -
       Several earlier graph packages naturally produce cardinality two at each
       frontier vertex; the complementary frontier split wants the explicit two
       incident edges and their exhaustion property. **)
-  proof (intro allI impI)
-    assume hdegree:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-    fix w
-    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-    obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
-      and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
-      and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
-      and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
-      and hwe\<^sub>1: "w \<in> e\<^sub>1"
-      and hwe\<^sub>2: "w \<in> e\<^sub>2"
-      and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
-      and hE_eq:
-        "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
-      using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
-        [OF hdegree hwBdJ]
-      by (elim exE conjE)
-    have hexhaust:
-        "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
-    proof (intro allI impI)
-      fix e
-      assume he: "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e"
-      have "e \<in> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
-        using he by (by100 simp)
-      hence "e \<in> {e\<^sub>1, e\<^sub>2}"
-        using hE_eq by (by100 simp)
-      thus "e = e\<^sub>1 \<or> e = e\<^sub>2"
-        by (by100 simp)
-    qed
-    show "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-        \<and> e\<^sub>1 \<noteq> e\<^sub>2
-        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
-      using he\<^sub>1BdJ he\<^sub>2BdJ he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
-      by (by100 blast)
-  qed
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix)
   have hD44_BdJ\<^sub>N_degree_two_boundary_subarc_complement_split:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
@@ -14147,46 +14125,7 @@ proof -
       Several earlier graph packages naturally produce cardinality two at each
       frontier vertex; the complementary frontier split wants the explicit two
       incident edges and their exhaustion property. **)
-  proof (intro allI impI)
-    assume hdegree:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-    fix w
-    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-    obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
-      and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
-      and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
-      and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
-      and hwe\<^sub>1: "w \<in> e\<^sub>1"
-      and hwe\<^sub>2: "w \<in> e\<^sub>2"
-      and he12: "e\<^sub>1 \<noteq> e\<^sub>2"
-      and hE_eq:
-        "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
-      using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
-        [OF hdegree hwBdJ]
-      by (elim exE conjE)
-    have hexhaust:
-        "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
-    proof (intro allI impI)
-      fix e
-      assume he: "e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e"
-      have "e \<in> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
-        using he by (by100 simp)
-      hence "e \<in> {e\<^sub>1, e\<^sub>2}"
-        using hE_eq by (by100 simp)
-      thus "e = e\<^sub>1 \<or> e = e\<^sub>2"
-        by (by100 simp)
-    qed
-    show "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-        \<and> e\<^sub>1 \<noteq> e\<^sub>2
-        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
-      using he\<^sub>1BdJ he\<^sub>2BdJ he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
-      by (by100 blast)
-  qed
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix)
   have hD44_BdJ\<^sub>N_degree_two_boundary_subarc_complement_split:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
