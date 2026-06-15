@@ -4388,7 +4388,7 @@ proof -
     show ?thesis
       by (intro conjI, rule hle2, rule hnoend)
   qed
-  have hD44_exact_frontier_and_same_component_book_step:
+  have hD44_exact_frontier_and_broken_line_access_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
           geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
@@ -4396,14 +4396,19 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
-       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
     (**
       Remaining Moise 4.4 construction.  The already-open outside carrier is
       fixed; what remains is to formalize the book's regular-neighborhood
-      frontier analysis in the detailed carrier context above: exact local
-      frontier incidence at every vertex of the component through \<open>P\<close>, and
-      the complementary frontier subarc's adjacent outside component joining
-      the two access witnesses. **)
+      frontier analysis in the detailed carrier context above.  This is now
+      stated in the book's order: exact local frontier incidence at every
+      vertex of the component through \<open>P\<close>, and the complementary frontier
+      broken line between \<open>V\<close> and \<open>W\<close> crossing arbitrary lower and upper
+      access collars. **)
     sorry
   have hD44_frontier_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -4413,7 +4418,7 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    using hD44_exact_frontier_and_same_component_book_step by (rule conjunct1)
+    using hD44_exact_frontier_and_broken_line_access_book_step by (rule conjunct1)
   have hD44_graph_bounds:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4421,9 +4426,26 @@ proof -
           \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
     by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_graph_conj
         [OF hD44_frontier_exact_two])
+  have hD44_broken_line_access_crossings:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    using hD44_exact_frontier_and_broken_line_access_book_step by (rule conjunct2)
+  have hD44_connected_access_crossings:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    by (rule hD44_broken_line_access_crossings_give_connected_crossings
+        [OF hD44_broken_line_access_crossings])
   have hD44_same_component:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    using hD44_exact_frontier_and_same_component_book_step by (rule conjunct2)
+    by (rule hD44_access_ball_crossings_same_component
+        [OF hD44_connected_access_crossings])
   have hD44_card_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
