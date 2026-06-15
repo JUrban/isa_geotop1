@@ -3653,6 +3653,40 @@ proof -
       using he\<^sub>1BdJ he\<^sub>2BdJ he\<^sub>1edge he\<^sub>2edge hwe\<^sub>1 hwe\<^sub>2 he12 hexhaust
       by (by100 blast)
   qed
+  have hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+        \<Longrightarrow> geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    (**
+      Moise's wording is about the frontier component \<open>J\<^sub>N\<close> itself being a
+      1-sphere.  Since this package has already identified \<open>J\<^sub>N\<close> with the
+      carrier of \<open>BdJ\<^sub>N\<close>, this is exactly the polygonal-carrier hypothesis
+      needed by the finite graph degree-two classifier. **)
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hsphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+  qed
+  have hD44_BdJ\<^sub>N_polygon_imp_degree_two:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      Finite-graph form of Moise's regular-neighborhood boundary statement:
+      once the carrier of the frontier boundary subcomplex is polygonal, the
+      existing finite connected linear graph classifier gives degree two at
+      each boundary vertex. **)
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected])
   have hD44_BdJ\<^sub>N_exact_two_and_corridor_imp_package:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -3713,16 +3747,15 @@ proof -
       statement supplied by the frontier subarc. **)
     by (rule geotop_component_member_gives_closed_corridor_prefix)
   have hD44_regular_neighborhood_exact_two_and_same_component_book_step:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2)
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
       Remaining Moise 4.4 content after the carrier restriction setup:
       prove that the frontier component of \<open>N\<^sub>I = N \<inter> cl I\<close> through \<open>P\<close>
-      is the polygonal regular-neighborhood boundary component.  In the graph
-      form needed here, every vertex of \<open>BdJ\<^sub>N\<close> has degree two; the
-      complementary frontier arc puts the upper access point \<open>S1\<close> in the same
-      outside component of \<open>?Ncut\<close> as \<open>Q1\<close>. **)
+      is the book's polygonal regular-neighborhood boundary component, hence a
+      1-sphere.  The complementary frontier arc puts the upper access point
+      \<open>S1\<close> in the same outside component of \<open>?Ncut\<close> as \<open>Q1\<close>. **)
     sorry
   have hD44_regular_neighborhood_exact_two_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -3738,11 +3771,18 @@ proof -
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z)"
   proof -
+    have hsphere:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      using hD44_regular_neighborhood_exact_two_and_same_component_book_step
+      by (rule conjunct1)
+    have hpolygon:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon[OF hsphere])
     have hdegree:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      using hD44_regular_neighborhood_exact_two_and_same_component_book_step
-      by (rule conjunct1)
+      by (rule hD44_BdJ\<^sub>N_polygon_imp_degree_two[OF hpolygon])
     have htwo:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
