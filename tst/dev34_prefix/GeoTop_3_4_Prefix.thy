@@ -4006,6 +4006,130 @@ proof -
     by (rule closed_Int[OF hBdJ\<^sub>N_poly_closed hD44_J_closed])
   have hD44_B\<^sub>1_compact: "compact ?B\<^sub>1"
     using hBdJ\<^sub>N_poly_compact hD44_J_closed by (rule compact_Int_closed)
+  let ?B1P = "geotop_component_at UNIV geotop_euclidean_topology ?B\<^sub>1 P"
+  have hD44_B1P_eq_J\<^sub>N_boundary_component:
+      "?B1P =
+        geotop_component_at UNIV geotop_euclidean_topology (J\<^sub>N \<inter> J) P"
+    using hD44_B\<^sub>1_eq_J\<^sub>N_boundary by (by100 simp)
+  have hD44_B1P_sub_B\<^sub>1: "?B1P \<subseteq> ?B\<^sub>1"
+  proof -
+    have hB1P_eq:
+        "?B1P = connected_component_set ?B\<^sub>1 P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hcc_sub:
+        "connected_component_set ?B\<^sub>1 P \<subseteq> ?B\<^sub>1"
+      by (rule connected_component_subset)
+    show ?thesis
+      using hB1P_eq hcc_sub by (by100 blast)
+  qed
+  have hD44_B1P_sub_J\<^sub>N: "?B1P \<subseteq> J\<^sub>N"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_sub_J\<^sub>N by (by100 blast)
+  have hD44_B1P_sub_FrN\<^sub>I: "?B1P \<subseteq> FrN\<^sub>I"
+    using hD44_B1P_sub_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  have hD44_B1P_conn:
+      "top1_connected_on ?B1P
+        (subspace_topology UNIV geotop_euclidean_topology ?B1P)"
+  proof -
+    have hB1P_eq:
+        "?B1P = connected_component_set ?B\<^sub>1 P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hB1P_conn_HOL: "connected ?B1P"
+      using hB1P_eq connected_connected_component by (by100 simp)
+    show ?thesis
+      using hB1P_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  qed
+  have hD44_P_B1P: "P \<in> ?B1P"
+    using hD44_P_B\<^sub>1
+      geotop_component_at_UNIV_eq_connected_component_set[of ?B\<^sub>1 P]
+    by (by100 simp)
+  have hD44_P_boundary_edge_sub_B1P:
+      "\<exists>e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> P \<in> e \<and> e \<subseteq> J \<and> e \<subseteq> ?B1P"
+  proof -
+    obtain e where heBdJ: "e \<in> BdJ\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hP_e: "P \<in> e"
+      and heJ: "e \<subseteq> J"
+      using hBdJ\<^sub>N_P_boundary_edge by (by100 blast)
+    have he_sub_B\<^sub>1: "e \<subseteq> ?B\<^sub>1"
+      unfolding geotop_polyhedron_def using heBdJ heJ by (by100 blast)
+    have he_simplex: "geotop_is_simplex e"
+      using hedge unfolding geotop_is_edge_def
+      by (rule geotop_simplex_dim_imp_is_simplex)
+    have he_path_connected:
+        "top1_path_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule Theorem_GT_1_3[OF he_simplex])
+    have he_connected:
+        "top1_connected_on e
+          (subspace_topology UNIV geotop_euclidean_topology e)"
+      by (rule top1_path_connected_on_geotop_imp_connected[OF he_path_connected])
+    have he_witness:
+        "e \<in> {C. C \<subseteq> ?B\<^sub>1 \<and> P \<in> C \<and>
+          top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)}"
+      using he_sub_B\<^sub>1 hP_e he_connected by (by100 simp)
+    have he_sub_B1P: "e \<subseteq> ?B1P"
+    proof
+      fix x
+      assume hx: "x \<in> e"
+      show "x \<in> ?B1P"
+        unfolding geotop_component_at_def
+        using he_witness hx by (by100 blast)
+    qed
+    show ?thesis
+      using heBdJ hedge hP_e heJ he_sub_B1P
+      by (intro bexI[where x=e] conjI)
+  qed
+  have hD44_B1P_nontrivial: "\<exists>x\<in>?B1P. x \<noteq> P"
+  proof -
+    obtain e where hedge: "geotop_is_edge e"
+      and hP_e: "P \<in> e"
+      and he_sub_B1P: "e \<subseteq> ?B1P"
+      using hD44_P_boundary_edge_sub_B1P by (by100 blast)
+    have hex_other: "\<exists>x\<in>e. x \<noteq> P"
+    proof (rule ccontr)
+      assume hnot: "\<not> (\<exists>x\<in>e. x \<noteq> P)"
+      have he_sub_single: "e \<subseteq> {P}"
+        using hnot by (by100 blast)
+      have he_eq_single: "e = {P}"
+        using hP_e he_sub_single by (by100 blast)
+      have "geotop_is_edge {P}"
+        using hedge he_eq_single by (by100 simp)
+      thus False
+        using geotop_singleton_not_edge_prefix by (by100 blast)
+    qed
+    obtain x where hx_e: "x \<in> e" and hx_ne: "x \<noteq> P"
+      using hex_other by (by100 blast)
+    have hx_B1P: "x \<in> ?B1P"
+      using he_sub_B1P hx_e by (by100 blast)
+    show ?thesis
+      using hx_B1P hx_ne by (by100 blast)
+  qed
+  have hD44_B1P_eq_connected_component:
+      "?B1P = connected_component_set ?B\<^sub>1 P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hD44_B1P_closed: "closed ?B1P"
+    unfolding hD44_B1P_eq_connected_component
+    by (rule closed_connected_component[OF hD44_B\<^sub>1_closed])
+  have hD44_B1P_component: "?B1P \<in> components ?B\<^sub>1"
+    using hD44_B1P_eq_connected_component componentsI[OF hD44_P_B\<^sub>1]
+    by (by100 simp)
+  have hD44_B1P_compact: "compact ?B1P"
+    by (rule compact_components[OF hD44_B\<^sub>1_compact hD44_B1P_component])
+  have hD44_B1P_sub_boundary_arcs:
+      "?B1P \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_sub_boundary_arcs by (by100 blast)
+  have hD44_B1P_A2_QS_disj:
+      "?B1P \<inter> (A2 \<union> {Q, S}) = {}"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_A2_QS_disj by (by100 blast)
+  have hD44_B1P_Ncut_disj: "?B1P \<inter> ?Ncut = {}"
+    using hD44_B1P_sub_B\<^sub>1 hD44_B\<^sub>1_Ncut_disj by (by100 blast)
+  have hD44_B1P_R_notin: "R \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj hR_in_A2 by (by100 blast)
+  have hD44_B1P_Q_notin: "Q \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj by (by100 blast)
+  have hD44_B1P_S_notin: "S \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj by (by100 blast)
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
