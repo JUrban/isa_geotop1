@@ -3141,6 +3141,83 @@ proof -
     thus False
       using geotop_singleton_not_edge_prefix by (by100 blast)
   qed
+  have hBdJ\<^sub>N_vertex_incident_edge:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        \<exists>e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e"
+  proof (rule ccontr)
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+      and hno: "\<not> (\<exists>e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e)"
+    have hw_vertex: "w \<in> geotop_complex_vertices BdJ\<^sub>N"
+      using geotop_complex_vertices_eq_0_simplexes[OF hBdJ\<^sub>N_complex] hwBdJ
+      by (by100 blast)
+    have hsingle_top:
+        "{w} \<in>
+          subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule geotop_complex_no_incident_edge_vertex_open_singleton_prefix
+          [OF hBdJ\<^sub>N_complex hw_vertex hno])
+    obtain U where hsingle_eq:
+        "{w} = geotop_polyhedron BdJ\<^sub>N \<inter> U"
+      and hU_top: "U \<in> geotop_euclidean_topology"
+      using hsingle_top unfolding subspace_topology_def by (by100 blast)
+    have hU_open: "open U"
+      using hU_top unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hsingle_openin:
+        "openin (top_of_set (geotop_polyhedron BdJ\<^sub>N)) {w}"
+      unfolding openin_open
+      using hU_open hsingle_eq by (by100 blast)
+    have hw_poly: "w \<in> geotop_polyhedron BdJ\<^sub>N"
+      unfolding geotop_polyhedron_def using hwBdJ by (by100 blast)
+    have hsingle_closedin:
+        "closedin (top_of_set (geotop_polyhedron BdJ\<^sub>N)) {w}"
+    proof -
+      have hclosed_single: "closed {w}"
+        by (by100 simp)
+      have hsingle_eq_poly:
+          "{w} = geotop_polyhedron BdJ\<^sub>N \<inter> {w}"
+        using hw_poly by (by100 blast)
+      show ?thesis
+        unfolding closedin_closed
+        using hclosed_single hsingle_eq_poly by (by100 blast)
+    qed
+    have hsingle_cases:
+        "{w} = {} \<or> {w} = geotop_polyhedron BdJ\<^sub>N"
+      using connected_clopen[THEN iffD1, OF hBdJ\<^sub>N_poly_connected_HOL]
+        hsingle_openin hsingle_closedin by (by100 blast)
+    have hpoly_single: "geotop_polyhedron BdJ\<^sub>N = {w}"
+      using hsingle_cases by (by100 blast)
+    show False
+      using hBdJ\<^sub>N_poly_not_singleton[of w] hpoly_single by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_vertex_incident_edge_card_ge1:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  proof -
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    obtain e where heBdJ: "e \<in> BdJ\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hw_e: "w \<in> e"
+      using hBdJ\<^sub>N_vertex_incident_edge[OF hwBdJ] by (by100 blast)
+    let ?E = "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    have hE_fin: "finite ?E"
+      by (rule finite_subset[OF _ hBdJ\<^sub>N_fin]) (by100 blast)
+    have heE: "e \<in> ?E"
+      using heBdJ hedge hw_e by (by100 simp)
+    have hE_ne: "?E \<noteq> {}"
+      using heE by (by100 blast)
+    have hcard_pos: "0 < card ?E"
+    proof -
+      have hiff: "(0 < card ?E) = (?E \<noteq> {} \<and> finite ?E)"
+        by (rule card_gt_0_iff)
+      show ?thesis
+        using hiff hE_ne hE_fin by (by100 blast)
+    qed
+    show "card ?E \<ge> 1"
+      using hcard_pos by (by100 linarith)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
