@@ -862,6 +862,94 @@ proof -
     using he_front hF by (by100 simp)
 qed
 
+lemma geotop_two_incident_edge_rel_interior_subset_polyhedron_interior_prefix:
+  fixes K :: "(real^2) set set" and e N :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K = N"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard2:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "rel_interior e \<subseteq> interior N"
+  (**
+    Moise 4.4 brick-neighborhood interior step: if two 2-bricks of the
+    selected carrier meet along edge \<open>e\<close>, then the relative interior of
+    \<open>e\<close> is not on the frontier of the carrier but lies in its interior. **)
+proof -
+  let ?F = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  obtain \<sigma> \<tau> where hF_eq: "?F = {\<sigma>, \<tau>}" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  proof -
+    have hex: "\<exists>a b. ?F = {a, b} \<and> a \<noteq> b"
+      by (rule iffD1[OF card_2_iff hcard2])
+    obtain a b where hab: "?F = {a, b} \<and> a \<noteq> b"
+      using hex by (elim exE)
+    have hF: "?F = {a, b}"
+      using hab by (by100 simp)
+    have hab_ne: "a \<noteq> b"
+      using hab by (by100 simp)
+    show ?thesis
+      by (rule that[OF hF hab_ne])
+  qed
+  have h\<sigma>F: "\<sigma> \<in> ?F"
+  proof -
+    have "\<sigma> \<in> {\<sigma>, \<tau>}"
+      by (by100 simp)
+    thus ?thesis
+      using hF_eq by (by100 simp)
+  qed
+  have h\<tau>F: "\<tau> \<in> ?F"
+  proof -
+    have "\<tau> \<in> {\<sigma>, \<tau>}"
+      by (by100 simp)
+    thus ?thesis
+      using hF_eq by (by100 simp)
+  qed
+  have h\<sigma>K: "\<sigma> \<in> K"
+    using h\<sigma>F by (by100 blast)
+  have h\<tau>K: "\<tau> \<in> K"
+    using h\<tau>F by (by100 blast)
+  have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    using h\<sigma>F by (by100 blast)
+  have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    using h\<tau>F by (by100 blast)
+  have h\<sigma>face: "geotop_is_face e \<sigma>"
+    using h\<sigma>F by (by100 blast)
+  have h\<tau>face: "geotop_is_face e \<tau>"
+    using h\<tau>F by (by100 blast)
+  have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+    by (rule
+        geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+          [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> h\<sigma>face h\<tau>face hedge])
+  have hunion_sub_K: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K"
+  proof
+    fix x
+    assume hx: "x \<in> \<sigma> \<union> \<tau>"
+    show "x \<in> geotop_polyhedron K"
+    proof (cases "x \<in> \<sigma>")
+      case True
+      show ?thesis
+        unfolding geotop_polyhedron_def using h\<sigma>K True by (by100 blast)
+    next
+      case False
+      have "x \<in> \<tau>"
+        using hx False by (by100 blast)
+      show ?thesis
+        unfolding geotop_polyhedron_def using h\<tau>K \<open>x \<in> \<tau>\<close> by (by100 blast)
+    qed
+  qed
+  have hrel_int_K:
+      "rel_interior e \<subseteq> interior (geotop_polyhedron K)"
+  proof -
+    have hinter_sub:
+        "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K)"
+      by (rule interior_mono[OF hunion_sub_K])
+    show ?thesis
+      using hrel_int_union hinter_sub by (by100 blast)
+  qed
+  show ?thesis
+    using hrel_int_K hK_poly by (by100 simp)
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -2161,86 +2249,8 @@ proof -
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
         \<Longrightarrow> rel_interior e \<subseteq> interior N"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hcard2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    obtain \<sigma> \<tau> where hF_eq: "?F = {\<sigma>, \<tau>}" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
-    proof -
-      have hex: "\<exists>a b. ?F = {a, b} \<and> a \<noteq> b"
-        by (rule iffD1[OF card_2_iff hcard2])
-      obtain a b where hab: "?F = {a, b} \<and> a \<noteq> b"
-        using hex by (elim exE)
-      have hF: "?F = {a, b}"
-        using hab by (by100 simp)
-      have hab_ne: "a \<noteq> b"
-        using hab by (by100 simp)
-      show ?thesis
-        by (rule that[OF hF hab_ne])
-    qed
-    have h\<sigma>F: "\<sigma> \<in> ?F"
-    proof -
-      have "\<sigma> \<in> {\<sigma>, \<tau>}"
-        by (by100 simp)
-      thus ?thesis
-        using hF_eq by (by100 simp)
-    qed
-    have h\<tau>F: "\<tau> \<in> ?F"
-    proof -
-      have "\<tau> \<in> {\<sigma>, \<tau>}"
-        by (by100 simp)
-      thus ?thesis
-        using hF_eq by (by100 simp)
-    qed
-    have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>K: "\<tau> \<in> K\<^sub>N"
-      using h\<tau>F by (by100 blast)
-    have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
-      using h\<tau>F by (by100 blast)
-    have h\<sigma>face: "geotop_is_face e \<sigma>"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>face: "geotop_is_face e \<tau>"
-      using h\<tau>F by (by100 blast)
-    have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
-      by (rule
-          geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
-            [OF hK\<^sub>N_complex h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau>
-              h\<sigma>face h\<tau>face hedge])
-    have hunion_sub_K\<^sub>N: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K\<^sub>N"
-    proof
-      fix x
-      assume hx: "x \<in> \<sigma> \<union> \<tau>"
-      show "x \<in> geotop_polyhedron K\<^sub>N"
-      proof (cases "x \<in> \<sigma>")
-        case True
-        show ?thesis
-          unfolding geotop_polyhedron_def using h\<sigma>K True by (by100 blast)
-      next
-        case False
-        have "x \<in> \<tau>"
-          using hx False by (by100 blast)
-        show ?thesis
-          unfolding geotop_polyhedron_def using h\<tau>K \<open>x \<in> \<tau>\<close> by (by100 blast)
-      qed
-    qed
-    have hrel_int_K\<^sub>N:
-        "rel_interior e \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-    proof -
-      have hinter_sub:
-          "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-        by (rule interior_mono[OF hunion_sub_K\<^sub>N])
-      show ?thesis
-        using hrel_int_union hinter_sub by (by100 blast)
-    qed
-    show "rel_interior e \<subseteq> interior N"
-      using hrel_int_K\<^sub>N hK\<^sub>N_poly by (by100 simp)
-  qed
+    by (rule geotop_two_incident_edge_rel_interior_subset_polyhedron_interior_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly])
   have hK\<^sub>N_two_incident_edge_rel_interior_disj_FrN\<^sub>I:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
@@ -5033,84 +5043,8 @@ proof -
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
         \<Longrightarrow> rel_interior e \<subseteq> interior N"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hcard2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    obtain \<sigma> \<tau> where hF_eq: "?F = {\<sigma>, \<tau>}" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
-    proof -
-      have hex: "\<exists>a b. ?F = {a, b} \<and> a \<noteq> b"
-        by (rule iffD1[OF card_2_iff hcard2])
-      obtain a b where hab: "?F = {a, b} \<and> a \<noteq> b"
-        using hex by (elim exE)
-      have hF: "?F = {a, b}"
-        using hab by (by100 simp)
-      have hab_ne: "a \<noteq> b"
-        using hab by (by100 simp)
-      show ?thesis
-        by (rule that[OF hF hab_ne])
-    qed
-    have h\<sigma>F: "\<sigma> \<in> ?F"
-    proof -
-      have "\<sigma> \<in> {\<sigma>, \<tau>}"
-        by (by100 simp)
-      thus ?thesis
-        using hF_eq by (by100 simp)
-    qed
-    have h\<tau>F: "\<tau> \<in> ?F"
-    proof -
-      have "\<tau> \<in> {\<sigma>, \<tau>}"
-        by (by100 simp)
-      thus ?thesis
-        using hF_eq by (by100 simp)
-    qed
-    have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>K: "\<tau> \<in> K\<^sub>N"
-      using h\<tau>F by (by100 blast)
-    have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
-      using h\<tau>F by (by100 blast)
-    have h\<sigma>face: "geotop_is_face e \<sigma>"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>face: "geotop_is_face e \<tau>"
-      using h\<tau>F by (by100 blast)
-    have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
-      by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
-          [OF hK\<^sub>N_complex h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> h\<sigma>face h\<tau>face hedge])
-    have hunion_sub_K\<^sub>N: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K\<^sub>N"
-    proof
-      fix x
-      assume hx: "x \<in> \<sigma> \<union> \<tau>"
-      show "x \<in> geotop_polyhedron K\<^sub>N"
-      proof (cases "x \<in> \<sigma>")
-        case True
-        show ?thesis
-          unfolding geotop_polyhedron_def using h\<sigma>K True by (by100 blast)
-      next
-        case False
-        have "x \<in> \<tau>"
-          using hx False by (by100 blast)
-        show ?thesis
-          unfolding geotop_polyhedron_def using h\<tau>K \<open>x \<in> \<tau>\<close> by (by100 blast)
-      qed
-    qed
-    have hrel_int_K\<^sub>N:
-        "rel_interior e \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-    proof -
-      have hinter_sub:
-          "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-        by (rule interior_mono[OF hunion_sub_K\<^sub>N])
-      show ?thesis
-        using hrel_int_union hinter_sub by (by100 blast)
-    qed
-    show "rel_interior e \<subseteq> interior N"
-      using hrel_int_K\<^sub>N hK\<^sub>N_poly by (by100 simp)
-  qed
+    by (rule geotop_two_incident_edge_rel_interior_subset_polyhedron_interior_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly])
   have hK\<^sub>N_two_incident_edge_rel_interior_disj_FrN\<^sub>I:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
@@ -10715,84 +10649,8 @@ proof -
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
         \<Longrightarrow> rel_interior e \<subseteq> interior N"
-  proof -
-    fix e
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hcard2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
-    let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    obtain \<sigma> \<tau> where hF_eq: "?F = {\<sigma>, \<tau>}" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
-    proof -
-      have hex: "\<exists>a b. ?F = {a, b} \<and> a \<noteq> b"
-        by (rule iffD1[OF card_2_iff hcard2])
-      obtain a b where hab: "?F = {a, b} \<and> a \<noteq> b"
-        using hex by (elim exE)
-      have hF: "?F = {a, b}"
-        using hab by (by100 simp)
-      have hab_ne: "a \<noteq> b"
-        using hab by (by100 simp)
-      show ?thesis
-        by (rule that[OF hF hab_ne])
-    qed
-    have h\<sigma>F: "\<sigma> \<in> ?F"
-    proof -
-      have "\<sigma> \<in> {\<sigma>, \<tau>}"
-        by (by100 simp)
-      thus ?thesis
-        using hF_eq by (by100 simp)
-    qed
-    have h\<tau>F: "\<tau> \<in> ?F"
-    proof -
-      have "\<tau> \<in> {\<sigma>, \<tau>}"
-        by (by100 simp)
-      thus ?thesis
-        using hF_eq by (by100 simp)
-    qed
-    have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>K: "\<tau> \<in> K\<^sub>N"
-      using h\<tau>F by (by100 blast)
-    have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
-      using h\<tau>F by (by100 blast)
-    have h\<sigma>face: "geotop_is_face e \<sigma>"
-      using h\<sigma>F by (by100 blast)
-    have h\<tau>face: "geotop_is_face e \<tau>"
-      using h\<tau>F by (by100 blast)
-    have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
-      by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
-          [OF hK\<^sub>N_complex h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> h\<sigma>face h\<tau>face hedge])
-    have hunion_sub_K\<^sub>N: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K\<^sub>N"
-    proof
-      fix x
-      assume hx: "x \<in> \<sigma> \<union> \<tau>"
-      show "x \<in> geotop_polyhedron K\<^sub>N"
-      proof (cases "x \<in> \<sigma>")
-        case True
-        show ?thesis
-          unfolding geotop_polyhedron_def using h\<sigma>K True by (by100 blast)
-      next
-        case False
-        have "x \<in> \<tau>"
-          using hx False by (by100 blast)
-        show ?thesis
-          unfolding geotop_polyhedron_def using h\<tau>K \<open>x \<in> \<tau>\<close> by (by100 blast)
-      qed
-    qed
-    have hrel_int_K\<^sub>N:
-        "rel_interior e \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-    proof -
-      have hinter_sub:
-          "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-        by (rule interior_mono[OF hunion_sub_K\<^sub>N])
-      show ?thesis
-        using hrel_int_union hinter_sub by (by100 blast)
-    qed
-    show "rel_interior e \<subseteq> interior N"
-      using hrel_int_K\<^sub>N hK\<^sub>N_poly by (by100 simp)
-  qed
+    by (rule geotop_two_incident_edge_rel_interior_subset_polyhedron_interior_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly])
   have hK\<^sub>N_two_incident_edge_rel_interior_disj_FrN\<^sub>I:
       "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
@@ -17808,84 +17666,8 @@ proof -
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
           \<Longrightarrow> rel_interior e \<subseteq> interior N"
-    proof -
-      fix e
-      assume heK: "e \<in> K\<^sub>N"
-        and hedge: "geotop_is_edge e"
-        and hcard2:
-          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
-      let ?F = "{\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-      obtain \<sigma> \<tau> where hF_eq: "?F = {\<sigma>, \<tau>}" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
-      proof -
-        have hex: "\<exists>a b. ?F = {a, b} \<and> a \<noteq> b"
-          by (rule iffD1[OF card_2_iff hcard2])
-        obtain a b where hab: "?F = {a, b} \<and> a \<noteq> b"
-          using hex by (elim exE)
-        have hF: "?F = {a, b}"
-          using hab by (by100 simp)
-        have hab_ne: "a \<noteq> b"
-          using hab by (by100 simp)
-        show ?thesis
-          by (rule that[OF hF hab_ne])
-      qed
-      have h\<sigma>F: "\<sigma> \<in> ?F"
-      proof -
-        have "\<sigma> \<in> {\<sigma>, \<tau>}"
-          by (by100 simp)
-        thus ?thesis
-          using hF_eq by (by100 simp)
-      qed
-      have h\<tau>F: "\<tau> \<in> ?F"
-      proof -
-        have "\<tau> \<in> {\<sigma>, \<tau>}"
-          by (by100 simp)
-        thus ?thesis
-          using hF_eq by (by100 simp)
-      qed
-      have h\<sigma>K: "\<sigma> \<in> K\<^sub>N"
-        using h\<sigma>F by (by100 blast)
-      have h\<tau>K: "\<tau> \<in> K\<^sub>N"
-        using h\<tau>F by (by100 blast)
-      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-        using h\<sigma>F by (by100 blast)
-      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
-        using h\<tau>F by (by100 blast)
-      have h\<sigma>face: "geotop_is_face e \<sigma>"
-        using h\<sigma>F by (by100 blast)
-      have h\<tau>face: "geotop_is_face e \<tau>"
-        using h\<tau>F by (by100 blast)
-      have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
-        by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
-            [OF hK\<^sub>N_complex h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> h\<sigma>face h\<tau>face hedge])
-      have hunion_sub_K\<^sub>N: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K\<^sub>N"
-      proof
-        fix x
-        assume hx: "x \<in> \<sigma> \<union> \<tau>"
-        show "x \<in> geotop_polyhedron K\<^sub>N"
-        proof (cases "x \<in> \<sigma>")
-          case True
-          show ?thesis
-            unfolding geotop_polyhedron_def using h\<sigma>K True by (by100 blast)
-        next
-          case False
-          have "x \<in> \<tau>"
-            using hx False by (by100 blast)
-          show ?thesis
-            unfolding geotop_polyhedron_def using h\<tau>K \<open>x \<in> \<tau>\<close> by (by100 blast)
-        qed
-      qed
-      have hrel_int_K\<^sub>N:
-          "rel_interior e \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-      proof -
-        have hinter_sub:
-            "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K\<^sub>N)"
-          by (rule interior_mono[OF hunion_sub_K\<^sub>N])
-        show ?thesis
-          using hrel_int_union hinter_sub by (by100 blast)
-      qed
-      show "rel_interior e \<subseteq> interior N"
-        using hrel_int_K\<^sub>N hK\<^sub>N_poly by (by100 simp)
-    qed
+      by (rule geotop_two_incident_edge_rel_interior_subset_polyhedron_interior_prefix
+          [OF hK\<^sub>N_complex hK\<^sub>N_poly])
     have hK\<^sub>N_two_incident_edge_rel_interior_disj_FrN\<^sub>I:
         "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2
