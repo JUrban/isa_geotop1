@@ -92,10 +92,16 @@ proof -
     using closed_arc_image[OF h\<gamma>1_arc] h\<gamma>1_img by (by100 simp)
   have hA2_closed: "closed A2"
     using closed_arc_image[OF h\<gamma>2_arc] h\<gamma>2_img by (by100 simp)
+  have h\<gamma>1_start_img: "\<gamma>1 0 \<in> path_image \<gamma>1"
+    unfolding path_image_def
+    by (rule image_eqI[where x = 0], simp_all)
   have hA1_nonempty: "A1 \<noteq> {}"
-    using h\<gamma>1_img by (by100 simp)
+    using h\<gamma>1_start_img h\<gamma>1_img by (by100 blast)
+  have h\<gamma>2_start_img: "\<gamma>2 0 \<in> path_image \<gamma>2"
+    unfolding path_image_def
+    by (rule image_eqI[where x = 0], simp_all)
   have hA2_nonempty: "A2 \<noteq> {}"
-    using h\<gamma>2_img by (by100 simp)
+    using h\<gamma>2_start_img h\<gamma>2_img by (by100 blast)
   have hA12_compact: "compact (A1 \<union> A2)"
     using hA1_compact hA2_compact by (by100 simp)
   have hA12_closed: "closed (A1 \<union> A2)"
@@ -681,7 +687,25 @@ proof -
       using ht h_seg_eq by (by100 simp)
     have hbetween:
         "(sX \<le> t \<and> t \<le> sY) \<or> (sY \<le> t \<and> t \<le> sX)"
-      using ht_ivl unfolding s_lo_def s_hi_def by (by100 simp)
+    proof (cases "sX \<le> sY")
+      case True
+      have hs_lo_eq: "s_lo = sX"
+        unfolding s_lo_def using True by (by100 simp)
+      have hs_hi_eq: "s_hi = sY"
+        unfolding s_hi_def using True by (by100 simp)
+      show ?thesis
+        using ht_ivl hs_lo_eq hs_hi_eq by (by100 simp)
+    next
+      case False
+      have hYX: "sY \<le> sX"
+        using False by (by100 simp)
+      have hs_lo_eq: "s_lo = sY"
+        unfolding s_lo_def using hYX by (by100 simp)
+      have hs_hi_eq: "s_hi = sX"
+        unfolding s_hi_def using hYX by (by100 simp)
+      show ?thesis
+        using ht_ivl hs_lo_eq hs_hi_eq by (by100 simp)
+    qed
     show "t \<in> ?T"
       using hT_interval hsX_T hsY_T hbetween
       unfolding is_interval_1 by (by100 blast)
@@ -1000,7 +1024,7 @@ proof -
   have hS'_sing_conn:
       "top1_connected_on {S'}
         (subspace_topology UNIV geotop_euclidean_topology {S'})"
-    by (rule top1_connected_on_singleton[OF hTU], simp)
+    by (rule top1_connected_on_singleton[OF hTU], by100 simp)
   have hS'_CS: "S' \<in> ?C\<^sub>S"
     by (rule geotop_self_in_component_at[OF hS'_U hS'_sing_conn])
   have hcomponent_dichotomy:
@@ -1014,7 +1038,15 @@ proof -
       "S \<in> geotop_frontier UNIV geotop_euclidean_topology ?C\<^sub>Q"
     using hS_front_CS hcomponent_eq by (by100 simp)
   show ?thesis
-    using hQ_front_CQ hS_front_CQ hQ'_U by (intro exI conjI)
+  proof (rule exI[where x="?C\<^sub>Q"], intro conjI)
+    show "Q \<in> geotop_frontier UNIV geotop_euclidean_topology ?C\<^sub>Q"
+      by (rule hQ_front_CQ)
+    show "S \<in> geotop_frontier UNIV geotop_euclidean_topology ?C\<^sub>Q"
+      by (rule hS_front_CQ)
+    show "\<exists>P'. P' \<in> U \<and>
+        ?C\<^sub>Q = geotop_component_at UNIV geotop_euclidean_topology U P'"
+      by (rule exI[where x=Q'], intro conjI, rule hQ'_U, rule refl)
+  qed
 qed
 
 lemma geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix:
