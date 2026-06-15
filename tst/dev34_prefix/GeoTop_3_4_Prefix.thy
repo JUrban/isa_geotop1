@@ -1213,6 +1213,156 @@ proof -
     by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
   have hJ\<^sub>N_closed: "closed J\<^sub>N"
     by (rule compact_imp_closed[OF hJ\<^sub>N_compact])
+  define K\<^sub>N where "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding K\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    unfolding K\<^sub>N_def using hSd_fin by (by100 simp)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+  proof -
+    have hK\<^sub>N_poly_sub_N: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+      unfolding K\<^sub>N_def geotop_polyhedron_def by (by100 blast)
+    have hcarrier_sub_N:
+        "\<And>x. x \<in> N \<Longrightarrow>
+          geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+    proof -
+      fix x
+      assume hxN: "x \<in> N"
+      obtain B where hB_Sd: "B \<in> geotop_iterated_Sd m K"
+        and hB_A1: "B \<inter> A1 \<noteq> {}"
+        and hxB: "x \<in> B"
+        using hxN unfolding hN_def by (by100 blast)
+      have hB_sub_N: "B \<subseteq> N"
+        unfolding hN_def using hB_Sd hB_A1 by (by100 blast)
+      have hcarrier_sub_B:
+          "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> B"
+        by (rule geotop_K_carrier_subset_containing_simplex
+            [OF hSd_complex hSd_fin hB_Sd hxB])
+      show "geotop_K_carrier (geotop_iterated_Sd m K) x \<subseteq> N"
+        using hcarrier_sub_B hB_sub_N by (by100 blast)
+    qed
+    have hN_sub_K\<^sub>N_poly:
+        "N \<subseteq> geotop_polyhedron K\<^sub>N"
+    proof -
+      have "N \<subseteq>
+          geotop_polyhedron {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+        by (rule geotop_restrict_polyhedron_contains_if_carriers_subset_prefix
+            [OF hSd_complex hSd_fin hN_sub_Sd_poly hcarrier_sub_N])
+      thus ?thesis
+        unfolding K\<^sub>N_def by (by100 simp)
+    qed
+    show ?thesis
+      using hK\<^sub>N_poly_sub_N hN_sub_K\<^sub>N_poly by (by100 blast)
+  qed
+  have hK\<^sub>N_poly_connected:
+      "top1_connected_on (geotop_polyhedron K\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron K\<^sub>N))"
+    using hN_connected hK\<^sub>N_poly by (by100 simp)
+  have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
+  proof -
+    have hK\<^sub>N_poly_path_connected:
+        "top1_path_connected_on (geotop_polyhedron K\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron K\<^sub>N))"
+      by (rule iffD2[OF Theorem_GT_1_12(2)[OF hK\<^sub>N_complex]
+            hK\<^sub>N_poly_connected])
+    show ?thesis
+      by (rule iffD2[OF Theorem_GT_1_12(1)[OF hK\<^sub>N_complex]
+            hK\<^sub>N_poly_path_connected])
+  qed
+  have hA1_not_subset_singleton:
+      "\<And>x. \<not> A1 \<subseteq> {x}"
+  proof
+    fix x
+    assume hsub: "A1 \<subseteq> {x}"
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A1"
+      using geotop_is_arc_imp_HOL_arc[OF hA1] by (by100 blast)
+    have h0_img: "\<gamma> 0 \<in> path_image \<gamma>"
+      unfolding path_image_def by (rule image_eqI[where x = 0], simp_all)
+    have h0A1: "\<gamma> 0 \<in> A1"
+      by (subst h\<gamma>_img[symmetric], rule h0_img)
+    have h1_img: "\<gamma> 1 \<in> path_image \<gamma>"
+      unfolding path_image_def by (rule image_eqI[where x = 1], simp_all)
+    have h1A1: "\<gamma> 1 \<in> A1"
+      by (subst h\<gamma>_img[symmetric], rule h1_img)
+    have h0_in_single: "\<gamma> 0 \<in> {x}"
+      by (rule subsetD[OF hsub h0A1])
+    have h0x: "\<gamma> 0 = x"
+      by (rule singletonD[OF h0_in_single])
+    have h1_in_single: "\<gamma> 1 \<in> {x}"
+      by (rule subsetD[OF hsub h1A1])
+    have h1x: "\<gamma> 1 = x"
+      by (rule singletonD[OF h1_in_single])
+    have hinj: "inj_on \<gamma> {0..1}"
+      using h\<gamma>_arc unfolding arc_def by (by100 simp)
+    have h01: "(0::real) \<in> {0..1}"
+      by (by100 simp)
+    have h11: "(1::real) \<in> {0..1}"
+      by (by100 simp)
+    have h\<gamma>01: "\<gamma> 0 = \<gamma> 1"
+      by (subst h0x, rule h1x[symmetric])
+    have "0 = (1::real)"
+      by (rule inj_onD[OF hinj h\<gamma>01 h01 h11])
+    thus False by (by100 simp)
+  qed
+  have hK\<^sub>N_vertex_incident_edge:
+      "\<And>p. {p} \<in> K\<^sub>N \<Longrightarrow>
+        \<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> p \<in> e"
+  proof (rule ccontr)
+    fix p
+    assume hpK: "{p} \<in> K\<^sub>N"
+      and hno: "\<not> (\<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> p \<in> e)"
+    have hp_vertex: "p \<in> geotop_complex_vertices K\<^sub>N"
+      using geotop_complex_vertices_eq_0_simplexes[OF hK\<^sub>N_complex] hpK
+      by (by100 blast)
+    have hsingle_top:
+        "{p} \<in>
+          subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron K\<^sub>N)"
+      by (rule geotop_complex_no_incident_edge_vertex_open_singleton_prefix
+          [OF hK\<^sub>N_complex hp_vertex hno])
+    obtain U where hsingle_eq: "{p} = geotop_polyhedron K\<^sub>N \<inter> U"
+      and hU_top: "U \<in> geotop_euclidean_topology"
+      using hsingle_top unfolding subspace_topology_def by (by100 blast)
+    have hU_open: "open U"
+      using hU_top unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hsingle_openin:
+        "openin (top_of_set (geotop_polyhedron K\<^sub>N)) {p}"
+      unfolding openin_open
+      using hU_open hsingle_eq by (by100 blast)
+    have hp_poly: "p \<in> geotop_polyhedron K\<^sub>N"
+      unfolding geotop_polyhedron_def using hpK by (by100 blast)
+    have hsingle_closedin:
+        "closedin (top_of_set (geotop_polyhedron K\<^sub>N)) {p}"
+    proof -
+      have hclosed_single: "closed {p}"
+        by (by100 simp)
+      have hsingle_eq_poly:
+          "{p} = geotop_polyhedron K\<^sub>N \<inter> {p}"
+        using hp_poly by (by100 blast)
+      show ?thesis
+        unfolding closedin_closed
+        using hclosed_single hsingle_eq_poly by (by100 blast)
+    qed
+    have hK\<^sub>N_poly_connected_HOL: "connected (geotop_polyhedron K\<^sub>N)"
+      using hN_connected_HOL hK\<^sub>N_poly by (by100 simp)
+    have hsingle_cases:
+        "{p} = {} \<or> {p} = geotop_polyhedron K\<^sub>N"
+      using connected_clopen[THEN iffD1, OF hK\<^sub>N_poly_connected_HOL]
+        hsingle_openin hsingle_closedin by (by100 blast)
+    have hpoly_single: "geotop_polyhedron K\<^sub>N = {p}"
+      using hsingle_cases by (by100 blast)
+    have hA1_sub_single: "A1 \<subseteq> {p}"
+      using hA1_N hK\<^sub>N_poly hpoly_single by (by100 simp)
+    show False
+      using hA1_not_subset_singleton[of p] hA1_sub_single by (by100 blast)
+  qed
+  have hK\<^sub>N_poly_N\<^sub>I: "geotop_polyhedron K\<^sub>N = N\<^sub>I"
+    using hK\<^sub>N_poly hN\<^sub>I_eq_N by (by100 simp)
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
@@ -1223,7 +1373,8 @@ proof -
       Remaining Moise 4.4 construction after the routine carrier hygiene
       and frontier-component setup above.  The unproved part is now exactly
       the book's regular-neighborhood frontier analysis from the component
-      \<open>J\<^sub>N\<close>: prove it is a polygonal 1-sphere, take the complementary
+      \<open>J\<^sub>N\<close> and restricted carrier complex \<open>K\<^sub>N\<close>: prove the corresponding
+      boundary subcomplex is a polygonal 1-sphere, take the complementary
       lower-to-upper frontier subarc, and push it to the adjacent outside side
       of \<open>?Ncut\<close> so it crosses every pair of access collars. **)
     sorry
