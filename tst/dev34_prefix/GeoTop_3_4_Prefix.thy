@@ -4721,6 +4721,186 @@ proof -
       apply (intro conjI)
       by (by100 blast)+
   qed
+  have hD44_BdJ\<^sub>N_polygon_boundary_subarc_complement_split:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<exists>X C L C\<^sub>F. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_is_broken_line C
+          \<and> C \<subseteq> ?B1P
+          \<and> C \<subseteq> F\<^sub>1
+          \<and> C \<subseteq> J\<^sub>N
+          \<and> C \<subseteq> FrN\<^sub>I
+          \<and> C \<inter> F\<^sub>2 = {}
+          \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C \<inter> ?Ncut = {}
+          \<and> P \<in> C
+          \<and> X \<in> C
+          \<and> geotop_arc_endpoints C {P, X}
+          \<and> connected (geotop_arc_interior C {P, X})
+          \<and> geotop_arc_interior C {P, X} \<noteq> {}
+          \<and> geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> {P} \<in> L
+          \<and> {X} \<in> L
+          \<and> geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>F
+          \<and> geotop_is_broken_line C\<^sub>F
+          \<and> geotop_arc_endpoints C\<^sub>F {P, X}
+          \<and> geotop_arc_interior C {P, X} \<inter>
+              geotop_arc_interior C\<^sub>F {P, X} = {}
+          \<and> C \<inter> C\<^sub>F = {P, X}
+          \<and> P \<in> C\<^sub>F
+          \<and> X \<in> C\<^sub>F
+          \<and> C\<^sub>F \<subseteq> J\<^sub>N
+          \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
+          \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
+          \<and> C\<^sub>F \<inter> ?Ncut = {}"
+  proof -
+    assume hpolygon:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    obtain X C L C\<^sub>B C\<^sub>O where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hC_bl: "geotop_is_broken_line C"
+      and hC_sub_B1P: "C \<subseteq> ?B1P"
+      and hC_sub_F1: "C \<subseteq> F\<^sub>1"
+      and hC_sub_J\<^sub>N: "C \<subseteq> J\<^sub>N"
+      and hC_sub_FrN\<^sub>I: "C \<subseteq> FrN\<^sub>I"
+      and hC_F\<^sub>2_disj: "C \<inter> F\<^sub>2 = {}"
+      and hC_A2_QS_disj: "C \<inter> (A2 \<union> {Q, S}) = {}"
+      and hC_Ncut_disj: "C \<inter> ?Ncut = {}"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      and hC_int_connected: "connected (geotop_arc_interior C {P, X})"
+      and hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
+      and hL_complex: "geotop_is_complex L"
+      and hL_1dim: "geotop_complex_is_1dim L"
+      and hL_fin: "finite L"
+      and hL_poly_C: "geotop_polyhedron L = C"
+      and hP_L: "{P} \<in> L"
+      and hX_L: "{X} \<in> L"
+      and hBdJ_split: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O"
+      and hC\<^sub>B_bl: "geotop_is_broken_line C\<^sub>B"
+      and hC\<^sub>O_bl: "geotop_is_broken_line C\<^sub>O"
+      and hC\<^sub>B_end: "geotop_arc_endpoints C\<^sub>B {P, X}"
+      and hC\<^sub>O_end: "geotop_arc_endpoints C\<^sub>O {P, X}"
+      and hC_int_disj:
+        "geotop_arc_interior C\<^sub>B {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+      and hC_inter: "C\<^sub>B \<inter> C\<^sub>O = {P, X}"
+      and hP_C\<^sub>B: "P \<in> C\<^sub>B"
+      and hX_C\<^sub>B: "X \<in> C\<^sub>B"
+      and hP_C\<^sub>O: "P \<in> C\<^sub>O"
+      and hX_C\<^sub>O: "X \<in> C\<^sub>O"
+      and hC_eq_one: "C = C\<^sub>B \<or> C = C\<^sub>O"
+      using hD44_BdJ\<^sub>N_polygon_split_at_B1P_endpoint[OF hpolygon]
+      by (elim exE conjE)
+    show ?thesis
+    proof (rule disjE[OF hC_eq_one])
+      assume hC_eq_B: "C = C\<^sub>B"
+      have hBdJ_split_C\<^sub>F: "geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>O"
+        using hBdJ_split hC_eq_B by (by100 simp)
+      have hC_int_disj_C\<^sub>F:
+        "geotop_arc_interior C {P, X} \<inter>
+          geotop_arc_interior C\<^sub>O {P, X} = {}"
+        using hC_int_disj hC_eq_B by (by100 simp)
+      have hC_inter_C\<^sub>F: "C \<inter> C\<^sub>O = {P, X}"
+        using hC_inter hC_eq_B by (by100 simp)
+      have hC\<^sub>F_sub_BdJ: "C\<^sub>O \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+      proof
+        fix y
+        assume hy: "y \<in> C\<^sub>O"
+        have "y \<in> C\<^sub>B \<union> C\<^sub>O"
+          using hy by (by100 simp)
+        thus "y \<in> geotop_polyhedron BdJ\<^sub>N"
+          using hBdJ_split by (by100 simp)
+      qed
+      have hC\<^sub>F_sub_J\<^sub>N: "C\<^sub>O \<subseteq> J\<^sub>N"
+        by (rule subset_trans[OF hC\<^sub>F_sub_BdJ hBdJ\<^sub>N_poly_sub_J\<^sub>N])
+      have hC\<^sub>F_sub_FrN\<^sub>I: "C\<^sub>O \<subseteq> FrN\<^sub>I"
+        by (rule subset_trans[OF hC\<^sub>F_sub_BdJ hBdJ\<^sub>N_poly_sub_FrN\<^sub>I])
+      have hC\<^sub>F_A2_QS_disj: "C\<^sub>O \<inter> (A2 \<union> {Q, S}) = {}"
+      proof -
+        have "C\<^sub>O \<inter> (A2 \<union> {Q, S}) \<subseteq>
+            geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S})"
+          using hC\<^sub>F_sub_BdJ by (by100 blast)
+        thus ?thesis
+          using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+      qed
+      have hC\<^sub>F_Ncut_disj: "C\<^sub>O \<inter> ?Ncut = {}"
+      proof -
+        have "C\<^sub>O \<inter> ?Ncut \<subseteq> geotop_polyhedron BdJ\<^sub>N \<inter> ?Ncut"
+          using hC\<^sub>F_sub_BdJ by (by100 blast)
+        thus ?thesis
+          using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+      qed
+      show ?thesis
+        apply (rule exI[where x=X])
+        apply (rule exI[where x=C])
+        apply (rule exI[where x=L])
+        apply (rule exI[where x=C\<^sub>O])
+        using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
+          hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
+          hP_C hX_C hC_end hC_int_connected hC_int_nonempty
+          hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
+          hBdJ_split_C\<^sub>F hC\<^sub>O_bl hC\<^sub>O_end hC_int_disj_C\<^sub>F
+          hC_inter_C\<^sub>F hP_C\<^sub>O hX_C\<^sub>O hC\<^sub>F_sub_J\<^sub>N
+          hC\<^sub>F_sub_FrN\<^sub>I hC\<^sub>F_A2_QS_disj hC\<^sub>F_Ncut_disj
+        by (intro conjI)
+    next
+      assume hC_eq_O: "C = C\<^sub>O"
+      have hBdJ_split_C\<^sub>F: "geotop_polyhedron BdJ\<^sub>N = C \<union> C\<^sub>B"
+        using hBdJ_split hC_eq_O by (by100 auto)
+      have hC_int_disj_C\<^sub>F:
+        "geotop_arc_interior C {P, X} \<inter>
+          geotop_arc_interior C\<^sub>B {P, X} = {}"
+        using hC_int_disj hC_eq_O by (by100 auto)
+      have hC_inter_C\<^sub>F: "C \<inter> C\<^sub>B = {P, X}"
+        using hC_inter hC_eq_O by (by100 auto)
+      have hC\<^sub>F_sub_BdJ: "C\<^sub>B \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+      proof
+        fix y
+        assume hy: "y \<in> C\<^sub>B"
+        have "y \<in> C\<^sub>B \<union> C\<^sub>O"
+          using hy by (by100 simp)
+        thus "y \<in> geotop_polyhedron BdJ\<^sub>N"
+          using hBdJ_split by (by100 simp)
+      qed
+      have hC\<^sub>F_sub_J\<^sub>N: "C\<^sub>B \<subseteq> J\<^sub>N"
+        by (rule subset_trans[OF hC\<^sub>F_sub_BdJ hBdJ\<^sub>N_poly_sub_J\<^sub>N])
+      have hC\<^sub>F_sub_FrN\<^sub>I: "C\<^sub>B \<subseteq> FrN\<^sub>I"
+        by (rule subset_trans[OF hC\<^sub>F_sub_BdJ hBdJ\<^sub>N_poly_sub_FrN\<^sub>I])
+      have hC\<^sub>F_A2_QS_disj: "C\<^sub>B \<inter> (A2 \<union> {Q, S}) = {}"
+      proof -
+        have "C\<^sub>B \<inter> (A2 \<union> {Q, S}) \<subseteq>
+            geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S})"
+          using hC\<^sub>F_sub_BdJ by (by100 blast)
+        thus ?thesis
+          using hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+      qed
+      have hC\<^sub>F_Ncut_disj: "C\<^sub>B \<inter> ?Ncut = {}"
+      proof -
+        have "C\<^sub>B \<inter> ?Ncut \<subseteq> geotop_polyhedron BdJ\<^sub>N \<inter> ?Ncut"
+          using hC\<^sub>F_sub_BdJ by (by100 blast)
+        thus ?thesis
+          using hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+      qed
+      show ?thesis
+        apply (rule exI[where x=X])
+        apply (rule exI[where x=C])
+        apply (rule exI[where x=L])
+        apply (rule exI[where x=C\<^sub>B])
+        using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
+          hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
+          hP_C hX_C hC_end hC_int_connected hC_int_nonempty
+          hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
+          hBdJ_split_C\<^sub>F hC\<^sub>B_bl hC\<^sub>B_end hC_int_disj_C\<^sub>F
+          hC_inter_C\<^sub>F hP_C\<^sub>B hX_C\<^sub>B hC\<^sub>F_sub_J\<^sub>N
+          hC\<^sub>F_sub_FrN\<^sub>I hC\<^sub>F_A2_QS_disj hC\<^sub>F_Ncut_disj
+        by (intro conjI)
+    qed
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
