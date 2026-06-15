@@ -3177,42 +3177,15 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
     witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_frontier_degree_two_book_step:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-    (**
-      Local regular-neighborhood frontier incidence: every vertex of the
-      selected boundary component has degree two in the fine-carrier boundary
-      graph.
-    **)
-    sorry
-  have hD44_frontier_exact_two_book_step:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    (**
-      Local regular-neighborhood frontier incidence: every vertex of the
-      selected boundary component has exactly the two adjacent boundary edges
-      of a polygonal 1-manifold frontier.
-    **)
-    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
-        [OF hD44_frontier_degree_two_book_step])
   have hD44_frontier_1sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
     (**
-      Moise's regular-neighborhood frontier assertion: the component of the
-      fine-carrier boundary through \<open>P\<close> is the simple closed polygonal
-      frontier of the selected regular neighborhood.
+      Moise 4.4, first frontier sentence: after forming
+      \<open>N\<^sub>I = N \<inter> closure I\<close>, the component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is
+      a 1-sphere.
     **)
-    by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
-        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
-          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-          hD44_frontier_exact_two_book_step])
+    sorry
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     (**
@@ -3233,37 +3206,49 @@ proof -
       by (intro exI[where x=BdJ\<^sub>N] conjI,
           rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
   qed
+  have hD44_frontier_degree_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      Graph translation of the frontier 1-sphere: every vertex of the selected
+      boundary component has degree two in the fine-carrier boundary graph.
+    **)
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+          hD44_frontier_polygon_book_step])
+  have hD44_frontier_exact_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    (**
+      Local regular-neighborhood frontier incidence in the exact-two form used
+      by downstream finite graph packages.
+    **)
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+        [OF hD44_frontier_degree_two_book_step])
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Moise 4.4, complementary-frontier-arc step: the outside component
+      adjacent to the other frontier arc connects the two access witnesses in
+      \<open>I - (N \<union> A2)\<close>.
+    **)
+    sorry
   have hD44_frontier_route_book_step:
       "\<exists>B. geotop_is_broken_line B
         \<and> B \<subseteq> ?Ncut
         \<and> Q1 \<in> B
         \<and> S1 \<in> B"
     (**
-      Moise's complementary-frontier-arc step: the outside component adjacent
-      to the other frontier arc contains a broken-line route between the two
-      access witnesses in \<open>I - (N \<union> A2)\<close>.
+      Open-component conversion from the book's same-component conclusion to
+      the broken-line route form used by nearby packages.
     **)
-    sorry
-  have hD44_same_component_book_step:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    (**
-      Conversion of the book's broken-line route to the same-component form
-      used by the downstream corridor package.
-    **)
-  proof -
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_sub: "B \<subseteq> ?Ncut"
-      and hQ1_B: "Q1 \<in> B"
-      and hS1_B: "S1 \<in> B"
-      using hD44_frontier_route_book_step by (elim exE conjE)
-    have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-    show ?thesis
-      by (rule geotop_connected_witness_component_at_intro_prefix
-          [OF hB_sub hQ1_B hS1_B hB_conn])
-  qed
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut hD44_same_component_book_step])
   show ?thesis
     by (rule geotop_polygon_frontier_component_same_component_graph_corridor_package_prefix
         [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
