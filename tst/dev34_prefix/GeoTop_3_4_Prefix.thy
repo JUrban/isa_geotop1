@@ -4121,61 +4121,33 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_frontier_bounds_and_corridor_book_step:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+  have hD44_frontier_sphere_and_corridor_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
     (**
-      Remaining Moise 4.4 book construction: use the manifold-with-boundary
-      regular-neighborhood analysis of \<open>N\<^sub>I\<close> to prove the selected frontier
-      component has at most two incident boundary edges at each vertex and no
-      graph endpoint, split it into the boundary arc and complementary
-      frontier arc, and use that complementary arc to put \<open>Q1\<close> and \<open>S1\<close> in
-      the same component of \<open>?Ncut\<close>. **)
+      Remaining Moise 4.4 book construction in its literal form.  Use the
+      manifold-with-boundary regular-neighborhood analysis of \<open>N\<^sub>I\<close> to show
+      the selected frontier component through \<open>P\<close> is a 1-sphere, split that
+      sphere into the boundary arc and complementary frontier arc, and use the
+      complementary arc to give a connected outside corridor accumulating at
+      \<open>Q1\<close> and \<open>S1\<close>. **)
     sorry
-  have hD44_frontier_card_le2_all:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
-  have hD44_frontier_no_endpoint_all:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
-  have hD44_frontier_graph_bounds:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
-    using hD44_frontier_card_le2_all hD44_frontier_no_endpoint_all
-    by (by100 blast)
-  have hD44_frontier_card_le2:
-      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_frontier_graph_bounds by (by100 blast)
-  have hD44_frontier_no_endpoint:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    using hD44_frontier_graph_bounds by (by100 blast)
+  have hD44_frontier_sphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_frontier_sphere_and_corridor_book_step by (rule conjunct1)
   have hD44_frontier_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
-  have hD44_frontier_sphere:
-      "geotop_is_n_sphere J\<^sub>N
-        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
-        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
-          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly_from_coverage
-          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2
-          hD44_frontier_no_endpoint])
+    using hD44_frontier_sphere_and_corridor_book_step by (rule conjunct2)
   have hD44_same_component:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
   proof -
