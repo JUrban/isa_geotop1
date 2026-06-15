@@ -2119,6 +2119,77 @@ lemma geotop_Ncut_access_point_exclusion_package_prefix:
   using hA1_sub_N hFr_sub_N hJN_sub_N hKN_sub_N hBdKN_sub_N hQ1_Ncut hS1_Ncut
   by (by100 blast)
 
+lemma geotop_broken_line_access_crossings_connected_crossings_prefix:
+  fixes U :: "(real^2) set" and Q1 S1 :: "real^2"
+  assumes hall_broken:
+    "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+      \<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  shows
+    "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+      \<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  (**
+    D44 collar conversion: once the book frontier subarc supplies broken-line
+    crossings of all prescribed access collars, the same sets are connected
+    witnesses for the component-splitting contradiction packages. **)
+proof (intro allI impI)
+  fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+  assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
+  assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
+  have hQ_spec:
+      "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  proof -
+    have hQ_imp:
+        "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> U
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+      by (rule spec[OF hall_broken])
+    show ?thesis
+      by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
+  qed
+  have hB_ex:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  proof -
+    have hS_imp:
+        "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> U
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+      by (rule spec[OF hQ_spec])
+    show ?thesis
+      by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
+  qed
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub: "B \<subseteq> U"
+    and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    using hB_ex by (elim exE conjE)
+  have hB_conn:
+      "top1_connected_on B
+        (subspace_topology UNIV geotop_euclidean_topology B)"
+    by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+  show "\<exists>Z. Z \<subseteq> U
+      \<and> top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)
+      \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+      \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4549,62 +4620,16 @@ proof -
       Book-facing conversion: Moise constructs a broken-line subarc of the
       complementary frontier.  Connectedness of broken lines is enough to feed
       the collar/component bridge above. **)
-  proof (intro allI impI)
+  proof -
     assume hall_broken:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> ?Ncut
           \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
-    assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
-    assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
-    have hQ_spec:
-        "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof -
-      have hQ_imp:
-          "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0.
-            \<exists>B. geotop_is_broken_line B
-              \<and> B \<subseteq> ?Ncut
-              \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-              \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-        by (rule spec[OF hall_broken])
-      show ?thesis
-        by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
-    qed
-    have hB_ex:
-        "\<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof -
-      have hS_imp:
-          "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-        by (rule spec[OF hQ_spec])
-      show ?thesis
-        by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
-    qed
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_sub: "B \<subseteq> ?Ncut"
-      and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
-      and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hB_ex by (elim exE conjE)
-    have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-    show "\<exists>Z. Z \<subseteq> ?Ncut
-        \<and> top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)
-        \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-        \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
+    show ?thesis
+      by (rule geotop_broken_line_access_crossings_connected_crossings_prefix
+          [OF hall_broken])
   qed
   have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -10006,56 +10031,8 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof (intro allI impI)
-      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
-      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
-      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
-      have hQ_spec:
-        "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      proof -
-        have hQ_imp:
-          "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-          by (rule spec[OF hall_broken])
-        show ?thesis
-          by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
-      qed
-      have hQS_spec:
-        "\<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      proof -
-        have hS_imp:
-          "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-          by (rule spec[OF hQ_spec])
-        show ?thesis
-          by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
-      qed
-      obtain B where hB_bl: "geotop_is_broken_line B"
-        and hB_sub: "B \<subseteq> ?Ncut"
-        and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
-        and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hQS_spec by (elim exE conjE)
-      have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-      show "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
-    qed
+      by (rule geotop_broken_line_access_crossings_connected_crossings_prefix
+          [OF hall_broken])
     show ?thesis
       by (rule hD44_arbitrary_access_ball_crossings_suffice[OF hall_connected])
   qed
@@ -15518,56 +15495,8 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
           \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-    proof (intro allI impI)
-      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
-      assume h\<epsilon>\<^sub>Q_pos: "0 < \<epsilon>\<^sub>Q"
-      assume h\<epsilon>\<^sub>S_pos: "0 < \<epsilon>\<^sub>S"
-      have hQ_spec:
-        "\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      proof -
-        have hQ_imp:
-          "0 < \<epsilon>\<^sub>Q \<longrightarrow> (\<forall>\<epsilon>\<^sub>S>0. \<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-          by (rule spec[OF hall_broken])
-        show ?thesis
-          by (rule mp[OF hQ_imp h\<epsilon>\<^sub>Q_pos])
-      qed
-      have hQS_spec:
-        "\<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      proof -
-        have hS_imp:
-          "0 < \<epsilon>\<^sub>S \<longrightarrow> (\<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
-          by (rule spec[OF hQ_spec])
-        show ?thesis
-          by (rule mp[OF hS_imp h\<epsilon>\<^sub>S_pos])
-      qed
-      obtain B where hB_bl: "geotop_is_broken_line B"
-        and hB_sub: "B \<subseteq> ?Ncut"
-        and hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
-        and hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hQS_spec by (elim exE conjE)
-      have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-        by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-      show "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hB_sub hB_conn hB_Q hB_S by (intro exI conjI)
-    qed
+      by (rule geotop_broken_line_access_crossings_connected_crossings_prefix
+          [OF hall_broken])
     show ?thesis
       by (rule hD44_arbitrary_access_ball_crossings_suffice[OF hall_connected])
   qed
