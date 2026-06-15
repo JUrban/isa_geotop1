@@ -2562,22 +2562,18 @@ proof -
         [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
           hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
           hD44_frontier_exact_two_incidence_book_step])
-  have hD44_outside_side_same_component_book_step:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    (**
-      Moise 4.4, final component sentence: the broken line between the last
-      lower and first upper boundary hits lies on the complementary frontier
-      arc, so the two access witnesses near \<open>Q\<close> and \<open>S\<close> lie on the same
-      outside side of \<open>I - (N \<union> A2)\<close>. **)
-    sorry
   have hD44_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    by (rule geotop_component_member_gives_closed_corridor_prefix
-        [OF hD44_outside_side_same_component_book_step])
+    (**
+      Moise 4.4, final corridor sentence: the broken line between the last
+      lower and first upper boundary hits lies on the complementary frontier
+      arc, and the adjacent outside component gives a connected corridor whose
+      closure contains the access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
+    sorry
   show ?thesis
     by (intro conjI,
         rule hD44_frontier_component_1sphere_book_step,
