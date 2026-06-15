@@ -6726,7 +6726,75 @@ proof -
               (exactly two incident frontier edges), and the complementary
               outside side of the resulting frontier arc must provide the
               connected corridor accumulating at the two access witnesses. **)
-            sorry
+          proof -
+            have hD44_moise_vertex_bounds_and_adjacent_corridor_book_step:
+                "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                    card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+                \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                    card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
+                \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+                  \<and> top1_connected_on Z
+                      (subspace_topology UNIV geotop_euclidean_topology Z)
+                  \<and> Q1 \<in> closure Z
+                  \<and> S1 \<in> closure Z)"
+              (**
+                Remaining Moise local-neighborhood vertex bound and corridor
+                step.  The regular-neighborhood frontier through \<open>P\<close> has at
+                most two and at least two incident frontier edges at every
+                vertex; the outside side adjacent to the complementary
+                frontier arc gives the corridor \<open>Z\<close>. **)
+              sorry
+            have hle2_all:
+                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+              using hD44_moise_vertex_bounds_and_adjacent_corridor_book_step
+              by (rule conjunct1)
+            have htail:
+                "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                    card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
+                \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+                  \<and> top1_connected_on Z
+                      (subspace_topology UNIV geotop_euclidean_topology Z)
+                  \<and> Q1 \<in> closure Z
+                  \<and> S1 \<in> closure Z)"
+              using hD44_moise_vertex_bounds_and_adjacent_corridor_book_step
+              by (rule conjunct2)
+            have hge2_all:
+                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+              using htail by (rule conjunct1)
+            have hZ_ex:
+                "\<exists>Z. Z \<subseteq> ?Ncut
+                  \<and> top1_connected_on Z
+                      (subspace_topology UNIV geotop_euclidean_topology Z)
+                  \<and> Q1 \<in> closure Z
+                  \<and> S1 \<in> closure Z"
+              using htail by (rule conjunct2)
+            have hle2:
+                "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+              using hle2_all by (by100 blast)
+            have hge2:
+                "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+              using hge2_all by (by100 blast)
+            have hdegree:
+                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+              by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_bounds[OF hle2 hge2])
+            have htwo:
+                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                  (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+                    geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+                    \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+                    \<and> e\<^sub>1 \<noteq> e\<^sub>2
+                    \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                        \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+              by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges
+                  [OF hdegree])
+            show ?thesis
+              by (rule conjI[OF htwo hZ_ex])
+          qed
           have htwo:
               "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
                 (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
