@@ -4121,6 +4121,14 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
+  have hD44_frontier_degree_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      Moise 4.4 regular-neighborhood local boundary analysis: each vertex of
+      the selected component of \<open>Fr N\<^sub>I\<close> has degree two in the frontier
+      boundary graph of the fine carrier neighborhood. **)
+    sorry
   have hD44_frontier_exact_two_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4130,10 +4138,11 @@ proof -
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
     (**
-      Moise 4.4 regular-neighborhood local boundary analysis: each vertex of
-      the selected component of \<open>Fr N\<^sub>I\<close> has exactly the two incident frontier
-      edges belonging to that 2-manifold-with-boundary frontier component. **)
-    sorry
+      Exact-two repackaging of the degree-two frontier incidence statement.
+      The finite graph package below wants explicit incident edges together
+      with their exhaustion property. **)
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+        [OF hD44_frontier_degree_two_book_step])
   have hD44_frontier_graph_bounds_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
