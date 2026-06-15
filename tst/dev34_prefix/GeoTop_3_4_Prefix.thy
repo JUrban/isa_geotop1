@@ -5042,6 +5042,118 @@ proof -
       apply (intro conjI)
       by (by100 blast)+
   qed
+  have hD44_BdJ\<^sub>N_card_le2_no_endpoint_has_book_two_arc_split:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Exact graph-theoretic reduction for Moise's assertion that the frontier
+      component is a 1-sphere: local valence at most two plus absence of a
+      graph endpoint yields polygonality, hence the book two-arc split. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_card_le2_no_endpoint[OF hle2 hnoend])
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
+  qed
+  have hD44_BdJ\<^sub>N_simple_closed_curve_has_book_two_arc_split:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N) \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Direct formal form of Moise's sentence "Then J is a 1-sphere" for the
+      extracted frontier graph: a simple closed curve carrier is enough to
+      recover the two broken-line arcs used by the book proof. **)
+  proof -
+    assume hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+        (geotop_polyhedron BdJ\<^sub>N)"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hBdJ\<^sub>N_polygon_from_simple_closed_curve[OF hSCC])
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
+  qed
+  have hD44_BdJ\<^sub>N_1sphere_has_book_two_arc_split:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1 \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Literal formal version of Moise's sentence "Then J is a 1-sphere":
+      because \<open>BdJ\<^sub>N\<close> is already a finite complex, the 1-sphere carrier
+      statement is exactly the missing input needed for polygonality and the
+      book's two broken-line arcs. **)
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      unfolding geotop_is_polygon_def
+      using hBdJ\<^sub>N_complex hsphere by (intro exI[where x=BdJ\<^sub>N] conjI) (by100 simp)+
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_polygon_has_book_two_arc_split[OF hpolygon])
+  qed
+  have hD44_J\<^sub>N_1sphere_has_book_two_arc_split:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1 \<Longrightarrow>
+        \<exists>X C\<^sub>B C\<^sub>O. X \<in> ?B1P
+          \<and> X \<noteq> P
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>B \<union> C\<^sub>O
+          \<and> geotop_is_broken_line C\<^sub>B
+          \<and> geotop_is_broken_line C\<^sub>O
+          \<and> geotop_arc_endpoints C\<^sub>B {P, X}
+          \<and> geotop_arc_endpoints C\<^sub>O {P, X}
+          \<and> geotop_arc_interior C\<^sub>B {P, X} \<inter>
+              geotop_arc_interior C\<^sub>O {P, X} = {}"
+    (**
+      Book statement bridge: Moise names the frontier component through \<open>P\<close>
+      as \<open>J\<close> and proves it is a 1-sphere.  Since the preceding finite-complex
+      analysis has already identified that component with \<open>geotop_polyhedron
+      BdJ\<^sub>N\<close>, this is the literal route from the book's 1-sphere sentence to
+      the two broken-line arcs used below. **)
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hsphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    show ?thesis
+      by (rule hD44_BdJ\<^sub>N_1sphere_has_book_two_arc_split[OF hsphere_BdJ])
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
