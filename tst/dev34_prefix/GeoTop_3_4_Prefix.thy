@@ -4048,44 +4048,34 @@ proof -
       boundary vertex.  The complementary frontier arc supplies the outside
       component of \<open>I - (N \<union> A2)\<close> carrying \<open>Q1\<close> and \<open>S1\<close>. **)
   proof -
-    have hD44_regular_neighborhood_frontier_graph_and_route_book_step:
-        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+    have hD44_regular_neighborhood_frontier_sphere_and_route_book_step:
+        "geotop_is_n_sphere J\<^sub>N
+            (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
         \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
           \<exists>B. geotop_is_broken_line B
             \<and> B \<subseteq> ?Ncut
             \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
             \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
       (**
-        Single remaining Moise 4.4 regular-neighborhood step.  The selected
-        fine carrier is locally a 2-manifold with boundary, so the frontier
-        component through \<open>P\<close> has no branch vertex and no graph endpoint.
-        Splitting that frontier 1-sphere into the boundary arc and the
-        complementary lower-to-upper subarc gives the broken-line crossings of
-        all access collars around \<open>Q1\<close> and \<open>S1\<close>. **)
+        Single remaining Moise 4.4 regular-neighborhood step, in the book's
+        own form.  After restricting the fine carrier to the closed disk, the
+        frontier component through \<open>P\<close> is a 1-sphere.  Splitting that
+        frontier 1-sphere into the boundary arc and the complementary
+        lower-to-upper subarc gives the broken-line crossings of all access
+        collars around \<open>Q1\<close> and \<open>S1\<close>. **)
       sorry
-    have hfrontier_graph:
-        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
-      using hD44_regular_neighborhood_frontier_graph_and_route_book_step
-      by (by100 blast)
-    have hle2:
-        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      using hfrontier_graph by (by100 blast)
-    have hnoend:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      using hfrontier_graph by (rule conjunct2)
+    have hsphere_book:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      using hD44_regular_neighborhood_frontier_sphere_and_route_book_step
+      by (rule conjunct1)
+    have hpolygon_book:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      by (rule hD44_J\<^sub>N_1sphere_imp_BdJ\<^sub>N_polygon[OF hsphere_book])
     have hdegree:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_le2_no_endpoint
-          [OF hle2 hnoend])
+      by (rule hD44_BdJ\<^sub>N_polygon_imp_degree_two[OF hpolygon_book])
     have htwo:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4109,8 +4099,8 @@ proof -
               \<and> B \<subseteq> ?Ncut
               \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
               \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-        using hD44_regular_neighborhood_frontier_graph_and_route_book_step
-        by (by100 blast)
+        using hD44_regular_neighborhood_frontier_sphere_and_route_book_step
+        by (rule conjunct2)
       have hcrossings:
           "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
             \<exists>Z. Z \<subseteq> ?Ncut
