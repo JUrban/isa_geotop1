@@ -1892,6 +1892,59 @@ lemma geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix:
   using hcyc hP_F\<^sub>1 hsplit hF\<^sub>1E hF\<^sub>2E hdisj
   by (by100 blast)
 
+lemma geotop_polygon_QS_broken_boundary_arc_split_through_point_prefix:
+  fixes J :: "(real^2) set" and P Q S :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hS: "S \<in> J"
+  assumes hQS: "Q \<noteq> S"
+  assumes hP_not_QS: "P \<notin> {Q, S}"
+  shows
+    "\<exists>F\<^sub>1 F\<^sub>2.
+      J = F\<^sub>1 \<union> F\<^sub>2
+      \<and> geotop_is_broken_line F\<^sub>1
+      \<and> geotop_is_broken_line F\<^sub>2
+      \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+      \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+      \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+          geotop_arc_interior F\<^sub>2 {Q, S} = {}
+      \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+  (**
+    Moise 4.4 boundary split around the polygon: once the endpoint pair
+    \<open>Q,S\<close> and the intervening point \<open>P\<close> are fixed, realize the polygon as a
+    finite connected linear graph and take the graph-theoretic two-vertex
+    boundary split through \<open>P\<close>. **)
+proof -
+  obtain L where hL_linear: "geotop_is_linear_graph L"
+    and hL_fin: "finite L"
+    and hL_conn: "geotop_complex_connected L"
+    and hL_poly: "geotop_polyhedron L = J"
+    and hQL: "{Q} \<in> L"
+    and hSL: "{S} \<in> L"
+    using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+      [OF hJ hQ hS]
+    by (by100 blast)
+  have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+    using hJ hL_poly by (by100 simp)
+  have hP_poly_L: "P \<in> geotop_polyhedron L"
+    using hP hL_poly by (by100 simp)
+  obtain F\<^sub>1 F\<^sub>2 where hsplit:
+      "geotop_polyhedron L = F\<^sub>1 \<union> F\<^sub>2
+      \<and> geotop_is_broken_line F\<^sub>1
+      \<and> geotop_is_broken_line F\<^sub>2
+      \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+      \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+      \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+          geotop_arc_interior F\<^sub>2 {Q, S} = {}
+      \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+    using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
+      [OF hL_linear hL_fin hL_conn hL_polygon hQL hSL hQS hP_poly_L hP_not_QS]
+    by (by100 blast)
+  show ?thesis
+    using hsplit hL_poly by (by100 blast)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -7000,35 +7053,11 @@ proof -
             geotop_arc_interior F\<^sub>2 {Q, S} = {}
         \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
   proof -
-    obtain L where hL_linear: "geotop_is_linear_graph L"
-      and hL_fin: "finite L"
-      and hL_conn: "geotop_complex_connected L"
-      and hL_poly: "geotop_polyhedron L = J"
-      and hQL: "{Q} \<in> L"
-      and hSL: "{S} \<in> L"
-      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
-        [OF hJ hQ hS]
-      by (by100 blast)
-    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
-      using hJ hL_poly by (by100 simp)
     have hP_not_QS: "P \<notin> {Q, S}"
       using hQ_ne_PR hS_ne_PR by (by100 blast)
-    have hP_poly_L: "P \<in> geotop_polyhedron L"
-      using hP hL_poly by (by100 simp)
-    obtain F\<^sub>1 F\<^sub>2 where hsplit:
-        "geotop_polyhedron L = F\<^sub>1 \<union> F\<^sub>2
-        \<and> geotop_is_broken_line F\<^sub>1
-        \<and> geotop_is_broken_line F\<^sub>2
-        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
-        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
-        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-            geotop_arc_interior F\<^sub>2 {Q, S} = {}
-        \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
-      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
-        [OF hL_linear hL_fin hL_conn hL_polygon hQL hSL hQ_ne_S hP_poly_L hP_not_QS]
-      by (by100 blast)
     show ?thesis
-      using hsplit hL_poly by (by100 blast)
+      by (rule geotop_polygon_QS_broken_boundary_arc_split_through_point_prefix
+          [OF hJ hP hQ hS hQ_ne_S hP_not_QS])
   qed
   obtain F\<^sub>1 F\<^sub>2 where hD44_F_J_split: "J = F\<^sub>1 \<union> F\<^sub>2"
     and hD44_F\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
@@ -12512,35 +12541,11 @@ proof -
             geotop_arc_interior F\<^sub>2 {Q, S} = {}
         \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
   proof -
-    obtain L where hL_linear: "geotop_is_linear_graph L"
-      and hL_fin: "finite L"
-      and hL_conn: "geotop_complex_connected L"
-      and hL_poly: "geotop_polyhedron L = J"
-      and hQL: "{Q} \<in> L"
-      and hSL: "{S} \<in> L"
-      using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
-        [OF hJ hQ hS]
-      by (by100 blast)
-    have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
-      using hJ hL_poly by (by100 simp)
     have hP_not_QS: "P \<notin> {Q, S}"
       using hQ_ne_PR hS_ne_PR by (by100 blast)
-    have hP_poly_L: "P \<in> geotop_polyhedron L"
-      using hP hL_poly by (by100 simp)
-    obtain F\<^sub>1 F\<^sub>2 where hsplit:
-        "geotop_polyhedron L = F\<^sub>1 \<union> F\<^sub>2
-        \<and> geotop_is_broken_line F\<^sub>1
-        \<and> geotop_is_broken_line F\<^sub>2
-        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
-        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
-        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
-            geotop_arc_interior F\<^sub>2 {Q, S} = {}
-        \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
-      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_through_point_prefix
-        [OF hL_linear hL_fin hL_conn hL_polygon hQL hSL hQ_ne_S hP_poly_L hP_not_QS]
-      by (by100 blast)
     show ?thesis
-      using hsplit hL_poly by (by100 blast)
+      by (rule geotop_polygon_QS_broken_boundary_arc_split_through_point_prefix
+          [OF hJ hP hQ hS hQ_ne_S hP_not_QS])
   qed
   obtain F\<^sub>1 F\<^sub>2 where hD44_F_J_split: "J = F\<^sub>1 \<union> F\<^sub>2"
     and hD44_F\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
