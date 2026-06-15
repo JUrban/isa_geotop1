@@ -2533,6 +2533,14 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corr
     \<open>Q\<close> and \<open>S\<close>. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_degree_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      Moise 4.4 local frontier step.  The regular-neighborhood frontier is
+      locally a 1-manifold: every vertex of the boundary component has degree
+      two in the frontier graph. **)
+    sorry
   have hD44_frontier_exact_two_incidence_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -2541,11 +2549,8 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    (**
-      Moise 4.4 local frontier step.  The regular-neighborhood frontier is
-      locally a 1-manifold: each vertex of the boundary component has exactly
-      the two incident frontier edges. **)
-    sorry
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+        [OF hD44_frontier_degree_two_book_step])
   have hD44_frontier_component_1sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
