@@ -4147,39 +4147,6 @@ proof -
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           \<not> geotop_graph_endpoint BdJ\<^sub>N w"
     using hD44_frontier_bounds_and_corridor_book_step by (by100 blast)
-  have hD44_frontier_degree_one_or_two:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
-          \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-  proof (intro allI impI)
-    fix w
-    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-    have hge1:
-        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
-      by (rule hBdJ\<^sub>N_vertex_incident_ge1[OF hwBdJ])
-    have hle2:
-        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      using hD44_frontier_card_le2_all hwBdJ by (by100 blast)
-    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1
-        \<or> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      using hge1 hle2 by (by100 linarith)
-  qed
-  have hD44_frontier_degree_two:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-    by (rule geotop_degree_one_or_two_no_endpoint_degree_two_prefix
-        [OF hBdJ\<^sub>N_linear_graph hD44_frontier_degree_one_or_two
-          hD44_frontier_no_endpoint_all])
-  have hD44_frontier_exact_two:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-            \<and> e\<^sub>1 \<noteq> e\<^sub>2
-            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
-        [OF hD44_frontier_degree_two])
   have hD44_frontier_graph_bounds:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
