@@ -2085,6 +2085,40 @@ lemma geotop_Ncut_frontier_boundary_disjoint_package_prefix:
     witnesses in the cut cannot lie on that boundary-cycle carrier. **)
   using hFr_sub_N hJN_sub_N hBd_sub_JN hQ1_Ncut hS1_Ncut by (by100 blast)
 
+lemma geotop_Ncut_access_point_exclusion_package_prefix:
+  fixes I N A1 A2 Fr JN KN BdKN :: "'a set" and Q1 S1 :: "'a"
+  assumes hA1_sub_N: "A1 \<subseteq> N"
+  assumes hFr_sub_N: "Fr \<subseteq> N"
+  assumes hJN_sub_N: "JN \<subseteq> N"
+  assumes hKN_sub_N: "KN \<subseteq> N"
+  assumes hBdKN_sub_N: "BdKN \<subseteq> N"
+  assumes hQ1_Ncut: "Q1 \<in> I - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> I - (N \<union> A2)"
+  shows
+    "Q1 \<in> I
+     \<and> S1 \<in> I
+     \<and> Q1 \<notin> N
+     \<and> S1 \<notin> N
+     \<and> Q1 \<notin> A2
+     \<and> S1 \<notin> A2
+     \<and> Q1 \<notin> Fr
+     \<and> S1 \<notin> Fr
+     \<and> Q1 \<notin> JN
+     \<and> S1 \<notin> JN
+     \<and> Q1 \<notin> A1
+     \<and> S1 \<notin> A1
+     \<and> Q1 \<notin> KN
+     \<and> S1 \<notin> KN
+     \<and> Q1 \<notin> BdKN
+     \<and> S1 \<notin> BdKN"
+  (**
+    D44 local-access bookkeeping: access points chosen in the outside carrier
+    \<open>I - (N \<union> A2)\<close> lie in \<open>I\<close> and avoid every subcarrier of the chosen
+    regular neighborhood \<open>N\<close>, including \<open>A1\<close>, the frontier pieces, and the
+    restricted carrier/boundary complexes. **)
+  using hA1_sub_N hFr_sub_N hJN_sub_N hKN_sub_N hBdKN_sub_N hQ1_Ncut hS1_Ncut
+  by (by100 blast)
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_and_route_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4077,34 +4111,56 @@ proof -
     using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
     using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
+  have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    using hK\<^sub>N_poly by (by100 simp)
+  have hNcut_access_exclusion_package:
+      "Q1 \<in> geotop_polygon_interior J
+       \<and> S1 \<in> geotop_polygon_interior J
+       \<and> Q1 \<notin> N
+       \<and> S1 \<notin> N
+       \<and> Q1 \<notin> A2
+       \<and> S1 \<notin> A2
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> A1
+       \<and> S1 \<notin> A1
+       \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_Ncut_access_point_exclusion_package_prefix
+        [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+            hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
   have hQ1_not_N: "Q1 \<notin> N"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_N: "S1 \<notin> N"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_A2: "Q1 \<notin> A2"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_A2: "S1 \<notin> A2"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
-    using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
-    using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
-    using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
-    using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_A1: "Q1 \<notin> A1"
-    using hQ1_not_N hA1_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_A1: "S1 \<notin> A1"
-    using hS1_not_N hA1_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
-    using hQ1_not_N hK\<^sub>N_poly by (by100 simp)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
-    using hS1_not_N hK\<^sub>N_poly by (by100 simp)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hNcut_disjoint_package:
       "?Ncut \<inter> N = {}
        \<and> ?Ncut \<inter> FrN\<^sub>I = {}
@@ -7126,38 +7182,60 @@ proof -
     using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
     using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
+  have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    using hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hNcut_access_exclusion_package:
+      "Q1 \<in> geotop_polygon_interior J
+       \<and> S1 \<in> geotop_polygon_interior J
+       \<and> Q1 \<notin> N
+       \<and> S1 \<notin> N
+       \<and> Q1 \<notin> A2
+       \<and> S1 \<notin> A2
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> A1
+       \<and> S1 \<notin> A1
+       \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_Ncut_access_point_exclusion_package_prefix
+        [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+            hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
   have hQ1_not_N: "Q1 \<notin> N"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_N: "S1 \<notin> N"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_A2: "Q1 \<notin> A2"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_A2: "S1 \<notin> A2"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_I: "S1 \<in> geotop_polygon_interior J"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
-    using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
-    using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
-    using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
-    using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_A1: "Q1 \<notin> A1"
-    using hQ1_not_N hA1_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_A1: "S1 \<notin> A1"
-    using hS1_not_N hA1_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
-    using hQ1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
-    using hS1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hNcut_disjoint_package:
       "?Ncut \<inter> N = {}
        \<and> ?Ncut \<inter> FrN\<^sub>I = {}
@@ -12589,38 +12667,60 @@ proof -
     using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
   have hR_not_BdK\<^sub>N_poly: "R \<notin> geotop_polyhedron BdK\<^sub>N"
     using hBdK\<^sub>N_poly_avoid_points by (by100 blast)
+  have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    using hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hNcut_access_exclusion_package:
+      "Q1 \<in> geotop_polygon_interior J
+       \<and> S1 \<in> geotop_polygon_interior J
+       \<and> Q1 \<notin> N
+       \<and> S1 \<notin> N
+       \<and> Q1 \<notin> A2
+       \<and> S1 \<notin> A2
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> A1
+       \<and> S1 \<notin> A1
+       \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_Ncut_access_point_exclusion_package_prefix
+        [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+            hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
   have hQ1_not_N: "Q1 \<notin> N"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_N: "S1 \<notin> N"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_A2: "Q1 \<notin> A2"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_A2: "S1 \<notin> A2"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
-    using hQ1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_I: "S1 \<in> geotop_polygon_interior J"
-    using hS1_Ncut by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
-    using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
-    using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
-    using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
-    using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_A1: "Q1 \<notin> A1"
-    using hQ1_not_N hA1_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_A1: "S1 \<notin> A1"
-    using hS1_not_N hA1_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
-    using hQ1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
-    using hS1_not_N hK\<^sub>N_poly_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
-    using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+    using hNcut_access_exclusion_package by (by100 blast)
   have hNcut_disjoint_package:
       "?Ncut \<inter> N = {}
        \<and> ?Ncut \<inter> FrN\<^sub>I = {}
@@ -19608,34 +19708,56 @@ proof -
         using hQ1_Ncut by (by100 blast)
       have hS1_I: "S1 \<in> geotop_polygon_interior J"
         using hS1_Ncut by (by100 blast)
+      have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+        using hK\<^sub>N_poly by (by100 simp)
+      have hNcut_access_exclusion_package:
+          "Q1 \<in> geotop_polygon_interior J
+           \<and> S1 \<in> geotop_polygon_interior J
+           \<and> Q1 \<notin> N
+           \<and> S1 \<notin> N
+           \<and> Q1 \<notin> A2
+           \<and> S1 \<notin> A2
+           \<and> Q1 \<notin> FrN\<^sub>I
+           \<and> S1 \<notin> FrN\<^sub>I
+           \<and> Q1 \<notin> J\<^sub>N
+           \<and> S1 \<notin> J\<^sub>N
+           \<and> Q1 \<notin> A1
+           \<and> S1 \<notin> A1
+           \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+           \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+           \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+           \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+        by (rule geotop_Ncut_access_point_exclusion_package_prefix
+            [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+                hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
       have hQ1_not_N: "Q1 \<notin> N"
-        using hQ1_Ncut by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_N: "S1 \<notin> N"
-        using hS1_Ncut by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
-        using hQ1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
-        using hS1_not_N hFrN\<^sub>I_sub_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
-        using hQ1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
-        using hS1_not_N hJ\<^sub>N_sub_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hQ1_not_A2: "Q1 \<notin> A2"
-        using hQ1_Ncut by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_A2: "S1 \<notin> A2"
-        using hS1_Ncut by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hQ1_not_A1: "Q1 \<notin> A1"
-        using hQ1_not_N hA1_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_A1: "S1 \<notin> A1"
-        using hS1_not_N hA1_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
-        using hQ1_not_N hK\<^sub>N_poly by (by100 simp)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
-        using hS1_not_N hK\<^sub>N_poly by (by100 simp)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
-        using hQ1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
-        using hS1_not_N hBdK\<^sub>N_poly_sub_N by (by100 blast)
+        using hNcut_access_exclusion_package by (by100 blast)
       have hNcut_disjoint_package:
           "?Ncut \<inter> N = {}
            \<and> ?Ncut \<inter> FrN\<^sub>I = {}
