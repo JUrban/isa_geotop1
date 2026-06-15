@@ -6707,14 +6707,11 @@ proof -
             the connected corridor \<open>Z\<close> whose closure contains the two access
             witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
         proof -
-          have hD44_moise_exact_two_incidence_and_adjacent_corridor_book_step:
+          have hD44_moise_vertex_upper_no_endpoint_and_adjacent_corridor_book_step:
               "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-                  geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-                  \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-                  \<and> e\<^sub>1 \<noteq> e\<^sub>2
-                  \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                      \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+              \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                  \<not> geotop_graph_endpoint BdJ\<^sub>N w)
               \<and> (\<exists>Z. Z \<subseteq> ?Ncut
                 \<and> top1_connected_on Z
                     (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -6722,97 +6719,56 @@ proof -
                 \<and> S1 \<in> closure Z)"
             (**
               Remaining local regular-neighborhood content of Moise 4.4.  The
-              frontier graph \<open>BdJ\<^sub>N\<close> must be a 1-manifold at every vertex
-              (exactly two incident frontier edges), and the complementary
-              outside side of the resulting frontier arc must provide the
-              connected corridor accumulating at the two access witnesses. **)
-          proof -
-            have hD44_moise_vertex_bounds_and_adjacent_corridor_book_step:
-                "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                    card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-                \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                    card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
-                \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-                  \<and> top1_connected_on Z
-                      (subspace_topology UNIV geotop_euclidean_topology Z)
-                  \<and> Q1 \<in> closure Z
-                  \<and> S1 \<in> closure Z)"
-              (**
-                Remaining Moise local-neighborhood vertex bound and corridor
-                step.  The regular-neighborhood frontier through \<open>P\<close> has at
-                most two and at least two incident frontier edges at every
-                vertex; the outside side adjacent to the complementary
-                frontier arc gives the corridor \<open>Z\<close>. **)
-              sorry
-            have hle2_all:
-                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-              using hD44_moise_vertex_bounds_and_adjacent_corridor_book_step
-              by (rule conjunct1)
-            have htail:
-                "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                    card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
-                \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-                  \<and> top1_connected_on Z
-                      (subspace_topology UNIV geotop_euclidean_topology Z)
-                  \<and> Q1 \<in> closure Z
-                  \<and> S1 \<in> closure Z)"
-              using hD44_moise_vertex_bounds_and_adjacent_corridor_book_step
-              by (rule conjunct2)
-            have hge2_all:
-                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-              using htail by (rule conjunct1)
-            have hZ_ex:
-                "\<exists>Z. Z \<subseteq> ?Ncut
-                  \<and> top1_connected_on Z
-                      (subspace_topology UNIV geotop_euclidean_topology Z)
-                  \<and> Q1 \<in> closure Z
-                  \<and> S1 \<in> closure Z"
-              using htail by (rule conjunct2)
-            have hle2:
-                "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-              using hle2_all by (by100 blast)
-            have hge2:
-                "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
-              using hge2_all by (by100 blast)
-            have hdegree:
-                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                  card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-              by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_bounds[OF hle2 hge2])
-            have htwo:
-                "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                  (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-                    geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-                    \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-                    \<and> e\<^sub>1 \<noteq> e\<^sub>2
-                    \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                        \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-              by (rule hD44_BdJ\<^sub>N_degree_two_exact_two_incident_edges
-                  [OF hdegree])
-            show ?thesis
-              by (rule conjI[OF htwo hZ_ex])
-          qed
-          have htwo:
+              frontier component through \<open>P\<close> has local valence at most two,
+              no graph endpoints, and an adjacent outside component of
+              \<open>I - (N \<union> A2)\<close> whose closure contains the two access witnesses.
+              Existing graph helpers then turn this into the book's polygonal
+              1-sphere split. **)
+            sorry
+          have hle2_all:
               "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-                (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-                  geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-                  \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-                  \<and> e\<^sub>1 \<noteq> e\<^sub>2
-                  \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                      \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-            using hD44_moise_exact_two_incidence_and_adjacent_corridor_book_step
+                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+            using hD44_moise_vertex_upper_no_endpoint_and_adjacent_corridor_book_step
             by (rule conjunct1)
+          have htail:
+              "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                  \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+              \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+                \<and> top1_connected_on Z
+                    (subspace_topology UNIV geotop_euclidean_topology Z)
+                \<and> Q1 \<in> closure Z
+                \<and> S1 \<in> closure Z)"
+            using hD44_moise_vertex_upper_no_endpoint_and_adjacent_corridor_book_step
+            by (rule conjunct2)
+          have hnoend_all:
+              "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+            using htail by (rule conjunct1)
           have hZ_ex:
               "\<exists>Z. Z \<subseteq> ?Ncut
                 \<and> top1_connected_on Z
                     (subspace_topology UNIV geotop_euclidean_topology Z)
                 \<and> Q1 \<in> closure Z
                 \<and> S1 \<in> closure Z"
-            using hD44_moise_exact_two_incidence_and_adjacent_corridor_book_step
-            by (rule conjunct2)
+            using htail by (rule conjunct2)
+          have hle2:
+              "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+            using hle2_all by (by100 blast)
+          have hge2_all:
+              "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+            by (rule hBdJ\<^sub>N_vertex_card_ge2_from_no_endpoint
+                [OF hnoend_all])
+          have hge2:
+              "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+            using hge2_all by (by100 blast)
+          have hdegree:
+              "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+                card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+            by (rule hBdJ\<^sub>N_vertex_degree_two_from_card_bounds
+                [OF hle2 hge2])
           obtain X C L C\<^sub>F where hsplit:
               "X \<in> ?B1P
                 \<and> X \<noteq> P
@@ -6847,7 +6803,8 @@ proof -
                 \<and> C\<^sub>F \<subseteq> FrN\<^sub>I
                 \<and> C\<^sub>F \<inter> (A2 \<union> {Q, S}) = {}
                 \<and> C\<^sub>F \<inter> ?Ncut = {}"
-            using hD44_BdJ\<^sub>N_exact_two_boundary_subarc_complement_split[OF htwo]
+            using hD44_BdJ\<^sub>N_degree_two_boundary_subarc_complement_split
+              [OF hdegree]
             by (elim exE)
           obtain Z where hZ:
               "Z \<subseteq> ?Ncut
