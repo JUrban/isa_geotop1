@@ -2197,6 +2197,246 @@ proof -
     by (rule geotop_self_in_component_at[OF hP hsing_conn])
 qed
 
+lemma geotop_connected_access_ball_crossings_same_component_open_prefix:
+  fixes U :: "(real^2) set" and X Y :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hXU: "X \<in> U"
+  assumes hYU: "Y \<in> U"
+  assumes hall:
+    "\<forall>\<epsilon>\<^sub>X>0. \<forall>\<epsilon>\<^sub>Y>0.
+      \<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+        \<and> Z \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+  shows "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  (**
+    D44 access-collar bookkeeping.  If every sufficiently small pair of
+    collars around two interior access points is crossed by one connected set
+    inside an open region, then the two access points are in the same
+    component of that region.  This isolates the topological conversion from
+    the remaining Moise regular-neighborhood construction. **)
+proof -
+  let ?CX = "geotop_component_at UNIV geotop_euclidean_topology U X"
+  have hUopen_HOL: "open U"
+    using hUopen
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hCX_open_top: "?CX \<in> geotop_euclidean_topology"
+    by (rule geotop_component_at_open_in_euclidean[OF hUopen hXU])
+  have hCX_open_HOL: "open ?CX"
+    using hCX_open_top
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hX_CX: "X \<in> ?CX"
+    by (rule geotop_component_at_UNIV_self_prefix[OF hXU])
+  have hCX_ball_all:
+      "\<forall>x\<in>?CX. \<exists>\<epsilon>>0. ball x \<epsilon> \<subseteq> ?CX"
+    by (rule iffD1[OF open_contains_ball hCX_open_HOL])
+  obtain \<epsilon>\<^sub>X where h\<epsilon>\<^sub>X_pos: "0 < \<epsilon>\<^sub>X"
+    and hball_X_CX: "ball X \<epsilon>\<^sub>X \<subseteq> ?CX"
+    using hCX_ball_all hX_CX by (by100 blast)
+  have hCX_eq: "?CX = connected_component_set U X"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hCX_sub: "?CX \<subseteq> U"
+  proof -
+    have hcc_sub: "connected_component_set U X \<subseteq> U"
+      by (rule connected_component_subset)
+    show ?thesis
+      using hCX_eq hcc_sub by (by100 simp)
+  qed
+  have hCX_conn_HOL: "connected ?CX"
+  proof -
+    have hcc_conn: "connected (connected_component_set U X)"
+      by (rule connected_connected_component)
+    show ?thesis
+      using hCX_eq hcc_conn by (by100 simp)
+  qed
+  have hall_points:
+      "\<forall>\<epsilon>>0. \<exists>Y'. Y' \<in> ?CX \<and> Y' \<in> ball Y \<epsilon>"
+  proof (intro allI impI)
+    fix \<epsilon> :: real
+    assume h\<epsilon>_pos: "0 < \<epsilon>"
+    have hX_spec:
+        "\<forall>\<epsilon>\<^sub>Y>0. \<exists>Z. Z \<subseteq> U
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+          \<and> Z \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+    proof -
+      have hX_imp:
+          "0 < \<epsilon>\<^sub>X \<longrightarrow> (\<forall>\<epsilon>\<^sub>Y>0. \<exists>Z. Z \<subseteq> U
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+            \<and> Z \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {})"
+        by (rule spec[OF hall])
+      show ?thesis
+        by (rule mp[OF hX_imp h\<epsilon>\<^sub>X_pos])
+    qed
+    have hZ_ex:
+        "\<exists>Z. Z \<subseteq> U
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+          \<and> Z \<inter> ball Y \<epsilon> \<noteq> {}"
+    proof -
+      have hY_imp:
+          "0 < \<epsilon> \<longrightarrow> (\<exists>Z. Z \<subseteq> U
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+            \<and> Z \<inter> ball Y \<epsilon> \<noteq> {})"
+        by (rule spec[OF hX_spec])
+      show ?thesis
+        by (rule mp[OF hY_imp h\<epsilon>_pos])
+    qed
+    obtain Z where hZ_sub: "Z \<subseteq> U"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hZ_X: "Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}"
+      and hZ_Y: "Z \<inter> ball Y \<epsilon> \<noteq> {}"
+      using hZ_ex by (elim exE conjE)
+    obtain X' where hX'_Z: "X' \<in> Z"
+      and hX'_ball: "X' \<in> ball X \<epsilon>\<^sub>X"
+    proof -
+      have hX'_ex: "\<exists>X'. X' \<in> Z \<inter> ball X \<epsilon>\<^sub>X"
+        unfolding ex_in_conv by (rule hZ_X)
+      obtain X' where hX': "X' \<in> Z \<inter> ball X \<epsilon>\<^sub>X"
+        using hX'_ex by (elim exE)
+      show ?thesis
+        by (rule that[OF IntD1[OF hX'] IntD2[OF hX']])
+    qed
+    obtain Y' where hY'_Z: "Y' \<in> Z"
+      and hY'_ball: "Y' \<in> ball Y \<epsilon>"
+    proof -
+      have hY'_ex: "\<exists>Y'. Y' \<in> Z \<inter> ball Y \<epsilon>"
+        unfolding ex_in_conv by (rule hZ_Y)
+      obtain Y' where hY': "Y' \<in> Z \<inter> ball Y \<epsilon>"
+        using hY'_ex by (elim exE)
+      show ?thesis
+        by (rule that[OF IntD1[OF hY'] IntD2[OF hY']])
+    qed
+    have hX'_CX: "X' \<in> ?CX"
+      by (rule hball_X_CX[THEN subsetD, OF hX'_ball])
+    have hZ_conn_HOL: "connected Z"
+      by (rule iffD1[OF top1_connected_on_geotop_iff_connected hZ_conn])
+    have hCX_Z_meet: "?CX \<inter> Z \<noteq> {}"
+    proof -
+      have "X' \<in> ?CX \<inter> Z"
+        by (rule IntI[OF hX'_CX hX'_Z])
+      thus ?thesis
+        unfolding ex_in_conv[symmetric] by (rule exI[where x=X'])
+    qed
+    have hW_conn_HOL: "connected (?CX \<union> Z)"
+      by (rule connected_Un[OF hCX_conn_HOL hZ_conn_HOL hCX_Z_meet])
+    have hW_conn:
+        "top1_connected_on (?CX \<union> Z)
+          (subspace_topology UNIV geotop_euclidean_topology (?CX \<union> Z))"
+      by (rule iffD2[OF top1_connected_on_geotop_iff_connected hW_conn_HOL])
+    have hW_sub: "?CX \<union> Z \<subseteq> U"
+      by (rule Un_least[OF hCX_sub hZ_sub])
+    have hX_W: "X \<in> ?CX \<union> Z"
+      by (rule UnI1[OF hX_CX])
+    have hY'_W: "Y' \<in> ?CX \<union> Z"
+      by (rule UnI2[OF hY'_Z])
+    have hY'_CX: "Y' \<in> ?CX"
+      by (rule geotop_connected_witness_component_at_intro_prefix
+          [OF hW_sub hX_W hY'_W hW_conn])
+    show "\<exists>Y'. Y' \<in> ?CX \<and> Y' \<in> ball Y \<epsilon>"
+      using hY'_CX hY'_ball by (intro exI conjI)
+  qed
+  have hY_cl: "Y \<in> closure ?CX"
+    unfolding closure_approachable
+  proof (intro allI impI)
+    fix \<epsilon> :: real
+    assume h\<epsilon>_pos: "0 < \<epsilon>"
+    have hY'_ex: "\<exists>Y'. Y' \<in> ?CX \<and> Y' \<in> ball Y \<epsilon>"
+    proof -
+      have himp:
+        "0 < \<epsilon> \<longrightarrow> (\<exists>Y'. Y' \<in> ?CX \<and> Y' \<in> ball Y \<epsilon>)"
+        by (rule spec[OF hall_points])
+      show ?thesis
+        by (rule mp[OF himp h\<epsilon>_pos])
+    qed
+    obtain Y' where hY'_CX: "Y' \<in> ?CX"
+      and hY'_ball: "Y' \<in> ball Y \<epsilon>"
+      using hY'_ex by (elim exE conjE)
+    have hdist: "dist Y' Y < \<epsilon>"
+    proof -
+      have "dist Y Y' < \<epsilon>"
+        using hY'_ball unfolding ball_def by (by100 simp)
+      moreover have "dist Y' Y = dist Y Y'"
+        by (rule dist_commute)
+      ultimately show ?thesis
+        by (by100 simp)
+    qed
+    show "\<exists>y\<in>?CX. dist y Y < \<epsilon>"
+      using hY'_CX hdist by (intro bexI)
+  qed
+  have hU_ball_all:
+      "\<forall>x\<in>U. \<exists>\<epsilon>>0. ball x \<epsilon> \<subseteq> U"
+    by (rule iffD1[OF open_contains_ball hUopen_HOL])
+  obtain \<epsilon>\<^sub>Y where h\<epsilon>\<^sub>Y_pos: "0 < \<epsilon>\<^sub>Y"
+    and hball_Y_U: "ball Y \<epsilon>\<^sub>Y \<subseteq> U"
+    using hU_ball_all hYU by (by100 blast)
+  have hCX_Y_meet: "?CX \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+    by (rule geotop_closure_point_meets_centered_ball_prefix
+        [OF hY_cl h\<epsilon>\<^sub>Y_pos])
+  have hball_Y_conn: "connected (ball Y \<epsilon>\<^sub>Y)"
+    by (rule connected_ball)
+  have hW_conn_HOL: "connected (?CX \<union> ball Y \<epsilon>\<^sub>Y)"
+    by (rule connected_Un[OF hCX_conn_HOL hball_Y_conn hCX_Y_meet])
+  have hW_conn:
+      "top1_connected_on (?CX \<union> ball Y \<epsilon>\<^sub>Y)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (?CX \<union> ball Y \<epsilon>\<^sub>Y))"
+    by (rule iffD2[OF top1_connected_on_geotop_iff_connected hW_conn_HOL])
+  have hW_sub: "?CX \<union> ball Y \<epsilon>\<^sub>Y \<subseteq> U"
+    by (rule Un_least[OF hCX_sub hball_Y_U])
+  have hX_W: "X \<in> ?CX \<union> ball Y \<epsilon>\<^sub>Y"
+    by (rule UnI1[OF hX_CX])
+  have hY_ball: "Y \<in> ball Y \<epsilon>\<^sub>Y"
+    using h\<epsilon>\<^sub>Y_pos by (by100 simp)
+  have hY_W: "Y \<in> ?CX \<union> ball Y \<epsilon>\<^sub>Y"
+    by (rule UnI2[OF hY_ball])
+  show ?thesis
+    by (rule geotop_connected_witness_component_at_intro_prefix
+        [OF hW_sub hX_W hY_W hW_conn])
+qed
+
+lemma geotop_broken_line_access_crossings_same_component_open_prefix:
+  fixes U :: "(real^2) set" and X Y :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hXU: "X \<in> U"
+  assumes hYU: "Y \<in> U"
+  assumes hall:
+    "\<forall>\<epsilon>\<^sub>X>0. \<forall>\<epsilon>\<^sub>Y>0.
+      \<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+        \<and> B \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+  shows "Y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  (**
+    Broken-line version of the access-collar bridge.  This is the exact
+    conversion needed after Moise constructs the lower-to-upper broken-line
+    subarc adjacent to the complementary frontier arc. **)
+proof -
+  have hconnected:
+    "\<forall>\<epsilon>\<^sub>X>0. \<forall>\<epsilon>\<^sub>Y>0.
+      \<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+        \<and> Z \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+    by (rule geotop_broken_line_access_crossings_connected_crossings_prefix
+        [OF hall])
+  show ?thesis
+    by (rule geotop_connected_access_ball_crossings_same_component_open_prefix
+        [OF hUopen hXU hYU hconnected])
+qed
+
 lemma geotop_component_member_gives_closed_corridor_prefix:
   fixes U :: "(real^2) set" and X Y :: "real^2"
   assumes hY_comp:
@@ -3219,7 +3459,46 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_same
     that sphere into the boundary arc and complementary frontier arc gives the
     outside component of \<open>I - (N \<union> A2)\<close> whose frontier reaches the lower and
     upper access witnesses, hence puts \<open>Q1\<close> and \<open>S1\<close> in one component. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_frontier_sphere_and_access_crossings_moise_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Remaining literal Moise 4.4 construction.  The book first proves that
+      the component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is a 1-sphere.  It then splits
+      that 1-sphere into the boundary arc and complementary frontier arc,
+      takes the lower-to-upper subarc adjacent to the outside of the carrier,
+      and obtains broken-line crossings of every prescribed pair of access
+      collars around \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
+  have hD44_frontier_1sphere_moise_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_frontier_sphere_and_access_crossings_moise_step
+    by (rule conjunct1)
+  have hD44_broken_line_access_crossings_moise_step:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    using hD44_frontier_sphere_and_access_crossings_moise_step
+    by (rule conjunct2)
+  have hD44_same_component_moise_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    by (rule geotop_broken_line_access_crossings_same_component_open_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut
+          hD44_broken_line_access_crossings_moise_step])
+  show ?thesis
+    using hD44_frontier_1sphere_moise_step hD44_same_component_moise_step
+    by (intro conjI)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_same_component_book_core_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
