@@ -3168,7 +3168,106 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_same
     through \<open>P\<close> is a 1-sphere, and the complementary frontier arc places the
     lower and upper access witnesses in the same component of
     \<open>I - (N \<union> A2)\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hP_in_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hR_in_A2: "R \<in> A2"
+    using hA2J by (by100 blast)
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hP_N: "P \<in> N"
+    using hP_in_A1 hA1_N by (by100 blast)
+  have hN_compact: "compact N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN_closed: "closed N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK_complex hK_fin hK_poly hN_def])
+  have hN_connected_HOL: "connected N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
+  have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def])
+  have hN\<^sub>I_compact: "compact N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_compact by (by100 simp)
+  have hN\<^sub>I_closed: "closed N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
+    unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+  have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+    using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+  have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+    by (rule closed_subset_compact
+        [OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
+  have hFrN\<^sub>I_A2_QS_disj: "FrN\<^sub>I \<inter> (A2 \<union> {Q, S}) = {}"
+    using hFrN\<^sub>I_sub_N hN_avoid by (by100 blast)
+  have hR_not_FrN\<^sub>I: "R \<notin> FrN\<^sub>I"
+    using hR_in_A2 hFrN\<^sub>I_A2_QS_disj by (by100 blast)
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+    using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
+        [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N hN\<^sub>I_def]
+      hFrN\<^sub>I_def by (by100 simp)
+  have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_self_prefix[OF hP_FrN\<^sub>I])
+  have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    unfolding hJ\<^sub>N_def geotop_component_at_def by (by100 blast)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
+  have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
+    using hR_in_A2 hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hJ\<^sub>N_eq_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding hJ\<^sub>N_def by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
+  have hJ\<^sub>N_nonempty: "J\<^sub>N \<noteq> {}"
+    using hP_J\<^sub>N by (by100 blast)
+  have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
+  have hJ\<^sub>N_compact: "compact J\<^sub>N"
+    by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding hK\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    unfolding hK\<^sub>N_def using hSd_fin by (by100 simp)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def])
+  have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def hK\<^sub>N_def])
+  show ?thesis
+    (**
+      Remaining Moise 4.4 book construction: use the manifold-with-boundary
+      regular-neighborhood analysis of \<open>N\<^sub>I\<close> to prove the selected frontier
+      component is a 1-sphere, split it into the boundary arc and complementary
+      frontier arc, and use that complementary arc to put \<open>Q1\<close> and \<open>S1\<close> in
+      the same component of \<open>?Ncut\<close>. **)
+    sorry
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph_corridor_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
