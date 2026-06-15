@@ -1012,6 +1012,43 @@ proof
     using hdisj by (by100 blast)
 qed
 
+lemma geotop_edge_frontier_rel_interior_member_comb_boundary_prefix:
+  fixes K :: "(real^2) set set" and e N N\<^sub>I Fr :: "(real^2) set"
+    and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K = N"
+  assumes hFr: "Fr = frontier N\<^sub>I"
+  assumes hN\<^sub>I: "N\<^sub>I = N"
+  assumes hle2:
+    "\<And>e. e \<in> K \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+      card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hge1:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
+  assumes hp_rel: "p \<in> rel_interior e"
+  assumes hp_Fr: "p \<in> Fr"
+  shows "e \<in> geotop_comb_boundary K 2"
+  (**
+    D44 frontier-edge membership step: a frontier point in the relative
+    interior of an edge, plus at least one incident 2-simplex, forces exactly
+    one incident 2-simplex and hence membership in the combinatorial boundary. **)
+proof -
+  have hle:
+      "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+    by (rule hle2[OF heK hedge])
+  have hnot2:
+      "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<noteq> 2"
+    by (rule geotop_edge_frontier_rel_interior_not_two_incident_restricted_prefix
+        [OF hK hK_poly hFr hN\<^sub>I heK hedge hp_rel hp_Fr])
+  have hcard1:
+      "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+    using hge1 hle hnot2 by (by100 linarith)
+  show ?thesis
+    by (rule geotop_comb_boundary_edge_one_incident_2simplex_member_prefix
+        [OF heK hedge hcard1])
+qed
+
 lemma geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix:
   fixes J A N :: "(real^2) set" and K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -2623,28 +2660,10 @@ proof -
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
         \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> FrN\<^sub>I \<Longrightarrow> e \<in> BdK\<^sub>N"
-  proof -
-    fix e p
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hge1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
-      and hp_rel: "p \<in> rel_interior e"
-      and hp_Fr: "p \<in> FrN\<^sub>I"
-    have hle2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-      by (rule hK\<^sub>N_edge_incident_2faces_card_le2[OF heK hedge])
-    have hnot2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<noteq> 2"
-      by (rule hK\<^sub>N_edge_frontier_rel_interior_not_two_incident
-          [OF heK hedge hp_rel hp_Fr])
-    have hcard1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-      using hge1 hle2 hnot2 by (by100 linarith)
-    show "e \<in> BdK\<^sub>N"
-      by (rule hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N
-          [OF heK hedge hcard1])
-  qed
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_edge_frontier_rel_interior_member_comb_boundary_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly hFrN\<^sub>I_HOL hN\<^sub>I_eq_N
+          hK\<^sub>N_edge_incident_2faces_card_le2])
   have hK\<^sub>N_edge_J\<^sub>N_rel_interior_member_BdJ\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
@@ -5343,28 +5362,10 @@ proof -
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
         \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> FrN\<^sub>I \<Longrightarrow> e \<in> BdK\<^sub>N"
-  proof -
-    fix e p
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hge1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
-      and hp_rel: "p \<in> rel_interior e"
-      and hp_Fr: "p \<in> FrN\<^sub>I"
-    have hle2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-      by (rule hK\<^sub>N_edge_incident_2faces_card_le2[OF heK hedge])
-    have hnot2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<noteq> 2"
-      by (rule hK\<^sub>N_edge_frontier_rel_interior_not_two_incident
-          [OF heK hedge hp_rel hp_Fr])
-    have hcard1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-      using hge1 hle2 hnot2 by (by100 linarith)
-    show "e \<in> BdK\<^sub>N"
-      by (rule hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N
-          [OF heK hedge hcard1])
-  qed
+    unfolding BdK\<^sub>N_def
+    by (rule geotop_edge_frontier_rel_interior_member_comb_boundary_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly hFrN\<^sub>I_HOL hN\<^sub>I_eq_N
+          hK\<^sub>N_edge_incident_2faces_card_le2])
   have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
       "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
   proof -
@@ -10912,28 +10913,10 @@ proof -
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
         \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> FrN\<^sub>I \<Longrightarrow> e \<in> BdK\<^sub>N"
-  proof -
-    fix e p
-    assume heK: "e \<in> K\<^sub>N"
-      and hedge: "geotop_is_edge e"
-      and hge1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
-      and hp_rel: "p \<in> rel_interior e"
-      and hp_Fr: "p \<in> FrN\<^sub>I"
-    have hle2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-      by (rule hK\<^sub>N_edge_incident_2faces_card_le2[OF heK hedge])
-    have hnot2:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<noteq> 2"
-      by (rule hK\<^sub>N_edge_frontier_rel_interior_not_two_incident
-          [OF heK hedge hp_rel hp_Fr])
-    have hcard1:
-        "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-      using hge1 hle2 hnot2 by (by100 linarith)
-    show "e \<in> BdK\<^sub>N"
-      by (rule hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N
-          [OF heK hedge hcard1])
-  qed
+    unfolding BdK\<^sub>N_def
+    by (rule geotop_edge_frontier_rel_interior_member_comb_boundary_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly hFrN\<^sub>I_HOL hN\<^sub>I_eq_N
+          hK\<^sub>N_edge_incident_2faces_card_le2])
   have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
       "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
   proof -
@@ -17898,28 +17881,10 @@ proof -
         "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
           card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
           \<Longrightarrow> p \<in> rel_interior e \<Longrightarrow> p \<in> FrN\<^sub>I \<Longrightarrow> e \<in> BdK\<^sub>N"
-    proof -
-      fix e p
-      assume heK: "e \<in> K\<^sub>N"
-        and hedge: "geotop_is_edge e"
-        and hge1:
-          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
-        and hp_rel: "p \<in> rel_interior e"
-        and hp_Fr: "p \<in> FrN\<^sub>I"
-      have hle2:
-          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-        by (rule hK\<^sub>N_edge_incident_2faces_card_le2[OF heK hedge])
-      have hnot2:
-          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<noteq> 2"
-        by (rule hK\<^sub>N_edge_frontier_rel_interior_not_two_incident
-            [OF heK hedge hp_rel hp_Fr])
-      have hcard1:
-          "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-        using hge1 hle2 hnot2 by (by100 linarith)
-      show "e \<in> BdK\<^sub>N"
-        by (rule hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N
-            [OF heK hedge hcard1])
-    qed
+      unfolding BdK\<^sub>N_def
+      by (rule geotop_edge_frontier_rel_interior_member_comb_boundary_prefix
+          [OF hK\<^sub>N_complex hK\<^sub>N_poly hFrN\<^sub>I_HOL hN\<^sub>I_eq_N
+            hK\<^sub>N_edge_incident_2faces_card_le2])
     have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
         "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
     proof -
