@@ -3374,6 +3374,67 @@ proof -
     show ?thesis
       using huv_BdJ huv by (by100 blast)
   qed
+  have hBdJ\<^sub>N_cycle_split_from_degree_two:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+        \<exists>u v C\<^sub>1 C\<^sub>2.
+          {u} \<in> BdJ\<^sub>N \<and> {v} \<in> BdJ\<^sub>N \<and> u \<noteq> v
+          \<and> geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+          \<and> geotop_is_broken_line C\<^sub>1
+          \<and> geotop_is_broken_line C\<^sub>2
+          \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+          \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+          \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+              geotop_arc_interior C\<^sub>2 {u, v} = {}"
+  proof -
+    assume hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    obtain u v where huBdJ: "{u} \<in> BdJ\<^sub>N"
+      and hvBdJ: "{v} \<in> BdJ\<^sub>N"
+      and huv: "u \<noteq> v"
+      using hBdJ\<^sub>N_two_distinct_vertices by (by100 blast)
+    obtain C\<^sub>1 C\<^sub>2 where hsplit:
+        "geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {u, v}
+        \<and> geotop_arc_endpoints C\<^sub>2 {u, v}
+        \<and> geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+            geotop_arc_interior C\<^sub>2 {u, v} = {}"
+      using geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+          hdegree huBdJ hvBdJ huv]
+      by (by100 blast)
+    show ?thesis
+      using huBdJ hvBdJ huv hsplit by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_polygon_from_degree_two:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2) \<Longrightarrow>
+        geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+  proof -
+    assume hdegree:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    obtain u v C\<^sub>1 C\<^sub>2 where huBdJ: "{u} \<in> BdJ\<^sub>N"
+      and hvBdJ: "{v} \<in> BdJ\<^sub>N"
+      and huv: "u \<noteq> v"
+      and hpoly_eq: "geotop_polyhedron BdJ\<^sub>N = C\<^sub>1 \<union> C\<^sub>2"
+      and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+      and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+      and hC\<^sub>1_end: "geotop_arc_endpoints C\<^sub>1 {u, v}"
+      and hC\<^sub>2_end: "geotop_arc_endpoints C\<^sub>2 {u, v}"
+      and hdisj: "geotop_arc_interior C\<^sub>1 {u, v} \<inter>
+          geotop_arc_interior C\<^sub>2 {u, v} = {}"
+      using hBdJ\<^sub>N_cycle_split_from_degree_two[OF hdegree]
+      by (by100 blast)
+    have hpolygon_C: "geotop_is_polygon (C\<^sub>1 \<union> C\<^sub>2)"
+      by (rule pair_of_arcs_is_polygon
+          [OF hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1_end hC\<^sub>2_end hdisj])
+    show ?thesis
+      using hpolygon_C hpoly_eq by (by100 simp)
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
