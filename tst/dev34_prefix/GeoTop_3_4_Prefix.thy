@@ -4105,21 +4105,17 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hNcut_disjoint_package by (by100 blast)
-  have hD44_frontier_sphere_and_corridor_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
+  have hD44_frontier_polygon_and_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
       Remaining literal Moise 4.4 regular-neighborhood step.  After the carrier
       and boundary graph have been identified above, prove the book sentence
-      that the frontier component through \<open>P\<close> is a 1-sphere, and construct the
-      complementary lower-to-upper outside corridor in \<open>I - (N \<union> A2)\<close> whose
-      closure contains the two access witnesses.  The finite graph classifiers
-      below then derive the local no-branch and no-endpoint consequences. **)
+      that the frontier component through \<open>P\<close> is a polygonal 1-sphere, and
+      prove that the lower and upper access witnesses lie in the same outside
+      component of \<open>I - (N \<union> A2)\<close>.  The component/corridor and finite graph
+      classifiers below turn those book facts into the exact package needed
+      downstream. **)
     sorry
   have hD44_graph_bounds_and_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -4132,30 +4128,20 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
   proof -
-    have hD44_frontier_1sphere:
-        "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-      using hD44_frontier_sphere_and_corridor_book_step by (rule conjunct1)
+    have hD44_BdJ\<^sub>N_polygon:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      using hD44_frontier_polygon_and_component_book_step by (rule conjunct1)
+    have hD44_same_component_book:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      using hD44_frontier_polygon_and_component_book_step by (rule conjunct2)
     have hD44_corridor_book:
         "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z"
-      using hD44_frontier_sphere_and_corridor_book_step by (rule conjunct2)
-    have hD44_BdJ\<^sub>N_polygon:
-        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-    proof -
-      have hsphere_BdJ:
-          "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
-            (subspace_topology UNIV geotop_euclidean_topology
-              (geotop_polyhedron BdJ\<^sub>N)) 1"
-        using hD44_frontier_1sphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
-      show ?thesis
-        unfolding geotop_is_polygon_def
-        by (intro exI[where x=BdJ\<^sub>N] conjI,
-            rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
-    qed
+      by (rule geotop_component_member_gives_closed_corridor_prefix
+          [OF hD44_same_component_book])
     have hD44_BdJ\<^sub>N_degree_two:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
