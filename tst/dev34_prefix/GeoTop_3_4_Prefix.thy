@@ -4087,7 +4087,23 @@ proof -
         boundary arc and complementary frontier arc, then use the adjacent
         outside component of \<open>I - (N \<union> A2)\<close> to carry the lower and upper access
         witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-      sorry
+    proof -
+      have hcrossings:
+          "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+            \<exists>Z. Z \<subseteq> ?Ncut
+              \<and> top1_connected_on Z
+                  (subspace_topology UNIV geotop_euclidean_topology Z)
+              \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        (**
+          Literal Moise 4.4 lower-to-upper crossing target.  The complementary
+          frontier subarc of the regular-neighborhood boundary supplies, for
+          every pair of access collars around \<open>Q1\<close> and \<open>S1\<close>, one connected
+          subset of \<open>I - (N \<union> A2)\<close> meeting both collars. **)
+        sorry
+      show ?thesis
+        by (rule hD44_access_ball_crossings_same_component[OF hcrossings])
+    qed
     show ?thesis
       by (rule conjI[OF htwo hsame])
   qed
