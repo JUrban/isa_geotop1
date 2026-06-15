@@ -3716,6 +3716,52 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hS1_Ncut hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  have hQ_ne_S: "Q \<noteq> S"
+  proof
+    assume hQS: "Q = S"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hQS card_insert_if)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  proof
+    show "Q \<noteq> P"
+    proof
+      assume hQP: "Q = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQP card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+    show "Q \<noteq> R"
+    proof
+      assume hQR: "Q = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQR card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+  qed
+  have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  proof
+    show "S \<noteq> P"
+    proof
+      assume hSP: "S = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSP card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+    show "S \<noteq> R"
+    proof
+      assume hSR: "S = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSR card_insert_if)
+      thus False
+        using hcard by (by100 simp)
+    qed
+  qed
   have hD44_moise_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
