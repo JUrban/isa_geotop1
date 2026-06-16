@@ -3734,6 +3734,59 @@ proof -
     by (intro conjI allI impI, blast+)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_selected_component_boundary_frontier_prefix:
+  fixes J N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
+    and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and m :: nat
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hFrN\<^sub>I_def:
+    "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  shows
+    "BdJ\<^sub>N \<subseteq> BdK\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+  (**
+    Selected-component boundary containment for Moise 4.4.  The boundary graph
+    carried by the chosen frontier component is a subcomplex of the full
+    carrier boundary, hence its polyhedron is contained in the same frontier
+    \<open>Fr N\<^sub>I\<close>. **)
+proof -
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    unfolding hBdJ\<^sub>N_def by (by100 simp)
+  have hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N"
+    unfolding geotop_polyhedron_def using hBdJ\<^sub>N_sub_BdK\<^sub>N by (by100 blast)
+  have hBdK\<^sub>N_frontier:
+      "(\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<longrightarrow> e \<subseteq> FrN\<^sub>I)
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_comb_boundary_frontier_prefix
+          [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+            hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hBdK\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hBdK\<^sub>N_frontier by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly hBdK\<^sub>N_poly_sub_FrN\<^sub>I
+    by (by100 blast)
+  show ?thesis
+    using hBdJ\<^sub>N_sub_BdK\<^sub>N hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly
+      hBdJ\<^sub>N_poly_sub_FrN\<^sub>I
+    by (intro conjI)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_local_boundary_primitive_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
