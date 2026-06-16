@@ -3459,25 +3459,6 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_com
     upper access witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_frontier_polygon_and_same_component_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    (**
-      Literal remaining Moise 4.4 paragraph, lines 958--974, in the book's
-      immediate output form.  The selected carrier \<open>N\<^sub>I\<close> is a regular
-      neighborhood of \<open>A1\<close> in the closed disk; the frontier component through
-      \<open>P\<close> is polygonal, and the complementary frontier arc determines the
-      one outside component of \<open>I - (N \<union> A2)\<close> that reaches the lower and
-      upper access witnesses.  The finite-graph and open-component conversion
-      below turns this literal sentence into the 1-sphere and collar-crossing
-      formulation used by the surrounding proof. **)
-    sorry
-  have hD44_frontier_polygon_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-    using hD44_frontier_polygon_and_same_component_book_step by (rule conjunct1)
-  have hD44_same_component_book_step:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    using hD44_frontier_polygon_and_same_component_book_step by (rule conjunct2)
   have hD44_bounds_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -3488,16 +3469,14 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    by (rule
-      geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corridor_book_step_prefix
-        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def
-          hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
-          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_polygon_book_step
-          hD44_same_component_book_step])
+    (**
+      Literal remaining Moise 4.4 paragraph, lines 958--974, in the book's
+      local graph/corridor form.  The selected carrier \<open>N\<^sub>I\<close> is a regular
+      neighborhood of \<open>A1\<close> in the closed disk; the frontier component through
+      \<open>P\<close> has no branch vertices and no graph endpoints, and the
+      complementary frontier arc determines an adjacent outside corridor in
+      \<open>I - (N \<union> A2)\<close> accumulating at the lower and upper access witnesses. **)
+    sorry
   have hD44_frontier_vertex_incident_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
@@ -3530,6 +3509,24 @@ proof -
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
     using hD44_frontier_sphere_and_access_crossings_book_step by (rule conjunct1)
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Component consequence of the same Moise outside corridor.  The corridor
+      lies in the open set \<open>I - (N \<union> A2)\<close> and has the two access witnesses in
+      its Euclidean closure. **)
+  proof -
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_corridor_book_step by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
   show ?thesis
     using hD44_frontier_sphere_book_step hD44_same_component_book_step
     by (intro conjI)
