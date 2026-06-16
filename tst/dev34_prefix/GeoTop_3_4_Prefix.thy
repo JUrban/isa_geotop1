@@ -4217,12 +4217,42 @@ proof -
       by (rule geotop_comb_boundary_edge_member_incident_2simplex_count_one_prefix
           [OF heBdK hedge])
   qed
+  have hP_in_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hR_in_A2: "R \<in> A2"
+    using hA2J by (by100 blast)
+  have hD44_boundary_distinct:
+      "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
+    by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
+  have hQ_ne_S: "Q \<noteq> S"
+    using hD44_boundary_distinct by (by100 blast)
+  have hP_not_QS: "P \<notin> {Q, S}"
+    using hD44_boundary_distinct by (by100 blast)
+  have hN_closed: "closed N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN_compact: "compact N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN\<^sub>I_eq_N: "N\<^sub>I = N"
     by (rule
         geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
           [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def])
+  have hN\<^sub>I_closed: "closed N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hN\<^sub>I_compact: "compact N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_compact by (by100 simp)
   have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
     unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+  have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+    using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+  have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+    by (rule closed_subset_compact
+        [OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
   have hFrN\<^sub>I_frontier_K\<^sub>N_poly:
       "FrN\<^sub>I = frontier (geotop_polyhedron K\<^sub>N)"
     using hFrN\<^sub>I_HOL hN\<^sub>I_eq_N hK\<^sub>N_poly by (by100 simp)
@@ -4236,9 +4266,91 @@ proof -
     by (rule geotop_component_at_UNIV_eq_connected_component_set)
   have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
     using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
+  have hQ1_not_N: "Q1 \<notin> N"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_N: "S1 \<notin> N"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
+    using hFrN\<^sub>I_sub_N hQ1_not_N by (by100 blast)
+  have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
+    using hFrN\<^sub>I_sub_N hS1_not_N by (by100 blast)
+  have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
+    using hJ\<^sub>N_sub_N hQ1_not_N by (by100 blast)
+  have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
+    using hJ\<^sub>N_sub_N hS1_not_N by (by100 blast)
+  have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    using hK\<^sub>N_poly by (by100 simp)
+  have hNcut_access_exclusion_package:
+      "Q1 \<in> geotop_polygon_interior J
+       \<and> S1 \<in> geotop_polygon_interior J
+       \<and> Q1 \<notin> N
+       \<and> S1 \<notin> N
+       \<and> Q1 \<notin> A2
+       \<and> S1 \<notin> A2
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> A1
+       \<and> S1 \<notin> A1
+       \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_Ncut_access_point_exclusion_package_prefix
+        [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+            hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
+  have hQ1_not_A1: "Q1 \<notin> A1"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hS1_not_A1: "S1 \<notin> A1"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hNcut_disjoint_package:
+      "?Ncut \<inter> N = {}
+       \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+       \<and> ?Ncut \<inter> J\<^sub>N = {}
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_Ncut_frontier_boundary_disjoint_package_prefix
+        [OF hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hBdJ\<^sub>N_poly_sub_J\<^sub>N
+          hQ1_Ncut hS1_Ncut])
+  have hNcut_N_disj: "?Ncut \<inter> N = {}"
+    using hNcut_disjoint_package by (by100 blast)
+  have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
+    using hNcut_disjoint_package by (by100 blast)
+  have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
+    using hNcut_disjoint_package by (by100 blast)
   have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
       "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
     using hD44_full_boundary_frontier by (by100 blast)
+  have hBdJ\<^sub>N_edge_sub_J\<^sub>N:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> J\<^sub>N"
+    unfolding hBdJ\<^sub>N_def by (by100 simp)
+  have hBdJ\<^sub>N_edge_sub_FrN\<^sub>I:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heJ: "e \<subseteq> J\<^sub>N"
+      by (rule hBdJ\<^sub>N_edge_sub_J\<^sub>N[OF heBdJ hedge])
+    show "e \<subseteq> FrN\<^sub>I"
+      using heJ hJ\<^sub>N_sub_FrN\<^sub>I by (by100 blast)
+  qed
+  have hBdJ\<^sub>N_edge_sub_N:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> N"
+    using hBdJ\<^sub>N_edge_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
   have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
       "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
@@ -4426,6 +4538,115 @@ proof -
       qed
     qed
   qed
+  have hD44_connected_route_component_suffices:
+      "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
+        top1_connected_on W
+          (subspace_topology UNIV geotop_euclidean_topology W) \<Longrightarrow>
+        S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    by (rule geotop_connected_witness_component_at_intro_prefix)
+  have hD44_closure_corridor_same_component_suffices:
+      "\<And>Z. Z \<subseteq> ?Ncut \<Longrightarrow>
+        top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z) \<Longrightarrow>
+        Q1 \<in> closure Z \<Longrightarrow> S1 \<in> closure Z \<Longrightarrow>
+        S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    by (rule geotop_connected_closure_corridor_same_component_open_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut])
+  have hD44_component_same_gives_corridor:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    by (rule geotop_component_member_gives_closed_corridor_prefix)
+  have hD44_same_component_gives_broken_line_route:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> Q1 \<in> B
+          \<and> S1 \<in> B"
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut])
+  have hD44_broken_line_route_component_suffices:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    by (rule geotop_broken_line_route_component_at_prefix)
+  have hD44_closed_corridor_gives_access_ball_crossings:
+      "(\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)
+        \<Longrightarrow> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+  proof -
+    assume hex_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hex_corridor by (elim exE conjE)
+    show "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume hQpos: "0 < \<epsilon>\<^sub>Q"
+      assume hSpos: "0 < \<epsilon>\<^sub>S"
+      have hQmeet: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hQ1_cl hQpos])
+      have hSmeet: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hS1_cl hSpos])
+      show "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hZ_sub hZ_conn hQmeet hSmeet by (intro exI conjI)
+    qed
+  qed
+  have hD44_arbitrary_access_ball_crossings_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    by (rule geotop_connected_access_ball_crossings_same_component_open_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut])
+  have hD44_arbitrary_access_broken_line_crossings_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    by (rule geotop_broken_line_access_crossings_same_component_open_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut])
   have hD44_frontier_polygon_same_component_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
