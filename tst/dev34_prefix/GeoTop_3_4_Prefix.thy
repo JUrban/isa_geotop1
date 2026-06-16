@@ -4115,7 +4115,60 @@ proof -
       The selected carrier frontier has no branching and no endpoint, and the
       complementary frontier arc gives one outside corridor whose closure meets
       the two access witnesses. **)
-    sorry
+  proof -
+    have hD44_exact_two_corridor_book_step:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Q1 \<in> closure Z
+            \<and> S1 \<in> closure Z)"
+      (**
+        Moise 4.4 exact local boundary/corridor sentence.  The regular
+        neighborhood frontier component through \<open>P\<close> has exactly the two
+        adjacent selected boundary edges at every vertex, and the complementary
+        frontier arc gives the connected outside corridor. **)
+      sorry
+    have hD44_exact_two:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      using hD44_exact_two_corridor_book_step by (rule conjunct1)
+    have hD44_corridor:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      using hD44_exact_two_corridor_book_step by (rule conjunct2)
+    have hD44_graph_bounds:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+         \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+      by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
+          [OF hBdJ\<^sub>N_fin hD44_exact_two])
+    have hD44_card_le2:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_graph_bounds by (rule conjunct1)
+    have hD44_no_endpoint:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      using hD44_graph_bounds by (rule conjunct2)
+    show ?thesis
+      using hD44_card_le2 hD44_no_endpoint hD44_corridor by (intro conjI)
+  qed
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
   proof -
