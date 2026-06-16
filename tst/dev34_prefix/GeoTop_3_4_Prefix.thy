@@ -3375,6 +3375,57 @@ proof -
     using htwo hcorridor by (intro conjI)
 qed
 
+lemma geotop_frontier_sphere_same_component_exact_two_corridor_package_prefix:
+  fixes U JN :: "(real^2) set" and L :: "(real^2) set set"
+    and Q1 S1 :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes hJN_eq: "JN = geotop_polyhedron L"
+  assumes hsphere:
+    "geotop_is_n_sphere JN
+      (subspace_topology UNIV geotop_euclidean_topology JN) 1"
+  assumes hsame:
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  shows
+    "(\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+     \<and> (\<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z)"
+  (**
+    Pure D44 conversion from Moise's literal frontier statement.  The book
+    proves that the selected frontier component is a 1-sphere and that the two
+    access witnesses lie in the same outside component.  The surrounding finite
+    graph and component libraries convert that to the exact incidence and
+    closed-corridor form consumed by the local D44 package. **)
+proof -
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
+  have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  proof -
+    have hsphere_L:
+        "geotop_is_n_sphere (geotop_polyhedron L)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L)) 1"
+      using hsphere hJN_eq by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=L] conjI, rule hL_complex, by100 simp,
+          rule hsphere_L)
+  qed
+  show ?thesis
+    by (rule geotop_polygon_frontier_component_same_component_exact_two_corridor_package_prefix
+        [OF hL_linear hL_fin hL_connected hL_polygon hsame])
+qed
+
 lemma geotop_frontier_graph_corridor_sphere_and_access_route_prefix:
   fixes U J\<^sub>N :: "(real^2) set"
     and L :: "(real^2) set set"
@@ -5227,6 +5278,19 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
   proof -
+    have hD44_moise_frontier_sphere_and_same_component_core:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+         \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut Q1"
+      (**
+        Moise 4.4, lines 958--974, in the direct book form now reduced to
+        the two literal regular-neighborhood outputs.  First, after forming
+        \<open>N' = N \<inter> closure I\<close>, the selected component of \<open>Fr N'\<close> through
+        \<open>P\<close> is a 1-sphere.  Second, the complementary frontier side puts the
+        lower and upper access witnesses \<open>Q1\<close> and \<open>S1\<close> in the same component
+        of \<open>I - (N \<union> A2)\<close>. **)
+      sorry
     have hD44_moise_exact_two_and_closed_corridor_core:
         "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -5240,15 +5304,20 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-      (**
-        Moise 4.4, lines 958--974, in the direct book form now reduced to
-        the two literal regular-neighborhood outputs.  First, the selected
-        frontier component of the fine carrier is locally a 1-manifold
-        boundary, so each of its vertices has exactly two incident boundary
-        edges.  Second, the complementary frontier side supplies one connected
-        outside corridor in \<open>I - (N \<union> A2)\<close> whose closure reaches the lower
-        and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-      sorry
+    proof -
+      have hD44_frontier_sphere:
+          "geotop_is_n_sphere J\<^sub>N
+            (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+        using hD44_moise_frontier_sphere_and_same_component_core by (rule conjunct1)
+      have hD44_same_component:
+          "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut Q1"
+        using hD44_moise_frontier_sphere_and_same_component_core by (rule conjunct2)
+      show ?thesis
+        by (rule geotop_frontier_sphere_same_component_exact_two_corridor_package_prefix
+            [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+              hJ\<^sub>N_eq_BdJ\<^sub>N_poly hD44_frontier_sphere hD44_same_component])
+    qed
     have hD44_frontier_exact_two:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
