@@ -4749,6 +4749,60 @@ proof -
         using hcard1 hcard_ge2 by (by100 linarith)
     qed
   qed
+  have hD44_card_le2_no_endpoint_imp_degree_two:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    (**
+      No-branch/no-endpoint cardinality form of Moise's local frontier
+      sentence.  The remaining regular-neighborhood proof can establish the
+      upper incidence bound and absence of frontier endpoints; the existing
+      non-isolated-vertex fact then makes the selected frontier component
+      degree two at every vertex. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    show ?thesis
+      by (rule geotop_incident_ge1_le2_no_endpoint_degree_two_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_vertex_incident_ge1 hle2 hnoend])
+  qed
+  have hD44_no_endpoint_imp_card_ge2:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    (**
+      Converse lower-incidence bridge for the frontier component.  Since every
+      selected frontier vertex already has at least one incident edge, failure
+      of the lower bound would make it a degree-one graph endpoint. **)
+  proof (intro allI impI)
+    fix w
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hge1:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+      by (rule hBdJ\<^sub>N_vertex_incident_ge1[OF hwBdJ])
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    proof (rule ccontr)
+      assume hnot_ge2:
+        "\<not> 2 \<le> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      have hcard1:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1"
+        using hge1 hnot_ge2 by (by100 linarith)
+      have hend: "geotop_graph_endpoint BdJ\<^sub>N w"
+        by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+            [OF hBdJ\<^sub>N_linear_graph hwBdJ hcard1])
+      have hnot: "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+        using hnoend hwBdJ by (by100 blast)
+      show False
+        using hend hnot by (by100 blast)
+    qed
+  qed
   have hD44_no_branch_no_endpoint_and_closed_corridor_suffice:
       "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
@@ -4778,15 +4832,17 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
+    have hge2_all:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      by (rule hD44_no_endpoint_imp_card_ge2[OF hnoend])
+    have hge2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+      using hge2_all by (by100 blast)
     show ?thesis
-    proof (intro conjI)
-      show "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-        by (rule hD44_BdJ\<^sub>N_card_le2_no_endpoint_imp_J\<^sub>N_1sphere
-            [OF hle2 hnoend])
-      show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-        by (rule hD44_closed_corridor_same_component_suffices[OF hcorridor])
-    qed
+      by (rule hD44_card_bounds_and_closed_corridor_suffice
+          [OF hle2 hge2 hcorridor])
   qed
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
