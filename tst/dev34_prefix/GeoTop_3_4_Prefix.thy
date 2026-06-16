@@ -4523,6 +4523,80 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_selected_carrier_selected_exact_two_same_component_core_book_step_prefix:
+  fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
+    and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and P Q R S Q1 S1 :: "real^2"
+    and m :: nat
+    and r :: real
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  assumes hA1_sub:
+    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA2_sub:
+    "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hA1_N: "A1 \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hr: "0 < r"
+  assumes hball_Q_N: "ball Q r \<inter> N = {}"
+  assumes hball_S_N: "ball S r \<inter> N = {}"
+  assumes hQ1_ball: "Q1 \<in> ball Q r"
+  assumes hS1_ball: "S1 \<in> ball S r"
+  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hFrN\<^sub>I_def:
+    "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  assumes hJ\<^sub>N_def:
+    "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
+  assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hNcut_open:
+    "geotop_polygon_interior J - (N \<union> A2) \<in> geotop_euclidean_topology"
+  assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
+  assumes hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
+  assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_vertex_incident_ge1:
+    "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+      card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  shows
+    "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+     \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J - (N \<union> A2)) Q1"
+  (**
+    Selected-frontier component form of Moise 4.4, lines 958--974.  This is the
+    book regular-neighborhood statement before the purely formal selected/full
+    carrier-boundary transfer: the frontier component through \<open>P\<close> is locally a
+    1-manifold graph, and the complementary side puts the access witnesses in
+    the same outside component. **)
+  sorry
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_full_boundary_exact_two_same_component_core_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4595,7 +4669,120 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_full_boundary_exact_two_
     boundary 1-manifold, so the full carrier boundary has exactly the two local
     boundary edges at every selected frontier vertex; the complementary side
     puts the lower and upper access witnesses in the same outside component. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_selected_exact_two_same_component:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_selected_exact_two_same_component_core_book_step_prefix
+        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
+          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
+          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
+          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
+          hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
+          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_ge1])
+  have hD44_selected_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_selected_exact_two_same_component by (rule conjunct1)
+  have hD44_same_component:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    using hD44_selected_exact_two_same_component by (rule conjunct2)
+  have hD44_hygiene:
+    "N\<^sub>I = N
+     \<and> closed N
+     \<and> compact N
+     \<and> FrN\<^sub>I = frontier N
+     \<and> FrN\<^sub>I \<subseteq> N
+     \<and> P \<in> FrN\<^sub>I
+     \<and> P \<in> J\<^sub>N
+     \<and> J\<^sub>N \<subseteq> FrN\<^sub>I
+     \<and> J\<^sub>N \<subseteq> N
+     \<and> J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+     \<and> R \<notin> J\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+     \<and> ?Ncut \<inter> N = {}
+     \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+     \<and> ?Ncut \<inter> J\<^sub>N = {}
+     \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+     \<and> Q1 \<notin> FrN\<^sub>I
+     \<and> S1 \<notin> FrN\<^sub>I
+     \<and> Q1 \<notin> J\<^sub>N
+     \<and> S1 \<notin> J\<^sub>N
+     \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+     \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_hygiene_prefix
+        [OF hJ hP hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N
+          hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def
+          hJ\<^sub>N_def hJ\<^sub>N_eq_BdJ\<^sub>N_poly])
+  have hD44_full_boundary_frontier:
+      "(\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<longrightarrow> e \<subseteq> FrN\<^sub>I)
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_comb_boundary_frontier_prefix
+        [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+          hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hD44_P_J\<^sub>N: "P \<in> J\<^sub>N"
+    using hD44_hygiene by (by100 blast)
+  have hD44_J\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hD44_hygiene by (by100 blast)
+  have hD44_J\<^sub>N_eq_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hD44_BdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+    using hD44_full_boundary_frontier by (by100 blast)
+  have hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  proof -
+    fix e
+    assume heBdK: "e \<in> BdK\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+    have he_sub_Fr: "e \<subseteq> FrN\<^sub>I"
+      by (rule hD44_BdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBdK hedge])
+    show "e \<subseteq> J\<^sub>N"
+      by (rule geotop_frontier_component_edge_meets_component_subset_prefix
+          [OF hD44_J\<^sub>N_eq_connected_component hD44_P_J\<^sub>N
+            hD44_J\<^sub>N_sub_FrN\<^sub>I he_sub_Fr hedge hmeet])
+  qed
+  have hD44_full_selected_incident_edges_eq:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+        = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
+        [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
+  have hD44_full_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    by (rule
+        geotop_full_frontier_exact_two_from_selected_incident_edges_eq_prefix
+        [OF hD44_full_selected_incident_edges_eq hD44_selected_exact_two])
+  show ?thesis
+    using hD44_full_exact_two hD44_same_component by (intro conjI)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_full_boundary_exact_two_corridor_core_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
