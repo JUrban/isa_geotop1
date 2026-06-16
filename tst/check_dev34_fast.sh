@@ -872,8 +872,8 @@ focus_target() {
     prefix-d44-book)
       printf '%s\t%s\t%s\n' \
         dev34_prefix/GeoTop_3_4_Prefix.thy \
-        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_component_book_step_prefix \
-        'selected carrier frontier polygon same component regular neighborhood Moise 4.4'
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_component_book_step_prefix \
+        'selected carrier primitive frontier sphere same component regular neighborhood Moise 4.4'
       ;;
     dev34-cycle)
       printf '%s\t%s\t%s\n' \
