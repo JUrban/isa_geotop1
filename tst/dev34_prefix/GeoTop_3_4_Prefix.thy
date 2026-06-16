@@ -5095,22 +5095,42 @@ proof -
       lower and upper access witnesses in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
   proof -
+    have hD44_frontier_exact_two_book_step:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      (**
+        Moise 4.4, line 964, in local boundary-incidence form: the selected
+        component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> has exactly the two adjacent
+        frontier edges at every vertex of its boundary subcomplex.  The finite
+        connected graph classifier below converts this to the stated
+        polygonal 1-sphere. **)
+      sorry
     have hD44_frontier_component_1sphere_book_step:
         "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere
+          [OF hD44_frontier_exact_two_book_step])
+    have hD44_closed_corridor_book_step:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
       (**
-        Moise 4.4, line 964: the component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is a
-        polygonal 1-sphere.  This is the regular-neighborhood boundary
-        sentence for the fine carrier of \<open>A1\<close>. **)
+        Moise 4.4, line 974, in closed-corridor form: the complementary
+        lower-to-upper frontier arc supplies one connected outside set in
+        \<open>I - (N \<union> A2)\<close> whose closure reaches both access witnesses. **)
       sorry
     have hD44_same_component_book_step:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
           ?Ncut Q1"
-      (**
-        Moise 4.4, line 974: the lower-to-upper complementary frontier arc
-        supplies the outside component of \<open>I - (N \<union> A2)\<close> that reaches both
-        access witnesses. **)
-      sorry
+      by (rule hD44_closed_corridor_same_component_suffices
+          [OF hD44_closed_corridor_book_step])
     have hD44_frontier_polygon_book_step:
         "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     proof -
