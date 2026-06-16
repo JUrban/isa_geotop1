@@ -3924,6 +3924,49 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology C)"
     by (rule geotop_component_at_open_connected_package_prefix
         [OF hNcut_open hQ1_Ncut])
+  have hD44_Ncut_open_split_if_not_same_component:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> ?Ncut =
+          geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<union>
+          (?Ncut -
+            geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1)
+        \<and> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<inter>
+          (?Ncut -
+            geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1) = {}
+        \<and> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<in> geotop_euclidean_topology
+        \<and> ?Ncut -
+          geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+          \<in> geotop_euclidean_topology
+        \<and> Q1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<and> S1 \<in> ?Ncut -
+          geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+  proof -
+    assume hnot:
+      "S1 \<notin> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CQ = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    let ?CS = "geotop_component_at UNIV geotop_euclidean_topology ?Ncut S1"
+    have hTU: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets
+          top1_open_sets_is_topology_on_UNIV)
+    have hS1_sing_conn:
+        "top1_connected_on {S1}
+          (subspace_topology UNIV geotop_euclidean_topology {S1})"
+      by (rule top1_connected_on_singleton[OF hTU], simp)
+    have hS1_CS: "S1 \<in> ?CS"
+      by (rule geotop_self_in_component_at[OF hS1_Ncut hS1_sing_conn])
+    have hneq: "?CQ \<noteq> ?CS"
+    proof
+      assume heq: "?CQ = ?CS"
+      have "S1 \<in> ?CQ"
+        using heq hS1_CS by (by100 simp)
+      thus False
+        using hnot by (by100 blast)
+    qed
+    show ?thesis
+      by (rule geotop_open_component_complement_split_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hneq])
+  qed
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
