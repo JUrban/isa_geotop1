@@ -4320,6 +4320,70 @@ proof (intro allI impI)
     by (by100 blast)
 qed
 
+lemma geotop_full_frontier_exact_two_from_selected_incident_edges_eq_prefix:
+  fixes BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+  assumes hfull_selected_eq:
+    "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+      {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+      = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+  assumes hselected_exact_two:
+    "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  shows
+    "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  (**
+    Reverse selected/full frontier bookkeeping for D44.  The book proves the
+    local two-valence statement on the selected frontier component; after the
+    full/selected incident-edge equality has been established at each selected
+    vertex, the same two edges also exhaust the full carrier boundary
+    incidence there. **)
+proof (intro allI impI)
+  fix w
+  assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+  have heq:
+      "{e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+       = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    by (rule hfull_selected_eq[OF hwBdJ])
+  obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
+    and he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
+    and he\<^sub>1edge: "geotop_is_edge e\<^sub>1"
+    and hw_e\<^sub>1: "w \<in> e\<^sub>1"
+    and he\<^sub>2edge: "geotop_is_edge e\<^sub>2"
+    and hw_e\<^sub>2: "w \<in> e\<^sub>2"
+    and he_ne: "e\<^sub>1 \<noteq> e\<^sub>2"
+    and huniq:
+      "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+        \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+    using hselected_exact_two hwBdJ by (by100 blast)
+  have he\<^sub>1BdK: "e\<^sub>1 \<in> BdK\<^sub>N"
+    using heq he\<^sub>1BdJ he\<^sub>1edge hw_e\<^sub>1 by (by100 blast)
+  have he\<^sub>2BdK: "e\<^sub>2 \<in> BdK\<^sub>N"
+    using heq he\<^sub>2BdJ he\<^sub>2edge hw_e\<^sub>2 by (by100 blast)
+  have hfull_uniq:
+      "\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+        \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+    using heq huniq by (by100 blast)
+  show "\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+      geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+      \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+      \<and> e\<^sub>1 \<noteq> e\<^sub>2
+      \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+          \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+    using he\<^sub>1BdK he\<^sub>2BdK he\<^sub>1edge hw_e\<^sub>1 he\<^sub>2edge hw_e\<^sub>2 he_ne hfull_uniq
+    by (by100 blast)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_inputs_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4622,13 +4686,13 @@ proof -
         = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
     by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
         [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
-  have hD44_full_exact_two_corridor_book_step:
+  have hD44_selected_exact_two_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
           geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
           \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
@@ -4638,20 +4702,11 @@ proof -
     (**
       Remaining literal Moise 4.4 regular-neighborhood step after the
       established carrier hygiene above: the selected carrier is a regular
-      neighborhood in the closed disk.  Thus at every vertex of the selected
-      frontier component the full carrier boundary has exactly the two adjacent
-      frontier edges, and the complementary frontier side gives a connected
-      outside corridor from the lower to the upper access witness. **)
+      neighborhood in the closed disk.  Thus every vertex of the selected
+      frontier component has exactly its two adjacent selected frontier edges,
+      and the complementary frontier side gives a connected outside corridor
+      from the lower to the upper access witness. **)
     sorry
-  have hD44_full_frontier_exact_two:
-      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    using hD44_full_exact_two_corridor_book_step by (by100 blast)
   have hD44_frontier_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4660,9 +4715,18 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_selected_exact_two_corridor_book_step by (by100 blast)
+  have hD44_full_frontier_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
     by (rule
-        geotop_selected_frontier_exact_two_from_full_incident_edges_eq_prefix
-        [OF hD44_full_selected_incident_edges_eq hD44_full_frontier_exact_two])
+        geotop_full_frontier_exact_two_from_selected_incident_edges_eq_prefix
+        [OF hD44_full_selected_incident_edges_eq hD44_frontier_exact_two])
   have hD44_frontier_degree_two_from_exact:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
@@ -4674,7 +4738,7 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_full_exact_two_corridor_book_step by (by100 blast)
+    using hD44_selected_exact_two_corridor_book_step by (by100 blast)
   have hD44_local_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
