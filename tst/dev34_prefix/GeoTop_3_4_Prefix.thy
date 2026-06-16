@@ -4165,6 +4165,97 @@ proof -
     using hcard_mono hBdK\<^sub>N_card_le2 by (by100 linarith)
 qed
 
+lemma geotop_frontier_component_edge_meets_component_subset_prefix:
+  fixes Fr JN e :: "(real^2) set"
+    and P :: "real^2"
+  assumes hJ_eq: "JN = connected_component_set Fr P"
+  assumes hP_J: "P \<in> JN"
+  assumes hJ_sub: "JN \<subseteq> Fr"
+  assumes he_sub_Fr: "e \<subseteq> Fr"
+  assumes hedge: "geotop_is_edge e"
+  assumes hmeet: "e \<inter> JN \<noteq> {}"
+  shows "e \<subseteq> JN"
+  (**
+    Component bookkeeping for the Moise 4.4 frontier carrier: an edge of the
+    full carrier boundary that touches the chosen frontier component lies
+    entirely in that connected component. **)
+proof -
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have he_simplex: "geotop_is_simplex e"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+  have he_path_connected:
+      "top1_path_connected_on e
+        (subspace_topology UNIV geotop_euclidean_topology e)"
+    by (rule Theorem_GT_1_3[OF he_simplex])
+  have he_connected_top:
+      "top1_connected_on e
+        (subspace_topology UNIV geotop_euclidean_topology e)"
+    by (rule top1_path_connected_on_geotop_imp_connected[OF he_path_connected])
+  have he_connected: "connected e"
+    using he_connected_top top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hJ_connected: "connected JN"
+    using hJ_eq connected_connected_component by (by100 simp)
+  have hunion_connected: "connected (e \<union> JN)"
+    by (rule connected_Un[OF he_connected hJ_connected hmeet])
+  have hunion_sub: "e \<union> JN \<subseteq> Fr"
+    using he_sub_Fr hJ_sub by (by100 blast)
+  have hP_union: "P \<in> e \<union> JN"
+    using hP_J by (by100 blast)
+  have hunion_sub_comp: "e \<union> JN \<subseteq> connected_component_set Fr P"
+    by (rule connected_component_maximal
+        [OF hP_union hunion_connected hunion_sub])
+  show "e \<subseteq> JN"
+    using hunion_sub_comp hJ_eq by (by100 blast)
+qed
+
+lemma geotop_selected_frontier_full_incident_edges_eq_prefix:
+  fixes BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and J\<^sub>N :: "(real^2) set"
+    and w :: "real^2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hfull_edge_meets_subset:
+    "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+      e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  assumes hwBdJ: "{w} \<in> BdJ\<^sub>N"
+  shows
+    "{e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+     = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+  (**
+    At a vertex of the selected frontier component, every full-boundary
+    incident edge is already selected.  This converts full carrier boundary
+    valence at that vertex into the selected frontier valence actually used by
+    the D44 graph package. **)
+proof (rule antisym)
+  show "{e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+      \<subseteq> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+  proof
+    fix e
+    assume he:
+      "e \<in> {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    have heBdK: "e \<in> BdK\<^sub>N"
+      using he by (by100 simp)
+    have hedge: "geotop_is_edge e"
+      using he by (by100 simp)
+    have hw_e: "w \<in> e"
+      using he by (by100 simp)
+    have hw_J: "w \<in> J\<^sub>N"
+      using hwBdJ unfolding hBdJ\<^sub>N_def by (by100 blast)
+    have hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+      using hw_e hw_J by (by100 blast)
+    have he_sub_J: "e \<subseteq> J\<^sub>N"
+      by (rule hfull_edge_meets_subset[OF heBdK hedge hmeet])
+    have heBdJ: "e \<in> BdJ\<^sub>N"
+      unfolding hBdJ\<^sub>N_def using heBdK he_sub_J by (by100 simp)
+    show "e \<in> {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      using heBdJ hedge hw_e by (by100 simp)
+  qed
+next
+  show "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+      \<subseteq> {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    unfolding hBdJ\<^sub>N_def by (by100 blast)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_inputs_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -4428,9 +4519,48 @@ proof -
         geotop_polygon_two_endpoint_arcs_selected_component_boundary_frontier_prefix
         [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
           hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+  have hD44_full_boundary_frontier:
+      "(\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<longrightarrow> e \<subseteq> FrN\<^sub>I)
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_comb_boundary_frontier_prefix
+        [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+          hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hD44_P_J\<^sub>N: "P \<in> J\<^sub>N"
+    using hD44_hygiene by (by100 blast)
+  have hD44_J\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hD44_hygiene by (by100 blast)
+  have hD44_J\<^sub>N_eq_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hD44_BdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+    using hD44_full_boundary_frontier by (by100 blast)
+  have hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  proof -
+    fix e
+    assume heBdK: "e \<in> BdK\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+    have he_sub_Fr: "e \<subseteq> FrN\<^sub>I"
+      by (rule hD44_BdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBdK hedge])
+    show "e \<subseteq> J\<^sub>N"
+      by (rule geotop_frontier_component_edge_meets_component_subset_prefix
+          [OF hD44_J\<^sub>N_eq_connected_component hD44_P_J\<^sub>N
+            hD44_J\<^sub>N_sub_FrN\<^sub>I he_sub_Fr hedge hmeet])
+  qed
+  have hD44_full_selected_incident_edges_eq:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+        = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
+        [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
   have hD44_local_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
@@ -4441,31 +4571,33 @@ proof -
     (**
       Remaining literal Moise 4.4 regular-neighborhood step after the
       established carrier hygiene above: the selected carrier is a regular
-      neighborhood in the closed disk, so the full carrier boundary has no
-      branching at selected frontier vertices, the selected frontier component
-      has two local boundary germs at each vertex, and the complementary
+      neighborhood in the closed disk, so the selected frontier component has
+      exactly two local boundary germs at each vertex and the complementary
       frontier side gives a connected outside corridor from the lower to the
       upper access witness. **)
     sorry
   have hD44_full_boundary_vertex_incident_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_local_graph_corridor_book_step by (by100 blast)
+  proof (intro allI impI)
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hselected_le2:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_local_graph_corridor_book_step hwBdJ by (by100 blast)
+    have heq:
+        "{e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+        = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      by (rule hD44_full_selected_incident_edges_eq[OF hwBdJ])
+    show "card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using heq hselected_le2 by (by100 simp)
+  qed
   have hD44_BdK\<^sub>N_fin: "finite BdK\<^sub>N"
     using hD44_boundary_complex by (by100 blast)
   have hD44_frontier_vertex_incident_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-  proof (intro allI impI)
-    fix w
-    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
-    have hfull_le2:
-        "card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      using hD44_full_boundary_vertex_incident_le2 hwBdJ by (by100 blast)
-    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      by (rule geotop_polygon_two_endpoint_arcs_selected_component_incident_card_le2_prefix
-          [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_fin hfull_le2])
-  qed
+    using hD44_local_graph_corridor_book_step by (by100 blast)
   have hD44_frontier_vertex_incident_ge2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
