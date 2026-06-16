@@ -4558,6 +4558,48 @@ proof -
         = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
     by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
         [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
+  have hD44_exact_two_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Remaining literal Moise 4.4 regular-neighborhood step after the
+      established carrier hygiene above: the selected carrier is a regular
+      neighborhood in the closed disk.  Thus each selected frontier vertex has
+      exactly the two adjacent frontier edges, and the complementary frontier
+      side gives a connected outside corridor from the lower to the upper access
+      witness. **)
+    sorry
+  have hD44_frontier_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_exact_two_corridor_book_step by (by100 blast)
+  have hD44_frontier_degree_two_from_exact:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_exact_two_incident_edges_card_eq_two_prefix
+        [OF hBdJ\<^sub>N_fin hD44_frontier_exact_two])
+  have hD44_corridor_from_exact_two:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_exact_two_corridor_book_step by (by100 blast)
   have hD44_local_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4568,14 +4610,30 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    (**
-      Remaining literal Moise 4.4 regular-neighborhood step after the
-      established carrier hygiene above: the selected carrier is a regular
-      neighborhood in the closed disk, so the selected frontier component has
-      exactly two local boundary germs at each vertex and the complementary
-      frontier side gives a connected outside corridor from the lower to the
-      upper access witness. **)
-    sorry
+  proof (intro conjI allI impI)
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hdeg:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hD44_frontier_degree_two_from_exact hwBdJ by (by100 blast)
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hdeg by (by100 simp)
+  next
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hdeg:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hD44_frontier_degree_two_from_exact hwBdJ by (by100 blast)
+    show "2 \<le> card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+      using hdeg by (by100 simp)
+  next
+    show "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+      by (rule hD44_corridor_from_exact_two)
+  qed
   have hD44_full_boundary_vertex_incident_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
