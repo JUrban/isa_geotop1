@@ -4118,6 +4118,42 @@ proof -
           hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def
           hJ\<^sub>N_eq_BdJ\<^sub>N_poly hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def
           hBdJ\<^sub>N_linear_graph])
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hP_BdJ\<^sub>N_poly: "P \<in> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_J\<^sub>N:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_N:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_A2_QS_disj:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hR_not_BdJ\<^sub>N_poly:
+      "R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hNcut_BdJ\<^sub>N_poly_disj:
+      "(geotop_polygon_interior J - (N \<union> A2))
+        \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hQ1_not_BdJ\<^sub>N_poly:
+      "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
+  have hS1_not_BdJ\<^sub>N_poly:
+      "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_frontier_inputs by (by100 blast)
   have hD44_frontier_polygon_same_component_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
