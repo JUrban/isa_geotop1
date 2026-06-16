@@ -3569,6 +3569,10 @@ proof -
   have hN_connected_HOL: "connected N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
         [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
+  have hN_connected:
+      "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+    using hN_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
   have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
     unfolding hK\<^sub>N_def
     by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
@@ -3767,6 +3771,12 @@ proof -
     using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
   have hJ\<^sub>N_compact: "compact J\<^sub>N"
     by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
+  have hJ\<^sub>N_connected:
+      "top1_connected_on J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N)"
+    using hJ\<^sub>N_connected_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hJ\<^sub>N_closed: "closed J\<^sub>N"
+    by (rule compact_imp_closed[OF hJ\<^sub>N_compact])
   have hBdJ\<^sub>N_poly_sub_J\<^sub>N_from_def:
       "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
     unfolding hBdJ\<^sub>N_def geotop_polyhedron_def by (by100 blast)
@@ -3904,6 +3914,16 @@ proof -
     using hNcut_access_exclusion_package by (by100 blast)
   have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
     using hNcut_access_exclusion_package by (by100 blast)
+  have hD44_Q1_Ncut_component_package:
+      "\<exists>C. C = geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1
+        \<and> C \<subseteq> ?Ncut
+        \<and> Q1 \<in> C
+        \<and> C \<in> geotop_euclidean_topology
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)"
+    by (rule geotop_component_at_open_connected_package_prefix
+        [OF hNcut_open hQ1_Ncut])
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
