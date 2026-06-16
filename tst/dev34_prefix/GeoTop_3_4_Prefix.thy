@@ -3580,6 +3580,91 @@ proof -
     by (rule conjI[OF hsphere hroute])
 qed
 
+lemma geotop_local_graph_corridor_polygon_same_component_prefix:
+  fixes U J\<^sub>N :: "(real^2) set"
+    and L :: "(real^2) set set"
+    and Q1 S1 :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hQ1U: "Q1 \<in> U"
+  assumes hS1U: "S1 \<in> U"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes hJ_eq: "J\<^sub>N = geotop_polyhedron L"
+  assumes hge1:
+    "\<And>w. {w} \<in> L \<Longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  assumes hlocal:
+    "(\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+     \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)
+     \<and> (\<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z)"
+  shows
+    "geotop_is_polygon (geotop_polyhedron L)
+     \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  (**
+    Pure postprocessing for Moise 4.4.  The book construction supplies the
+    local frontier graph bounds/no-endpoint statement and the adjacent outside
+    corridor.  Finite graph classification turns the selected frontier carrier
+    into a polygonal 1-sphere, and the closure-corridor bridge turns the same
+    corridor into the required outside-component membership. **)
+proof -
+  have hle2:
+      "\<And>w. {w} \<in> L \<Longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hlocal by (by100 blast)
+  have hnoend:
+      "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    using hlocal by (by100 blast)
+  have hcorridor:
+      "\<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hlocal by (by100 blast)
+  have hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+        [OF hL_linear hL_fin hL_nonempty hL_connected hJ_eq hge1 hle2 hnoend])
+  have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  proof -
+    have hL_complex: "geotop_is_complex L"
+      by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
+    have hsphere_L:
+        "geotop_is_n_sphere (geotop_polyhedron L)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L)) 1"
+      using hsphere hJ_eq by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=L] conjI, rule hL_complex, by100 simp,
+          rule hsphere_L)
+  qed
+  have hsame:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  proof -
+    obtain Z where hZ_sub: "Z \<subseteq> U"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hcorridor by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hUopen hQ1U hS1U hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
+  show ?thesis
+    using hpolygon hsame by (intro conjI)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corridor_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -5824,74 +5909,12 @@ proof -
         outside side gives a connected corridor in
         \<open>I - (N \<union> A2)\<close> accumulating at \<open>Q1\<close> and \<open>S1\<close>. **)
       sorry
-    have hD44_frontier_card_le2_raw:
-        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      using hD44_local_graph_corridor_raw_book_step by (by100 blast)
-    have hD44_frontier_no_endpoint_raw:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      using hD44_local_graph_corridor_raw_book_step by (by100 blast)
-    have hD44_frontier_degree_two_raw:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
-      by (rule geotop_incident_ge1_le2_no_endpoint_degree_two_prefix
-          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_vertex_incident_ge1
-            hD44_frontier_card_le2_raw hD44_frontier_no_endpoint_raw])
-    have hD44_selected_exact_two_raw:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-            \<and> e\<^sub>1 \<noteq> e\<^sub>2
-            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
-          [OF hD44_frontier_degree_two_raw])
-    have hD44_corridor_raw:
-        "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-      using hD44_local_graph_corridor_raw_book_step by (by100 blast)
-    have hD44_frontier_sphere_raw:
-        "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-      by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
-          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
-            hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-            hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2_raw
-            hD44_frontier_no_endpoint_raw])
-    have hD44_frontier_polygon_raw:
-        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-    proof -
-      have hsphere_poly:
-          "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
-            (subspace_topology UNIV geotop_euclidean_topology
-              (geotop_polyhedron BdJ\<^sub>N)) 1"
-        using hD44_frontier_sphere_raw hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
-      show ?thesis
-        unfolding geotop_is_polygon_def
-        by (intro exI[where x=BdJ\<^sub>N] conjI,
-            rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_poly)
-    qed
-    have hD44_same_component_raw:
-        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    proof -
-      obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
-        and hZ_conn:
-          "top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)"
-        and hQ1_cl: "Q1 \<in> closure Z"
-        and hS1_cl: "S1 \<in> closure Z"
-        using hD44_corridor_raw by (elim exE conjE)
-      show ?thesis
-        by (rule geotop_connected_closure_corridor_same_component_open_prefix
-            [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
-    qed
     show ?thesis
-      using hD44_frontier_polygon_raw hD44_same_component_raw by (intro conjI)
+      by (rule geotop_local_graph_corridor_polygon_same_component_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hBdJ\<^sub>N_linear_graph
+            hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected
+            hJ\<^sub>N_eq_BdJ\<^sub>N_poly hBdJ\<^sub>N_vertex_incident_ge1
+            hD44_local_graph_corridor_raw_book_step])
   qed
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
