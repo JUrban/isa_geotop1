@@ -4399,6 +4399,104 @@ proof -
       lower-to-upper corridor. **)
     by (rule geotop_broken_line_access_crossings_same_component_open_prefix
         [OF hNcut_open hQ1_Ncut hS1_Ncut])
+  have hD44_BdJ\<^sub>N_card_le2_no_endpoint_imp_J\<^sub>N_1sphere:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Frontier-graph form of Moise's "then \<open>J\<close> is a 1-sphere" sentence.  Once
+      the regular-neighborhood analysis supplies no branching and no endpoints
+      on the selected boundary component, the finite graph classifier gives
+      the required sphere statement for \<open>J\<^sub>N\<close>. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    show ?thesis
+      by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+            hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+            hBdJ\<^sub>N_vertex_incident_ge1 hle2 hnoend])
+  qed
+  have hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    (**
+      Exact-two local-incidence version of the frontier sphere target.  This is
+      the likely output of the remaining regular-neighborhood boundary
+      analysis, so record the conversion next to the active book step. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    show ?thesis
+      by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+            hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly htwo])
+  qed
+  have hD44_exact_two_and_broken_crossings_suffice:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+        (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Compact target for the remaining book work: exact-two incidence on the
+      selected frontier graph plus Moise's lower-to-upper broken-line access
+      crossings are sufficient for the full local conclusion currently left as
+      the regular-neighborhood book step. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    assume hcross:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    show ?thesis
+    proof (intro conjI)
+      show "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+        by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere
+            [OF htwo])
+      show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        by (rule hD44_arbitrary_access_broken_line_crossings_suffice[OF hcross])
+    qed
+  qed
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
