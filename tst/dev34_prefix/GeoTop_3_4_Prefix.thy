@@ -4986,39 +4986,77 @@ proof -
               ?Ncut Q1"
     by (rule geotop_broken_line_access_crossings_same_component_open_prefix
         [OF hNcut_open hQ1_Ncut hS1_Ncut])
-  have hD44_local_boundary_corridor_book_step:
+  have hD44_exact_two_and_access_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Moise 4.4, lines 958--974, in the exact local form left to prove.
+      The selected regular-neighborhood frontier component has exactly the two
+      adjacent boundary edges at every vertex, and the complementary frontier
+      side supplies connected lower-to-upper crossings of every pair of access
+      collars around \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
+  have hD44_frontier_exact_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_exact_two_and_access_crossings_book_step by (rule conjunct1)
+  have hD44_access_connected_crossings_book_step:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
-    (**
-      Moise 4.4, lines 958--974, in the exact regular-neighborhood boundary
-      form still missing from the formal proof.  The carrier \<open>N\<^sub>I\<close> is the
-      selected regular neighborhood of \<open>A1\<close> in the closed polygonal disk; its
-      frontier component through \<open>P\<close> has no branching and no graph endpoints,
-      and the complementary frontier side gives one outside corridor whose
-      closure reaches the lower and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
-    sorry
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    using hD44_exact_two_and_access_crossings_book_step by (rule conjunct2)
+  have hD44_frontier_degree_two_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_exact_two_incident_edges_card_eq_two_prefix
+        [OF hBdJ\<^sub>N_fin hD44_frontier_exact_two_book_step])
   have hD44_frontier_card_le2_book_step:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  proof -
+    fix w
+    assume hw: "{w} \<in> BdJ\<^sub>N"
+    have hdegree:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hD44_frontier_degree_two_book_step hw by (by100 blast)
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hdegree by (by100 simp)
+  qed
   have hD44_frontier_no_endpoint_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    using hD44_local_boundary_corridor_book_step by (by100 blast)
+    by (rule geotop_exact_two_incident_edges_no_graph_endpoint_prefix
+        [OF hBdJ\<^sub>N_fin hD44_frontier_exact_two_book_step])
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    by (rule hD44_arbitrary_access_ball_crossings_suffice
+        [OF hD44_access_connected_crossings_book_step])
   have hD44_corridor_book_step:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Q1 \<in> closure Z
         \<and> S1 \<in> closure Z"
-    using hD44_local_boundary_corridor_book_step by (by100 blast)
+    by (rule hD44_component_same_gives_corridor[OF hD44_same_component_book_step])
   have hD44_frontier_sphere_and_access_crossings_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
