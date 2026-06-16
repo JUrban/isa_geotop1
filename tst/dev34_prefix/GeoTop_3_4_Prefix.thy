@@ -3556,6 +3556,19 @@ proof -
     using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
   have hSd_fin: "finite (geotop_iterated_Sd m K)"
     by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hP_N: "P \<in> N"
+    using hP_in_A1 hA1_N by (by100 blast)
+  have hN_sub_disk:
+      "N \<subseteq> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+    by (rule geotop_polygon_iterated_Sd_selected_arc_carrier_subset_closed_disk_prefix
+        [OF hK_complex hK_fin hK_poly hN_def])
+  have hN_connected_HOL: "connected N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def])
   have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
     unfolding hK\<^sub>N_def
     by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
@@ -3564,9 +3577,116 @@ proof -
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
         [OF hK_complex hK_fin hN_def hK\<^sub>N_def])
+  have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_in_A1 hA1_N hN_def hK\<^sub>N_def])
+  have hA1_not_subset_singleton: "\<And>x. \<not> A1 \<subseteq> {x}"
+    by (rule geotop_arc_not_subset_singleton_prefix[OF hA1])
+  have hK\<^sub>N_poly_connected_HOL: "connected (geotop_polyhedron K\<^sub>N)"
+    using hN_connected_HOL hK\<^sub>N_poly by (by100 simp)
+  have hA1_sub_K\<^sub>N_poly: "A1 \<subseteq> geotop_polyhedron K\<^sub>N"
+    using hA1_N hK\<^sub>N_poly by (by100 simp)
+  have hK\<^sub>N_vertex_incident_edge:
+      "\<And>p. {p} \<in> K\<^sub>N \<Longrightarrow>
+        \<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> p \<in> e"
+    by (rule geotop_connected_complex_nondegenerate_subset_vertex_incident_edge_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly_connected_HOL hA1_sub_K\<^sub>N_poly
+          hA1_not_subset_singleton])
+  have hFrN\<^sub>I_frontier_K\<^sub>N_poly:
+      "FrN\<^sub>I = frontier (geotop_polyhedron K\<^sub>N)"
+    using hFrN\<^sub>I_HOL hN\<^sub>I_eq_N hK\<^sub>N_poly by (by100 simp)
+  have hFrN\<^sub>I_geotop_frontier_K\<^sub>N_poly:
+      "FrN\<^sub>I =
+        geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K\<^sub>N)"
+    using hFrN\<^sub>I_frontier_K\<^sub>N_poly
+      geotop_frontier_UNIV_eq_frontier[of "geotop_polyhedron K\<^sub>N"]
+    by (by100 simp)
+  have hJ\<^sub>N_sub_frontier_K\<^sub>N_poly:
+      "J\<^sub>N \<subseteq> frontier (geotop_polyhedron K\<^sub>N)"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
+  have hP_front_K\<^sub>N_poly: "P \<in> frontier (geotop_polyhedron K\<^sub>N)"
+    using hP_FrN\<^sub>I hFrN\<^sub>I_frontier_K\<^sub>N_poly by (by100 simp)
   have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
     unfolding hBdK\<^sub>N_def
     by (rule geotop_comb_boundary_subset_complex_prefix[OF hK\<^sub>N_complex])
+  have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+    by (rule finite_subset[OF hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_fin])
+  have hBdK\<^sub>N_face_closed:
+      "\<forall>\<sigma>\<in>BdK\<^sub>N. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    using geotop_comb_boundary_face_closed_prefix by (by100 blast)
+  have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_is_complex_prefix[OF hK\<^sub>N_complex])
+  have hBdK\<^sub>N_1dim: "geotop_complex_is_1dim BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_2_is_1dim_prefix)
+  have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix
+        [OF hBdK\<^sub>N_complex hBdK\<^sub>N_1dim])
+  have hBdK\<^sub>N_poly_compact: "compact (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_complex_polyhedron_compact[OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
+  have hBdK\<^sub>N_poly_closed: "closed (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_complex_polyhedron_closed[OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
+  have hBdK\<^sub>N_poly_sub_N: "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
+    using hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_poly unfolding geotop_polyhedron_def by (by100 blast)
+  have hK\<^sub>N_edge_incident_2faces_card_le2:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+    by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+        [OF hK\<^sub>N_complex])
+  have hK\<^sub>N_edge_owned_by_Sd_2simplex:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        \<exists>\<sigma>\<in>geotop_iterated_Sd m K.
+          geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  proof -
+    fix e
+    assume heK\<^sub>N: "e \<in> K\<^sub>N"
+      and hedge: "geotop_is_edge e"
+    have heSd: "e \<in> geotop_iterated_Sd m K"
+      using heK\<^sub>N unfolding hK\<^sub>N_def by (by100 simp)
+    have hSd_poly_disk:
+        "geotop_polyhedron (geotop_iterated_Sd m K) =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)"
+      using hSd_poly hK_poly by (by100 simp)
+    show "\<exists>\<sigma>\<in>geotop_iterated_Sd m K.
+        geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+      by (rule geotop_polygon_disk_edge_owned_by_2simplex_prefix
+          [OF hJ hSd_complex hSd_poly_disk heSd hedge])
+  qed
+  have hK\<^sub>N_edge_rel_interior_incident_count_ge1:
+      "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        p \<in> rel_interior e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_face e \<sigma>} \<ge> 1"
+    by (rule
+        geotop_iterated_Sd_selected_carrier_edge_rel_interior_incident_count_ge1_prefix
+          [OF hJ hK_complex hK_fin hK_poly hN_def hK\<^sub>N_def])
+  have hK\<^sub>N_edge_frontier_rel_interior_not_two_incident:
+      "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        p \<in> rel_interior e \<Longrightarrow> p \<in> FrN\<^sub>I \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<noteq> 2"
+    by (rule geotop_edge_frontier_rel_interior_not_two_incident_restricted_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly hFrN\<^sub>I_HOL hN\<^sub>I_eq_N])
+  have hBdK\<^sub>N_one_incident_edge_subset_FrN\<^sub>I:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
+        \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+    by (rule geotop_one_incident_edge_subset_frontier_polyhedron_prefix
+        [OF hK\<^sub>N_complex _ _ _ hFrN\<^sub>I_frontier_K\<^sub>N_poly])
+  have hBdK\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_edge_member_incident_2simplex_count_one_prefix)
+  have hK\<^sub>N_one_incident_edge_member_BdK\<^sub>N:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
+        \<Longrightarrow> e \<in> BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_edge_one_incident_2simplex_member_prefix)
   have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
     unfolding hBdJ\<^sub>N_def by (by100 blast)
   have hBdJ\<^sub>N_sub_K\<^sub>N: "BdJ\<^sub>N \<subseteq> K\<^sub>N"
