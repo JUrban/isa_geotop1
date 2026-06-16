@@ -4082,71 +4082,24 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_co
     \<open>I - (N \<union> A2)\<close> containing the lower and upper access witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_local_bounds_corridor_book_step:
-      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z)"
+  have hD44_frontier_sphere_same_component_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
     (**
-      Moise 4.4, lines 958--974, in the local regular-neighborhood form.
-      The selected carrier frontier has no branching and no endpoint, and the
-      complementary frontier arc gives one outside corridor whose closure meets
-      the two access witnesses. **)
+      Moise 4.4, lines 958--974, in the book's direct regular-neighborhood
+      form.  After forming \<open>N\<^sub>I = N \<inter> \<bar>I\<close>, the component of \<open>Fr N\<^sub>I\<close>
+      through \<open>P\<close> is a 1-sphere; the other frontier arc has an adjacent
+      outside component of \<open>I - (N \<union> A2)\<close> reaching the lower and upper
+      access witnesses. **)
     sorry
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
   proof -
-    have hD44_frontier_card_le2:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      using hD44_local_bounds_corridor_book_step by (rule conjunct1)
-    have hD44_local_rest:
-        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Q1 \<in> closure Z
-            \<and> S1 \<in> closure Z)"
-      using hD44_local_bounds_corridor_book_step by (rule conjunct2)
-    have hD44_no_endpoint:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      using hD44_local_rest by (rule conjunct1)
-    have hD44_corridor:
-        "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-      using hD44_local_rest by (rule conjunct2)
-    have hD44_frontier_sphere_corridor:
-        "geotop_is_n_sphere J\<^sub>N
-            (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
-         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Q1 \<in> closure Z
-            \<and> S1 \<in> closure Z)"
-      by (rule
-          geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corridor_book_step_prefix
-          [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-            hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-            hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-            hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-            hBdJ\<^sub>N_def hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
-            hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-            hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2
-            hD44_no_endpoint hD44_corridor])
     have hD44_frontier_sphere:
         "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-      using hD44_frontier_sphere_corridor by (rule conjunct1)
+      using hD44_frontier_sphere_same_component_book_step by (rule conjunct1)
     have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
       by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
     have hD44_frontier_sphere_BdJ:
@@ -4161,34 +4114,7 @@ proof -
   qed
   have hD44_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-  proof -
-    have hD44_local_rest:
-        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            \<not> geotop_graph_endpoint BdJ\<^sub>N w)
-         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
-            \<and> top1_connected_on Z
-                (subspace_topology UNIV geotop_euclidean_topology Z)
-            \<and> Q1 \<in> closure Z
-            \<and> S1 \<in> closure Z)"
-      using hD44_local_bounds_corridor_book_step by (rule conjunct2)
-    have hD44_corridor:
-        "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-      using hD44_local_rest by (rule conjunct2)
-    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
-      and hZ_conn:
-        "top1_connected_on Z
-          (subspace_topology UNIV geotop_euclidean_topology Z)"
-      and hQ1_cl: "Q1 \<in> closure Z"
-      and hS1_cl: "S1 \<in> closure Z"
-      using hD44_corridor by (elim exE conjE)
-    show ?thesis
-      by (rule geotop_connected_closure_corridor_same_component_open_prefix
-          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
-  qed
+    using hD44_frontier_sphere_same_component_book_step by (rule conjunct2)
   show ?thesis
     using hD44_frontier_polygon_book_step hD44_same_component_book_step
     by (intro conjI)
