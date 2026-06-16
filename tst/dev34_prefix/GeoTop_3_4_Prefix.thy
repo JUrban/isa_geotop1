@@ -5603,6 +5603,64 @@ proof -
         hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
       by (intro exI conjI)
   qed
+  have hD44_B1P_boundary_subarc_frontier_package:
+      "\<exists>X C L. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> ?B1P
+        \<and> C \<subseteq> F\<^sub>1
+        \<and> C \<subseteq> J\<^sub>N
+        \<and> C \<subseteq> FrN\<^sub>I
+        \<and> C \<inter> F\<^sub>2 = {}
+        \<and> C \<inter> (A2 \<union> {Q, S}) = {}
+        \<and> C \<inter> ?Ncut = {}
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}
+        \<and> connected (geotop_arc_interior C {P, X})
+        \<and> geotop_arc_interior C {P, X} \<noteq> {}
+        \<and> geotop_is_complex L
+        \<and> geotop_complex_is_1dim L
+        \<and> finite L
+        \<and> geotop_polyhedron L = C
+        \<and> {P} \<in> L
+        \<and> {X} \<in> L"
+  proof -
+    obtain X C L where hX_B1P: "X \<in> ?B1P"
+      and hX_ne: "X \<noteq> P"
+      and hC_bl: "geotop_is_broken_line C"
+      and hC_sub_B1P: "C \<subseteq> ?B1P"
+      and hC_sub_F1: "C \<subseteq> F\<^sub>1"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      and hC_int_connected: "connected (geotop_arc_interior C {P, X})"
+      and hC_int_nonempty: "geotop_arc_interior C {P, X} \<noteq> {}"
+      and hL_complex: "geotop_is_complex L"
+      and hL_1dim: "geotop_complex_is_1dim L"
+      and hL_fin: "finite L"
+      and hL_poly_C: "geotop_polyhedron L = C"
+      and hP_L: "{P} \<in> L"
+      and hX_L: "{X} \<in> L"
+      using hD44_F\<^sub>1_boundary_subarc_vertex_refinement_from_P_to_B1P
+      by (elim exE conjE)
+    have hC_sub_J\<^sub>N: "C \<subseteq> J\<^sub>N"
+      using hC_sub_B1P hD44_B1P_sub_J\<^sub>N by (by100 blast)
+    have hC_sub_FrN\<^sub>I: "C \<subseteq> FrN\<^sub>I"
+      using hC_sub_B1P hD44_B1P_sub_FrN\<^sub>I by (by100 blast)
+    have hC_F\<^sub>2_disj: "C \<inter> F\<^sub>2 = {}"
+      using hC_sub_B1P hD44_B1P_F\<^sub>2_disj by (by100 blast)
+    have hC_A2_QS_disj: "C \<inter> (A2 \<union> {Q, S}) = {}"
+      using hC_sub_B1P hD44_B1P_A2_QS_disj by (by100 blast)
+    have hC_Ncut_disj: "C \<inter> ?Ncut = {}"
+      using hC_sub_B1P hD44_B1P_Ncut_disj by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub_B1P hC_sub_F1 hC_sub_J\<^sub>N
+        hC_sub_FrN\<^sub>I hC_F\<^sub>2_disj hC_A2_QS_disj hC_Ncut_disj
+        hP_C hX_C hC_end hC_int_connected hC_int_nonempty
+        hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
+      by (intro exI conjI)
+  qed
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
