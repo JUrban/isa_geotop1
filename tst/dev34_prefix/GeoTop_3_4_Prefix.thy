@@ -4590,7 +4590,41 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_com
     is a polygonal 1-sphere, and the complementary outside side puts the
     lower and upper access witnesses in the same component of
     \<open>I - (N \<union> A2)\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_literal_inputs:
+      "geotop_is_complex BdJ\<^sub>N
+       \<and> BdJ\<^sub>N \<subseteq> BdK\<^sub>N
+       \<and> P \<in> FrN\<^sub>I
+       \<and> P \<in> geotop_polyhedron BdJ\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_inputs_prefix
+        [OF hJ hP hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N
+          hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def
+          hJ\<^sub>N_def hJ\<^sub>N_eq_BdJ\<^sub>N_poly hK\<^sub>N_def hBdK\<^sub>N_def
+          hBdJ\<^sub>N_def hBdJ\<^sub>N_linear_graph])
+  have hJ\<^sub>N_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hD44_book_frontier_and_route:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    sorry
+  show ?thesis
+    by (rule hD44_book_frontier_and_route)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_exact_two_corridor_root_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
