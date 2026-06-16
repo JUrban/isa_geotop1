@@ -4686,6 +4686,25 @@ proof -
         = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
     by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
         [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
+  have hD44_frontier_sphere_same_component_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Remaining literal Moise 4.4 regular-neighborhood step after the
+      established carrier hygiene above: the selected carrier is a regular
+      neighborhood in the closed disk.  The component of its frontier through
+      \<open>P\<close> is a 1-sphere, and the complementary frontier side puts the lower
+      and upper access witnesses in the same outside component. **)
+    sorry
+  have hD44_frontier_sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_frontier_sphere_same_component_book_step by (rule conjunct1)
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    using hD44_frontier_sphere_same_component_book_step by (rule conjunct2)
   have hD44_selected_exact_two_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4699,14 +4718,10 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    (**
-      Remaining literal Moise 4.4 regular-neighborhood step after the
-      established carrier hygiene above: the selected carrier is a regular
-      neighborhood in the closed disk.  Thus every vertex of the selected
-      frontier component has exactly its two adjacent selected frontier edges,
-      and the complementary frontier side gives a connected outside corridor
-      from the lower to the upper access witness. **)
-    sorry
+    by (rule geotop_frontier_sphere_same_component_exact_two_corridor_package_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+          hJ\<^sub>N_eq_BdJ\<^sub>N_poly hD44_frontier_sphere_book_step
+          hD44_same_component_book_step])
   have hD44_frontier_exact_two:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4834,16 +4849,7 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    by (rule
-        geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corridor_book_step_prefix
-        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-          hBdJ\<^sub>N_def hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
-          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_vertex_incident_le2
-          hD44_frontier_no_endpoint hD44_corridor_book_step])
+    using hD44_frontier_sphere_book_step hD44_corridor_book_step by (intro conjI)
   have hD44_frontier_sphere:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
