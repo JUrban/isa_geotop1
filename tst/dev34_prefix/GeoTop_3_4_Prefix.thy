@@ -3540,6 +3540,35 @@ proof -
   have hNcut_BdJ\<^sub>N_poly_disj:
       "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding hK\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    unfolding hK\<^sub>N_def using hSd_fin by (by100 simp)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def])
+  have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_subset_complex_prefix[OF hK\<^sub>N_complex])
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    unfolding hBdJ\<^sub>N_def by (by100 blast)
+  have hBdJ\<^sub>N_sub_K\<^sub>N: "BdJ\<^sub>N \<subseteq> K\<^sub>N"
+    using hBdJ\<^sub>N_sub_BdK\<^sub>N hBdK\<^sub>N_sub_K\<^sub>N by (by100 blast)
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
+  have hJ\<^sub>N_eq_connected_component:
+      "J\<^sub>N = connected_component_set FrN\<^sub>I P"
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -3557,8 +3586,6 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
     using hD44_regular_neighborhood_sphere_same_component_book_step
     by (rule conjunct1)
-  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
-    by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
   have hD44_frontier_polygon_from_1sphere:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
   proof -
