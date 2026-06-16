@@ -3870,6 +3870,40 @@ proof -
     show "e \<in> BdJ\<^sub>N"
       by (rule hBdK\<^sub>N_edge_meets_J\<^sub>N_in_BdJ\<^sub>N[OF heBd hedge hmeet])
   qed
+  have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    using hK\<^sub>N_poly by (by100 simp)
+  have hNcut_access_exclusion_package:
+      "Q1 \<in> geotop_polygon_interior J
+       \<and> S1 \<in> geotop_polygon_interior J
+       \<and> Q1 \<notin> N
+       \<and> S1 \<notin> N
+       \<and> Q1 \<notin> A2
+       \<and> S1 \<notin> A2
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> A1
+       \<and> S1 \<notin> A1
+       \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_Ncut_access_point_exclusion_package_prefix
+        [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+            hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
+  have hQ1_not_A1: "Q1 \<notin> A1"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hS1_not_A1: "S1 \<notin> A1"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hQ1_not_K\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hS1_not_K\<^sub>N_poly: "S1 \<notin> geotop_polyhedron K\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hQ1_not_BdK\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
+  have hS1_not_BdK\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    using hNcut_access_exclusion_package by (by100 blast)
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
