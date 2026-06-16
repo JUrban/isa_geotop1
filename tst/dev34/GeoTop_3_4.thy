@@ -1028,10 +1028,22 @@ proof
     have "x \<in> geotop_complex_vertices K"
       using hxK hK_vertices by (by100 simp)
     thus ?thesis by (by100 simp)
-  next
-    assume hxnew:
+    next
+      assume hxnew:
         "{x} \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
-    have hcases:
+      have hsingleton_not_edge: "\<not> geotop_is_edge {x}"
+      proof
+        assume hedge: "geotop_is_edge {x}"
+        have hdim0: "geotop_simplex_dim {x} 0"
+          by (rule geotop_singleton_is_simplex)
+        have hdim1: "geotop_simplex_dim {x} 1"
+          using hedge unfolding geotop_is_edge_def by (by100 simp)
+        have "0 = (1::nat)"
+          by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+        thus False
+          by (by100 linarith)
+      qed
+      have hcases:
         "{x} = {R}
         \<or> {x} = closed_segment v\<^sub>0 R
         \<or> {x} = closed_segment R v\<^sub>1"
@@ -1046,21 +1058,25 @@ proof
       show ?thesis
       proof (rule disjE[OF hseg_or])
         assume hxseg: "{x} = closed_segment v\<^sub>0 R"
-        have hv\<^sub>0x: "v\<^sub>0 = x"
-          using hxseg by (by100 simp)
-        have hRx: "R = x"
-          using hxseg by (by100 simp)
+        have hseg_edge: "geotop_is_edge (closed_segment v\<^sub>0 R)"
+          unfolding geotop_is_edge_def
+          by (rule geotop_closed_segment_is_simplex[OF hR_v\<^sub>0[symmetric]])
+        have "geotop_is_edge {x}"
+          using hseg_edge hxseg by (by100 simp)
         have False
-          using hR_v\<^sub>0 hv\<^sub>0x hRx by (by100 blast)
+          using hsingleton_not_edge \<open>geotop_is_edge {x}\<close>
+          by (by100 blast)
         thus ?thesis by (by100 blast)
       next
         assume hxseg: "{x} = closed_segment R v\<^sub>1"
-        have hRx: "R = x"
-          using hxseg by (by100 simp)
-        have hv\<^sub>1x: "v\<^sub>1 = x"
-          using hxseg by (by100 simp)
+        have hseg_edge: "geotop_is_edge (closed_segment R v\<^sub>1)"
+          unfolding geotop_is_edge_def
+          by (rule geotop_closed_segment_is_simplex[OF hR_v\<^sub>1])
+        have "geotop_is_edge {x}"
+          using hseg_edge hxseg by (by100 simp)
         have False
-          using hR_v\<^sub>1 hRx hv\<^sub>1x by (by100 blast)
+          using hsingleton_not_edge \<open>geotop_is_edge {x}\<close>
+          by (by100 blast)
         thus ?thesis by (by100 blast)
       qed
     qed
@@ -1329,8 +1345,10 @@ lemma geotop_complex_subdivide_at_vertices_subset_dev34:
 proof -
   obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hR\<sigma>: "R \<in> \<sigma>"
     using hR_poly unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>_dim_ex: "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+    by (rule bspec[OF hK_1dim[unfolded geotop_complex_is_1dim_def] h\<sigma>K])
   obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
-    using hK_1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+    using h\<sigma>_dim_ex by (by100 blast)
   show ?thesis
   proof (cases n)
     case 0
@@ -1340,10 +1358,10 @@ proof -
         and hV_gp: "geotop_general_position V m"
         and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
       using h\<sigma>_dim 0 unfolding geotop_simplex_dim_def by (by100 blast)
-    have hV_sing: "\<exists>v. V = {v}"
-      using hV_card by (by100 force)
+    have hV_card1: "card V = 1"
+      using hV_card by (by100 simp)
     obtain v where hV_eq: "V = {v}"
-      using hV_sing by (by100 blast)
+      using hV_card1 by (rule card_1_singletonE)
     have h\<sigma>_sing: "\<sigma> = {v}"
       using h\<sigma>_hull hV_eq geotop_convex_hull_eq_HOL[of "{v}"]
       by (by100 simp)
@@ -1367,6 +1385,16 @@ proof -
       using hn_le Suc by (by100 simp)
     have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1"
       using h\<sigma>_dim hn_eq_1 by (by100 simp)
+    have hK'_ex: "\<exists>K'. geotop_is_complex K'
+        \<and> geotop_complex_is_1dim K'
+        \<and> geotop_is_subdivision K' K
+        \<and> geotop_polyhedron K' = geotop_polyhedron K
+        \<and> {R} \<in> K'
+        \<and> K - {\<sigma>} \<subseteq> K'
+        \<and> geotop_complex_vertices K' \<subseteq> insert R (geotop_complex_vertices K)
+        \<and> (finite K \<longrightarrow> finite K')"
+      by (rule geotop_complex_subdivide_edge_vertices_subset_dev34
+          [OF hK_complex hK_1dim h\<sigma>K h\<sigma>_dim1 hR\<sigma>])
     obtain K' where hK'_complex: "geotop_is_complex K'"
         and hK'_1dim: "geotop_complex_is_1dim K'"
         and hK'_subdivision: "geotop_is_subdivision K' K"
@@ -1376,9 +1404,7 @@ proof -
         and hK'_vertices:
           "geotop_complex_vertices K' \<subseteq> insert R (geotop_complex_vertices K)"
         and hK'_fin: "finite K \<longrightarrow> finite K'"
-      using geotop_complex_subdivide_edge_vertices_subset_dev34
-        [OF hK_complex hK_1dim h\<sigma>K h\<sigma>_dim1 hR\<sigma>]
-      by (by100 blast)
+      using hK'_ex by (elim exE conjE)
     have h_preserve: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K'"
     proof (intro allI impI)
       fix v
@@ -1554,10 +1580,11 @@ proof -
       "geotop_is_complex F
       \<and> geotop_complex_is_1dim F
       \<and> finite F
+      \<and> geotop_is_subdivision F ?B
       \<and> geotop_polyhedron F = geotop_polyhedron ?B
       \<and> (\<forall>x\<in>S. {x} \<in> F)
       \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
-    using geotop_finite_polyhedron_points_as_vertices_dev34
+    using geotop_finite_polyhedron_points_as_vertices_vertices_subset_dev34
       [OF hB_complex hB_1dim hB_finite hS_finite hS_poly]
     by (by100 blast)
   show ?thesis
@@ -2088,7 +2115,7 @@ proof -
     using hK_complex hK_eq_path by (by100 simp)
   have hpath_conn: "geotop_complex_connected ?Kp"
   proof (rule geotop_indexed_edge_path_complex_connected_prefix
-      [where v = v and a = 0 and b = p and K = ?Kp])
+      [where v = v and a = 0 and b = p])
     show "geotop_is_complex ?Kp"
       by (rule hKp_complex)
     show "0 < p"
@@ -2266,6 +2293,29 @@ proof -
     using hdegree_two hsource_index_singleton_in_L by (by100 blast)
   have hsource_zero_idx_for_cycle: "0 \<in> {0..<p}"
     using hp_pos by (by100 simp)
+  have hsource_started_cycle_pkg_ex:
+      "\<exists>s\<^sub>c q\<^sub>c p\<^sub>c. s\<^sub>c \<in> {(w, d). {w} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> w \<in> d}
+      \<and> fst s\<^sub>c = v 0
+      \<and> q\<^sub>c \<noteq> v 0
+      \<and> snd s\<^sub>c = closed_segment (v 0) q\<^sub>c
+      \<and> {q\<^sub>c} \<in> L
+      \<and> 1 < p\<^sub>c
+      \<and> fst ((geotop_oriented_edge_successor L ^^ Suc 0) s\<^sub>c) = q\<^sub>c
+      \<and> (geotop_oriented_edge_successor L ^^ p\<^sub>c) s\<^sub>c = s\<^sub>c
+      \<and> (\<forall>k. 0 < k \<and> k < p\<^sub>c \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s\<^sub>c \<noteq> s\<^sub>c)
+      \<and> inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s\<^sub>c) {0..<p\<^sub>c}
+      \<and> card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s\<^sub>c) ` {0..<p\<^sub>c}) = p\<^sub>c
+      \<and> closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p\<^sub>c - 1)) s\<^sub>c))
+          (fst s\<^sub>c) \<in> L
+      \<and> geotop_is_edge
+          (closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ (p\<^sub>c - 1)) s\<^sub>c))
+            (fst s\<^sub>c))"
+    by (rule geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
+      [OF hL_linear hL_finite hdegree_two
+        hsource_index_singleton_in_L[OF hsource_zero_idx_for_cycle]])
   obtain s\<^sub>c q\<^sub>c p\<^sub>c where hsource_started_cycle_pkg:
       "s\<^sub>c \<in> {(w, d). {w} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> w \<in> d}
       \<and> fst s\<^sub>c = v 0
@@ -2286,10 +2336,7 @@ proof -
           (closed_segment
             (fst ((geotop_oriented_edge_successor L ^^ (p\<^sub>c - 1)) s\<^sub>c))
             (fst s\<^sub>c))"
-    using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
-      [OF hL_linear hL_finite hdegree_two
-        hsource_index_singleton_in_L[OF hsource_zero_idx_for_cycle]]
-    by (by100 blast)
+    using hsource_started_cycle_pkg_ex by (elim exE)
   have hs\<^sub>c:
       "s\<^sub>c \<in> {(w, d). {w} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> w \<in> d}"
     using hsource_started_cycle_pkg by (by100 blast)
@@ -2547,7 +2594,7 @@ proof -
             fst ((geotop_oriented_edge_successor L ^^ Suc j) s\<^sub>c)
           \<and> v (Suc k) =
             fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c))"
-      using hpair hneq by (by100 blast)
+      by (rule geotop_pair_set_eq_orientations_prefix[OF hpair])
     show "\<exists>j\<in>{0..<p\<^sub>c}.
         (v k = fst ((geotop_oriented_edge_successor L ^^ j) s\<^sub>c)
           \<and> v (Suc k) =
@@ -2791,7 +2838,39 @@ proof -
         have hcases:
             "(v k = v 0 \<and> v (Suc k) = v (Suc 0))
             \<or> (v k = v (Suc 0) \<and> v (Suc k) = v 0)"
-          using hvk_cases hvSk_cases hk_distinct by (by100 blast)
+        proof (rule disjE[OF hvk_cases])
+          assume hvk0: "v k = v 0"
+          show ?thesis
+          proof (rule disjE[OF hvSk_cases])
+            assume hvSk0: "v (Suc k) = v 0"
+            have "v k = v (Suc k)"
+              using hvk0 hvSk0 by (by100 simp)
+            have False
+              using hk_distinct \<open>v k = v (Suc k)\<close> by (by100 blast)
+            thus ?thesis
+              by (by100 blast)
+          next
+            assume hvSk1: "v (Suc k) = v (Suc 0)"
+            show ?thesis
+              using hvk0 hvSk1 by (by100 blast)
+          qed
+        next
+          assume hvk1: "v k = v (Suc 0)"
+          show ?thesis
+          proof (rule disjE[OF hvSk_cases])
+            assume hvSk0: "v (Suc k) = v 0"
+            show ?thesis
+              using hvk1 hvSk0 by (by100 blast)
+          next
+            assume hvSk1: "v (Suc k) = v (Suc 0)"
+            have "v k = v (Suc k)"
+              using hvk1 hvSk1 by (by100 simp)
+            have False
+              using hk_distinct \<open>v k = v (Suc k)\<close> by (by100 blast)
+            thus ?thesis
+              by (by100 blast)
+          qed
+        qed
         show ?thesis
         proof (rule disjE[OF hcases])
           assume hsame:
@@ -2840,7 +2919,15 @@ proof -
       have "card (geotop_complex_vertices L) \<le> card {v 0, v (Suc 0)}"
         by (rule card_mono[OF _ hsub]) (by100 simp)
       also have "\<dots> \<le> 2"
-        by (by100 simp)
+      proof (cases "v 0 = v (Suc 0)")
+        case True
+        show ?thesis
+          using True by (by100 simp)
+      next
+        case False
+        show ?thesis
+          using False by (by100 simp)
+      qed
       finally show ?thesis .
     qed
     show False
@@ -2852,7 +2939,14 @@ proof -
     using hsource_third_vertex_exists by (by100 blast)
   obtain j\<^sub>L where hj\<^sub>L_idx: "j\<^sub>L \<in> {0..<p}"
       and hj\<^sub>L_value: "v j\<^sub>L = w\<^sub>L"
-    using hsource_vertices hw\<^sub>L_vertex by (by100 blast)
+  proof -
+    have "w\<^sub>L \<in> ((\<lambda>k. v k) ` {0..<p})"
+      using hsource_vertices hw\<^sub>L_vertex by (by100 simp)
+    then obtain j where hj: "j \<in> {0..<p}" and hw: "w\<^sub>L = v j"
+      by (elim imageE)
+    show ?thesis
+      using hj hw that by (by100 blast)
+  qed
   have hj\<^sub>L_ne_v0: "v j\<^sub>L \<noteq> v 0"
     using hj\<^sub>L_value hw\<^sub>L_ne_v0 by (by100 simp)
   have hj\<^sub>L_ne_v1: "v j\<^sub>L \<noteq> v (Suc 0)"
@@ -2964,8 +3058,12 @@ proof -
     have hsingleton_hull: "geotop_convex_hull {x} = {x}"
       using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
     have hface_hull: "geotop_is_face (geotop_convex_hull {x}) \<sigma>"
-      by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma>])
-        (use hxV in \<open>by (by100 simp_all)\<close>)
+    proof (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma>])
+      show "{x} \<noteq> {}"
+        by (by100 simp)
+      show "{x} \<subseteq> V\<^sub>\<sigma>"
+        using hxV by (by100 simp)
+    qed
     have hface: "geotop_is_face {x} \<sigma>"
       using hface_hull hsingleton_hull by (by100 simp)
     have hdim0: "geotop_simplex_dim {x} 0"
@@ -2990,7 +3088,14 @@ proof -
       and ha\<^sub>\<sigma>b\<^sub>\<sigma>: "a\<^sub>\<sigma> \<noteq> b\<^sub>\<sigma>"
       and hb\<^sub>\<sigma>c\<^sub>\<sigma>: "b\<^sub>\<sigma> \<noteq> c\<^sub>\<sigma>"
       and ha\<^sub>\<sigma>c\<^sub>\<sigma>: "a\<^sub>\<sigma> \<noteq> c\<^sub>\<sigma>"
-    using hV\<^sub>\<sigma>_card unfolding card_3_iff by (by100 simp)
+  proof -
+    have hcard3: "card V\<^sub>\<sigma> = 3"
+      using hV\<^sub>\<sigma>_card by (by100 simp)
+    have "\<exists>a b c. V\<^sub>\<sigma> = {a, b, c} \<and> a \<noteq> b \<and> b \<noteq> c \<and> a \<noteq> c"
+      using iffD1[OF card_3_iff hcard3] by (by100 blast)
+    thus ?thesis
+      using that by (by100 blast)
+  qed
   have ha\<^sub>\<sigma>V: "a\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
     using hV\<^sub>\<sigma>_abc by (by100 simp)
   have hb\<^sub>\<sigma>V: "b\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
@@ -3025,7 +3130,12 @@ proof -
     have hV_eq: "V = V\<^sub>\<sigma>"
       by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V\<^sub>\<sigma>])
     have hW_sub_single: "W \<subseteq> {x}"
-      by (rule geotop_simplex_vertices_subset[OF hxW])
+    proof -
+      have "W \<subseteq> geotop_convex_hull W"
+        by (rule geotop_simplex_vertices_subset)
+      thus ?thesis
+        using hx_eq by (by100 simp)
+    qed
     have hW_eq_single: "W = {x}"
       using hW_ne hW_sub_single by (by100 blast)
     have "x \<in> V"
@@ -3113,7 +3223,7 @@ proof -
       have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
         using h\<sigma>V\<^sub>\<sigma> unfolding geotop_simplex_vertices_def by (by100 blast)
       have "z \<in> convex hull V\<^sub>\<sigma>"
-        using hzV hull_inc by (by100 blast)
+        by (rule hull_inc[OF hzV])
       hence "z \<in> geotop_convex_hull V\<^sub>\<sigma>"
         using geotop_convex_hull_eq_HOL[of V\<^sub>\<sigma>] by (by100 simp)
       hence "z \<in> geotop_convex_hull {x, y}"
@@ -3130,12 +3240,28 @@ proof -
     by (rule h\<sigma>_pair_face_in_B[OF hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>b\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma>])
   have h\<sigma>_edge_bc_in_B:
       "geotop_convex_hull {b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<in> ?B"
-    by (rule h\<sigma>_pair_face_in_B)
-      (use hV\<^sub>\<sigma>_abc hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>b\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> in \<open>by (by100 simp_all)\<close>)
+  proof (rule h\<sigma>_pair_face_in_B)
+    show "V\<^sub>\<sigma> = {b\<^sub>\<sigma>, c\<^sub>\<sigma>, a\<^sub>\<sigma>}"
+      using hV\<^sub>\<sigma>_abc by (simp add: insert_commute)
+    show "b\<^sub>\<sigma> \<noteq> c\<^sub>\<sigma>"
+      by (rule hb\<^sub>\<sigma>c\<^sub>\<sigma>)
+    show "b\<^sub>\<sigma> \<noteq> a\<^sub>\<sigma>"
+      using ha\<^sub>\<sigma>b\<^sub>\<sigma> by (by100 blast)
+    show "c\<^sub>\<sigma> \<noteq> a\<^sub>\<sigma>"
+      using ha\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 blast)
+  qed
   have h\<sigma>_edge_ca_in_B:
       "geotop_convex_hull {c\<^sub>\<sigma>, a\<^sub>\<sigma>} \<in> ?B"
-    by (rule h\<sigma>_pair_face_in_B)
-      (use hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>c\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>b\<^sub>\<sigma> in \<open>by (by100 simp_all)\<close>)
+  proof (rule h\<sigma>_pair_face_in_B)
+    show "V\<^sub>\<sigma> = {c\<^sub>\<sigma>, a\<^sub>\<sigma>, b\<^sub>\<sigma>}"
+      using hV\<^sub>\<sigma>_abc by (simp add: insert_commute)
+    show "c\<^sub>\<sigma> \<noteq> a\<^sub>\<sigma>"
+      using ha\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 blast)
+    show "c\<^sub>\<sigma> \<noteq> b\<^sub>\<sigma>"
+      using hb\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 blast)
+    show "a\<^sub>\<sigma> \<noteq> b\<^sub>\<sigma>"
+      by (rule ha\<^sub>\<sigma>b\<^sub>\<sigma>)
+  qed
   have h\<sigma>_boundary_edges_in_B:
       "{geotop_convex_hull {a\<^sub>\<sigma>, b\<^sub>\<sigma>},
         geotop_convex_hull {b\<^sub>\<sigma>, c\<^sub>\<sigma>},
@@ -3246,8 +3372,11 @@ proof -
       "closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma> \<noteq> closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
   proof
     assume heq: "closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma> = closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
+    have ha_in_ab: "a\<^sub>\<sigma> \<in> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+      unfolding closed_segment_def
+      by (rule CollectI, rule exI[of _ 0]) (by100 simp)
     have "a\<^sub>\<sigma> \<in> closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
-      using heq by (by100 simp)
+      using heq ha_in_ab by (by100 simp)
     thus False
       using ha\<^sub>\<sigma>_notin_edge_bc by (by100 blast)
   qed
@@ -3255,8 +3384,11 @@ proof -
       "closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma> \<noteq> closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
   proof
     assume heq: "closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma> = closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
+    have hb_in_bc: "b\<^sub>\<sigma> \<in> closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
+      unfolding closed_segment_def
+      by (rule CollectI, rule exI[of _ 0]) (by100 simp)
     have "b\<^sub>\<sigma> \<in> closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
-      using heq by (by100 simp)
+      using heq hb_in_bc by (by100 simp)
     thus False
       using hb\<^sub>\<sigma>_notin_edge_ca by (by100 blast)
   qed
@@ -3264,8 +3396,11 @@ proof -
       "closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma> \<noteq> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
   proof
     assume heq: "closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma> = closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+    have hc_in_ca: "c\<^sub>\<sigma> \<in> closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
+      unfolding closed_segment_def
+      by (rule CollectI, rule exI[of _ 0]) (by100 simp)
     have "c\<^sub>\<sigma> \<in> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
-      using heq by (by100 simp)
+      using heq hc_in_ca by (by100 simp)
     thus False
       using hc\<^sub>\<sigma>_notin_edge_ab by (by100 blast)
   qed
@@ -3712,7 +3847,7 @@ proof -
     show "distinct u\<^sub>B_list"
       by (rule hu\<^sub>B_list_distinct)
     show "{0..<length u\<^sub>B_list} = {..<length u\<^sub>B_list}"
-      by (by100 simp)
+      by (rule atLeast0LessThan)
     show "geotop_complex_vertices F_B = set u\<^sub>B_list"
       using hu\<^sub>B_list_set_F_B_vertices by (by100 simp)
   qed
@@ -3825,7 +3960,7 @@ proof -
             (fst s\<^sub>B))"
     using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
       [OF hF_B_linear hF_B_finite hF_B_degree_two ha\<^sub>\<sigma>_single_F_B]
-    by (by100 blast)
+    by (elim exE)
   have hs\<^sub>B:
       "s\<^sub>B \<in> {(w, d). {w} \<in> F_B \<and> d \<in> F_B
           \<and> geotop_is_edge d \<and> w \<in> d}"
@@ -4033,7 +4168,7 @@ proof -
       by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
           [OF hF_B_linear hF_B_degree_two hs\<^sub>B])
     thus "?u\<^sub>B_succ k \<noteq> ?u\<^sub>B_succ (Suc k)"
-      by (by100 blast)
+      by (simp add: eq_commute)
   qed
   have hu\<^sub>B_succ_edge_convex_hull_eq:
       "\<And>k. geotop_convex_hull {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}
@@ -4066,7 +4201,33 @@ proof -
   have hF_B_nonedge_singleton_cases:
       "\<And>\<tau>. \<tau> \<in> F_B \<Longrightarrow> \<not> geotop_is_edge \<tau>
         \<Longrightarrow> \<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). \<tau> = {x}"
-    using hF_B_vertex_edge_decomp hu\<^sub>B_succ_vertices by (by100 blast)
+  proof -
+    fix \<tau>
+    assume h\<tau>F: "\<tau> \<in> F_B"
+      and h\<tau>not: "\<not> geotop_is_edge \<tau>"
+    have h\<tau>_union:
+        "\<tau> \<in> ((\<lambda>x. {x}) ` geotop_complex_vertices F_B)
+          \<union> {e\<in>F_B. geotop_is_edge e}"
+      using hF_B_vertex_edge_decomp h\<tau>F by (by100 simp)
+    have hcases:
+        "\<tau> \<in> ((\<lambda>x. {x}) ` geotop_complex_vertices F_B)
+        \<or> \<tau> \<in> {e\<in>F_B. geotop_is_edge e}"
+      using h\<tau>_union by (by100 simp)
+    thus "\<exists>x\<in>((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B}). \<tau> = {x}"
+    proof
+      assume hleft: "\<tau> \<in> ((\<lambda>x. {x}) ` geotop_complex_vertices F_B)"
+      obtain x where hxV: "x \<in> geotop_complex_vertices F_B"
+        and h\<tau>_eq: "\<tau> = {x}"
+        using hleft by (elim imageE)
+      have "x \<in> ((\<lambda>k. ?u\<^sub>B_succ k) ` {0..<p\<^sub>B})"
+        using hu\<^sub>B_succ_vertices hxV by (by100 simp)
+      thus ?thesis
+        using h\<tau>_eq by (by100 blast)
+    next
+      assume "\<tau> \<in> {e\<in>F_B. geotop_is_edge e}"
+      thus ?thesis using h\<tau>not by (by100 blast)
+    qed
+  qed
   have hF_B_edge_listed_cases:
       "\<And>\<tau>. \<tau> \<in> F_B \<Longrightarrow> geotop_is_edge \<tau>
         \<Longrightarrow> \<exists>k\<in>{0..<p\<^sub>B}.
@@ -4276,7 +4437,7 @@ proof -
         using geotop_convex_hull_eq_HOL[of "{?u\<^sub>B_succ k}"]
         by (by100 simp)
       thus False
-        using hu\<^sub>B_succ_next_distinct[of k] by (by100 blast)
+        using hu\<^sub>B_succ_next_distinct[of k] by (simp add: eq_commute)
     qed
     show "W = {?u\<^sub>B_succ k, ?u\<^sub>B_succ (Suc k)}"
       using hW_pair_sub hvk_in_W hvsuc_in_W by (by100 blast)
@@ -4356,9 +4517,12 @@ proof -
               ` {0..<p\<^sub>B})"
       have "geotop_is_edge ({} :: (real^2) set)"
         using hu\<^sub>B_succ_edges hempty_edge by (by100 blast)
-      thus False
-        using geotop_is_simplex_nonempty unfolding geotop_is_edge_def
+      hence hsimplex_empty: "geotop_is_simplex ({} :: (real^2) set)"
+        unfolding geotop_is_edge_def geotop_simplex_dim_def geotop_is_simplex_def
         by (by100 blast)
+      have "({} :: (real^2) set) \<noteq> {}"
+        by (rule geotop_is_simplex_nonempty[OF hsimplex_empty])
+      thus False by (by100 simp)
     qed
     show False
       using hcases hnot_singleton_image hnot_edge_image by (by100 blast)
@@ -4566,11 +4730,15 @@ proof -
       "bij_betw ?\<psi>\<^sub>succ
         (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
   proof -
-    have "bij_betw (?w\<^sub>B \<circ> (inv_into {0..<p\<^sub>c} ?w\<^sub>c))
+    have hcomp_bij:
+        "bij_betw (?w\<^sub>B \<circ> (inv_into {0..<p\<^sub>c} ?w\<^sub>c))
         (geotop_complex_vertices L) (geotop_complex_vertices F_B)"
       by (rule bij_betw_trans
           [OF hsource_successor_vertex_inv_bij hF_B_successor_vertex_bij_period])
-    thus ?thesis
+    have hfun: "?\<psi>\<^sub>succ = ?w\<^sub>B \<circ> (inv_into {0..<p\<^sub>c} ?w\<^sub>c)"
+      by (rule ext) (by100 simp)
+    show ?thesis
+      using hcomp_bij hfun
       by (by100 simp)
   qed
   have h\<psi>\<^sub>succ_source_successor_index:
@@ -4603,8 +4771,10 @@ proof -
       "((\<lambda>k. ?u\<^sub>succ k) ` {0..<p}) = geotop_complex_vertices F_B"
   proof -
     have "((\<lambda>k. ?u\<^sub>succ k) ` {0..<p})
-        = ?\<psi>\<^sub>succ ` geotop_complex_vertices L"
-      using hsource_vertices by (by100 blast)
+        = ?\<psi>\<^sub>succ ` (v ` {0..<p})"
+      by (simp add: image_image)
+    also have "\<dots> = ?\<psi>\<^sub>succ ` geotop_complex_vertices L"
+      using hsource_vertices by (by100 simp)
     also have "\<dots> = geotop_complex_vertices F_B"
       using h\<psi>\<^sub>succ_bij unfolding bij_betw_def by (by100 blast)
     finally show ?thesis .
@@ -4626,10 +4796,17 @@ proof -
         using True by (by100 simp)
       show ?thesis
         by (rule h\<psi>\<^sub>succ_source_successor_index[OF hSuc])
-    next
-      case False
-      have hSuc_eq: "Suc j = p\<^sub>c"
-        using hj False by (by100 linarith)
+	    next
+	      case False
+	      have hSuc_eq: "Suc j = p\<^sub>c"
+	      proof -
+	        have hSuc_le: "Suc j \<le> p\<^sub>c"
+	          using hj by (by100 simp)
+	        have hpc_le: "p\<^sub>c \<le> Suc j"
+	          using False by (by100 simp)
+	        show ?thesis
+	          using hSuc_le hpc_le by (rule antisym)
+	      qed
       have h0: "0 \<in> {0..<p\<^sub>c}"
         using hp\<^sub>c_pos by (by100 simp)
       have "?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?\<psi>\<^sub>succ (?w\<^sub>c 0)"
@@ -4715,7 +4892,7 @@ proof -
       by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
           [OF hL_linear hdegree_two hs\<^sub>c])
     thus "?w\<^sub>c j \<noteq> ?w\<^sub>c (Suc j)"
-      by (by100 blast)
+      by (simp add: eq_commute)
   qed
   have hu\<^sub>succ_source_successor_edge:
       "\<And>k j. k \<in> {0..<p}
@@ -4741,7 +4918,7 @@ proof -
     have hcases:
         "(v k = ?w\<^sub>c j \<and> v (Suc k) = ?w\<^sub>c (Suc j))
         \<or> (v k = ?w\<^sub>c (Suc j) \<and> v (Suc k) = ?w\<^sub>c j)"
-      using hpair hneq by (by100 blast)
+      by (rule doubleton_eq_iff[OF hpair hneq])
     have hmap_j: "?\<psi>\<^sub>succ (?w\<^sub>c j) = ?w\<^sub>B j"
       by (rule h\<psi>\<^sub>succ_source_successor_index[OF hj])
     have hmap_Suc_j: "?\<psi>\<^sub>succ (?w\<^sub>c (Suc j)) = ?w\<^sub>B (Suc j)"
@@ -5030,7 +5207,7 @@ proof -
     have hsingle:
         "((\<lambda>x. {x}) ` ?V)
         = ((\<lambda>x. {x}) ` geotop_complex_vertices L)"
-      using hvertices by (by100 simp)
+      by (rule arg_cong[OF hvertices])
     have hedge: "?E = {e\<in>L. geotop_is_edge e}"
       by (rule hsource_edges_eq)
     have hrewrite:
@@ -5039,7 +5216,7 @@ proof -
           \<union> {e\<in>L. geotop_is_edge e}"
       by (simp only: hsingle hedge)
     show ?thesis
-      by (simp only: hL hrewrite)
+      by (rule HOL.trans[OF hL hrewrite])
   qed
   have hsource_member_cases:
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow>
@@ -12504,7 +12681,17 @@ proof -
   have hseg_dim: "geotop_simplex_dim (closed_segment a b) 1"
     by (rule geotop_closed_segment_is_simplex[OF hab])
   have hseg_simp: "geotop_is_simplex (closed_segment a b)"
-    using hseg_dim unfolding geotop_is_simplex_def by (by100 blast)
+  proof -
+    obtain V m where hV_fin: "finite V"
+        and hV_card: "card V = 1 + 1"
+        and hVm: "1 \<le> m"
+        and hV_gp: "geotop_general_position V m"
+        and hseg_hull: "closed_segment a b = geotop_convex_hull V"
+      using hseg_dim unfolding geotop_simplex_dim_def by (by100 blast)
+    show ?thesis
+      unfolding geotop_is_simplex_def
+      using hV_fin hV_card hVm hV_gp hseg_hull by (by100 blast)
+  qed
   have hseg_edge: "geotop_is_edge (closed_segment a b)"
     using hseg_dim unfolding geotop_is_edge_def by (by100 simp)
   have hF_simplexes: "\<forall>\<sigma>\<in>F. geotop_is_simplex \<sigma>"
@@ -12520,8 +12707,10 @@ proof -
     show "\<tau> \<in> F"
     proof (rule disjE[OF hcases])
       assume h\<sigma>a: "\<sigma> = {a}"
+      have hface_a: "geotop_is_face \<tau> {a}"
+        using hface h\<sigma>a by (by100 simp)
       have "\<tau> = {a}"
-        using geotop_singleton_face_eq_prefix[OF hface] h\<sigma>a by (by100 simp)
+        by (rule geotop_singleton_face_eq_prefix[OF hface_a])
       thus ?thesis
         unfolding F_def by (by100 blast)
     next
@@ -12529,8 +12718,10 @@ proof -
       show ?thesis
       proof (rule disjE[OF htail])
         assume h\<sigma>b: "\<sigma> = {b}"
+        have hface_b: "geotop_is_face \<tau> {b}"
+          using hface h\<sigma>b by (by100 simp)
         have "\<tau> = {b}"
-          using geotop_singleton_face_eq_prefix[OF hface] h\<sigma>b by (by100 simp)
+          by (rule geotop_singleton_face_eq_prefix[OF hface_b])
         thus ?thesis
           unfolding F_def by (by100 blast)
       next
@@ -12835,8 +13026,8 @@ proof -
       "geotop_is_linear_graph F
       \<and> finite F
       \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]"
-    by (rule geotop_two_point_segment_endpoint_chain_listing_dev34
-        [OF hab F_def])
+    unfolding F_def
+    by (rule geotop_two_point_segment_endpoint_chain_listing_dev34[OF hab])
   have hF_linear: "geotop_is_linear_graph F"
     using htarget by (by100 blast)
   have hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]"
@@ -12850,11 +13041,49 @@ proof -
   have hF_vertices: "geotop_complex_vertices F = {a, b}"
     using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
     by (by100 simp)
+  have hba: "{b, a} = {a, b}"
+    by (by100 blast)
   have hbij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
-    using hL_vertices hF_vertices hwq hab
+    using hL_vertices hF_vertices hwq hab hba
     unfolding \<psi>_def bij_betw_def by (by100 simp)
   have hidx: "\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = [a, b] ! i"
-    using hwq unfolding \<psi>_def by (by100 simp)
+  proof (intro allI impI)
+    fix i
+    assume hi: "i < length [w, q]"
+    have hi_cases: "i = 0 \<or> i = 1"
+    proof (cases i)
+      case 0
+      thus ?thesis by (by100 simp)
+    next
+      case (Suc j)
+      show ?thesis
+      proof (cases j)
+        case 0
+        thus ?thesis
+          using Suc by (by100 simp)
+      next
+        case (Suc k)
+        note hj_eq = \<open>j = Suc k\<close>
+        have hi2: "i < 2"
+          using hi by (by100 simp)
+        have hge2: "2 \<le> i"
+          using \<open>i = Suc j\<close> hj_eq by (by100 simp)
+        have False
+          using hi2 hge2 by (by100 linarith)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+    show "\<psi> ([w, q] ! i) = [a, b] ! i"
+    proof (rule disjE[OF hi_cases])
+      assume "i = 0"
+      thus ?thesis
+        unfolding \<psi>_def by (by100 simp)
+    next
+      assume "i = 1"
+      thus ?thesis
+        using hwq unfolding \<psi>_def by (by100 simp)
+    qed
+  qed
   show ?thesis
     using hF_linear hFlist hbij hidx by (by100 simp)
 qed
@@ -13140,7 +13369,22 @@ proof -
   have hL_edge_listed_cases:
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> geotop_is_edge \<tau> \<Longrightarrow>
         \<exists>i<length vs - 1. \<tau> = closed_segment (vs ! i) (vs ! Suc i)"
-    using hedge_eq by (by100 blast)
+  proof -
+    fix \<tau>
+    assume h\<tau>L: "\<tau> \<in> L"
+    assume h\<tau>edge: "geotop_is_edge \<tau>"
+    have h\<tau>image:
+        "\<tau> \<in> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+      using hedge_eq h\<tau>L h\<tau>edge by (by100 blast)
+    then obtain i where hi_set: "i \<in> {0..<length vs - 1}"
+      and h\<tau>eq: "\<tau> = closed_segment (vs ! i) (vs ! Suc i)"
+      by (elim imageE)
+    have hi: "i < length vs - 1"
+      using hi_set by (by100 simp)
+    show "\<exists>i<length vs - 1. \<tau> = closed_segment (vs ! i) (vs ! Suc i)"
+      using hi h\<tau>eq by (by100 blast)
+  qed
   have hL_nonedge_singleton_cases:
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<not> geotop_is_edge \<tau> \<Longrightarrow>
         \<exists>x\<in>set vs. \<tau> = {x}"
@@ -13168,7 +13412,8 @@ proof -
         using geotop_closed_segment_simplex_vertices[OF hab] h\<tau>ab
         by (by100 simp)
       have hdim: "geotop_simplex_dim \<tau> 1"
-        using hverts unfolding geotop_simplex_vertices_def by (by100 blast)
+        using geotop_closed_segment_is_simplex[OF hab] h\<tau>ab
+        by (by100 simp)
       have "geotop_is_edge \<tau>"
         using hdim unfolding geotop_is_edge_def by (by100 blast)
       thus ?thesis
@@ -13512,7 +13757,8 @@ proof (rule equalityI)
           using geotop_closed_segment_simplex_vertices[OF hab] h\<tau>ab
           by (by100 simp)
         have hdim: "geotop_simplex_dim \<tau> 1"
-          using hverts unfolding geotop_simplex_vertices_def by (by100 blast)
+          using geotop_closed_segment_is_simplex[OF hab] h\<tau>ab
+          by (by100 simp)
         have "geotop_is_edge \<tau>"
           using hdim unfolding geotop_is_edge_def by (by100 blast)
         thus ?thesis
@@ -13539,9 +13785,11 @@ next
     next
       assume "\<tau> \<in> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
           ` {0..<length vs - 1})"
-      then obtain i where hi: "i < length vs - 1"
+      then obtain i where hi_set: "i \<in> {0..<length vs - 1}"
         and h\<tau>eq: "\<tau> = closed_segment (vs ! i) (vs ! Suc i)"
-        by (by100 blast)
+        by (elim imageE)
+      have hi: "i < length vs - 1"
+        using hi_set by (by100 simp)
       have "closed_segment (vs ! i) (vs ! Suc i) \<in> L"
         using hlist hi unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
         by (by100 blast)
@@ -13721,7 +13969,12 @@ proof -
       have h\<psi>i: "\<psi> (vs ! i) = y"
         using h\<psi>idx hi_len hy_eq by (by100 simp)
       have hviVL: "vs ! i \<in> ?VL"
-        using hLvertices hi_len by (by100 simp)
+      proof -
+        have "vs ! i \<in> set vs"
+          by (rule nth_mem[OF hi_len])
+        thus ?thesis
+          using hLvertices by (by100 simp)
+      qed
       obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = y"
         using himage by (by100 blast)
       have hxVL: "x \<in> ?VL"
@@ -13775,9 +14028,19 @@ proof -
       have h\<psi>Si: "\<psi> (vs ! Suc i) = us ! Suc i"
         using h\<psi>idx hSi_len by (by100 blast)
       have hviVL: "vs ! i \<in> ?VL"
-        using hLvertices hi_len by (by100 simp)
+      proof -
+        have "vs ! i \<in> set vs"
+          by (rule nth_mem[OF hi_len])
+        thus ?thesis
+          using hLvertices by (by100 simp)
+      qed
       have hvSiVL: "vs ! Suc i \<in> ?VL"
-        using hLvertices hSi_len by (by100 simp)
+      proof -
+        have "vs ! Suc i \<in> set vs"
+          by (rule nth_mem[OF hSi_len])
+        thus ?thesis
+          using hLvertices by (by100 simp)
+      qed
       have hW_sub: "W \<subseteq> {vs ! i, vs ! Suc i}"
       proof
         fix z
@@ -13809,8 +14072,8 @@ proof -
       proof -
         have "us ! i \<in> \<psi> ` W"
           using himage by (by100 simp)
-        then obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = us ! i"
-          by (by100 blast)
+        then obtain x where h\<psi>x: "us ! i = \<psi> x" and hxW: "x \<in> W"
+          by (elim imageE)
         have hxVL: "x \<in> ?VL"
           using hWsub hxW by (by100 blast)
         have "\<psi> x = \<psi> (vs ! i)"
@@ -13824,8 +14087,8 @@ proof -
       proof -
         have "us ! Suc i \<in> \<psi> ` W"
           using himage by (by100 simp)
-        then obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = us ! Suc i"
-          by (by100 blast)
+        then obtain x where h\<psi>x: "us ! Suc i = \<psi> x" and hxW: "x \<in> W"
+          by (elim imageE)
         have hxVL: "x \<in> ?VL"
           using hWsub hxW by (by100 blast)
         have "\<psi> x = \<psi> (vs ! Suc i)"
@@ -14091,7 +14354,7 @@ proof -
           W \<subseteq> geotop_complex_vertices F \<longrightarrow>
           (geotop_convex_hull W \<in> F
             \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
-    using hmodel by (by100 blast)
+    using hmodel by (elim exE conjE)
   show ?thesis
     by (rule geotop_endpoint_chain_fan_target_from_matching_model_dev34
         [OF hL_linear hF_linear hLlist hFlist hlen h\<psi>bij h\<psi>idx hT h\<sigma>
@@ -14835,6 +15098,7 @@ qed
 
 lemma geotop_first_neighbor_degree_two_if_not_finish_degree_bound_dev34:
   fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
   assumes hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
       card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 1 \<or>
       card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 2"
@@ -14855,7 +15119,8 @@ proof -
   proof (rule disjE[OF hq_degree])
     assume hq_card1: "card {e\<in>L. geotop_is_edge e \<and> q \<in> e} = 1"
     have "geotop_graph_endpoint L q"
-      unfolding geotop_graph_endpoint_def using hqL hq_card1 by (by100 blast)
+      by (rule geotop_degree_one_vertex_graph_endpoint_dev34
+          [OF hL_linear hqL hq_card1])
     thus ?thesis
       using hq_not_endpoint by (by100 blast)
   next
@@ -15594,7 +15859,7 @@ proof -
           \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
     using geotop_fig410_cone_over_boundary_subdivision_dev34
       [OF h\<sigma> hboundary]
-    by (by100 blast)
+    by (elim exE) assumption
   show ?thesis
     apply (rule exI[where x="{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"])
     apply (rule exI[where x=L'])
@@ -15642,8 +15907,9 @@ lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_boundary_subdiv
     Future endpoint work can target only a matching boundary-subdivision chain
     \<open>F,w',q',us,\<psi>\<close>; this lemma packages it into the book-step conclusion. **)
 proof -
-  obtain T L' c where htarget:
-      "geotop_is_linear_graph F
+  have htarget_ex:
+      "\<exists>T L' c.
+      geotop_is_linear_graph F
       \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
       \<and> length us = length vs
       \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
@@ -15663,6 +15929,26 @@ proof -
           \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
     by (rule geotop_endpoint_chain_target_model_from_boundary_subdivision_and_matching_dev34
         [OF hF_linear hFlist hlen h\<psi>bij h\<psi>idx h\<sigma> hboundary])
+  obtain T L' c where htarget:
+      "geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+    using htarget_ex by (elim exE) assumption
   show ?thesis
     by (rule geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_chain_target_dev34
         [OF hlist htarget])
@@ -15895,10 +16181,15 @@ proof -
     using hA_us hset by (by100 blast)
   have hconv_sub: "geotop_convex_hull A \<subseteq> closed_segment a b"
   proof -
-    have hHOL: "convex hull A \<subseteq> closed_segment a b"
-      by (rule hull_minimal[OF hA_base convex_closed_segment])
+    have hHOL: "convex hull A \<subseteq> convex hull (closed_segment a b)"
+      by (rule hull_mono[OF hA_base])
+    have hseg_hull: "convex hull (closed_segment a b) = closed_segment a b"
+      by (simp add: convex_hull_eq)
+    hence "convex hull A \<subseteq> closed_segment a b"
+      using hHOL by (by100 simp)
     show ?thesis
-      using hHOL geotop_convex_hull_eq_HOL[of A] by (by100 simp)
+      using \<open>convex hull A \<subseteq> closed_segment a b\<close>
+        geotop_convex_hull_eq_HOL[of A] by (by100 simp)
   qed
   have hc_not_base: "c \<notin> closed_segment a b"
     by (rule geotop_2simplex_opposite_vertex_notin_closed_segment_dev34
@@ -20439,43 +20730,49 @@ proof (cases "length vs = 2")
     by (cases vs; cases "tl vs"; by100 simp)
   have hlist_wq: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
     using hlist hvs by (by100 simp)
-  obtain F w' q' us T \<sigma> L' c \<psi>
-    where hF_linear: "geotop_is_linear_graph F"
-      and hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
-      and hlen: "length us = length [w, q]"
-      and h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
-      and h\<psi>idx: "\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = us ! i"
-      and hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-      and h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-      and hsub: "geotop_is_subdivision L' T"
-      and hcF: "c \<notin> geotop_complex_vertices F"
-      and hvertices: "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)"
-      and hc_simplex: "geotop_convex_hull {c} \<in> L'"
-      and hboundary:
-        "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+  from geotop_named_2simplex_exists_dev34 show ?thesis
+  proof (elim exE conjE)
+    fix \<sigma> :: "(real^2) set"
+    fix a b c :: "real^2"
+    assume h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+      and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+      and hab: "a \<noteq> b"
+      and hc: "c \<notin> {a, b}"
+    obtain F w' q' us T L' c' \<psi> where hmodel:
+        "geotop_is_linear_graph F
+        \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+        \<and> length us = length [w, q]
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = us ! i)
+        \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> geotop_is_subdivision L' T
+        \<and> c' \<notin> geotop_complex_vertices F
+        \<and> geotop_complex_vertices L' = insert c' (geotop_complex_vertices F)
+        \<and> geotop_convex_hull {c'} \<in> L'
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
           (geotop_convex_hull W \<in> F
-            \<longleftrightarrow> geotop_convex_hull W \<in> L')"
-      and hcone:
-        "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+        \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
           W \<subseteq> geotop_complex_vertices F \<longrightarrow>
           (geotop_convex_hull W \<in> F
-            \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
-    using geotop_two_vertex_endpoint_chain_fan_model_dev34
-      [OF hL_linear hlist_wq]
-    by (by100 blast)
-  show ?thesis
-    apply (rule exI[where x=F])
-    apply (rule exI[where x=w'])
-    apply (rule exI[where x=q'])
-    apply (rule exI[where x=us])
-    apply (rule exI[where x=T])
-    apply (rule exI[where x=\<sigma>])
-    apply (rule exI[where x=L'])
-    apply (rule exI[where x=c])
-    apply (rule exI[where x=\<psi>])
-    using hvs hF_linear hFlist hlen h\<psi>bij h\<psi>idx hT h\<sigma> hsub hcF
-      hvertices hc_simplex hboundary hcone
-    by (by100 simp)
+            \<longleftrightarrow> geotop_convex_hull (insert c' W) \<in> L'))"
+      using geotop_two_vertex_endpoint_chain_named_2simplex_fan_model_dev34
+        [OF hL_linear hlist_wq h\<sigma> h\<sigma>V hab hc]
+      by (elim exE) assumption
+    show ?thesis
+      apply (rule exI[where x=F])
+      apply (rule exI[where x=w'])
+      apply (rule exI[where x=q'])
+      apply (rule exI[where x=us])
+      apply (rule exI[where x=T])
+      apply (rule exI[where x=\<sigma>])
+      apply (rule exI[where x=L'])
+      apply (rule exI[where x=c'])
+      apply (rule exI[where x=\<psi>])
+      using hvs hmodel
+      by (by100 simp)
+  qed
 next
   case False
   have hlen_ge2: "2 \<le> length vs"
@@ -20836,7 +21133,32 @@ next
           W \<subseteq> geotop_complex_vertices F \<longrightarrow>
           (geotop_convex_hull W \<in> F
             \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
-    using htarget_for_listed_chain hlist by (by100 blast)
+  proof -
+    have himp:
+        "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs \<longrightarrow>
+        (\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+          geotop_is_linear_graph F
+          \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+          \<and> length us = length vs
+          \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+          \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+          \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_subdivision L' T
+          \<and> c \<notin> geotop_complex_vertices F
+          \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+          \<and> geotop_convex_hull {c} \<in> L'
+          \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+          \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')))"
+      by (rule spec[OF htarget_for_listed_chain])
+    show ?thesis
+      by (rule mp[OF himp hlist])
+  qed
   obtain F w' q' us T \<sigma> L' c \<psi> where htarget_pack:
       "geotop_is_linear_graph F
       \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
@@ -22528,7 +22850,20 @@ proof -
   have hu1mt: "u < 1 - t"
     unfolding u_def using ht0 h1mt hs hnorm_pos by (by100 simp)
   have hus: "u * norm (b - a) < s"
-    unfolding u_def using ht0 h1mt hs hnorm_pos by (by100 simp)
+  proof -
+    have hmin_le: "min (min t (1 - t)) (s / norm (b - a)) \<le> s / norm (b - a)"
+      by (rule min.cobounded2)
+    have "u * norm (b - a)
+        = (min (min t (1 - t)) (s / norm (b - a)) * norm (b - a)) / 2"
+      unfolding u_def by (simp add: algebra_simps)
+    also have "\<dots> \<le> (s / norm (b - a) * norm (b - a)) / 2"
+      using hmin_le hnorm_pos by (intro divide_right_mono mult_right_mono) simp_all
+    also have "\<dots> = s / 2"
+      using hnorm_pos by (by100 simp)
+    also have "\<dots> < s"
+      using hs by (by100 linarith)
+    finally show ?thesis .
+  qed
   define y where "y = p + u *\<^sub>R (b - a)"
   have htu0: "0 < t + u"
     using ht0 hu0 by (by100 linarith)
@@ -22541,7 +22876,7 @@ proof -
   have hy_rel: "y \<in> rel_interior e"
     using hy_open hrel by (by100 simp)
   have hy_dist_eq: "dist p y = u * norm (b - a)"
-    unfolding y_def using hu0 by (by100 simp)
+    unfolding y_def using hu0 by (simp add: dist_norm norm_minus_commute)
   have hy_dist_pos: "0 < dist p y"
     using hy_dist_eq hu0 hnorm_pos by (by100 simp)
   have hy_dist_lt: "dist p y < s"
@@ -22573,9 +22908,14 @@ proof
   let ?I = "{z::real^2. dist p z < r}"
   let ?O = "{z::real^2. r < dist p z}"
   have hI_open: "open ?I"
-    by (by100 simp)
+  proof -
+    have "?I = ball p r"
+      unfolding ball_def by (by100 simp)
+    thus ?thesis
+      using open_ball by (by100 simp)
+  qed
   have hO_open: "open ?O"
-    by (by100 simp)
+    by (intro open_Collect_less continuous_intros)
   have hdisj: "?I \<inter> ?O \<inter> M = {}"
     by (by100 auto)
   have hI_ne: "?I \<inter> M \<noteq> {}"
@@ -22697,8 +23037,10 @@ proof (cases "dist p x = r")
     by (rule FalseE)
 next
   case False
+  have "dist p x < r \<or> r < dist p x"
+    using False by linarith
   show ?thesis
-    using False by (by100 linarith)
+    by (rule \<open>dist p x < r \<or> r < dist p x\<close>)
 qed
 
 lemma geotop_collar_crosscut_radius_partition_cover_dev34:
@@ -22730,8 +23072,10 @@ proof
       by (rule FalseE)
   next
     case False
+    have "dist p z < r \<or> r < dist p z"
+      using False by linarith
     show ?thesis
-      using False by (by100 linarith)
+      using \<open>dist p z < r \<or> r < dist p z\<close> by (by100 blast)
   qed
 qed
 
@@ -22907,13 +23251,46 @@ proof -
   define \<gamma> :: "real \<Rightarrow> real^2"
     where "\<gamma> = (\<lambda>t. vector [2 * t - 1, sqrt (1 - (2 * t - 1)^2)])"
   have h\<gamma>_cont: "continuous_on {0..1} \<gamma>"
-    unfolding \<gamma>_def by (intro continuous_intros)
+  proof -
+    have hcomp1: "continuous_on {0..1} (\<lambda>t. \<gamma> t $ 1)"
+      unfolding \<gamma>_def
+      apply (simp only: vector_2)
+      by (intro continuous_intros)
+    have hcomp2: "continuous_on {0..1} (\<lambda>t. \<gamma> t $ 2)"
+      unfolding \<gamma>_def
+      apply (simp only: vector_2)
+      by (intro continuous_intros)
+    have hcomp: "\<And>i. continuous_on {0..1} (\<lambda>t. \<gamma> t $ i)"
+    proof -
+      fix i :: 2
+      consider "i = 1" | "i = 2"
+        using exhaust_2[of i] by (by100 blast)
+      thus "continuous_on {0..1} (\<lambda>t. \<gamma> t $ i)"
+      proof cases
+        assume hi: "i = 1"
+        show ?thesis
+          using hcomp1 hi by (by100 simp)
+      next
+        assume hi: "i = 2"
+        show ?thesis
+          using hcomp2 hi by (by100 simp)
+      qed
+    qed
+    have "continuous_on {0..1} (\<lambda>t. \<chi> i. \<gamma> t $ i)"
+      by (rule continuous_on_vec_lambda) (rule hcomp)
+    moreover have "(\<lambda>t. \<chi> i. \<gamma> t $ i) = \<gamma>"
+      by (rule ext) (rule vec_lambda_eta)
+    ultimately show ?thesis
+      by (by100 simp)
+  qed
   have h\<gamma>_inj: "inj_on \<gamma> {0..1}"
   proof (rule inj_onI)
     fix s t :: real
     assume hst: "\<gamma> s = \<gamma> t"
+    have hcoord: "\<gamma> s $ 1 = \<gamma> t $ 1"
+      using hst by (by100 simp)
     have "2 * s - 1 = 2 * t - 1"
-      using hst unfolding \<gamma>_def by (simp add: vec_eq_iff)
+      using hcoord unfolding \<gamma>_def by (by100 simp)
     thus "s = t" by (by100 simp)
   qed
   have h\<gamma>_arc: "arc \<gamma>"
@@ -22934,10 +23311,18 @@ proof -
       obtain t where ht: "t \<in> {0..1}" and hx_eq: "x = \<gamma> t"
         using hx unfolding path_image_def by (by100 blast)
       define a where "a = 2 * t - 1"
+      have ht0: "0 \<le> t"
+        using ht by (by100 simp)
+      have ht1: "t \<le> 1"
+        using ht by (by100 simp)
+      have ha_low: "-1 \<le> a"
+        using ht0 unfolding a_def by (by100 linarith)
+      have ha_high: "a \<le> 1"
+        using ht1 unfolding a_def by (by100 linarith)
       have ha_bounds: "-1 \<le> a" "a \<le> 1"
-        using ht unfolding a_def by (by100 linarith)+
+        using ha_low ha_high by (by100 simp_all)
       have ha_sq_le: "a\<^sup>2 \<le> 1"
-        using ha_bounds by (by100 simp add: square_le_1)
+        using ha_bounds by (simp add: square_le_1)
       have ha_nonneg: "0 \<le> 1 - a\<^sup>2"
         using ha_sq_le by (by100 linarith)
       have hx_sphere: "x \<in> sphere (0::real^2) 1"
@@ -22945,7 +23330,7 @@ proof -
         by (simp add: dist_norm norm_eq_sqrt_inner inner_vec_def sum_2
             power2_eq_square)
       have hx_half: "0 \<le> e\<^sub>2 \<bullet> x"
-        using hx_eq unfolding \<gamma>_def e\<^sub>2_def
+        using hx_eq ha_nonneg unfolding \<gamma>_def e\<^sub>2_def a_def
         by (simp add: inner_vec_def sum_2)
       show "x \<in> sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x}"
         using hx_sphere hx_half by (by100 blast)
@@ -22966,18 +23351,25 @@ proof -
       have hx2_nonneg: "0 \<le> x $ 2"
         using hx_half unfolding e\<^sub>2_def by (simp add: inner_vec_def sum_2)
       have hx1_sq_le: "(x $ 1)\<^sup>2 \<le> 1"
-        using hx_norm_sq by (by100 nlinarith)
+      proof -
+        have "0 \<le> (x $ 2)\<^sup>2"
+          by (by100 simp)
+        thus ?thesis
+          using hx_norm_sq by (by100 linarith)
+      qed
+      have hx1_abs: "\<bar>x $ 1\<bar> \<le> 1"
+        using hx1_sq_le by (simp add: abs_square_le_1)
       have hx1_bounds: "-1 \<le> x $ 1" "x $ 1 \<le> 1"
-        using hx1_sq_le by (by100 simp add: square_le_1)+
+        using hx1_abs by (simp_all add: abs_le_iff)
       define t where "t = ((x $ 1) + 1) / 2"
       have ht: "t \<in> {0..1}"
         using hx1_bounds unfolding t_def by (by100 simp)
       have hfirst: "2 * t - 1 = x $ 1"
-        unfolding t_def by (by100 simp)
+        unfolding t_def by (simp add: field_simps)
       have hx2_sq: "(x $ 2)\<^sup>2 = 1 - (x $ 1)\<^sup>2"
         using hx_norm_sq by (by100 simp)
       have hx2_sqrt: "sqrt (1 - (x $ 1)\<^sup>2) = x $ 2"
-        using real_sqrt_unique[OF hx2_nonneg hx2_sq] .
+        using real_sqrt_unique[OF hx2_sq hx2_nonneg] .
       have hx_gamma: "\<gamma> t = x"
         unfolding \<gamma>_def
         using hfirst hx2_sqrt by (simp add: vec_eq_iff forall_2)
@@ -23018,9 +23410,11 @@ proof -
     using hn_norm_pos by (by100 simp)
   have hunit_norm: "norm (n /\<^sub>R norm n) = 1"
     using hn_norm_pos by (by100 simp)
+  have hnorm_eq: "norm ?e\<^sub>2 = norm (n /\<^sub>R norm n)"
+    using he\<^sub>2_norm hunit_norm by (by100 simp)
   obtain T :: "real^2 \<Rightarrow> real^2" where hT_orth: "orthogonal_transformation T"
     and hT_e\<^sub>2: "T ?e\<^sub>2 = n /\<^sub>R norm n"
-    by (rule orthogonal_transformation_exists[OF he\<^sub>2_norm hunit_norm])
+    by (rule orthogonal_transformation_exists[OF hnorm_eq])
   define A :: "real^2 \<Rightarrow> real^2" where "A x = r *\<^sub>R T x" for x
   define f :: "real^2 \<Rightarrow> real^2" where "f x = p + A x" for x
   have hT_lin: "linear T"
@@ -23041,8 +23435,14 @@ proof -
   qed
   have hf_homeo_eucl: "top1_homeomorphism_on (UNIV::(real^2) set)
       geotop_euclidean_topology (UNIV::(real^2) set) geotop_euclidean_topology f"
-    unfolding f_def
-    by (rule geotop_affine_linear_homeomorphism_UNIV[OF hA_lin hA_inj, of p 0])
+  proof -
+    have "top1_homeomorphism_on (UNIV::(real^2) set)
+        geotop_euclidean_topology (UNIV::(real^2) set) geotop_euclidean_topology
+        (\<lambda>x. p + A (x - 0))"
+      by (rule geotop_affine_linear_homeomorphism_UNIV[OF hA_lin hA_inj])
+    thus ?thesis
+      unfolding f_def by (by100 simp)
+  qed
   have hf_homeo: "top1_homeomorphism_on (UNIV::(real^2) set)
       (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))
       (UNIV::(real^2) set) geotop_euclidean_topology f"
@@ -23071,14 +23471,43 @@ proof -
         using hx_sphere unfolding sphere_def dist_norm by (by100 simp)
       have hy_center: "y - p = r *\<^sub>R T x"
         using hy_eq unfolding f_def A_def by (by100 simp)
+      have hy_norm: "norm (p - y) = r"
+      proof -
+        have "norm (p - y) = norm (y - p)"
+          by (rule norm_minus_commute)
+        also have "\<dots> = norm (r *\<^sub>R T x)"
+          using hy_center by (by100 simp)
+        also have "\<dots> = r * norm (T x)"
+          using hr by (by100 simp)
+        also have "\<dots> = r"
+          using hx_norm hT_norm[of x] by (by100 simp)
+        finally show ?thesis .
+      qed
       have hy_sphere: "y \<in> sphere p r"
-        using hy_center hx_norm hr hT_norm[of x]
+        using hy_norm
         unfolding sphere_def dist_norm by (by100 simp)
       have hinner_nonneg: "0 \<le> n \<bullet> (y - p)"
       proof -
+        have hn_dot_Tx: "n \<bullet> T x = norm n * (?e\<^sub>2 \<bullet> x)"
+        proof -
+          have "n \<bullet> T x = (norm n *\<^sub>R T ?e\<^sub>2) \<bullet> T x"
+            using hn_as_Te\<^sub>2 by (by100 simp)
+          also have "\<dots> = norm n * (T ?e\<^sub>2 \<bullet> T x)"
+            by (simp add: inner_scaleR_left)
+          also have "\<dots> = norm n * (?e\<^sub>2 \<bullet> x)"
+            using hT_inner[of ?e\<^sub>2 x] by (by100 simp)
+          finally show ?thesis .
+        qed
         have "n \<bullet> (y - p) = r * norm n * (?e\<^sub>2 \<bullet> x)"
-          using hy_center hn_as_Te\<^sub>2 hT_inner[of ?e\<^sub>2 x]
-          by (simp add: inner_scaleR_left inner_scaleR_right algebra_simps)
+        proof -
+          have "n \<bullet> (y - p) = n \<bullet> (r *\<^sub>R T x)"
+            using hy_center by (by100 simp)
+          also have "\<dots> = r * (n \<bullet> T x)"
+            by (simp add: inner_scaleR_right)
+          also have "\<dots> = r * norm n * (?e\<^sub>2 \<bullet> x)"
+            using hn_dot_Tx by (simp add: algebra_simps)
+          finally show ?thesis .
+        qed
         thus ?thesis
           using hr hn_norm_pos hx_half by (by100 simp)
       qed
@@ -23095,16 +23524,38 @@ proof -
         using hy by (by100 blast)
       have hy_half: "0 \<le> n \<bullet> (y - p)"
         using hy by (by100 blast)
-      obtain x where hx_T: "T x = (y - p) /\<^sub>R r"
-        using hT_surj unfolding surj_def by (by100 blast)
+      have hx_T_ex: "\<exists>x. (y - p) /\<^sub>R r = T x"
+        by (rule spec[OF hT_surj[unfolded surj_def]])
+      obtain x where hx_T_rev: "(y - p) /\<^sub>R r = T x"
+        using hx_T_ex by (elim exE)
+      have hx_T: "T x = (y - p) /\<^sub>R r"
+        using hx_T_rev by (by100 simp)
       have hy_center: "y - p = r *\<^sub>R T x"
         using hx_T hr by (by100 simp)
       have hy_eq: "y = f x"
-        using hy_center unfolding f_def A_def by (by100 simp)
+      proof -
+        have "y = p + (y - p)"
+          by (by100 simp)
+        also have "\<dots> = p + r *\<^sub>R T x"
+          using hy_center by (by100 simp)
+        also have "\<dots> = f x"
+          unfolding f_def A_def by (by100 simp)
+        finally show ?thesis .
+      qed
       have hx_norm: "norm x = 1"
       proof -
+        have hp_y_norm: "norm (p - y) = r"
+          using hy_sphere unfolding sphere_def dist_norm by (by100 simp)
         have "r = norm (y - p)"
-          using hy_sphere hr unfolding sphere_def dist_norm by (by100 simp)
+        proof -
+          have "norm (y - p) = norm (p - y)"
+            by (rule norm_minus_commute)
+          also have "\<dots> = r"
+            by (rule hp_y_norm)
+          finally have hyn: "norm (y - p) = r" .
+          show ?thesis
+            using hyn by (simp add: eq_commute)
+        qed
         also have "\<dots> = norm (r *\<^sub>R T x)"
           using hy_center by (by100 simp)
         also have "\<dots> = r * norm x"
@@ -23116,11 +23567,32 @@ proof -
         using hx_norm unfolding sphere_def dist_norm by (by100 simp)
       have hx_half: "0 \<le> ?e\<^sub>2 \<bullet> x"
       proof -
+        have hn_dot_Tx: "n \<bullet> T x = norm n * (?e\<^sub>2 \<bullet> x)"
+        proof -
+          have "n \<bullet> T x = (norm n *\<^sub>R T ?e\<^sub>2) \<bullet> T x"
+            using hn_as_Te\<^sub>2 by (by100 simp)
+          also have "\<dots> = norm n * (T ?e\<^sub>2 \<bullet> T x)"
+            by (simp add: inner_scaleR_left)
+          also have "\<dots> = norm n * (?e\<^sub>2 \<bullet> x)"
+            using hT_inner[of ?e\<^sub>2 x] by (by100 simp)
+          finally show ?thesis .
+        qed
         have "n \<bullet> (y - p) = r * norm n * (?e\<^sub>2 \<bullet> x)"
-          using hy_center hn_as_Te\<^sub>2 hT_inner[of ?e\<^sub>2 x]
-          by (simp add: inner_scaleR_left inner_scaleR_right algebra_simps)
-        thus ?thesis
-          using hy_half hr hn_norm_pos by (by100 simp)
+        proof -
+          have "n \<bullet> (y - p) = n \<bullet> (r *\<^sub>R T x)"
+            using hy_center by (by100 simp)
+          also have "\<dots> = r * (n \<bullet> T x)"
+            by (simp add: inner_scaleR_right)
+          also have "\<dots> = r * norm n * (?e\<^sub>2 \<bullet> x)"
+            using hn_dot_Tx by (simp add: algebra_simps)
+          finally show ?thesis .
+        qed
+        hence hprod_nonneg: "0 \<le> r * norm n * (?e\<^sub>2 \<bullet> x)"
+          using hy_half by (by100 simp)
+        have hfactor_pos: "0 < r * norm n"
+          using hr hn_norm_pos by (simp add: mult_pos_pos)
+        show ?thesis
+          using hprod_nonneg hfactor_pos by (simp add: zero_le_mult_iff)
       qed
       have hx_mem: "x \<in> sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x}"
         using hx_sphere hx_half by (by100 blast)
@@ -23157,7 +23629,7 @@ proof -
     by (by100 blast)
   have hA_arc: "geotop_is_arc ?A
       (subspace_topology UNIV geotop_euclidean_topology ?A)"
-    by (rule geotop_standard_upper_semicircle_arc_R2_dev34[of ?e\<^sub>2, OF refl])
+    by (rule geotop_standard_upper_semicircle_arc_R2_dev34)
   have hA_sub_UNIV: "?A \<subseteq> (UNIV::(real^2) set)"
     by (by100 simp)
   have hfA_arc: "geotop_is_arc (f ` ?A)
@@ -23613,7 +24085,7 @@ proof -
   have hconv_half: "convex {x. N \<bullet> x \<ge> N \<bullet> p}"
     by (rule convex_halfspace_ge)
   have hconv_sub: "convex hull {a, b, c} \<subseteq> {x. N \<bullet> x \<ge> N \<bullet> p}"
-    by (rule hull_minimal[OF hverts_half hconv_half])
+    by (rule hull_minimal[where S=convex, OF hverts_half hconv_half])
   have hhalf_eq: "{x. N \<bullet> x \<ge> N \<bullet> p} = {x. 0 \<le> N \<bullet> (x - p)}"
     by (simp add: inner_diff_right)
   have h\<sigma>_half: "\<sigma> \<subseteq> {x. 0 \<le> N \<bullet> (x - p)}"
