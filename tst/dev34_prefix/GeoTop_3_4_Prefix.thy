@@ -3462,7 +3462,79 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_co
     component through \<open>P\<close> as a polygonal 1-sphere, split off the boundary arc
     on \<open>J\<close>, and use the complementary arc plus D42-style cyclic transfer to
     put \<open>Q1\<close> and \<open>S1\<close> in one cut-open component. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
+  have hD44_local_boundary_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Moise 4.4, lines 958--974, in the local regular-neighborhood form.
+      The selected carrier frontier has no branching and no graph endpoints,
+      and the complementary frontier arc gives one outside corridor whose
+      closure reaches the lower and upper access witnesses. **)
+    sorry
+  have hD44_frontier_card_le2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_closed_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_sphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2
+          hD44_frontier_no_endpoint])
+  have hD44_frontier_polygon:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+  proof -
+    have hsphere_BdJ:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hD44_frontier_sphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+  qed
+  have hD44_same_component:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+  proof -
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_closed_corridor by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
+  show ?thesis
+    using hD44_frontier_polygon hD44_same_component by (intro conjI)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph_corridor_core_moise_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
