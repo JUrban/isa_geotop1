@@ -4082,24 +4082,6 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_co
     \<open>I - (N \<union> A2)\<close> containing the lower and upper access witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_inputs:
-      "geotop_is_complex BdJ\<^sub>N
-       \<and> P \<in> FrN\<^sub>I
-       \<and> P \<in> geotop_polyhedron BdJ\<^sub>N
-       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
-       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I
-       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> N
-       \<and> geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
-       \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N
-       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
-       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
-       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
-    by (rule
-        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_inputs_prefix
-        [OF hJ hP hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N
-          hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def
-          hJ\<^sub>N_eq_BdJ\<^sub>N_poly hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def
-          hBdJ\<^sub>N_linear_graph])
   have hD44_local_bounds_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4166,7 +4148,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
       using hD44_frontier_sphere_corridor by (rule conjunct1)
     have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
-      using hD44_inputs by (by100 simp)
+      by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
     have hD44_frontier_sphere_BdJ:
         "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
           (subspace_topology UNIV geotop_euclidean_topology
