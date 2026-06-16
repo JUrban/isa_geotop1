@@ -5468,6 +5468,49 @@ proof -
     using hD44_B1P_sub_F\<^sub>1 by (by100 blast)
   have hD44_B1P_F\<^sub>2_disj: "?B1P \<inter> F\<^sub>2 = {}"
     using hD44_B1P_sub_F1o hD44_F\<^sub>1F\<^sub>2_inter by (by100 blast)
+  have hD44_B1P_other_F\<^sub>1_arc_interior:
+      "\<exists>X. X \<in> ?B1P
+        \<and> X \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<and> X \<noteq> P"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P" and hX_ne: "X \<noteq> P"
+      using hD44_B1P_nontrivial by (by100 blast)
+    have hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      using hD44_B1P_sub_F\<^sub>1_arc_interior hX_B1P by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_F1int hX_ne by (intro exI conjI)
+  qed
+  have hD44_F\<^sub>1_boundary_subarc_from_P_to_B1P:
+      "\<exists>X C. X \<in> ?B1P
+        \<and> X \<noteq> P
+        \<and> geotop_is_broken_line C
+        \<and> C \<subseteq> F\<^sub>1
+        \<and> P \<in> C
+        \<and> X \<in> C
+        \<and> geotop_arc_endpoints C {P, X}"
+  proof -
+    obtain X where hX_B1P: "X \<in> ?B1P"
+      and hX_F1int: "X \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+      and hX_ne: "X \<noteq> P"
+      using hD44_B1P_other_F\<^sub>1_arc_interior by (elim exE conjE)
+    have hP_F1: "P \<in> F\<^sub>1"
+      using hD44_P_F\<^sub>1 unfolding geotop_arc_interior_def by (by100 blast)
+    have hX_F1: "X \<in> F\<^sub>1"
+      using hX_F1int unfolding geotop_arc_interior_def by (by100 blast)
+    have hP_ne_X: "P \<noteq> X"
+      using hX_ne by (by100 blast)
+    obtain C where hC_bl: "geotop_is_broken_line C"
+      and hC_sub: "C \<subseteq> F\<^sub>1"
+      and hP_C: "P \<in> C"
+      and hX_C: "X \<in> C"
+      and hC_end: "geotop_arc_endpoints C {P, X}"
+      using geotop_broken_line_subarc_with_endpoints_prefix
+        [OF hD44_F\<^sub>1_bl hP_F1 hX_F1 hP_ne_X]
+      by (by100 blast)
+    show ?thesis
+      using hX_B1P hX_ne hC_bl hC_sub hP_C hX_C hC_end
+      by (intro exI conjI)
+  qed
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
