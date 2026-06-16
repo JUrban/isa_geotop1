@@ -4715,24 +4715,46 @@ proof -
   have hN_closed: "closed N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
         [OF hK_complex hK_fin hN_def])
+  have hN_compact: "compact N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN\<^sub>I_eq_N: "N\<^sub>I = N"
     by (rule
         geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
           [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def])
   have hN\<^sub>I_closed: "closed N\<^sub>I"
     using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hN\<^sub>I_compact: "compact N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_compact by (by100 simp)
   have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
     unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
   have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
     using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
   have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
     using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+  have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+    by (rule closed_subset_compact
+        [OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
   have hP_J\<^sub>N: "P \<in> J\<^sub>N"
     using hP_BdJ\<^sub>N_poly hBdJ\<^sub>N_poly_sub_J\<^sub>N by (by100 blast)
   have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
     using hJ\<^sub>N_eq_BdJ\<^sub>N_poly hBdJ\<^sub>N_poly_sub_FrN\<^sub>I by (by100 simp)
+  have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
+    using hJ\<^sub>N_connected_component connected_connected_component by (by100 simp)
+  have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
+    using hJ\<^sub>N_connected_component closedin_connected_component by (by100 simp)
+  have hJ\<^sub>N_compact: "compact J\<^sub>N"
+    by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
+  have hJ\<^sub>N_closed: "closed J\<^sub>N"
+    by (rule compact_imp_closed[OF hJ\<^sub>N_compact])
   have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
     using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hBdJ\<^sub>N_poly_compact: "compact (geotop_polyhedron BdJ\<^sub>N)"
+    by (rule geotop_complex_polyhedron_compact[OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
+  have hBdJ\<^sub>N_poly_closed: "closed (geotop_polyhedron BdJ\<^sub>N)"
+    by (rule geotop_complex_polyhedron_closed[OF hBdJ\<^sub>N_complex hBdJ\<^sub>N_fin])
   have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
     using hK\<^sub>N_poly by (by100 simp)
   have hNcut_access_exclusion_package:
