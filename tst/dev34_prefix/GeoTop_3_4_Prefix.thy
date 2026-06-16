@@ -4667,6 +4667,58 @@ proof -
         by (rule hD44_closed_corridor_same_component_suffices[OF hcorridor])
     qed
   qed
+  have hD44_card_bounds_and_closed_corridor_suffice:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2) \<Longrightarrow>
+        (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Book-aligned incidence-bound form of the regular-neighborhood reduction.
+      Moise's frontier component has exactly two local branches once the brick
+      boundary analysis supplies both the upper and lower incidence bounds; with
+      the complementary outside corridor, this is enough for the remaining D44
+      sphere/component conclusion. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hge2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    assume hcorridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    have hdegree:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    proof (intro allI impI)
+      fix w
+      assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+      have hle:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+        by (rule hle2[OF hwBdJ])
+      have hge:
+        "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+        by (rule hge2[OF hwBdJ])
+      show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+        using hle hge by (by100 linarith)
+    qed
+    show ?thesis
+      by (rule hD44_degree_two_and_closed_corridor_suffice
+          [OF hdegree hcorridor])
+  qed
   have hD44_no_branch_no_endpoint_and_closed_corridor_suffice:
       "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
