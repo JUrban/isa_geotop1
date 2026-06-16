@@ -5361,6 +5361,44 @@ proof -
   have hD44_P_not_F\<^sub>2_set: "P \<notin> F\<^sub>2"
     using hD44_P_not_F\<^sub>2 hD44_P_F\<^sub>1 hD44_F\<^sub>1F\<^sub>2_inter
     unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_B1_sub_boundary_arcs:
+      "?B1 \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_B1_A2_QS_disj:
+      "?B1 \<inter> (A2 \<union> {Q, S}) = {}"
+  proof -
+    have hB1_sub_BdJ_poly: "?B1 \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+      using hD44_B1_eq_BdJ\<^sub>N_poly_boundary by (by100 blast)
+    show ?thesis
+      using hB1_sub_BdJ_poly hBdJ\<^sub>N_poly_A2_QS_disj by (by100 blast)
+  qed
+  have hD44_B1_R_notin: "R \<notin> ?B1"
+    using hD44_B1_A2_QS_disj hR_in_A2 by (by100 blast)
+  have hD44_B1_Q_notin: "Q \<notin> ?B1"
+    using hD44_B1_A2_QS_disj by (by100 blast)
+  have hD44_B1_S_notin: "S \<notin> ?B1"
+    using hD44_B1_A2_QS_disj by (by100 blast)
+  have hD44_B1_Ncut_disj: "?B1 \<inter> ?Ncut = {}"
+  proof -
+    have hB1_sub_BdJ_poly: "?B1 \<subseteq> geotop_polyhedron BdJ\<^sub>N"
+      using hD44_B1_eq_BdJ\<^sub>N_poly_boundary by (by100 blast)
+    show ?thesis
+      using hB1_sub_BdJ_poly hNcut_BdJ\<^sub>N_poly_disj by (by100 blast)
+  qed
+  have hD44_B1P_sub_boundary_arcs:
+      "?B1P \<subseteq> F\<^sub>1 \<union> F\<^sub>2"
+    using hD44_B1P_sub_B1 hD44_B1_sub_boundary_arcs by (by100 blast)
+  have hD44_B1P_A2_QS_disj:
+      "?B1P \<inter> (A2 \<union> {Q, S}) = {}"
+    using hD44_B1P_sub_B1 hD44_B1_A2_QS_disj by (by100 blast)
+  have hD44_B1P_Ncut_disj: "?B1P \<inter> ?Ncut = {}"
+    using hD44_B1P_sub_B1 hD44_B1_Ncut_disj by (by100 blast)
+  have hD44_B1P_R_notin: "R \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj hR_in_A2 by (by100 blast)
+  have hD44_B1P_Q_notin: "Q \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj by (by100 blast)
+  have hD44_B1P_S_notin: "S \<notin> ?B1P"
+    using hD44_B1P_A2_QS_disj by (by100 blast)
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
