@@ -3919,9 +3919,11 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_in
   assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
   shows
     "geotop_is_complex BdJ\<^sub>N
+     \<and> BdJ\<^sub>N \<subseteq> BdK\<^sub>N
      \<and> P \<in> FrN\<^sub>I
      \<and> P \<in> geotop_polyhedron BdJ\<^sub>N
      \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N
      \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I
      \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> N
      \<and> geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
@@ -3934,8 +3936,9 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_in
     Non-circular setup package for the literal Moise 4.4 frontier paragraph.
     Before proving the selected frontier component is polygonal and extracting
     the outside component, the existing carrier hygiene and combinatorial
-    boundary/frontier bridge already locate the selected boundary carrier and
-    record its disjointness from the outside cut and forbidden arc. **)
+    boundary/frontier bridge already locate the selected boundary carrier as a
+    subcomplex of the full carrier boundary and record its disjointness from
+    the outside cut and forbidden arc. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
   have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
@@ -3997,6 +4000,11 @@ proof -
         geotop_polygon_two_endpoint_arcs_selected_component_boundary_frontier_prefix
         [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
           hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    using hselected_boundary_frontier by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N"
+    using hselected_boundary_frontier by (by100 blast)
   have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
     using hselected_boundary_frontier by (by100 blast)
   have hBdJ\<^sub>N_poly_sub_N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> N"
@@ -4007,7 +4015,8 @@ proof -
   have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hR_not_J\<^sub>N by (by100 blast)
   show ?thesis
-    using hBdJ\<^sub>N_complex hP_FrN\<^sub>I hP_BdJ\<^sub>N_poly hBdJ\<^sub>N_poly_sub_J\<^sub>N
+    using hBdJ\<^sub>N_complex hBdJ\<^sub>N_sub_BdK\<^sub>N hP_FrN\<^sub>I hP_BdJ\<^sub>N_poly
+      hBdJ\<^sub>N_poly_sub_J\<^sub>N hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly
       hBdJ\<^sub>N_poly_sub_FrN\<^sub>I hBdJ\<^sub>N_poly_sub_N hBdJ\<^sub>N_poly_A2_QS_disj
       hR_not_BdJ\<^sub>N_poly hNcut_BdJ\<^sub>N_poly_disj hQ1_not_BdJ\<^sub>N_poly
       hS1_not_BdJ\<^sub>N_poly
