@@ -4430,7 +4430,7 @@ proof -
           hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
   have hD44_local_graph_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+          card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           \<not> geotop_graph_endpoint BdJ\<^sub>N w)
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
@@ -4441,15 +4441,30 @@ proof -
     (**
       Remaining literal Moise 4.4 regular-neighborhood step after the
       established carrier hygiene above: the selected carrier is a regular
-      neighborhood in the closed disk, so the selected frontier component has
-      no branching and no graph endpoints, and the complementary frontier side
-      gives a connected outside corridor from the lower to the upper access
-      witness. **)
+      neighborhood in the closed disk, so the full carrier boundary has no
+      branching at selected frontier vertices, the selected frontier component
+      has no graph endpoints, and the complementary frontier side gives a
+      connected outside corridor from the lower to the upper access witness. **)
     sorry
+  have hD44_full_boundary_vertex_incident_le2:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_local_graph_corridor_book_step by (by100 blast)
+  have hD44_BdK\<^sub>N_fin: "finite BdK\<^sub>N"
+    using hD44_boundary_complex by (by100 blast)
   have hD44_frontier_vertex_incident_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    using hD44_local_graph_corridor_book_step by (by100 blast)
+  proof (intro allI impI)
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    have hfull_le2:
+        "card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_full_boundary_vertex_incident_le2 hwBdJ by (by100 blast)
+    show "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      by (rule geotop_polygon_two_endpoint_arcs_selected_component_incident_card_le2_prefix
+          [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_fin hfull_le2])
+  qed
   have hD44_frontier_no_endpoint:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         \<not> geotop_graph_endpoint BdJ\<^sub>N w"
