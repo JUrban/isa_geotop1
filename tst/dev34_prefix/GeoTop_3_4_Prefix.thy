@@ -4432,7 +4432,7 @@ proof -
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
        \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2)
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -4443,8 +4443,9 @@ proof -
       established carrier hygiene above: the selected carrier is a regular
       neighborhood in the closed disk, so the full carrier boundary has no
       branching at selected frontier vertices, the selected frontier component
-      has no graph endpoints, and the complementary frontier side gives a
-      connected outside corridor from the lower to the upper access witness. **)
+      has two local boundary germs at each vertex, and the complementary
+      frontier side gives a connected outside corridor from the lower to the
+      upper access witness. **)
     sorry
   have hD44_full_boundary_vertex_incident_le2:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -4465,10 +4466,30 @@ proof -
       by (rule geotop_polygon_two_endpoint_arcs_selected_component_incident_card_le2_prefix
           [OF hBdJ\<^sub>N_def hD44_BdK\<^sub>N_fin hfull_le2])
   qed
+  have hD44_frontier_vertex_incident_ge2:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    using hD44_local_graph_corridor_book_step by (by100 blast)
   have hD44_frontier_no_endpoint:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-    using hD44_local_graph_corridor_book_step by (by100 blast)
+  proof (intro allI impI)
+    fix w
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    show "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    proof
+      assume hend: "geotop_graph_endpoint BdJ\<^sub>N w"
+      have hcard1:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1"
+        using geotop_graph_endpoint_singleton_and_card_one_prefix
+          [OF hBdJ\<^sub>N_linear_graph hend] by (by100 blast)
+      have hcard_ge2:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+        using hD44_frontier_vertex_incident_ge2 hwBdJ by (by100 blast)
+      show False
+        using hcard1 hcard_ge2 by (by100 linarith)
+    qed
+  qed
   have hD44_corridor_book_step:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
