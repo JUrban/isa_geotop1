@@ -4891,6 +4891,75 @@ proof -
     show ?thesis
       using hpolygon hsame by (intro conjI)
   qed
+  have hD44_exact_two_and_access_crossings_imp_sphere_access_crossings:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+       (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}) \<Longrightarrow>
+       geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Local-incidence form of the same book sentence.  The regular-neighborhood
+      boundary analysis may prove exact two frontier edges at each vertex
+      instead of naming the frontier component as a sphere directly; the
+      finite graph classifier converts that local sentence to the sphere
+      statement while preserving the broken-line access crossings. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    assume hcross:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    have hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere[OF htwo])
+    show ?thesis
+      using hsphere hcross by (intro conjI)
+  qed
+  have hD44_frontier_exact_two_access_crossings_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Moise 4.4, lines 962-974, in the local form produced by the
+      regular-neighborhood boundary analysis.  The component of
+      \<open>Fr N\<^sub>I\<close> through \<open>P\<close> has exactly two selected frontier edges at each
+      boundary vertex, and the complementary frontier arc supplies broken-line
+      crossings of arbitrary lower and upper access collars in
+      \<open>I - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_frontier_sphere_access_crossings_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -4906,7 +4975,29 @@ proof -
       a 1-sphere, and the complementary frontier arc gives broken-line
       crossings of arbitrary lower and upper access collars in
       \<open>I - (N \<union> A2)\<close>. **)
-    sorry
+  proof -
+    have htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      using hD44_frontier_exact_two_access_crossings_book_step
+      by (rule conjunct1)
+    have hcross:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hD44_frontier_exact_two_access_crossings_book_step
+      by (rule conjunct2)
+    show ?thesis
+      by (rule hD44_exact_two_and_access_crossings_imp_sphere_access_crossings
+          [OF htwo hcross])
+  qed
   have hD44_frontier_polygon_same_component_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
