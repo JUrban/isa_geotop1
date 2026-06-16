@@ -5280,6 +5280,87 @@ proof -
     show ?thesis
       using hx_B1P hx_ne by (by100 blast)
   qed
+  have hR_in_A2: "R \<in> A2"
+    using hA2J hR by (by100 blast)
+  have hD44_card_distinct:
+      "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
+    by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
+  have hQ_ne_S: "Q \<noteq> S"
+    using hD44_card_distinct by (by100 blast)
+  have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+    using hD44_card_distinct by (by100 blast)
+  have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+    using hD44_card_distinct by (by100 blast)
+  have hD44_QS_broken_boundary_arc_split:
+      "\<exists>F\<^sub>1 F\<^sub>2.
+        J = F\<^sub>1 \<union> F\<^sub>2
+        \<and> geotop_is_broken_line F\<^sub>1
+        \<and> geotop_is_broken_line F\<^sub>2
+        \<and> geotop_arc_endpoints F\<^sub>1 {Q, S}
+        \<and> geotop_arc_endpoints F\<^sub>2 {Q, S}
+        \<and> geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+            geotop_arc_interior F\<^sub>2 {Q, S} = {}
+        \<and> P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+  proof -
+    have hP_not_QS: "P \<notin> {Q, S}"
+      using hQ_ne_PR hS_ne_PR by (by100 blast)
+    show ?thesis
+      by (rule geotop_polygon_QS_broken_boundary_arc_split_through_point_prefix
+          [OF hJ hP hQ hS hQ_ne_S hP_not_QS])
+  qed
+  obtain F\<^sub>1 F\<^sub>2 where hD44_F_J_split: "J = F\<^sub>1 \<union> F\<^sub>2"
+    and hD44_F\<^sub>1_bl: "geotop_is_broken_line F\<^sub>1"
+    and hD44_F\<^sub>2_bl: "geotop_is_broken_line F\<^sub>2"
+    and hD44_F\<^sub>1E: "geotop_arc_endpoints F\<^sub>1 {Q, S}"
+    and hD44_F\<^sub>2E: "geotop_arc_endpoints F\<^sub>2 {Q, S}"
+    and hD44_F\<^sub>1F\<^sub>2_int_disj:
+      "geotop_arc_interior F\<^sub>1 {Q, S} \<inter>
+        geotop_arc_interior F\<^sub>2 {Q, S} = {}"
+    and hD44_P_F\<^sub>1:
+      "P \<in> geotop_arc_interior F\<^sub>1 {Q, S}"
+    using hD44_QS_broken_boundary_arc_split
+    by (elim exE conjE)
+  have hD44_F\<^sub>1F\<^sub>2_inter: "F\<^sub>1 \<inter> F\<^sub>2 = {Q, S}"
+    by (rule geotop_same_endpoint_arcs_inter_eq_prefix
+        [OF hD44_F\<^sub>1E hD44_F\<^sub>2E hD44_F\<^sub>1F\<^sub>2_int_disj])
+  have hD44_PR_on_QS_boundary_arc_interiors:
+      "(P \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> P \<in> geotop_arc_interior F\<^sub>2 {Q, S})
+        \<and> (R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+          \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S})"
+    using hD44_F_J_split hP hR hQ_ne_PR hS_ne_PR
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_not_F\<^sub>2:
+      "P \<notin> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD44_F\<^sub>1F\<^sub>2_int_disj hD44_P_F\<^sub>1
+    by (by100 blast)
+  have hD44_R_on_QS_boundary_arc:
+      "R \<in> geotop_arc_interior F\<^sub>1 {Q, S}
+        \<or> R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD44_PR_on_QS_boundary_arc_interiors
+    by (by100 blast)
+  have hD44_R_F\<^sub>2_if_not_F\<^sub>1:
+      "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S} \<Longrightarrow>
+        R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    using hD44_R_on_QS_boundary_arc
+    by (by100 blast)
+  have hD44_R_not_F\<^sub>1_from_cyclic:
+      "R \<notin> geotop_arc_interior F\<^sub>1 {Q, S}"
+    by (rule geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix
+        [OF hcyc hD44_P_F\<^sub>1 hD44_F_J_split hD44_F\<^sub>1E hD44_F\<^sub>2E
+          hD44_F\<^sub>1F\<^sub>2_int_disj])
+  have hD44_R_F\<^sub>2: "R \<in> geotop_arc_interior F\<^sub>2 {Q, S}"
+    by (rule hD44_R_F\<^sub>2_if_not_F\<^sub>1[OF hD44_R_not_F\<^sub>1_from_cyclic])
+  have hD44_F\<^sub>1_sub_J: "F\<^sub>1 \<subseteq> J"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_F\<^sub>2_sub_J: "F\<^sub>2 \<subseteq> J"
+    using hD44_F_J_split by (by100 blast)
+  have hD44_R_not_F\<^sub>1: "R \<notin> F\<^sub>1"
+    using hD44_R_not_F\<^sub>1_from_cyclic hD44_R_F\<^sub>2 hD44_F\<^sub>1F\<^sub>2_inter
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hD44_P_not_F\<^sub>2_set: "P \<notin> F\<^sub>2"
+    using hD44_P_not_F\<^sub>2 hD44_P_F\<^sub>1 hD44_F\<^sub>1F\<^sub>2_inter
+    unfolding geotop_arc_interior_def by (by100 blast)
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
