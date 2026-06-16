@@ -4775,6 +4775,14 @@ proof -
     using hD44_full_boundary_complex by (by100 blast)
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     using hD44_full_boundary_complex by (by100 blast)
+  have hP_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hN_connected_HOL: "connected N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_A1 hA1_N hN_def])
+  have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
+        [OF hK_complex hK_fin hA1 hP_A1 hA1_N hN_def hK\<^sub>N_def])
   have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
     using hD44_full_boundary_complex by (by100 blast)
   have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
