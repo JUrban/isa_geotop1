@@ -3884,6 +3884,136 @@ proof -
     using hcard_mono hBdK\<^sub>N_card_le2 by (by100 linarith)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_inputs_prefix:
+  fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
+    and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and P Q R S Q1 S1 :: "real^2"
+    and m :: nat
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hA1_N: "A1 \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hFrN\<^sub>I_def:
+    "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  assumes hJ\<^sub>N_def:
+    "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
+  assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+  shows
+    "geotop_is_complex BdJ\<^sub>N
+     \<and> P \<in> FrN\<^sub>I
+     \<and> P \<in> geotop_polyhedron BdJ\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+     \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N
+     \<and> (geotop_polygon_interior J - (N \<union> A2))
+          \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+     \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+     \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+  (**
+    Non-circular setup package for the literal Moise 4.4 frontier paragraph.
+    Before proving the selected frontier component is polygonal and extracting
+    the outside component, the existing carrier hygiene and combinatorial
+    boundary/frontier bridge already locate the selected boundary carrier and
+    record its disjointness from the outside cut and forbidden arc. **)
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
+  have hhygiene:
+      "N\<^sub>I = N
+       \<and> closed N
+       \<and> compact N
+       \<and> FrN\<^sub>I = frontier N
+       \<and> FrN\<^sub>I \<subseteq> N
+       \<and> P \<in> FrN\<^sub>I
+       \<and> P \<in> J\<^sub>N
+       \<and> J\<^sub>N \<subseteq> FrN\<^sub>I
+       \<and> J\<^sub>N \<subseteq> N
+       \<and> J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+       \<and> R \<notin> J\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+       \<and> ?Ncut \<inter> N = {}
+       \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+       \<and> ?Ncut \<inter> J\<^sub>N = {}
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_hygiene_prefix
+        [OF hJ hP hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N
+          hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def
+          hJ\<^sub>N_eq_BdJ\<^sub>N_poly])
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+    using hhygiene by (by100 simp)
+  have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+    using hhygiene by (by100 simp)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hhygiene by (by100 simp)
+  have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hhygiene by (by100 simp)
+  have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
+    using hhygiene by (by100 simp)
+  have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+    using hhygiene by (by100 simp)
+  have hNcut_BdJ\<^sub>N_poly_disj:
+      "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hhygiene by (by100 simp)
+  have hQ1_not_BdJ\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hhygiene by (by100 simp)
+  have hS1_not_BdJ\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hhygiene by (by100 simp)
+  have hP_BdJ\<^sub>N_poly: "P \<in> geotop_polyhedron BdJ\<^sub>N"
+    using hP_J\<^sub>N hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  have hselected_boundary_frontier:
+      "BdJ\<^sub>N \<subseteq> BdK\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_component_boundary_frontier_prefix
+        [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+          hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+  have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hselected_boundary_frontier by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> N"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+  have hBdJ\<^sub>N_poly_A2_QS_disj:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_A2_QS_disj by (by100 blast)
+  have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hR_not_J\<^sub>N by (by100 blast)
+  show ?thesis
+    using hBdJ\<^sub>N_complex hP_FrN\<^sub>I hP_BdJ\<^sub>N_poly hBdJ\<^sub>N_poly_sub_J\<^sub>N
+      hBdJ\<^sub>N_poly_sub_FrN\<^sub>I hBdJ\<^sub>N_poly_sub_N hBdJ\<^sub>N_poly_A2_QS_disj
+      hR_not_BdJ\<^sub>N_poly hNcut_BdJ\<^sub>N_poly_disj hQ1_not_BdJ\<^sub>N_poly
+      hS1_not_BdJ\<^sub>N_poly
+    by (by100 simp)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_component_literal_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
