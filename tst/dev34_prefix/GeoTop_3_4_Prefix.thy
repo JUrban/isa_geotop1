@@ -3466,6 +3466,19 @@ proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
   have hP_in_A1: "P \<in> A1"
     using hA1J by (by100 blast)
+  have hR_in_A2: "R \<in> A2"
+    using hA2J by (by100 blast)
+  have hD44_boundary_distinct:
+      "Q \<noteq> S \<and> Q \<noteq> P \<and> Q \<noteq> R \<and> S \<noteq> P \<and> S \<noteq> R"
+    by (rule geotop_four_boundary_points_card_distinct_QS_PR_prefix[OF hcard])
+  have hQ_ne_S: "Q \<noteq> S"
+    using hD44_boundary_distinct by (by100 blast)
+  have hQ_ne_PR: "Q \<notin> {P, R}"
+    using hD44_boundary_distinct by (by100 blast)
+  have hS_ne_PR: "S \<notin> {P, R}"
+    using hD44_boundary_distinct by (by100 blast)
+  have hP_not_QS: "P \<notin> {Q, S}"
+    using hD44_boundary_distinct by (by100 blast)
   have hN\<^sub>I_eq_N: "N\<^sub>I = N"
     by (rule
         geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
@@ -3494,6 +3507,8 @@ proof -
     using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
   have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
     using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
+  have hR_not_J\<^sub>N: "R \<notin> J\<^sub>N"
+    using hR_in_A2 hJ\<^sub>N_A2_QS_disj by (by100 blast)
   have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
     using hQ1_Ncut by (by100 blast)
   have hS1_I: "S1 \<in> geotop_polygon_interior J"
