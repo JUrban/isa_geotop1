@@ -5807,14 +5807,11 @@ proof -
       and the complementary outside side puts the two access witnesses in the
       same component of \<open>I - (N \<union> A2)\<close>. **)
   proof -
-    have hD44_selected_exact_two_corridor_raw_book_step:
+    have hD44_local_graph_corridor_raw_book_step:
         "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-            \<and> e\<^sub>1 \<noteq> e\<^sub>2
-            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+         \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            \<not> geotop_graph_endpoint BdJ\<^sub>N w)
          \<and> (\<exists>Z. Z \<subseteq> ?Ncut
             \<and> top1_connected_on Z
                 (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -5822,11 +5819,25 @@ proof -
             \<and> S1 \<in> closure Z)"
       (**
         Moise 4.4, lines 958--974, in the direct local form.  The frontier
-        component of the fine regular neighborhood has exactly the two local
-        selected boundary edges at every vertex, and the complementary
-        lower-to-upper outside side gives a connected corridor in
+        component of the fine regular neighborhood has no local branching and
+        no frontier graph endpoint, and the complementary lower-to-upper
+        outside side gives a connected corridor in
         \<open>I - (N \<union> A2)\<close> accumulating at \<open>Q1\<close> and \<open>S1\<close>. **)
       sorry
+    have hD44_frontier_card_le2_raw:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_local_graph_corridor_raw_book_step by (by100 blast)
+    have hD44_frontier_no_endpoint_raw:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      using hD44_local_graph_corridor_raw_book_step by (by100 blast)
+    have hD44_frontier_degree_two_raw:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule geotop_incident_ge1_le2_no_endpoint_degree_two_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_vertex_incident_ge1
+            hD44_frontier_card_le2_raw hD44_frontier_no_endpoint_raw])
     have hD44_selected_exact_two_raw:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -5835,29 +5846,15 @@ proof -
             \<and> e\<^sub>1 \<noteq> e\<^sub>2
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      using hD44_selected_exact_two_corridor_raw_book_step by (rule conjunct1)
-    have hD44_graph_bounds_raw:
-        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
-         \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
-      by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
-          [OF hBdJ\<^sub>N_fin hD44_selected_exact_two_raw])
-    have hD44_frontier_card_le2_raw:
-        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-      using hD44_graph_bounds_raw by (by100 blast)
-    have hD44_frontier_no_endpoint_raw:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-          \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      using hD44_graph_bounds_raw by (by100 blast)
+      by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+          [OF hD44_frontier_degree_two_raw])
     have hD44_corridor_raw:
         "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z"
-      using hD44_selected_exact_two_corridor_raw_book_step by (rule conjunct2)
+      using hD44_local_graph_corridor_raw_book_step by (by100 blast)
     have hD44_frontier_sphere_raw:
         "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
