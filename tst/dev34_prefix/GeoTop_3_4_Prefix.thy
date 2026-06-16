@@ -4116,6 +4116,24 @@ proof -
       complementary frontier arc gives one outside corridor whose closure meets
       the two access witnesses. **)
   proof -
+    have hD44_frontier_polygon_same_component_book_step:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+         \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+            ?Ncut Q1"
+      (**
+        Moise 4.4, lines 958--974, in the literal book form.  The component
+        of \<open>Fr (N \<inter> \<bar>I)\<close> through \<open>P\<close> is the polygonal frontier component
+        carried by \<open>BdJ\<^sub>N\<close>, and the complementary frontier arc gives one
+        outside component of \<open>I - (N \<union> A2)\<close> containing the two access
+        witnesses. **)
+      sorry
+    have hD44_frontier_polygon:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      using hD44_frontier_polygon_same_component_book_step by (rule conjunct1)
+    have hD44_same_component:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+      using hD44_frontier_polygon_same_component_book_step by (rule conjunct2)
     have hD44_exact_two_corridor_book_step:
         "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4129,12 +4147,10 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Q1 \<in> closure Z
             \<and> S1 \<in> closure Z)"
-      (**
-        Moise 4.4 exact local boundary/corridor sentence.  The regular
-        neighborhood frontier component through \<open>P\<close> has exactly the two
-        adjacent selected boundary edges at every vertex, and the complementary
-        frontier arc gives the connected outside corridor. **)
-      sorry
+      by (rule
+          geotop_polygon_frontier_component_same_component_exact_two_corridor_package_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+            hD44_frontier_polygon hD44_same_component])
     have hD44_exact_two:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
