@@ -4664,15 +4664,44 @@ proof -
         [OF hK_complex hK_fin hN_def hK\<^sub>N_def hBdK\<^sub>N_def])
   have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
     using hD44_full_boundary_complex by (by100 blast)
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     using hD44_full_boundary_complex by (by100 blast)
   have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
     using hD44_full_boundary_complex by (by100 blast)
   have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
     using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
   have hBdK\<^sub>N_poly_sub_N:
       "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
     using hD44_full_boundary_complex by (by100 blast)
+  have hBdJ\<^sub>N_sub_K\<^sub>N: "BdJ\<^sub>N \<subseteq> K\<^sub>N"
+    using hBdJ\<^sub>N_sub_BdK\<^sub>N hBdK\<^sub>N_sub_K\<^sub>N by (by100 blast)
+  have hBdJ\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heBdK: "e \<in> BdK\<^sub>N"
+      using hBdJ\<^sub>N_sub_BdK\<^sub>N heBdJ by (by100 blast)
+    have heBdK_comb: "e \<in> geotop_comb_boundary K\<^sub>N 2"
+      using heBdK hBdK\<^sub>N_def by (by100 simp)
+    show
+      "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+        \<and> geotop_is_face e \<sigma>} = 1"
+      by (rule geotop_comb_boundary_edge_member_incident_2simplex_count_one_prefix
+          [OF heBdK_comb hedge])
+  qed
+  have hK\<^sub>N_edge_incident_2faces_card_le2:
+      "\<And>e. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+    by (rule geotop_complex_edge_incident_2simplex_count_le2_prefix
+        [OF hK\<^sub>N_complex])
   have hD44_full_boundary_frontier:
       "(\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<longrightarrow> e \<subseteq> FrN\<^sub>I)
        \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
