@@ -4537,6 +4537,129 @@ proof -
         by (rule hD44_arbitrary_access_broken_line_crossings_suffice[OF hcross])
     qed
   qed
+  have hD44_closed_corridor_same_component_suffices:
+      "(\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Closed-corridor form of Moise's final component sentence.  If the
+      complementary frontier arc supplies one connected outside corridor whose
+      closure reaches both access witnesses, then the general open-corridor
+      component lemma puts the witnesses in the same component of \<open>?Ncut\<close>. **)
+  proof -
+    assume hex_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hex_corridor by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
+  have hD44_closed_corridor_gives_access_ball_crossings:
+      "(\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)
+        \<Longrightarrow> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Collar extraction from the same closed-corridor sentence: every pair of
+      prescribed access balls meets that fixed connected outside corridor. **)
+  proof -
+    assume hex_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hex_corridor by (elim exE conjE)
+    show "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume hQpos: "0 < \<epsilon>\<^sub>Q"
+      assume hSpos: "0 < \<epsilon>\<^sub>S"
+      have hQmeet: "Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hQ1_cl hQpos])
+      have hSmeet: "Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        by (rule geotop_closure_point_meets_centered_ball_prefix
+            [OF hS1_cl hSpos])
+      show "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hZ_sub hZ_conn hQmeet hSmeet by (intro exI conjI)
+    qed
+  qed
+  have hD44_no_branch_no_endpoint_and_closed_corridor_suffice:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
+        (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w) \<Longrightarrow>
+        (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z) \<Longrightarrow>
+        geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Book-aligned final reduction: once the regular-neighborhood boundary is
+      a no-branch/no-endpoint frontier graph and the complementary frontier arc
+      gives a closed outside corridor, the full local D44 target follows. **)
+  proof -
+    assume hle2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    assume hnoend:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    assume hcorridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    show ?thesis
+    proof (intro conjI)
+      show "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+        by (rule hD44_BdJ\<^sub>N_card_le2_no_endpoint_imp_J\<^sub>N_1sphere
+            [OF hle2 hnoend])
+      show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+        by (rule hD44_closed_corridor_same_component_suffices[OF hcorridor])
+    qed
+  qed
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
