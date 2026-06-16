@@ -5706,6 +5706,58 @@ proof -
       using hsd_iff hD44_P_B1P hD44_A2_QS_nonempty hD44_B1P_A2_QS_disj
       by (by100 blast)
   qed
+  have hD44_N_A2_closed: "closed (N \<union> A2)"
+    by (rule closed_Un[OF hN_closed hA2_closed])
+  have hD44_I_open_HOL: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hD44_Ncut_open_HOL: "open ?Ncut"
+    by (rule open_Diff[OF hD44_I_open_HOL hD44_N_A2_closed])
+  have hD44_Q1_local_Ncut_ball:
+      "\<exists>\<epsilon>>0. ball Q1 \<epsilon> \<subseteq> ?Ncut"
+    using hD44_Ncut_open_HOL hQ1_Ncut open_contains_ball by (by100 blast)
+  have hD44_S1_local_Ncut_ball:
+      "\<exists>\<epsilon>>0. ball S1 \<epsilon> \<subseteq> ?Ncut"
+    using hD44_Ncut_open_HOL hS1_Ncut open_contains_ball by (by100 blast)
+  have hD44_same_component_in_Ncut_suffices:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> Q1 \<in> B
+          \<and> S1 \<in> B"
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut])
+  have hD44_connected_route_component_suffices:
+      "\<And>W. W \<subseteq> ?Ncut \<Longrightarrow> Q1 \<in> W \<Longrightarrow> S1 \<in> W \<Longrightarrow>
+        top1_connected_on W
+          (subspace_topology UNIV geotop_euclidean_topology W) \<Longrightarrow>
+        S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    by (rule geotop_connected_witness_component_at_intro_prefix)
+  have hD44_broken_line_route_component_suffices:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    by (rule geotop_broken_line_route_component_at_prefix)
+  have hD44_Q1_Ncut_component_package:
+      "\<exists>C. C = geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1
+        \<and> C \<subseteq> ?Ncut
+        \<and> Q1 \<in> C
+        \<and> C \<in> geotop_euclidean_topology
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)"
+    by (rule geotop_component_at_open_connected_package_prefix
+        [OF hNcut_open hQ1_Ncut])
+  have hD44_same_component_gives_closed_corridor:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1
+        \<Longrightarrow> \<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+    by (rule geotop_component_member_gives_closed_corridor_prefix)
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
