@@ -4369,6 +4369,36 @@ proof -
       qed
     qed
   qed
+  have hD44_arbitrary_access_ball_crossings_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Z \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> Z \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Book-facing reduction for the remaining component half of the regular
+      neighborhood step.  It is now enough to prove Moise's lower-to-upper
+      construction in the collar form: every pair of small access balls is
+      crossed by a connected subset of \<open>?Ncut\<close>. **)
+    by (rule geotop_connected_access_ball_crossings_same_component_open_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut])
+  have hD44_arbitrary_access_broken_line_crossings_suffice:
+      "(\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})
+        \<Longrightarrow> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+              ?Ncut Q1"
+    (**
+      Broken-line version of the same reduction.  This is the form closest to
+      Moise's proof, where the frontier analysis supplies a polygonal
+      lower-to-upper corridor. **)
+    by (rule geotop_broken_line_access_crossings_same_component_open_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut])
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
