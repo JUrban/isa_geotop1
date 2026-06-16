@@ -3522,6 +3522,86 @@ proof -
     by (intro conjI)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_selected_carrier_boundary_complex_prefix:
+  fixes N :: "(real^2) set"
+    and K K\<^sub>N BdK\<^sub>N :: "(real^2) set set"
+    and m :: nat
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+  shows
+    "geotop_is_subdivision (geotop_iterated_Sd m K) K
+     \<and> geotop_is_complex (geotop_iterated_Sd m K)
+     \<and> finite (geotop_iterated_Sd m K)
+     \<and> geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K
+     \<and> geotop_is_complex K\<^sub>N
+     \<and> finite K\<^sub>N
+     \<and> geotop_polyhedron K\<^sub>N = N
+     \<and> BdK\<^sub>N \<subseteq> K\<^sub>N
+     \<and> finite BdK\<^sub>N
+     \<and> geotop_is_complex BdK\<^sub>N
+     \<and> geotop_complex_is_1dim BdK\<^sub>N
+     \<and> geotop_is_linear_graph BdK\<^sub>N
+     \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> N
+     \<and> compact (geotop_polyhedron BdK\<^sub>N)
+     \<and> closed (geotop_polyhedron BdK\<^sub>N)"
+  (**
+    Selected-carrier complex hygiene for Moise 4.4.  The iterated
+    subdivision restricts to the finite carrier subcomplex \<open>K\<^sub>N\<close> with
+    polyhedron \<open>N\<close>, and its combinatorial boundary is a finite one-dimensional
+    linear graph whose polyhedron is still contained in \<open>N\<close>. **)
+proof -
+  have hSd_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK_complex hK_fin])
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSd_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK_fin hSd_sub])
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hSd_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    unfolding hK\<^sub>N_def
+    by (rule geotop_complex_restrict_subset_is_complex[OF hSd_complex])
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    unfolding hK\<^sub>N_def using hSd_fin by (by100 simp)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_polyhedron_eq_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def])
+  have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_subset_complex_prefix[OF hK\<^sub>N_complex])
+  have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+    by (rule finite_subset[OF hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_fin])
+  have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_is_complex_prefix[OF hK\<^sub>N_complex])
+  have hBdK\<^sub>N_1dim: "geotop_complex_is_1dim BdK\<^sub>N"
+    unfolding hBdK\<^sub>N_def
+    by (rule geotop_comb_boundary_2_is_1dim_prefix)
+  have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix
+        [OF hBdK\<^sub>N_complex hBdK\<^sub>N_1dim])
+  have hBdK\<^sub>N_poly_sub_N: "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
+    using hBdK\<^sub>N_sub_K\<^sub>N hK\<^sub>N_poly
+    unfolding geotop_polyhedron_def by (by100 blast)
+  have hBdK\<^sub>N_poly_compact: "compact (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_complex_polyhedron_compact
+        [OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
+  have hBdK\<^sub>N_poly_closed: "closed (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_complex_polyhedron_closed
+        [OF hBdK\<^sub>N_complex hBdK\<^sub>N_fin])
+  show ?thesis
+    using hSd_sub hSd_complex hSd_fin hSd_poly hK\<^sub>N_complex hK\<^sub>N_fin
+      hK\<^sub>N_poly hBdK\<^sub>N_sub_K\<^sub>N hBdK\<^sub>N_fin hBdK\<^sub>N_complex
+      hBdK\<^sub>N_1dim hBdK\<^sub>N_linear_graph hBdK\<^sub>N_poly_sub_N
+      hBdK\<^sub>N_poly_compact hBdK\<^sub>N_poly_closed
+    by (intro conjI)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_local_boundary_primitive_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
