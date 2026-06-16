@@ -4939,6 +4939,107 @@ proof -
     show ?thesis
       using hsphere hcross by (intro conjI)
   qed
+  have hD44_exact_two_same_component_imp_exact_two_access_crossings:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))) \<Longrightarrow>
+       S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1 \<Longrightarrow>
+       (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Component form of the same remaining book target.  Once the
+      regular-neighborhood proof has put the lower and upper access witnesses
+      in one open component of \<open>?Ncut\<close>, the open-component broken-line lemma
+      supplies the collar crossings demanded by the current local statement. **)
+  proof -
+    assume htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    assume hsame:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    have hroute:
+        "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> ?Ncut
+          \<and> Q1 \<in> B \<and> S1 \<in> B"
+      by (rule geotop_same_component_open_broken_line_route_prefix
+          [OF hNcut_open hQ1_Ncut hsame])
+    have hcross:
+        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof (intro allI impI)
+      fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+      assume hQpos: "0 < \<epsilon>\<^sub>Q"
+      assume hSpos: "0 < \<epsilon>\<^sub>S"
+      obtain B where hB_bl: "geotop_is_broken_line B"
+        and hB_sub: "B \<subseteq> ?Ncut"
+        and hQ1_B: "Q1 \<in> B"
+        and hS1_B: "S1 \<in> B"
+        using hroute by (elim exE conjE)
+      have hQ_ball: "Q1 \<in> ball Q1 \<epsilon>\<^sub>Q"
+        using hQpos by (by100 simp)
+      have hS_ball: "S1 \<in> ball S1 \<epsilon>\<^sub>S"
+        using hSpos by (by100 simp)
+      have hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+      proof -
+        have "Q1 \<in> B \<inter> ball Q1 \<epsilon>\<^sub>Q"
+          by (rule IntI[OF hQ1_B hQ_ball])
+        thus ?thesis
+          by (by100 blast)
+      qed
+      have hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      proof -
+        have "S1 \<in> B \<inter> ball S1 \<epsilon>\<^sub>S"
+          by (rule IntI[OF hS1_B hS_ball])
+        thus ?thesis
+          by (by100 blast)
+      qed
+      show "\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+        using hB_bl hB_sub hB_Q hB_S by (intro exI conjI)
+    qed
+    show ?thesis
+      using htwo hcross by (intro conjI)
+  qed
+  have hD44_frontier_exact_two_same_component_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Moise 4.4, lines 962-974, in the component-transfer form.  The local
+      regular-neighborhood boundary analysis gives exact two selected frontier
+      edges at each vertex of \<open>BdJ\<^sub>N\<close>; the complementary frontier arc puts the
+      lower and upper access witnesses in the same component of
+      \<open>I - (N \<union> A2)\<close>. **)
+    sorry
   have hD44_frontier_exact_two_access_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -4959,7 +5060,25 @@ proof -
       boundary vertex, and the complementary frontier arc supplies broken-line
       crossings of arbitrary lower and upper access collars in
       \<open>I - (N \<union> A2)\<close>. **)
-    sorry
+  proof -
+    have htwo:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      using hD44_frontier_exact_two_same_component_book_step
+      by (rule conjunct1)
+    have hsame:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+      using hD44_frontier_exact_two_same_component_book_step
+      by (rule conjunct2)
+    show ?thesis
+      by (rule hD44_exact_two_same_component_imp_exact_two_access_crossings
+          [OF htwo hsame])
+  qed
   have hD44_frontier_sphere_access_crossings_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
