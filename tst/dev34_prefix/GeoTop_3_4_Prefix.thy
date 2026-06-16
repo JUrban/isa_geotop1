@@ -4616,12 +4616,94 @@ proof -
       "J\<^sub>N = connected_component_set FrN\<^sub>I P"
     unfolding hJ\<^sub>N_def
     by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hBdJ\<^sub>N_sub_BdK\<^sub>N: "BdJ\<^sub>N \<subseteq> BdK\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+    using hD44_literal_inputs by (by100 blast)
+  have hP_BdJ\<^sub>N_poly: "P \<in> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_BdK\<^sub>N_poly:
+      "geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_FrN\<^sub>I: "geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hD44_literal_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> N"
+    using hD44_literal_inputs by (by100 blast)
+  have hBdJ\<^sub>N_poly_A2_QS_disj:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hD44_literal_inputs by (by100 blast)
+  have hR_not_BdJ\<^sub>N_poly: "R \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hNcut_BdJ\<^sub>N_poly_disj: "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hD44_literal_inputs by (by100 blast)
+  have hQ1_not_BdJ\<^sub>N_poly: "Q1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hS1_not_BdJ\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    using hD44_literal_inputs by (by100 blast)
+  have hD44_local_boundary_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Remaining Moise 4.4 regular-neighborhood core after the literal carrier
+      and frontier hygiene above.  The selected component of \<open>Fr N\<^sub>I\<close> is
+      locally a boundary 1-manifold graph, and the complementary frontier side
+      supplies one outside corridor in \<open>I - (N \<union> A2)\<close> accumulating at the
+      lower and upper access witnesses. **)
+    sorry
+  have hD44_frontier_card_le2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_sphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+          hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2
+          hD44_frontier_no_endpoint])
+  have hD44_same_component:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+  proof -
+    obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+      and hZ_conn:
+        "top1_connected_on Z
+          (subspace_topology UNIV geotop_euclidean_topology Z)"
+      and hQ1_cl: "Q1 \<in> closure Z"
+      and hS1_cl: "S1 \<in> closure Z"
+      using hD44_corridor by (elim exE conjE)
+    show ?thesis
+      by (rule geotop_connected_closure_corridor_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
+  qed
   have hD44_book_frontier_and_route:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
           ?Ncut Q1"
-    sorry
+    using hD44_frontier_sphere hD44_same_component by (intro conjI)
   show ?thesis
     by (rule hD44_book_frontier_and_route)
 qed
