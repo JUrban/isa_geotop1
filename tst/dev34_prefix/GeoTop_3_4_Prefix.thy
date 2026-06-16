@@ -4644,6 +4644,118 @@ proof -
     using hD44_literal_inputs by (by100 blast)
   have hS1_not_BdJ\<^sub>N_poly: "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hD44_literal_inputs by (by100 blast)
+  have hD44_full_boundary_complex:
+      "geotop_is_subdivision (geotop_iterated_Sd m K) K
+       \<and> geotop_is_complex (geotop_iterated_Sd m K)
+       \<and> finite (geotop_iterated_Sd m K)
+       \<and> geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K
+       \<and> geotop_is_complex K\<^sub>N
+       \<and> finite K\<^sub>N
+       \<and> geotop_polyhedron K\<^sub>N = N
+       \<and> BdK\<^sub>N \<subseteq> K\<^sub>N
+       \<and> finite BdK\<^sub>N
+       \<and> geotop_is_complex BdK\<^sub>N
+       \<and> geotop_complex_is_1dim BdK\<^sub>N
+       \<and> geotop_is_linear_graph BdK\<^sub>N
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> N
+       \<and> compact (geotop_polyhedron BdK\<^sub>N)
+       \<and> closed (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_polygon_two_endpoint_arcs_selected_carrier_boundary_complex_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_poly_sub_N:
+      "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hD44_full_boundary_frontier:
+      "(\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<longrightarrow> e \<subseteq> FrN\<^sub>I)
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_comb_boundary_frontier_prefix
+        [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+          hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow> e \<subseteq> FrN\<^sub>I"
+    using hD44_full_boundary_frontier by (by100 blast)
+  have hN_closed: "closed N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def])
+  have hN\<^sub>I_closed: "closed N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
+    unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+  have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+    using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+    using hP_BdJ\<^sub>N_poly hBdJ\<^sub>N_poly_sub_J\<^sub>N by (by100 blast)
+  have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hJ\<^sub>N_eq_BdJ\<^sub>N_poly hBdJ\<^sub>N_poly_sub_FrN\<^sub>I by (by100 simp)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hK\<^sub>N_poly_sub_N_access: "geotop_polyhedron K\<^sub>N \<subseteq> N"
+    using hK\<^sub>N_poly by (by100 simp)
+  have hNcut_access_exclusion_package:
+      "Q1 \<in> geotop_polygon_interior J
+       \<and> S1 \<in> geotop_polygon_interior J
+       \<and> Q1 \<notin> N
+       \<and> S1 \<notin> N
+       \<and> Q1 \<notin> A2
+       \<and> S1 \<notin> A2
+       \<and> Q1 \<notin> FrN\<^sub>I
+       \<and> S1 \<notin> FrN\<^sub>I
+       \<and> Q1 \<notin> J\<^sub>N
+       \<and> S1 \<notin> J\<^sub>N
+       \<and> Q1 \<notin> A1
+       \<and> S1 \<notin> A1
+       \<and> Q1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron K\<^sub>N
+       \<and> Q1 \<notin> geotop_polyhedron BdK\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdK\<^sub>N"
+    by (rule geotop_Ncut_access_point_exclusion_package_prefix
+        [OF hA1_N hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hK\<^sub>N_poly_sub_N_access
+            hBdK\<^sub>N_poly_sub_N hQ1_Ncut hS1_Ncut])
+  have hNcut_disjoint_package:
+      "?Ncut \<inter> N = {}
+       \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+       \<and> ?Ncut \<inter> J\<^sub>N = {}
+       \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+       \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+       \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule geotop_Ncut_frontier_boundary_disjoint_package_prefix
+        [OF hFrN\<^sub>I_sub_N hJ\<^sub>N_sub_N hBdJ\<^sub>N_poly_sub_J\<^sub>N
+          hQ1_Ncut hS1_Ncut])
+  have hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N:
+      "\<And>e. e \<in> BdK\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        e \<inter> J\<^sub>N \<noteq> {} \<Longrightarrow> e \<subseteq> J\<^sub>N"
+  proof -
+    fix e
+    assume heBd: "e \<in> BdK\<^sub>N"
+      and hedge: "geotop_is_edge e"
+      and hmeet: "e \<inter> J\<^sub>N \<noteq> {}"
+    have he_Fr: "e \<subseteq> FrN\<^sub>I"
+      by (rule hBdK\<^sub>N_edge_member_subset_FrN\<^sub>I[OF heBd hedge])
+    show "e \<subseteq> J\<^sub>N"
+      by (rule geotop_frontier_component_edge_meets_component_subset_prefix
+          [OF hJ\<^sub>N_connected_component hP_J\<^sub>N hJ\<^sub>N_sub_FrN\<^sub>I he_Fr hedge hmeet])
+  qed
+  have hD44_full_selected_incident_edges_eq:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+        = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
+        [OF hBdJ\<^sub>N_def hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
   have hD44_local_boundary_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
