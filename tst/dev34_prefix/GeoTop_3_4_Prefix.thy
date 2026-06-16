@@ -5661,6 +5661,17 @@ proof -
         hL_complex hL_1dim hL_fin hL_poly_C hP_L hX_L
       by (intro exI conjI)
   qed
+  have hD44_B1P_eq_connected_component:
+      "?B1P = connected_component_set ?B1 P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have hD44_B1P_closed: "closed ?B1P"
+    unfolding hD44_B1P_eq_connected_component
+    by (rule closed_connected_component[OF hD44_B1_closed])
+  have hD44_B1P_component: "?B1P \<in> components ?B1"
+    using hD44_B1P_eq_connected_component componentsI[OF hD44_P_B1]
+    by (by100 simp)
+  have hD44_B1P_compact: "compact ?B1P"
+    by (rule compact_components[OF hD44_B1_compact hD44_B1P_component])
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
