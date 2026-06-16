@@ -2140,6 +2140,68 @@ proof (rule subsetI)
     unfolding geotop_component_at_def using hC_witness hyC by (by100 blast)
 qed
 
+lemma geotop_component_at_transfer_along_connected_witnesses_prefix:
+  fixes U BQ BS :: "(real^2) set" and Q' Q1 S1 S' :: "real^2"
+  assumes hBQ_U: "BQ \<subseteq> U"
+  assumes hQ'_BQ: "Q' \<in> BQ"
+  assumes hQ1_BQ: "Q1 \<in> BQ"
+  assumes hBQ_conn:
+    "top1_connected_on BQ
+      (subspace_topology UNIV geotop_euclidean_topology BQ)"
+  assumes hBS_U: "BS \<subseteq> U"
+  assumes hS1_BS: "S1 \<in> BS"
+  assumes hS'_BS: "S' \<in> BS"
+  assumes hBS_conn:
+    "top1_connected_on BS
+      (subspace_topology UNIV geotop_euclidean_topology BS)"
+  assumes hcentral:
+    "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  shows "S' \<in> geotop_component_at UNIV geotop_euclidean_topology U Q'"
+  (**
+    D44 access transfer: if local connected access witnesses attach \<open>Q'\<close> to
+    \<open>Q1\<close> and \<open>S1\<close> to \<open>S'\<close>, then a central component relation from \<open>Q1\<close>
+    to \<open>S1\<close> transfers back to the original local witnesses. **)
+proof -
+  have hQ1_comp_Q':
+      "Q1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q'"
+    by (rule geotop_connected_witness_component_at_intro_prefix
+        [OF hBQ_U hQ'_BQ hQ1_BQ hBQ_conn])
+  have hS'_comp_S1:
+      "S' \<in> geotop_component_at UNIV geotop_euclidean_topology U S1"
+    by (rule geotop_connected_witness_component_at_intro_prefix
+        [OF hBS_U hS1_BS hS'_BS hBS_conn])
+  have hQ1_HOL:
+      "Q1 \<in> connected_component_set U Q'"
+    using hQ1_comp_Q'
+      geotop_component_at_UNIV_eq_connected_component_set[of U Q']
+    by (by100 simp)
+  have hS1_HOL:
+      "S1 \<in> connected_component_set U Q1"
+    using hcentral
+      geotop_component_at_UNIV_eq_connected_component_set[of U Q1]
+    by (by100 simp)
+  have hS'_HOL_S1:
+      "S' \<in> connected_component_set U S1"
+    using hS'_comp_S1
+      geotop_component_at_UNIV_eq_connected_component_set[of U S1]
+    by (by100 simp)
+  have hcomp_Q1_Q':
+      "connected_component_set U Q1 =
+       connected_component_set U Q'"
+    by (rule connected_component_eq[OF hQ1_HOL])
+  have hcomp_S1_Q1:
+      "connected_component_set U S1 =
+       connected_component_set U Q1"
+    by (rule connected_component_eq[OF hS1_HOL])
+  have hS'_HOL_Q':
+      "S' \<in> connected_component_set U Q'"
+    using hS'_HOL_S1 hcomp_S1_Q1 hcomp_Q1_Q' by (by100 simp)
+  show ?thesis
+    using hS'_HOL_Q'
+      geotop_component_at_UNIV_eq_connected_component_set[of U Q']
+    by (by100 simp)
+qed
+
 lemma geotop_connected_closure_corridor_same_component_open_prefix:
   fixes U C :: "(real^2) set" and X Y :: "real^2"
   assumes hUopen: "U \<in> geotop_euclidean_topology"
@@ -28972,58 +29034,14 @@ proof -
             "top1_connected_on B\<^sub>Q
               (subspace_topology UNIV geotop_euclidean_topology B\<^sub>Q)"
           by (rule geotop_broken_line_connected_on_prefix[OF hB\<^sub>Q_bl])
-        have hB\<^sub>Q_witness:
-            "B\<^sub>Q \<in> {C. C \<subseteq> ?Ncut \<and> Q' \<in> C \<and>
-              top1_connected_on C
-                (subspace_topology UNIV geotop_euclidean_topology C)}"
-          using hB\<^sub>Q_Ncut hQ'_B\<^sub>Q hB\<^sub>Q_conn by (by100 simp)
-        have hQ1_comp_Q':
-            "Q1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
-          unfolding geotop_component_at_def
-          using hB\<^sub>Q_witness hQ1_B\<^sub>Q by (by100 blast)
         have hB\<^sub>S_conn:
             "top1_connected_on B\<^sub>S
               (subspace_topology UNIV geotop_euclidean_topology B\<^sub>S)"
           by (rule geotop_broken_line_connected_on_prefix[OF hB\<^sub>S_bl])
-        have hB\<^sub>S_witness:
-            "B\<^sub>S \<in> {C. C \<subseteq> ?Ncut \<and> S1 \<in> C \<and>
-              top1_connected_on C
-                (subspace_topology UNIV geotop_euclidean_topology C)}"
-          using hB\<^sub>S_Ncut hS1_B\<^sub>S hB\<^sub>S_conn by (by100 simp)
-        have hS'_comp_S1:
-            "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut S1"
-          unfolding geotop_component_at_def
-          using hB\<^sub>S_witness hS'_B\<^sub>S by (by100 blast)
-        have hQ1_HOL:
-            "Q1 \<in> connected_component_set ?Ncut Q'"
-          using hQ1_comp_Q'
-            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q']
-          by (by100 simp)
-        have hS1_HOL:
-            "S1 \<in> connected_component_set ?Ncut Q1"
-          using hcentral
-            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q1]
-          by (by100 simp)
-        have hS'_HOL_S1:
-            "S' \<in> connected_component_set ?Ncut S1"
-          using hS'_comp_S1
-            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut S1]
-          by (by100 simp)
-        have hcomp_Q1_Q':
-            "connected_component_set ?Ncut Q1 =
-             connected_component_set ?Ncut Q'"
-          by (rule connected_component_eq[OF hQ1_HOL])
-        have hcomp_S1_Q1:
-            "connected_component_set ?Ncut S1 =
-             connected_component_set ?Ncut Q1"
-          by (rule connected_component_eq[OF hS1_HOL])
-        have hS'_HOL_Q':
-            "S' \<in> connected_component_set ?Ncut Q'"
-          using hS'_HOL_S1 hcomp_S1_Q1 hcomp_Q1_Q' by (by100 simp)
         show "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
-          using hS'_HOL_Q'
-            geotop_component_at_UNIV_eq_connected_component_set[of ?Ncut Q']
-          by (by100 simp)
+          by (rule geotop_component_at_transfer_along_connected_witnesses_prefix
+              [OF hB\<^sub>Q_Ncut hQ'_B\<^sub>Q hQ1_B\<^sub>Q hB\<^sub>Q_conn
+                  hB\<^sub>S_Ncut hS1_B\<^sub>S hS'_B\<^sub>S hB\<^sub>S_conn hcentral])
       qed
       have hD44_central_same_component_in_Ncut_book_step:
           "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
