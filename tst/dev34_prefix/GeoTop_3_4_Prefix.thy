@@ -4775,6 +4775,11 @@ proof -
     using hD44_full_boundary_complex by (by100 blast)
   have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
     using hD44_full_boundary_complex by (by100 blast)
+  have hSd_complex: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hSd_poly:
+      "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K"
+    using hD44_full_boundary_complex by (by100 blast)
   have hP_A1: "P \<in> A1"
     using hA1J by (by100 blast)
   have hN_connected_HOL: "connected N"
@@ -4795,6 +4800,90 @@ proof -
     by (rule geotop_connected_complex_nondegenerate_subset_vertex_incident_edge_prefix
         [OF hK\<^sub>N_complex hK\<^sub>N_poly_connected_HOL hA1_sub_K\<^sub>N_poly
           hA1_not_subset_singleton])
+  have hP_boundary_K\<^sub>N_one_incident_edge:
+      "\<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> P \<in> e
+        \<and> card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+          \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    have hSd_poly_disk:
+        "geotop_polyhedron (geotop_iterated_Sd m K) =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J)"
+      using hSd_poly hK_poly by (by100 simp)
+    have hboundary_cover:
+        "J \<subseteq> \<Union>{e\<in>geotop_iterated_Sd m K.
+          geotop_is_edge e \<and> e \<subseteq> J}"
+      by (rule geotop_polygon_disk_boundary_subset_selected_edges_prefix
+          [OF hJ hSd_complex hSd_poly_disk])
+    have hP_cover:
+        "P \<in> \<Union>{e\<in>geotop_iterated_Sd m K.
+          geotop_is_edge e \<and> e \<subseteq> J}"
+      using hboundary_cover hP by (by100 blast)
+    obtain e where he_sel:
+        "e \<in> {e\<in>geotop_iterated_Sd m K. geotop_is_edge e \<and> e \<subseteq> J}"
+      and hP_e: "P \<in> e"
+      using hP_cover by (by100 blast)
+    have heSd: "e \<in> geotop_iterated_Sd m K"
+      using he_sel by (by100 simp)
+    have hedge: "geotop_is_edge e"
+      using he_sel by (by100 simp)
+    have heJ: "e \<subseteq> J"
+      using he_sel by (by100 simp)
+    have heA1: "e \<inter> A1 \<noteq> {}"
+      using hP_e hP_A1 by (by100 blast)
+    have he_sub_N: "e \<subseteq> N"
+      unfolding hN_def using heSd heA1 by (by100 blast)
+    have heK\<^sub>N: "e \<in> K\<^sub>N"
+      unfolding hK\<^sub>N_def using heSd he_sub_N by (by100 simp)
+    obtain \<sigma> where h\<sigma>Sd: "\<sigma> \<in> geotop_iterated_Sd m K"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and heface\<sigma>: "geotop_is_face e \<sigma>"
+      using geotop_polygon_disk_boundary_edge_owned_by_2simplex_prefix
+        [OF hJ hSd_complex hSd_poly_disk heSd hedge heJ]
+      by (elim bexE conjE)
+    have hfaces_Sd:
+        "{\<rho>\<in>geotop_iterated_Sd m K.
+            geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+      by (rule geotop_polygon_disk_boundary_edge_unique_incident_2simplex_prefix
+          [OF hJ hSd_complex hSd_poly_disk heSd hedge h\<sigma>Sd h\<sigma>2 heface\<sigma> heJ])
+    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF heface\<sigma>])
+    have hP_\<sigma>: "P \<in> \<sigma>"
+      using hP_e he_sub_\<sigma> by (by100 blast)
+    have h\<sigma>A1: "\<sigma> \<inter> A1 \<noteq> {}"
+      using hP_\<sigma> hP_A1 by (by100 blast)
+    have h\<sigma>subN: "\<sigma> \<subseteq> N"
+      unfolding hN_def using h\<sigma>Sd h\<sigma>A1 by (by100 blast)
+    have h\<sigma>K\<^sub>N: "\<sigma> \<in> K\<^sub>N"
+      unfolding hK\<^sub>N_def using h\<sigma>Sd h\<sigma>subN by (by100 simp)
+    let ?F = "{\<rho>\<in>K\<^sub>N. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+    have hF_eq: "?F = {\<sigma>}"
+    proof
+      show "?F \<subseteq> {\<sigma>}"
+      proof
+        fix \<rho>
+        assume h\<rho>F: "\<rho> \<in> ?F"
+        have h\<rho>Sd: "\<rho> \<in> geotop_iterated_Sd m K"
+          using h\<rho>F unfolding hK\<^sub>N_def by (by100 simp)
+        have h\<rho>2: "geotop_simplex_dim \<rho> 2"
+          using h\<rho>F by (by100 simp)
+        have h\<rho>face: "geotop_is_face e \<rho>"
+          using h\<rho>F by (by100 simp)
+        have h\<rho>full:
+            "\<rho> \<in> {\<rho>\<in>geotop_iterated_Sd m K.
+              geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+          using h\<rho>Sd h\<rho>2 h\<rho>face by (by100 simp)
+        show "\<rho> \<in> {\<sigma>}"
+          using hfaces_Sd h\<rho>full by (by100 simp)
+      qed
+      show "{\<sigma>} \<subseteq> ?F"
+        using h\<sigma>K\<^sub>N h\<sigma>2 heface\<sigma> by (by100 simp)
+    qed
+    have hcard1: "card ?F = 1"
+      using hF_eq by (by100 simp)
+    show ?thesis
+      using heK\<^sub>N hedge hP_e hcard1 by (intro bexI[where x=e] conjI)
+  qed
   have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
     using hD44_full_boundary_complex by (by100 blast)
   have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
