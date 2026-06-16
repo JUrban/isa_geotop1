@@ -5095,6 +5095,43 @@ proof -
       lower and upper access witnesses in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
   proof -
+    have hD44_frontier_bounds_corridor_book_step:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+         \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Q1 \<in> closure Z
+            \<and> S1 \<in> closure Z)"
+      (**
+        Moise 4.4, lines 962-974, in the literal local
+        regular-neighborhood form: the selected component of \<open>Fr N\<^sub>I\<close>
+        through \<open>P\<close> is a no-branch/no-endpoint boundary graph of the
+        2-manifold-with-boundary carrier, and the complementary frontier arc
+        supplies one connected outside corridor in \<open>I - (N \<union> A2)\<close> reaching
+        the lower and upper access witnesses. **)
+      sorry
+    have hD44_frontier_card_le2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      using hD44_frontier_bounds_corridor_book_step by (by100 blast)
+    have hD44_frontier_no_endpoint:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      using hD44_frontier_bounds_corridor_book_step by (by100 blast)
+    have hD44_closed_corridor_book_step:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      using hD44_frontier_bounds_corridor_book_step by (by100 blast)
+    have hD44_frontier_degree_two_book_step:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hD44_card_le2_no_endpoint_imp_degree_two
+          [OF hD44_frontier_card_le2 hD44_frontier_no_endpoint])
     have hD44_frontier_exact_two_book_step:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -5104,28 +5141,16 @@ proof -
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
       (**
-        Moise 4.4, line 964, in local boundary-incidence form: the selected
-        component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> has exactly the two adjacent
-        frontier edges at every vertex of its boundary subcomplex.  The finite
-        connected graph classifier below converts this to the stated
-        polygonal 1-sphere. **)
-      sorry
+        Exact-two repackaging of the no-branch/no-endpoint frontier graph
+        sentence.  The finite graph package wants explicit adjacent frontier
+        edges and their exhaustion property. **)
+      by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+          [OF hD44_frontier_degree_two_book_step])
     have hD44_frontier_component_1sphere_book_step:
         "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
       by (rule hD44_BdJ\<^sub>N_exact_two_incident_edges_imp_J\<^sub>N_1sphere
           [OF hD44_frontier_exact_two_book_step])
-    have hD44_closed_corridor_book_step:
-        "\<exists>Z. Z \<subseteq> ?Ncut
-          \<and> top1_connected_on Z
-              (subspace_topology UNIV geotop_euclidean_topology Z)
-          \<and> Q1 \<in> closure Z
-          \<and> S1 \<in> closure Z"
-      (**
-        Moise 4.4, line 974, in closed-corridor form: the complementary
-        lower-to-upper frontier arc supplies one connected outside set in
-        \<open>I - (N \<union> A2)\<close> whose closure reaches both access witnesses. **)
-      sorry
     have hD44_same_component_book_step:
         "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
           ?Ncut Q1"
@@ -5145,25 +5170,6 @@ proof -
         by (intro exI[where x=BdJ\<^sub>N] conjI,
             rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
     qed
-    have hD44_frontier_card_le2:
-        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    proof -
-      have hall:
-          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-        by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
-            [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
-              hD44_frontier_polygon_book_step])
-      show "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
-          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-        using hall by (by100 blast)
-    qed
-    have hD44_frontier_no_endpoint:
-        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
-      by (rule geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix
-          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
-            hD44_frontier_polygon_book_step])
     have hD44_corridor:
         "\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
