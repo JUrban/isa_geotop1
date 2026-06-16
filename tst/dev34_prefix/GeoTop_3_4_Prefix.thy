@@ -5644,14 +5644,9 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_local_boundary_corridor_
     \<open>I - (N \<union> A2)\<close> whose closure reaches the lower and upper access
     witnesses. **)
 proof -
-  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
-  have hD44_frontier_sphere_same_component_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
-       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
-          ?Ncut Q1"
+  show ?thesis
     by (rule
-        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_component_book_step_prefix
+        geotop_polygon_two_endpoint_arcs_selected_carrier_local_boundary_corridor_literal_book_step_prefix
         [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
           hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
           hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
@@ -5659,40 +5654,6 @@ proof -
           hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
           hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
           hBdJ\<^sub>N_vertex_incident_ge1])
-  have hD44_frontier_1sphere_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-    using hD44_frontier_sphere_same_component_book_step by (rule conjunct1)
-  have hD44_same_component_book_step:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    using hD44_frontier_sphere_same_component_book_step by (rule conjunct2)
-  have hD44_frontier_polygon_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-  proof -
-    have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
-      by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
-    have hsphere_BdJ:
-        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron BdJ\<^sub>N)) 1"
-      using hD44_frontier_1sphere_book_step hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-      by (by100 simp)
-    show ?thesis
-      unfolding geotop_is_polygon_def
-      by (intro exI[where x=BdJ\<^sub>N] conjI,
-          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
-  qed
-  show ?thesis
-    by (rule
-        geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corridor_book_step_prefix
-        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-          hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
-          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-          hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_polygon_book_step
-          hD44_same_component_book_step])
 qed
 
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_component_book_step_prefix:
