@@ -4647,6 +4647,39 @@ proof -
               ?Ncut Q1"
     by (rule geotop_broken_line_access_crossings_same_component_open_prefix
         [OF hNcut_open hQ1_Ncut hS1_Ncut])
+  have hD44_local_boundary_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Moise 4.4, lines 958--974, in the exact regular-neighborhood boundary
+      form still missing from the formal proof.  The carrier \<open>N\<^sub>I\<close> is the
+      selected regular neighborhood of \<open>A1\<close> in the closed polygonal disk; its
+      frontier component through \<open>P\<close> has no branching and no graph endpoints,
+      and the complementary frontier side gives one outside corridor whose
+      closure reaches the lower and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+    sorry
+  have hD44_frontier_card_le2_book_step:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_corridor_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
   have hD44_frontier_sphere_and_access_crossings_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
@@ -4661,7 +4694,12 @@ proof -
       frontier component \<open>J\<^sub>N\<close> a 1-sphere; the complementary frontier subarc
       crosses every pair of lower and upper access collars around \<open>Q1\<close> and
       \<open>S1\<close> inside \<open>I - (N \<union> A2)\<close>. **)
-    sorry
+    by (rule geotop_frontier_graph_corridor_sphere_and_access_route_prefix
+        [OF hNcut_open hQ1_Ncut hS1_Ncut hBdJ\<^sub>N_linear_graph
+          hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected
+          hJ\<^sub>N_eq_BdJ\<^sub>N_poly hBdJ\<^sub>N_vertex_incident_ge1
+          hD44_frontier_card_le2_book_step hD44_frontier_no_endpoint_book_step
+          hD44_corridor_book_step])
   have hD44_frontier_sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
