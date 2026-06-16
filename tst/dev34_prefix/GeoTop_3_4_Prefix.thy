@@ -103,9 +103,9 @@ proof -
   have hA2_nonempty: "A2 \<noteq> {}"
     using h\<gamma>2_start_img h\<gamma>2_img by (by100 blast)
   have hA12_compact: "compact (A1 \<union> A2)"
-    using hA1_compact hA2_compact by (by100 simp)
+    by (rule compact_Un[OF hA1_compact hA2_compact])
   have hA12_closed: "closed (A1 \<union> A2)"
-    using hA1_closed hA2_closed by (by100 simp)
+    by (rule closed_Un[OF hA1_closed hA2_closed])
   show ?thesis
     using hA1_compact hA2_compact hA1_closed hA2_closed
       hA1_nonempty hA2_nonempty hA12_compact hA12_closed
@@ -821,7 +821,7 @@ proof -
 qed
 
 lemma geotop_comb_boundary_subset_complex_prefix:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_comb_boundary K n \<subseteq> K"
   (**
@@ -857,7 +857,7 @@ proof
 qed
 
 lemma geotop_comb_boundary_face_closed_prefix:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "(real^2) set set"
   assumes h\<sigma>Bd: "\<sigma> \<in> geotop_comb_boundary K n"
   assumes h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
   shows "\<tau> \<in> geotop_comb_boundary K n"
@@ -892,7 +892,7 @@ proof -
 qed
 
 lemma geotop_comb_boundary_is_complex_prefix:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_is_complex (geotop_comb_boundary K n)"
   (**
@@ -910,7 +910,7 @@ proof -
 qed
 
 lemma geotop_comb_boundary_2_is_1dim_prefix:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "(real^2) set set"
   shows "geotop_complex_is_1dim (geotop_comb_boundary K 2)"
   (**
     The 2-dimensional combinatorial boundary consists of selected edges and
@@ -2011,7 +2011,16 @@ proof -
   have hC_img: "?C = \<gamma> ` closed_segment s_lo s_hi"
     by (rule path_image_subpath_gen)
   have hC_sub_W: "?C \<subseteq> W"
-    using hC_img hseg_T by (by100 blast)
+  proof
+    fix x
+    assume hxC: "x \<in> ?C"
+    obtain t where ht: "t \<in> closed_segment s_lo s_hi" and hx: "x = \<gamma> t"
+      using hxC hC_img by (by100 blast)
+    have htT: "t \<in> ?T"
+      using hseg_T ht by (by100 blast)
+    show "x \<in> W"
+      using htT hx by (by100 simp)
+  qed
   have hsX_seg: "sX \<in> closed_segment s_lo s_hi"
   proof -
     have "sX \<in> {s_lo..s_hi}"
@@ -2226,10 +2235,10 @@ proof -
     by (by100 simp)
   obtain r\<^sub>X where hr\<^sub>X_pos: "0 < r\<^sub>X"
     and hball_X_U: "ball X r\<^sub>X \<subseteq> U"
-    using hUopen_HOL hXU open_contains_ball by (by100 blast)
+    using hUopen_HOL hXU unfolding open_contains_ball by (by100 blast)
   obtain r\<^sub>Y where hr\<^sub>Y_pos: "0 < r\<^sub>Y"
     and hball_Y_U: "ball Y r\<^sub>Y \<subseteq> U"
-    using hUopen_HOL hYU open_contains_ball by (by100 blast)
+    using hUopen_HOL hYU unfolding open_contains_ball by (by100 blast)
   have hC_conn_HOL: "connected C"
     by (rule iffD1[OF top1_connected_on_geotop_iff_connected hC_conn])
   have hball_X_conn: "connected (ball X r\<^sub>X)"
@@ -2523,8 +2532,49 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology Z)
         \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
         \<and> Z \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
-    by (rule geotop_broken_line_access_crossings_connected_crossings_prefix
-        [OF hall])
+  proof (intro allI impI)
+    fix \<epsilon>\<^sub>X \<epsilon>\<^sub>Y :: real
+    assume h\<epsilon>\<^sub>X: "0 < \<epsilon>\<^sub>X"
+    assume h\<epsilon>\<^sub>Y: "0 < \<epsilon>\<^sub>Y"
+    obtain B where hB_bl: "geotop_is_broken_line B"
+      and hB_sub: "B \<subseteq> U"
+      and hB_X: "B \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}"
+      and hB_Y: "B \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+    proof -
+      have hX:
+          "\<forall>\<epsilon>\<^sub>Y>0. \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> U
+            \<and> B \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+            \<and> B \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+        using hall h\<epsilon>\<^sub>X by (by100 blast)
+      have hY:
+          "\<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> U
+            \<and> B \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+            \<and> B \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+        using hX h\<epsilon>\<^sub>Y by (by100 blast)
+      show ?thesis
+      proof -
+        obtain B where hB_bl': "geotop_is_broken_line B"
+          and hB_sub': "B \<subseteq> U"
+          and hB_X': "B \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}"
+          and hB_Y': "B \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+          using hY by (elim exE conjE)
+        show ?thesis
+          by (rule that[OF hB_bl' hB_sub' hB_X' hB_Y'])
+      qed
+    qed
+    have hB_conn:
+        "top1_connected_on B
+          (subspace_topology UNIV geotop_euclidean_topology B)"
+      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
+    show "\<exists>Z. Z \<subseteq> U
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Z \<inter> ball X \<epsilon>\<^sub>X \<noteq> {}
+        \<and> Z \<inter> ball Y \<epsilon>\<^sub>Y \<noteq> {}"
+      using hB_sub hB_conn hB_X hB_Y by (intro exI conjI)
+  qed
   show ?thesis
     by (rule geotop_connected_access_ball_crossings_same_component_open_prefix
         [OF hUopen hXU hYU hconnected])
@@ -2567,12 +2617,17 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polyhedron L)) 1"
     by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
-        [OF hL_linear hL_fin hL_nonempty hL_connected refl htwo])
+        [OF hL_linear hL_fin hL_nonempty hL_connected HOL.refl htwo])
   have hL_polygon:
       "geotop_is_polygon (geotop_polyhedron L)"
+  proof -
+    have hL_complex: "geotop_is_complex L"
+      by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
+    show ?thesis
     unfolding geotop_is_polygon_def
-    by (intro exI[where x=L] conjI,
-        rule hL_linear, rule refl, rule hL_sphere)
+      by (intro exI[where x=L] conjI,
+          rule hL_complex, rule HOL.refl, rule hL_sphere)
+  qed
   have hsame_component:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
     by (rule geotop_broken_line_access_crossings_same_component_open_prefix
@@ -2671,7 +2726,7 @@ proof -
   have hX_C: "X \<in> ?C"
     using hXU connected_component_refl by (by100 simp)
   have hX_cl: "X \<in> closure ?C"
-    using hX_C closure_subset by (by100 blast)
+    by (rule subsetD[OF closure_subset hX_C])
   have hY_cl_C: "Y \<in> closure ?C"
     using hY_cl hcomponent_eq by (by100 simp)
   show ?thesis
@@ -2742,7 +2797,7 @@ proof -
       by (rule hS_front_CQ)
     show "\<exists>P'. P' \<in> U \<and>
         ?C\<^sub>Q = geotop_component_at UNIV geotop_euclidean_topology U P'"
-      by (rule exI[where x=Q'], intro conjI, rule hQ'_U, rule refl)
+      by (rule exI[where x=Q'], intro conjI, rule hQ'_U, rule HOL.refl)
   qed
 qed
 
@@ -2762,7 +2817,7 @@ lemma geotop_polygon_cyclic_order_QS_split_opposite_arc_prefix:
     other Q-S side.  This is the exact book step used when transferring the
     regular-neighborhood route from the lower boundary side to the upper one. **)
   using hcyc hP_F\<^sub>1 hsplit hF\<^sub>1E hF\<^sub>2E hdisj
-  by (by100 blast)
+  by blast
 
 lemma geotop_polygon_QS_broken_boundary_arc_split_through_point_prefix:
   fixes J :: "(real^2) set" and P Q S :: "real^2"
@@ -4301,7 +4356,33 @@ proof (intro allI impI)
     and huniq:
       "\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
         \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
-    using hfull_exact_two hwBdJ by (by100 blast)
+  proof -
+    have hfixed:
+        "\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+      using hfull_exact_two hwBdJ by (by100 blast)
+    show ?thesis
+    proof -
+      obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdK': "e\<^sub>1 \<in> BdK\<^sub>N"
+        and he\<^sub>2BdK': "e\<^sub>2 \<in> BdK\<^sub>N"
+        and he\<^sub>1edge': "geotop_is_edge e\<^sub>1"
+        and hw_e\<^sub>1': "w \<in> e\<^sub>1"
+        and he\<^sub>2edge': "geotop_is_edge e\<^sub>2"
+        and hw_e\<^sub>2': "w \<in> e\<^sub>2"
+        and he_ne': "e\<^sub>1 \<noteq> e\<^sub>2"
+        and huniq':
+          "\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+        using hfixed by (elim bexE conjE)
+      show ?thesis
+        by (rule that[OF he\<^sub>1BdK' he\<^sub>2BdK' he\<^sub>1edge' hw_e\<^sub>1'
+            he\<^sub>2edge' hw_e\<^sub>2' he_ne' huniq'])
+    qed
+  qed
   have he\<^sub>1BdJ: "e\<^sub>1 \<in> BdJ\<^sub>N"
     using heq he\<^sub>1BdK he\<^sub>1edge hw_e\<^sub>1 by (by100 blast)
   have he\<^sub>2BdJ: "e\<^sub>2 \<in> BdJ\<^sub>N"
@@ -4365,7 +4446,33 @@ proof (intro allI impI)
     and huniq:
       "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
         \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
-    using hselected_exact_two hwBdJ by (by100 blast)
+  proof -
+    have hfixed:
+        "\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)"
+      using hselected_exact_two hwBdJ by (by100 blast)
+    show ?thesis
+    proof -
+      obtain e\<^sub>1 e\<^sub>2 where he\<^sub>1BdJ': "e\<^sub>1 \<in> BdJ\<^sub>N"
+        and he\<^sub>2BdJ': "e\<^sub>2 \<in> BdJ\<^sub>N"
+        and he\<^sub>1edge': "geotop_is_edge e\<^sub>1"
+        and hw_e\<^sub>1': "w \<in> e\<^sub>1"
+        and he\<^sub>2edge': "geotop_is_edge e\<^sub>2"
+        and hw_e\<^sub>2': "w \<in> e\<^sub>2"
+        and he_ne': "e\<^sub>1 \<noteq> e\<^sub>2"
+        and huniq':
+          "\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2"
+        using hfixed by (elim bexE conjE)
+      show ?thesis
+        by (rule that[OF he\<^sub>1BdJ' he\<^sub>2BdJ' he\<^sub>1edge' hw_e\<^sub>1'
+            he\<^sub>2edge' hw_e\<^sub>2' he_ne' huniq'])
+    qed
+  qed
   have he\<^sub>1BdK: "e\<^sub>1 \<in> BdK\<^sub>N"
     using heq he\<^sub>1BdJ he\<^sub>1edge hw_e\<^sub>1 by (by100 blast)
   have he\<^sub>2BdK: "e\<^sub>2 \<in> BdK\<^sub>N"
@@ -7972,16 +8079,22 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology Z)
             \<and> Q1 \<in> closure Z
             \<and> S1 \<in> closure Z)"
-      by (rule
-          geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_sphere_corridor_book_step_prefix
-          [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
-            hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
-            hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
-            hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
-            hBdJ\<^sub>N_def hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
-            hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-            hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2
-            hD44_frontier_no_endpoint hD44_corridor_book_step])
+    proof (intro conjI)
+      show "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+        by (rule
+            geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
+            [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
+              hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+              hBdJ\<^sub>N_vertex_incident_ge1 hD44_frontier_card_le2
+              hD44_frontier_no_endpoint])
+      show "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+        by (rule hD44_corridor_book_step)
+    qed
     have hD44_frontier_sphere_book_step:
         "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
