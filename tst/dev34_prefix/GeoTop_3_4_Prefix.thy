@@ -3074,6 +3074,92 @@ lemma geotop_same_component_open_broken_line_route_prefix:
   by (rule geotop_open_component_broken_line_between_prefix
       [OF hUopen hXU hY_comp])
 
+lemma geotop_exact_two_closed_corridor_broken_crossings_prefix:
+  fixes U C :: "(real^2) set" and L :: "(real^2) set set"
+    and Q1 S1 :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hQ1U: "Q1 \<in> U"
+  assumes hS1U: "S1 \<in> U"
+  assumes htwo:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  assumes hC_U: "C \<subseteq> U"
+  assumes hC_conn:
+    "top1_connected_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)"
+  assumes hQ1_cl: "Q1 \<in> closure C"
+  assumes hS1_cl: "S1 \<in> closure C"
+  shows
+    "(\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+     \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+      \<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+  (**
+    D44 corridor-to-crossings packaging: once the regular-neighborhood proof
+    has exact-two frontier incidence and one connected outside corridor whose
+    closure touches the two access witnesses, the existing open-component
+    route extraction gives the broken-line crossings of all access collars. **)
+proof -
+  have hsame:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+    by (rule geotop_connected_closure_corridor_same_component_open_prefix
+        [OF hUopen hQ1U hS1U hC_U hC_conn hQ1_cl hS1_cl])
+  obtain B where hB_bl: "geotop_is_broken_line B"
+    and hB_sub: "B \<subseteq> U"
+    and hQ1_B: "Q1 \<in> B"
+    and hS1_B: "S1 \<in> B"
+    using geotop_same_component_open_broken_line_route_prefix
+      [OF hUopen hQ1U hsame]
+    by (elim exE conjE)
+  have hcross:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> U
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  proof (intro allI impI)
+    fix \<epsilon>\<^sub>Q \<epsilon>\<^sub>S :: real
+    assume hQpos: "0 < \<epsilon>\<^sub>Q"
+    assume hSpos: "0 < \<epsilon>\<^sub>S"
+    have hB_Q: "B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}"
+    proof -
+      have hQ_mem: "Q1 \<in> B \<inter> ball Q1 \<epsilon>\<^sub>Q"
+        using hQ1_B hQpos by (by100 simp)
+      show ?thesis
+        unfolding ex_in_conv[symmetric]
+        by (rule exI[where x=Q1], rule hQ_mem)
+    qed
+    have hB_S: "B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    proof -
+      have hS_mem: "S1 \<in> B \<inter> ball S1 \<epsilon>\<^sub>S"
+        using hS1_B hSpos by (by100 simp)
+      show ?thesis
+        unfolding ex_in_conv[symmetric]
+        by (rule exI[where x=S1], rule hS_mem)
+    qed
+    show "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hB_bl hB_sub hB_Q hB_S by (intro exI conjI)
+  qed
+  show ?thesis
+    using htwo hcross by (intro conjI)
+qed
+
 lemma geotop_broken_line_route_component_at_prefix:
   fixes U :: "(real^2) set" and X Y :: "real^2"
   assumes hB_ex:
@@ -5141,7 +5227,7 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
   proof -
-    have hD44_moise_exact_two_and_broken_crossings_core:
+    have hD44_moise_exact_two_and_closed_corridor_core:
         "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
             geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
@@ -5149,19 +5235,19 @@ proof -
             \<and> e\<^sub>1 \<noteq> e\<^sub>2
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
-         \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
-          \<exists>B. geotop_is_broken_line B
-            \<and> B \<subseteq> ?Ncut
-            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
-            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
       (**
         Moise 4.4, lines 958--974, in the direct book form now reduced to
         the two literal regular-neighborhood outputs.  First, the selected
         frontier component of the fine carrier is locally a 1-manifold
         boundary, so each of its vertices has exactly two incident boundary
-        edges.  Second, the complementary frontier side contains lower-to-upper
-        polygonal crossings through \<open>I - (N \<union> A2)\<close> meeting every sufficiently
-        small pair of access collars at \<open>Q1\<close> and \<open>S1\<close>. **)
+        edges.  Second, the complementary frontier side supplies one connected
+        outside corridor in \<open>I - (N \<union> A2)\<close> whose closure reaches the lower
+        and upper access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
       sorry
     have hD44_frontier_exact_two:
         "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
@@ -5171,14 +5257,47 @@ proof -
             \<and> e\<^sub>1 \<noteq> e\<^sub>2
             \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
                 \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-      using hD44_moise_exact_two_and_broken_crossings_core by (rule conjunct1)
+      using hD44_moise_exact_two_and_closed_corridor_core by (rule conjunct1)
+    have hD44_closed_corridor:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      using hD44_moise_exact_two_and_closed_corridor_core by (rule conjunct2)
     have hD44_broken_crossings:
         "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
           \<exists>B. geotop_is_broken_line B
             \<and> B \<subseteq> ?Ncut
             \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
             \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
-      using hD44_moise_exact_two_and_broken_crossings_core by (rule conjunct2)
+    proof -
+      obtain Z where hZ_sub: "Z \<subseteq> ?Ncut"
+        and hZ_conn:
+          "top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)"
+        and hQ1_cl: "Q1 \<in> closure Z"
+        and hS1_cl: "S1 \<in> closure Z"
+        using hD44_closed_corridor by (elim exE conjE)
+      have hpack:
+          "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+              geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+              \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+              \<and> e\<^sub>1 \<noteq> e\<^sub>2
+              \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                  \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+           \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+            \<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> ?Ncut
+              \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+              \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+        by (rule geotop_exact_two_closed_corridor_broken_crossings_prefix
+            [OF hNcut_open hQ1_Ncut hS1_Ncut hD44_frontier_exact_two
+              hZ_sub hZ_conn hQ1_cl hS1_cl])
+      show ?thesis
+        using hpack by (rule conjunct2)
+    qed
     have hD44_moise_frontier_polygon_and_same_component_core:
         "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
          \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
