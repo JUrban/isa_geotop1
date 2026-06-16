@@ -3787,6 +3787,48 @@ proof -
     by (intro conjI)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_selected_component_incident_edges_subset_prefix:
+  fixes BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and w :: "real^2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  shows
+    "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+      \<subseteq> {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+  (**
+    Pure selected-component bookkeeping for Moise 4.4: an edge incident to a
+    vertex in the selected frontier graph is also an incident edge of the full
+    carrier boundary graph. **)
+  unfolding hBdJ\<^sub>N_def by (by100 blast)
+
+lemma geotop_polygon_two_endpoint_arcs_selected_component_incident_card_le2_prefix:
+  fixes BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and w :: "real^2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+  assumes hBdK\<^sub>N_card_le2:
+    "card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  shows "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  (**
+    Cardinal version of the same selected/full-boundary transfer.  Once the
+    book regular-neighborhood argument supplies a full-boundary local degree
+    bound at a vertex, the selected frontier component inherits the bound. **)
+proof -
+  have hsubset:
+      "{e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+        \<subseteq> {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_component_incident_edges_subset_prefix
+          [OF hBdJ\<^sub>N_def])
+  have hfin: "finite {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    using hBdK\<^sub>N_fin by (by100 simp)
+  have hcard_mono:
+      "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}
+        \<le> card {e\<in>BdK\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
+    by (rule card_mono[OF hfin hsubset])
+  show ?thesis
+    using hcard_mono hBdK\<^sub>N_card_le2 by (by100 linarith)
+qed
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_local_boundary_primitive_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
