@@ -4154,6 +4154,68 @@ proof -
   have hS1_not_BdJ\<^sub>N_poly:
       "S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
     using hD44_literal_frontier_inputs by (by100 blast)
+  have hD44_full_boundary_complex:
+      "geotop_is_subdivision (geotop_iterated_Sd m K) K
+       \<and> geotop_is_complex (geotop_iterated_Sd m K)
+       \<and> finite (geotop_iterated_Sd m K)
+       \<and> geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K
+       \<and> geotop_is_complex K\<^sub>N
+       \<and> finite K\<^sub>N
+       \<and> geotop_polyhedron K\<^sub>N = N
+       \<and> BdK\<^sub>N \<subseteq> K\<^sub>N
+       \<and> finite BdK\<^sub>N
+       \<and> geotop_is_complex BdK\<^sub>N
+       \<and> geotop_complex_is_1dim BdK\<^sub>N
+       \<and> geotop_is_linear_graph BdK\<^sub>N
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> N
+       \<and> compact (geotop_polyhedron BdK\<^sub>N)
+       \<and> closed (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_polygon_two_endpoint_arcs_selected_carrier_boundary_complex_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hK\<^sub>N_complex: "geotop_is_complex K\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hK\<^sub>N_fin: "finite K\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hK\<^sub>N_poly: "geotop_polyhedron K\<^sub>N = N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_complex: "geotop_is_complex BdK\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_linear_graph: "geotop_is_linear_graph BdK\<^sub>N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hBdK\<^sub>N_poly_sub_N:
+      "geotop_polyhedron BdK\<^sub>N \<subseteq> N"
+    using hD44_full_boundary_complex by (by100 blast)
+  have hD44_full_boundary_frontier:
+      "(\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<longrightarrow> e \<subseteq> FrN\<^sub>I)
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_comb_boundary_frontier_prefix
+        [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+          hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hBdK\<^sub>N_poly_sub_FrN\<^sub>I:
+      "geotop_polyhedron BdK\<^sub>N \<subseteq> FrN\<^sub>I"
+    using hD44_full_boundary_frontier by (by100 blast)
+  have hBdJ\<^sub>N_sub_K\<^sub>N: "BdJ\<^sub>N \<subseteq> K\<^sub>N"
+    using hBdJ\<^sub>N_sub_BdK\<^sub>N hBdK\<^sub>N_sub_K\<^sub>N by (by100 blast)
+  have hBdJ\<^sub>N_edge_member_incident_count_one:
+      "\<And>e. e \<in> BdJ\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
+        card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  proof -
+    fix e
+    assume heBdJ: "e \<in> BdJ\<^sub>N" and hedge: "geotop_is_edge e"
+    have heBdK: "e \<in> BdK\<^sub>N"
+      using hBdJ\<^sub>N_sub_BdK\<^sub>N heBdJ by (by100 blast)
+    show
+      "card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2
+        \<and> geotop_is_face e \<sigma>} = 1"
+      unfolding hBdK\<^sub>N_def
+      by (rule geotop_comb_boundary_edge_member_incident_2simplex_count_one_prefix
+          [OF heBdK hedge])
+  qed
   have hD44_frontier_polygon_same_component_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
