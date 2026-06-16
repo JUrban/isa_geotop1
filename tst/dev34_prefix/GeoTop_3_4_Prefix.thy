@@ -4715,6 +4715,83 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_local_graph_corridor_raw_moise_step_prefix:
+  fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
+    and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
+    and P Q R S Q1 S1 :: "real^2"
+    and m :: nat
+    and r :: real
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA1: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hA2: "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes hA12: "A1 \<inter> A2 = {}"
+  assumes hA1_sub:
+    "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA2_sub:
+    "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hA1J: "A1 \<inter> J = {P}"
+  assumes hA2J: "A2 \<inter> J = {R}"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hN_def:
+    "N = (\<Union>{B\<in>geotop_iterated_Sd m K. B \<inter> A1 \<noteq> {}})"
+  assumes hA1_N: "A1 \<subseteq> N"
+  assumes hN_avoid: "N \<inter> (A2 \<union> {Q, S}) = {}"
+  assumes hr: "0 < r"
+  assumes hball_Q_N: "ball Q r \<inter> N = {}"
+  assumes hball_S_N: "ball S r \<inter> N = {}"
+  assumes hQ1_ball: "Q1 \<in> ball Q r"
+  assumes hS1_ball: "S1 \<in> ball S r"
+  assumes hQ1_Ncut: "Q1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hS1_Ncut: "S1 \<in> geotop_polygon_interior J - (N \<union> A2)"
+  assumes hN\<^sub>I_def:
+    "N\<^sub>I =
+      N \<inter> closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J)"
+  assumes hFrN\<^sub>I_def:
+    "FrN\<^sub>I = geotop_frontier UNIV geotop_euclidean_topology N\<^sub>I"
+  assumes hJ\<^sub>N_def:
+    "J\<^sub>N = geotop_component_at UNIV geotop_euclidean_topology FrN\<^sub>I P"
+  assumes hK\<^sub>N_def: "K\<^sub>N = {\<sigma>\<in>geotop_iterated_Sd m K. \<sigma> \<subseteq> N}"
+  assumes hBdK\<^sub>N_def: "BdK\<^sub>N = geotop_comb_boundary K\<^sub>N 2"
+  assumes hBdJ\<^sub>N_def: "BdJ\<^sub>N = {\<rho>\<in>BdK\<^sub>N. \<rho> \<subseteq> J\<^sub>N}"
+  assumes hNcut_open:
+    "geotop_polygon_interior J - (N \<union> A2) \<in> geotop_euclidean_topology"
+  assumes hBdJ\<^sub>N_linear_graph: "geotop_is_linear_graph BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_fin: "finite BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_nonempty: "BdJ\<^sub>N \<noteq> {}"
+  assumes hBdJ\<^sub>N_connected: "geotop_complex_connected BdJ\<^sub>N"
+  assumes hJ\<^sub>N_eq_BdJ\<^sub>N_poly: "J\<^sub>N = geotop_polyhedron BdJ\<^sub>N"
+  assumes hBdJ\<^sub>N_vertex_incident_ge1:
+    "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+      card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 1"
+  shows
+    "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+     \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+     \<and> (\<exists>Z. Z \<subseteq> geotop_polygon_interior J - (N \<union> A2)
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z)"
+  (**
+    Literal remaining Moise 4.4 local regular-neighborhood paragraph.  After
+    choosing the sufficiently fine carrier \<open>N\<close> of \<open>A1\<close> and restricting it
+    to the closed polygonal disk, the frontier component through \<open>P\<close> is a
+    boundary component of a regular neighborhood.  Hence each selected
+    frontier vertex has at most the two adjacent boundary edges and is not a
+    graph endpoint, while the complementary outside side supplies one
+    connected corridor in \<open>I - (N \<union> A2)\<close> whose closure reaches the two
+    access witnesses \<open>Q1\<close> and \<open>S1\<close>. **)
+  sorry
+
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_component_root_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
     and K K\<^sub>N BdK\<^sub>N BdJ\<^sub>N :: "(real^2) set set"
@@ -5908,7 +5985,15 @@ proof -
         no frontier graph endpoint, and the complementary lower-to-upper
         outside side gives a connected corridor in
         \<open>I - (N \<union> A2)\<close> accumulating at \<open>Q1\<close> and \<open>S1\<close>. **)
-      sorry
+      by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_local_graph_corridor_raw_moise_step_prefix
+        [OF hJ hP hQ hR hS hcyc hcard hA1 hA2 hA12 hA1_sub hA2_sub
+          hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N hN_avoid
+          hr hball_Q_N hball_S_N hQ1_ball hS1_ball hQ1_Ncut hS1_Ncut
+          hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def hK\<^sub>N_def hBdK\<^sub>N_def
+          hBdJ\<^sub>N_def hNcut_open hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin
+          hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+          hBdJ\<^sub>N_vertex_incident_ge1])
     show ?thesis
       by (rule geotop_local_graph_corridor_polygon_same_component_prefix
           [OF hNcut_open hQ1_Ncut hS1_Ncut hBdJ\<^sub>N_linear_graph

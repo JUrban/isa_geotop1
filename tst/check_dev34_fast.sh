@@ -769,6 +769,7 @@ mid-fold
 mid-support
 mid-d42
 prefix-d44
+prefix-d44-raw
 prefix-d44-root
 prefix-d44-book
 dev34-cycle
@@ -870,11 +871,17 @@ focus_target() {
         geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix \
         'Theorem_GT_4_4 brick regular neighborhood component frontier'
       ;;
+    prefix-d44-raw)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix/GeoTop_3_4_Prefix.thy \
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_local_graph_corridor_raw_moise_step_prefix \
+        'D44 raw Moise local graph corridor regular neighborhood paragraph'
+      ;;
     prefix-d44-root)
       printf '%s\t%s\t%s\n' \
         dev34_prefix/GeoTop_3_4_Prefix.thy \
         geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_component_root_book_step_prefix \
-        'D44 root selected carrier frontier local graph corridor raw book step'
+        'D44 root selected carrier frontier sphere same component postprocessing'
       ;;
     prefix-d44-book)
       printf '%s\t%s\t%s\n' \
