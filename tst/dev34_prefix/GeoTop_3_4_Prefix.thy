@@ -4097,6 +4097,27 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_local_boundary_corridor_
     has an adjacent outside component in \<open>I - (N \<union> A2)\<close> whose closure
     reaches the lower and upper access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
 proof -
+  have hD44_literal_frontier_inputs:
+    "geotop_is_complex BdJ\<^sub>N
+     \<and> BdJ\<^sub>N \<subseteq> BdK\<^sub>N
+     \<and> P \<in> FrN\<^sub>I
+     \<and> P \<in> geotop_polyhedron BdJ\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+     \<and> R \<notin> geotop_polyhedron BdJ\<^sub>N
+     \<and> (geotop_polygon_interior J - (N \<union> A2))
+          \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+     \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+     \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_literal_book_inputs_prefix
+        [OF hJ hP hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N
+          hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def hJ\<^sub>N_def
+          hJ\<^sub>N_eq_BdJ\<^sub>N_poly hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def
+          hBdJ\<^sub>N_linear_graph])
   have hD44_frontier_polygon_same_component_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
