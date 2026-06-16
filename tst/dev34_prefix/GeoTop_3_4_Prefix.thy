@@ -4844,18 +4844,89 @@ proof -
       by (rule hD44_card_bounds_and_closed_corridor_suffice
           [OF hle2 hge2 hcorridor])
   qed
-  have hD44_frontier_polygon_same_component_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+  have hD44_sphere_and_access_crossings_imp_polygon_same_component:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1 \<Longrightarrow>
+        (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}) \<Longrightarrow>
+        geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
           ?Ncut Q1"
+    (**
+      Book-order bridge for Moise 4.4.  The paragraph first proves that the
+      frontier component is a 1-sphere, then extracts broken-line crossings of
+      the lower and upper access collars from the complementary frontier arc.
+      These two statements are exactly enough for the polygonal frontier and
+      same outside component form consumed below. **)
+  proof -
+    assume hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    assume hcross:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    have hpolygon: "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      have hsphere_BdJ:
+        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1"
+        using hsphere hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+      show ?thesis
+        unfolding geotop_is_polygon_def
+        by (intro exI[where x=BdJ\<^sub>N] conjI,
+            rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+    qed
+    have hsame:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+      by (rule geotop_broken_line_access_crossings_same_component_open_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hcross])
+    show ?thesis
+      using hpolygon hsame by (intro conjI)
+  qed
+  have hD44_frontier_sphere_access_crossings_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
     (**
       Moise 4.4, lines 962-974, in the exact form consumed by this local graph
       core.  The selected carrier \<open>N\<^sub>I\<close> is the regular neighborhood of
       \<open>A1\<close> in the closed disk; the component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is
-      the polygonal 1-sphere represented by \<open>BdJ\<^sub>N\<close>, and the complementary
-      frontier arc gives one outside component of \<open>I - (N \<union> A2)\<close> meeting the
-      lower and upper access witnesses. **)
+      a 1-sphere, and the complementary frontier arc gives broken-line
+      crossings of arbitrary lower and upper access collars in
+      \<open>I - (N \<union> A2)\<close>. **)
     sorry
+  have hD44_frontier_polygon_same_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+  proof -
+    have hsphere:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      using hD44_frontier_sphere_access_crossings_book_step by (rule conjunct1)
+    have hcross:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hD44_frontier_sphere_access_crossings_book_step by (rule conjunct2)
+    show ?thesis
+      by (rule hD44_sphere_and_access_crossings_imp_polygon_same_component
+          [OF hsphere hcross])
+  qed
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     using hD44_frontier_polygon_same_component_book_step by (rule conjunct1)
