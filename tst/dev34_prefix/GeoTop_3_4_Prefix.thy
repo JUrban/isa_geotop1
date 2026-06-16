@@ -4372,7 +4372,76 @@ lemma geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_sphere_same_com
     1-sphere, and the complementary frontier side puts the lower and upper
     access witnesses \<open>Q1\<close> and \<open>S1\<close> in the same component of
     \<open>I - (N \<union> A2)\<close>. **)
-  sorry
+proof -
+  let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hD44_hygiene:
+    "N\<^sub>I = N
+     \<and> closed N
+     \<and> compact N
+     \<and> FrN\<^sub>I = frontier N
+     \<and> FrN\<^sub>I \<subseteq> N
+     \<and> P \<in> FrN\<^sub>I
+     \<and> P \<in> J\<^sub>N
+     \<and> J\<^sub>N \<subseteq> FrN\<^sub>I
+     \<and> J\<^sub>N \<subseteq> N
+     \<and> J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}
+     \<and> R \<notin> J\<^sub>N
+     \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N
+     \<and> ?Ncut \<inter> N = {}
+     \<and> ?Ncut \<inter> FrN\<^sub>I = {}
+     \<and> ?Ncut \<inter> J\<^sub>N = {}
+     \<and> ?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}
+     \<and> Q1 \<notin> FrN\<^sub>I
+     \<and> S1 \<notin> FrN\<^sub>I
+     \<and> Q1 \<notin> J\<^sub>N
+     \<and> S1 \<notin> J\<^sub>N
+     \<and> Q1 \<notin> geotop_polyhedron BdJ\<^sub>N
+     \<and> S1 \<notin> geotop_polyhedron BdJ\<^sub>N"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_hygiene_prefix
+        [OF hJ hP hA1J hA2J hK_complex hK_fin hK_poly hN_def hA1_N
+          hN_avoid hQ1_Ncut hS1_Ncut hN\<^sub>I_def hFrN\<^sub>I_def
+          hJ\<^sub>N_def hJ\<^sub>N_eq_BdJ\<^sub>N_poly])
+  have hD44_boundary_complex:
+      "geotop_is_subdivision (geotop_iterated_Sd m K) K
+       \<and> geotop_is_complex (geotop_iterated_Sd m K)
+       \<and> finite (geotop_iterated_Sd m K)
+       \<and> geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K
+       \<and> geotop_is_complex K\<^sub>N
+       \<and> finite K\<^sub>N
+       \<and> geotop_polyhedron K\<^sub>N = N
+       \<and> BdK\<^sub>N \<subseteq> K\<^sub>N
+       \<and> finite BdK\<^sub>N
+       \<and> geotop_is_complex BdK\<^sub>N
+       \<and> geotop_complex_is_1dim BdK\<^sub>N
+       \<and> geotop_is_linear_graph BdK\<^sub>N
+       \<and> geotop_polyhedron BdK\<^sub>N \<subseteq> N
+       \<and> compact (geotop_polyhedron BdK\<^sub>N)
+       \<and> closed (geotop_polyhedron BdK\<^sub>N)"
+    by (rule geotop_polygon_two_endpoint_arcs_selected_carrier_boundary_complex_prefix
+        [OF hK_complex hK_fin hN_def hK\<^sub>N_def hBdK\<^sub>N_def])
+  have hD44_selected_boundary_frontier:
+      "BdJ\<^sub>N \<subseteq> BdK\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> geotop_polyhedron BdK\<^sub>N
+       \<and> geotop_polyhedron BdJ\<^sub>N \<subseteq> FrN\<^sub>I"
+    by (rule
+        geotop_polygon_two_endpoint_arcs_selected_component_boundary_frontier_prefix
+        [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def hFrN\<^sub>I_def
+          hK\<^sub>N_def hBdK\<^sub>N_def hBdJ\<^sub>N_def])
+  have hD44_regular_neighborhood_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Remaining literal Moise 4.4 regular-neighborhood step after the
+      established carrier hygiene above: the selected frontier component is a
+      polygonal 1-sphere, and the complementary frontier side gives the
+      lower-to-upper outside component. **)
+    sorry
+  show ?thesis
+    by (rule hD44_regular_neighborhood_book_step)
+qed
 
 lemma geotop_polygon_two_endpoint_arcs_selected_carrier_local_boundary_corridor_literal_book_step_prefix:
   fixes J A1 A2 N N\<^sub>I FrN\<^sub>I J\<^sub>N :: "(real^2) set"
