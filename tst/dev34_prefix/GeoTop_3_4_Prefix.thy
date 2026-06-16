@@ -4996,13 +4996,31 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    (**
-      Moise 4.4, lines 958--974, in the local regular-neighborhood form left
-      to prove.  The selected carrier frontier is a boundary 1-manifold with
-      no local branching and no graph endpoints, and the complementary
-      frontier side gives one connected outside corridor in \<open>I - (N \<union> A2)\<close>
-      whose closure reaches the lower and upper access witnesses. **)
-    sorry
+  proof -
+    have hD44_moise_frontier_boundary_and_adjacent_corridor_core:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+         \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+         \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+            \<and> top1_connected_on Z
+                (subspace_topology UNIV geotop_euclidean_topology Z)
+            \<and> Q1 \<in> closure Z
+            \<and> S1 \<in> closure Z)"
+      (**
+        Moise 4.4, lines 958--974, in its irreducible local
+        regular-neighborhood form.  The fine carrier of \<open>A1\<close>, restricted to
+        the closed polygonal disk, is a regular neighborhood near the selected
+        frontier component through \<open>P\<close>.  Hence that component is a boundary
+        1-manifold graph: each selected frontier vertex has at most the two
+        adjacent frontier edges and no graph endpoint.  The complementary
+        frontier side has one adjacent component in \<open>I - (N \<union> A2)\<close>; this
+        connected outside corridor has both access witnesses \<open>Q1\<close> and \<open>S1\<close>
+        in its Euclidean closure. **)
+      sorry
+    show ?thesis
+      by (rule hD44_moise_frontier_boundary_and_adjacent_corridor_core)
+  qed
   have hD44_frontier_card_le2_regular_neighborhood_book_step:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
