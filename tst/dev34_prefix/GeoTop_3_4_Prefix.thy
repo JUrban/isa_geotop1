@@ -4756,6 +4756,59 @@ proof -
         = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
     by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
         [OF hBdJ\<^sub>N_def hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
+  have hD44_full_exact_two_corridor_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+       \<and> (\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z)"
+    (**
+      Remaining Moise 4.4 regular-neighborhood core after the literal carrier
+      and frontier hygiene above.  At each selected frontier vertex the full
+      carrier boundary has exactly the two local boundary edges, and the
+      complementary frontier side supplies one outside corridor in
+      \<open>I - (N \<union> A2)\<close> accumulating at the lower and upper access witnesses. **)
+    sorry
+  have hD44_full_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdK\<^sub>N. \<exists>e\<^sub>2\<in>BdK\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdK\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    using hD44_full_exact_two_corridor_book_step by (rule conjunct1)
+  have hD44_corridor:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_full_exact_two_corridor_book_step by (rule conjunct2)
+  have hD44_selected_exact_two:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+          \<and> e\<^sub>1 \<noteq> e\<^sub>2
+          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+    by (rule geotop_selected_frontier_exact_two_from_full_incident_edges_eq_prefix
+        [OF hD44_full_selected_incident_edges_eq hD44_full_exact_two])
+  have hD44_graph_bounds:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)"
+    by (rule geotop_exact_two_incident_edges_imp_graph_bounds_prefix
+        [OF hBdJ\<^sub>N_fin hD44_selected_exact_two])
   have hD44_local_boundary_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4766,13 +4819,7 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology Z)
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
-    (**
-      Remaining Moise 4.4 regular-neighborhood core after the literal carrier
-      and frontier hygiene above.  The selected component of \<open>Fr N\<^sub>I\<close> is
-      locally a boundary 1-manifold graph, and the complementary frontier side
-      supplies one outside corridor in \<open>I - (N \<union> A2)\<close> accumulating at the
-      lower and upper access witnesses. **)
-    sorry
+    using hD44_graph_bounds hD44_corridor by (by100 blast)
   have hD44_frontier_card_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
@@ -4781,7 +4828,7 @@ proof -
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         \<not> geotop_graph_endpoint BdJ\<^sub>N w"
     using hD44_local_boundary_corridor_book_step by (by100 blast)
-  have hD44_corridor:
+  have hD44_closed_corridor:
       "\<exists>Z. Z \<subseteq> ?Ncut
         \<and> top1_connected_on Z
             (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -4805,7 +4852,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology Z)"
       and hQ1_cl: "Q1 \<in> closure Z"
       and hS1_cl: "S1 \<in> closure Z"
-      using hD44_corridor by (elim exE conjE)
+      using hD44_closed_corridor by (elim exE conjE)
     show ?thesis
       by (rule geotop_connected_closure_corridor_same_component_open_prefix
           [OF hNcut_open hQ1_Ncut hS1_Ncut hZ_sub hZ_conn hQ1_cl hS1_cl])
