@@ -3486,14 +3486,24 @@ proof -
   have hN_closed: "closed N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
         [OF hK_complex hK_fin hN_def])
+  have hN_compact: "compact N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_compact_prefix
+        [OF hK_complex hK_fin hN_def])
   have hN\<^sub>I_closed: "closed N\<^sub>I"
     using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hN\<^sub>I_compact: "compact N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_compact by (by100 simp)
   have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
     unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
   have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
     using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
   have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
     using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hFrN\<^sub>I_closed: "closed FrN\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_closed by (by100 simp)
+  have hFrN\<^sub>I_compact: "compact FrN\<^sub>I"
+    by (rule closed_subset_compact
+        [OF hN\<^sub>I_compact hFrN\<^sub>I_closed hFrN\<^sub>I_sub_N\<^sub>I])
   have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
     using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
         [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N hN\<^sub>I_def]
@@ -3569,6 +3579,12 @@ proof -
     by (rule geotop_component_at_UNIV_eq_connected_component_set)
   have hJ\<^sub>N_connected_HOL: "connected J\<^sub>N"
     using hJ\<^sub>N_eq_connected_component connected_connected_component by (by100 simp)
+  have hJ\<^sub>N_nonempty: "J\<^sub>N \<noteq> {}"
+    using hP_J\<^sub>N by (by100 blast)
+  have hJ\<^sub>N_closedin_FrN\<^sub>I: "closedin (top_of_set FrN\<^sub>I) J\<^sub>N"
+    using hJ\<^sub>N_eq_connected_component closedin_connected_component by (by100 simp)
+  have hJ\<^sub>N_compact: "compact J\<^sub>N"
+    by (rule closedin_compact[OF hFrN\<^sub>I_compact hJ\<^sub>N_closedin_FrN\<^sub>I])
   have hD44_regular_neighborhood_sphere_same_component_book_step:
       "geotop_is_n_sphere J\<^sub>N
           (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
