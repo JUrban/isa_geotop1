@@ -5066,6 +5066,17 @@ proof -
     show ?thesis
       using heBdJ hedge hP_e hcard1 by (intro bexI[where x=e] conjI)
   qed
+  let ?B1 = "J\<^sub>N \<inter> J"
+  have hD44_P_B1: "P \<in> ?B1"
+    using hP_J\<^sub>N hP by (by100 blast)
+  have hD44_B1_nonempty: "?B1 \<noteq> {}"
+    using hD44_P_B1 by (by100 blast)
+  have hD44_B1_eq_BdJ\<^sub>N_poly_boundary:
+      "?B1 = geotop_polyhedron BdJ\<^sub>N \<inter> J"
+    using hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  have hD44_BdJ\<^sub>N_boundary_contact_nonempty:
+      "geotop_polyhedron BdJ\<^sub>N \<inter> J \<noteq> {}"
+    using hD44_B1_nonempty hD44_B1_eq_BdJ\<^sub>N_poly_boundary by (by100 simp)
   have hK\<^sub>N_edge_frontier_rel_interior_member_BdK\<^sub>N:
       "\<And>e p. e \<in> K\<^sub>N \<Longrightarrow> geotop_is_edge e \<Longrightarrow>
         card {\<sigma>\<in>K\<^sub>N. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1
