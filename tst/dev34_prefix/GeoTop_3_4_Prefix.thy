@@ -4845,6 +4845,38 @@ proof -
         = {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e}"
     by (rule geotop_selected_frontier_full_incident_edges_eq_prefix
         [OF hBdJ\<^sub>N_def hBdK\<^sub>N_edge_meets_J\<^sub>N_subset_J\<^sub>N])
+  have hD44_local_boundary_same_component_book_step:
+      "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    (**
+      Remaining Moise 4.4 regular-neighborhood core after the literal carrier
+      and frontier hygiene above.  The selected frontier component of the
+      carrier is locally a boundary 1-manifold: no branching and no graph
+      endpoints; the complementary outside side puts the two access witnesses
+      in the same component of \<open>I - (N \<union> A2)\<close>. **)
+    sorry
+  have hD44_frontier_card_le2_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_local_boundary_same_component_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_local_boundary_same_component_book_step by (by100 blast)
+  have hD44_same_component_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    using hD44_local_boundary_same_component_book_step by (by100 blast)
+  have hD44_same_component_corridor_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    by (rule geotop_component_member_gives_closed_corridor_prefix
+        [OF hD44_same_component_book_step])
   have hD44_local_boundary_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
@@ -4861,7 +4893,9 @@ proof -
       carrier is locally a boundary 1-manifold: no branching, no graph
       endpoints, and one complementary outside corridor in \<open>I - (N \<union> A2)\<close>
       accumulates at the lower and upper access witnesses. **)
-    sorry
+    using hD44_frontier_card_le2_book_step hD44_frontier_no_endpoint_book_step
+      hD44_same_component_corridor_book_step
+    by (by100 blast)
   have hD44_frontier_card_le2:
       "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
         card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
