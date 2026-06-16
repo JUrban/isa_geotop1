@@ -3494,6 +3494,37 @@ proof -
     using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
   have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
     using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
+  have hQ1_I: "Q1 \<in> geotop_polygon_interior J"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_I: "S1 \<in> geotop_polygon_interior J"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_N: "Q1 \<notin> N"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_N: "S1 \<notin> N"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_A2: "Q1 \<notin> A2"
+    using hQ1_Ncut by (by100 blast)
+  have hS1_not_A2: "S1 \<notin> A2"
+    using hS1_Ncut by (by100 blast)
+  have hQ1_not_FrN\<^sub>I: "Q1 \<notin> FrN\<^sub>I"
+    using hFrN\<^sub>I_sub_N hQ1_not_N by (by100 blast)
+  have hS1_not_FrN\<^sub>I: "S1 \<notin> FrN\<^sub>I"
+    using hFrN\<^sub>I_sub_N hS1_not_N by (by100 blast)
+  have hQ1_not_J\<^sub>N: "Q1 \<notin> J\<^sub>N"
+    using hJ\<^sub>N_sub_N hQ1_not_N by (by100 blast)
+  have hS1_not_J\<^sub>N: "S1 \<notin> J\<^sub>N"
+    using hJ\<^sub>N_sub_N hS1_not_N by (by100 blast)
+  have hBdJ\<^sub>N_poly_sub_J\<^sub>N: "geotop_polyhedron BdJ\<^sub>N \<subseteq> J\<^sub>N"
+    using hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+  have hNcut_N_disj: "?Ncut \<inter> N = {}"
+    by (by100 blast)
+  have hNcut_FrN\<^sub>I_disj: "?Ncut \<inter> FrN\<^sub>I = {}"
+    using hFrN\<^sub>I_sub_N by (by100 blast)
+  have hNcut_J\<^sub>N_disj: "?Ncut \<inter> J\<^sub>N = {}"
+    using hJ\<^sub>N_sub_N by (by100 blast)
+  have hNcut_BdJ\<^sub>N_poly_disj:
+      "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
+    using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
   have hD44_frontier_polygon_route_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> (\<exists>B. geotop_is_broken_line B
