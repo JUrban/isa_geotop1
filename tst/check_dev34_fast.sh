@@ -769,6 +769,7 @@ mid-fold
 mid-support
 mid-d42
 prefix-d44
+prefix-d44-book
 dev34-cycle
 dev34-cycle-realization
 dev34-fan
@@ -867,6 +868,12 @@ focus_target() {
         dev34_prefix/GeoTop_3_4_Prefix.thy \
         geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix \
         'Theorem_GT_4_4 brick regular neighborhood component frontier'
+      ;;
+    prefix-d44-book)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix/GeoTop_3_4_Prefix.thy \
+        geotop_polygon_two_endpoint_arcs_selected_carrier_frontier_polygon_same_component_book_step_prefix \
+        'selected carrier frontier polygon same component regular neighborhood Moise 4.4'
       ;;
     dev34-cycle)
       printf '%s\t%s\t%s\n' \
