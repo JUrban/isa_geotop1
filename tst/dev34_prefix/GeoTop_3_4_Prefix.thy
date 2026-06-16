@@ -4844,81 +4844,24 @@ proof -
       by (rule hD44_card_bounds_and_closed_corridor_suffice
           [OF hle2 hge2 hcorridor])
   qed
-  have hD44_regular_neighborhood_sphere_same_component_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+  have hD44_frontier_polygon_same_component_book_step:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
           ?Ncut Q1"
     (**
-      Moise 4.4, lines 962-974.  The selected carrier \<open>N\<^sub>I\<close> is the
-      regular neighborhood of \<open>A1\<close> in the closed disk.  The component of
-      \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is the book's 1-sphere, and the complementary
+      Moise 4.4, lines 962-974, in the exact form consumed by this local graph
+      core.  The selected carrier \<open>N\<^sub>I\<close> is the regular neighborhood of
+      \<open>A1\<close> in the closed disk; the component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is
+      the polygonal 1-sphere represented by \<open>BdJ\<^sub>N\<close>, and the complementary
       frontier arc gives one outside component of \<open>I - (N \<union> A2)\<close> meeting the
       lower and upper access witnesses. **)
     sorry
-  have hD44_frontier_1sphere_book_step:
-      "geotop_is_n_sphere J\<^sub>N
-        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-    using hD44_regular_neighborhood_sphere_same_component_book_step
-    by (rule conjunct1)
-  have hD44_frontier_polygon_from_1sphere:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-  proof -
-    have hsphere_BdJ:
-        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
-          (subspace_topology UNIV geotop_euclidean_topology
-            (geotop_polyhedron BdJ\<^sub>N)) 1"
-      using hD44_frontier_1sphere_book_step hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-      by (by100 simp)
-    show ?thesis
-      unfolding geotop_is_polygon_def
-      by (intro exI[where x=BdJ\<^sub>N] conjI,
-          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
-  qed
-  have hD44_same_component_from_book_step:
-      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-    using hD44_regular_neighborhood_sphere_same_component_book_step
-    by (rule conjunct2)
-  have hD44_route_from_same_component:
-      "\<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> Q1 \<in> B
-        \<and> S1 \<in> B"
-    by (rule geotop_same_component_open_broken_line_route_prefix
-        [OF hNcut_open hQ1_Ncut hD44_same_component_from_book_step])
-  have hD44_frontier_polygon_route_book_step:
-      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
-       \<and> (\<exists>B. geotop_is_broken_line B
-          \<and> B \<subseteq> ?Ncut
-          \<and> Q1 \<in> B
-          \<and> S1 \<in> B)"
-    using hD44_frontier_polygon_from_1sphere hD44_route_from_same_component
-    by (intro conjI)
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
-    using hD44_frontier_polygon_route_book_step by (rule conjunct1)
-  have hD44_route_book_step:
-      "\<exists>B. geotop_is_broken_line B
-        \<and> B \<subseteq> ?Ncut
-        \<and> Q1 \<in> B
-        \<and> S1 \<in> B"
-    using hD44_frontier_polygon_route_book_step by (rule conjunct2)
+    using hD44_frontier_polygon_same_component_book_step by (rule conjunct1)
   have hD44_same_component_book_step:
       "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
-  proof -
-    obtain B where hB_bl: "geotop_is_broken_line B"
-      and hB_Ncut: "B \<subseteq> ?Ncut"
-      and hQ1_B: "Q1 \<in> B"
-      and hS1_B: "S1 \<in> B"
-      using hD44_route_book_step by (elim exE conjE)
-    have hB_conn:
-        "top1_connected_on B
-          (subspace_topology UNIV geotop_euclidean_topology B)"
-      by (rule geotop_broken_line_connected_on_prefix[OF hB_bl])
-    show ?thesis
-      by (rule geotop_connected_witness_component_at_intro_prefix
-          [OF hB_Ncut hQ1_B hS1_B hB_conn])
-  qed
+    using hD44_frontier_polygon_same_component_book_step by (rule conjunct2)
   show ?thesis
     by (rule
         geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_bounds_corridor_book_step_prefix
