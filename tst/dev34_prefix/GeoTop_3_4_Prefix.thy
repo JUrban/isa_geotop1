@@ -5094,7 +5094,68 @@ proof -
       edges at each vertex of \<open>BdJ\<^sub>N\<close>; the complementary frontier arc puts the
       lower and upper access witnesses in the same component of
       \<open>I - (N \<union> A2)\<close>. **)
-    sorry
+  proof -
+    have hD44_frontier_component_1sphere_book_step:
+        "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+      (**
+        Moise 4.4, line 964: the component of \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is a
+        polygonal 1-sphere.  This is the regular-neighborhood boundary
+        sentence for the fine carrier of \<open>A1\<close>. **)
+      sorry
+    have hD44_same_component_book_step:
+        "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+      (**
+        Moise 4.4, line 974: the lower-to-upper complementary frontier arc
+        supplies the outside component of \<open>I - (N \<union> A2)\<close> that reaches both
+        access witnesses. **)
+      sorry
+    have hD44_frontier_polygon_book_step:
+        "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+    proof -
+      have hsphere_BdJ:
+          "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron BdJ\<^sub>N)) 1"
+        using hD44_frontier_component_1sphere_book_step
+          hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
+      show ?thesis
+        unfolding geotop_is_polygon_def
+        by (intro exI[where x=BdJ\<^sub>N] conjI,
+            rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+    qed
+    have hD44_frontier_card_le2:
+        "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    proof -
+      have hall:
+          "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+            card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+        by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
+            [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+              hD44_frontier_polygon_book_step])
+      show "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+        using hall by (by100 blast)
+    qed
+    have hD44_frontier_no_endpoint:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+      by (rule geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix
+          [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_connected
+            hD44_frontier_polygon_book_step])
+    have hD44_corridor:
+        "\<exists>Z. Z \<subseteq> ?Ncut
+          \<and> top1_connected_on Z
+              (subspace_topology UNIV geotop_euclidean_topology Z)
+          \<and> Q1 \<in> closure Z
+          \<and> S1 \<in> closure Z"
+      by (rule geotop_component_member_gives_closed_corridor_prefix
+          [OF hD44_same_component_book_step])
+    show ?thesis
+      by (rule hD44_no_branch_no_endpoint_corridor_imp_exact_two_same_component
+          [OF hD44_frontier_card_le2 hD44_frontier_no_endpoint hD44_corridor])
+  qed
   have hD44_frontier_exact_two_access_crossings_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
