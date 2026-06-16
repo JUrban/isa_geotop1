@@ -4647,17 +4647,51 @@ proof -
               ?Ncut Q1"
     by (rule geotop_broken_line_access_crossings_same_component_open_prefix
         [OF hNcut_open hQ1_Ncut hS1_Ncut])
+  have hD44_frontier_sphere_and_access_crossings_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+    (**
+      Moise 4.4, lines 958--974, in the literal regular-neighborhood form.
+      The fine carrier of \<open>A1\<close>, restricted to the closed polygonal disk, has
+      frontier component \<open>J\<^sub>N\<close> a 1-sphere; the complementary frontier subarc
+      crosses every pair of lower and upper access collars around \<open>Q1\<close> and
+      \<open>S1\<close> inside \<open>I - (N \<union> A2)\<close>. **)
+    sorry
+  have hD44_frontier_sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_frontier_sphere_and_access_crossings_book_step by (rule conjunct1)
+  have hD44_access_crossings_book_step:
+      "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+        \<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> ?Ncut
+          \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+          \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+    using hD44_frontier_sphere_and_access_crossings_book_step by (rule conjunct2)
+  have hD44_frontier_sphere_BdJ\<^sub>N:
+      "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron BdJ\<^sub>N)) 1"
+    using hD44_frontier_sphere_book_step hJ\<^sub>N_eq_BdJ\<^sub>N_poly by (by100 simp)
   have hD44_frontier_polygon_same_component_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
           (geotop_polygon_interior J - (N \<union> A2)) Q1"
-    (**
-      Moise 4.4, lines 958--974, in the literal regular-neighborhood form.
-      The fine carrier of \<open>A1\<close>, restricted to the closed polygonal disk, has
-      a polygonal frontier component through \<open>P\<close>; the complementary frontier
-      arc lies on one outside component of \<open>I - (N \<union> A2)\<close> whose closure
-      reaches the lower and upper access witnesses near \<open>Q\<close> and \<open>S\<close>. **)
-    sorry
+  proof (intro conjI)
+    show "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex, by100 simp, rule hD44_frontier_sphere_BdJ\<^sub>N)
+    show "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J - (N \<union> A2)) Q1"
+      by (rule hD44_arbitrary_access_broken_line_crossings_suffice
+          [OF hD44_access_crossings_book_step])
+  qed
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     using hD44_frontier_polygon_same_component_book_step by (rule conjunct1)
