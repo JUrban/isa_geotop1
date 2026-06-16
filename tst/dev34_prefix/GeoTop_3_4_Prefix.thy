@@ -4986,14 +4986,11 @@ proof -
               ?Ncut Q1"
     by (rule geotop_broken_line_access_crossings_same_component_open_prefix
         [OF hNcut_open hQ1_Ncut hS1_Ncut])
-  have hD44_exact_two_and_closed_corridor_book_step:
+  have hD44_local_boundary_corridor_book_step:
       "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
-        (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
-          geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
-          \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
-          \<and> e\<^sub>1 \<noteq> e\<^sub>2
-          \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
-              \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2)
+       \<and> (\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          \<not> geotop_graph_endpoint BdJ\<^sub>N w)
        \<and> (\<exists>Z. Z \<subseteq> ?Ncut
           \<and> top1_connected_on Z
               (subspace_topology UNIV geotop_euclidean_topology Z)
@@ -5001,11 +4998,33 @@ proof -
           \<and> S1 \<in> closure Z)"
     (**
       Moise 4.4, lines 958--974, in the local regular-neighborhood form left
-      to prove.  The selected carrier frontier has exactly the two adjacent
-      frontier edges at each vertex, and the complementary frontier side gives
-      one connected outside corridor in \<open>I - (N \<union> A2)\<close> whose closure reaches
-      the lower and upper access witnesses. **)
+      to prove.  The selected carrier frontier is a boundary 1-manifold with
+      no local branching and no graph endpoints, and the complementary
+      frontier side gives one connected outside corridor in \<open>I - (N \<union> A2)\<close>
+      whose closure reaches the lower and upper access witnesses. **)
     sorry
+  have hD44_frontier_card_le2_regular_neighborhood_book_step:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_no_endpoint_regular_neighborhood_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_closed_corridor_regular_neighborhood_book_step:
+      "\<exists>Z. Z \<subseteq> ?Ncut
+        \<and> top1_connected_on Z
+            (subspace_topology UNIV geotop_euclidean_topology Z)
+        \<and> Q1 \<in> closure Z
+        \<and> S1 \<in> closure Z"
+    using hD44_local_boundary_corridor_book_step by (by100 blast)
+  have hD44_frontier_degree_two_regular_neighborhood_book_step:
+      "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_incident_ge1_le2_no_endpoint_degree_two_prefix
+        [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_vertex_incident_ge1
+          hD44_frontier_card_le2_regular_neighborhood_book_step
+          hD44_frontier_no_endpoint_regular_neighborhood_book_step])
   have hD44_frontier_exact_two_regular_neighborhood_book_step:
       "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
         (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
@@ -5014,21 +5033,17 @@ proof -
           \<and> e\<^sub>1 \<noteq> e\<^sub>2
           \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
               \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
-    using hD44_exact_two_and_closed_corridor_book_step by (rule conjunct1)
-  have hD44_closed_corridor_regular_neighborhood_book_step:
-      "\<exists>Z. Z \<subseteq> ?Ncut
-        \<and> top1_connected_on Z
-            (subspace_topology UNIV geotop_euclidean_topology Z)
-        \<and> Q1 \<in> closure Z
-        \<and> S1 \<in> closure Z"
-    using hD44_exact_two_and_closed_corridor_book_step by (rule conjunct2)
+    by (rule geotop_degree_two_imp_exact_two_incident_edges_prefix
+        [OF hD44_frontier_degree_two_regular_neighborhood_book_step])
   have hD44_frontier_sphere_book_step:
       "geotop_is_n_sphere J\<^sub>N
         (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
-    by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
+    by (rule geotop_connected_linear_graph_card_le2_no_endpoint_polyhedron_1sphere_prefix
         [OF hBdJ\<^sub>N_linear_graph hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty
           hBdJ\<^sub>N_connected hJ\<^sub>N_eq_BdJ\<^sub>N_poly
-          hD44_frontier_exact_two_regular_neighborhood_book_step])
+          hBdJ\<^sub>N_vertex_incident_ge1
+          hD44_frontier_card_le2_regular_neighborhood_book_step
+          hD44_frontier_no_endpoint_regular_neighborhood_book_step])
   have hD44_broken_line_access_crossings_book_step:
       "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
         \<exists>B. geotop_is_broken_line B
