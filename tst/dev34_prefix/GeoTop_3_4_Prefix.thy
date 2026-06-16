@@ -2109,6 +2109,37 @@ proof -
     using hW_witness hY_W by (by100 blast)
 qed
 
+lemma geotop_component_at_mono_prefix:
+  fixes U V :: "(real^2) set" and X :: "real^2"
+  assumes hUV: "U \<subseteq> V"
+  shows
+    "geotop_component_at UNIV geotop_euclidean_topology U X
+      \<subseteq> geotop_component_at UNIV geotop_euclidean_topology V X"
+  (**
+    Pure component monotonicity used in D44: a connected witness for the
+    component inside a smaller cut-open set is also a connected witness inside
+    any larger cut-open set. **)
+proof (rule subsetI)
+  fix y
+  assume hy:
+    "y \<in> geotop_component_at UNIV geotop_euclidean_topology U X"
+  obtain C where hC:
+      "C \<subseteq> U \<and> X \<in> C
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)"
+    and hyC: "y \<in> C"
+    using hy unfolding geotop_component_at_def by (by100 blast)
+  have hC_sub_V: "C \<subseteq> V"
+    using hC hUV by (by100 blast)
+  have hC_witness:
+      "C \<in> {C. C \<subseteq> V \<and> X \<in> C
+        \<and> top1_connected_on C
+            (subspace_topology UNIV geotop_euclidean_topology C)}"
+    using hC hC_sub_V by (by100 simp)
+  show "y \<in> geotop_component_at UNIV geotop_euclidean_topology V X"
+    unfolding geotop_component_at_def using hC_witness hyC by (by100 blast)
+qed
+
 lemma geotop_connected_closure_corridor_same_component_open_prefix:
   fixes U C :: "(real^2) set" and X Y :: "real^2"
   assumes hUopen: "U \<in> geotop_euclidean_topology"
@@ -28793,24 +28824,7 @@ proof -
     have hcomponent_Ncut_sub_cut:
         "geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
           \<subseteq> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
-    proof (rule subsetI)
-      fix x
-      assume hx:
-        "x \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'"
-      obtain C where hC:
-          "C \<subseteq> ?Ncut \<and> Q' \<in> C \<and>
-            top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)"
-        and hxC: "x \<in> C"
-        using hx unfolding geotop_component_at_def by (by100 blast)
-      have hC_sub_cut: "C \<subseteq> ?cut"
-        using hC hNcut_sub_cut by (by100 blast)
-      have hC_witness:
-          "C \<in> {C. C \<subseteq> ?cut \<and> Q' \<in> C \<and>
-            top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)}"
-        using hC hC_sub_cut by (by100 simp)
-      show "x \<in> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
-        unfolding geotop_component_at_def using hC_witness hxC by (by100 blast)
-    qed
+      by (rule geotop_component_at_mono_prefix[OF hNcut_sub_cut])
     have hD44_same_component_from_Ncut_suffices:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q'
           \<Longrightarrow> S' \<in> geotop_component_at UNIV geotop_euclidean_topology ?cut Q'"
