@@ -3464,6 +3464,36 @@ lemma geotop_polygon_two_endpoint_arcs_regular_neighborhood_frontier_local_graph
     witnesses. **)
 proof -
   let ?Ncut = "geotop_polygon_interior J - (N \<union> A2)"
+  have hP_in_A1: "P \<in> A1"
+    using hA1J by (by100 blast)
+  have hN\<^sub>I_eq_N: "N\<^sub>I = N"
+    by (rule
+        geotop_polygon_iterated_Sd_selected_arc_carrier_closed_disk_restrict_eq_prefix
+          [OF hK_complex hK_fin hK_poly hN_def hN\<^sub>I_def])
+  have hN_closed: "closed N"
+    by (rule geotop_iterated_Sd_selected_arc_carrier_closed_prefix
+        [OF hK_complex hK_fin hN_def])
+  have hN\<^sub>I_closed: "closed N\<^sub>I"
+    using hN\<^sub>I_eq_N hN_closed by (by100 simp)
+  have hFrN\<^sub>I_HOL: "FrN\<^sub>I = frontier N\<^sub>I"
+    unfolding hFrN\<^sub>I_def by (rule geotop_frontier_UNIV_eq_frontier)
+  have hFrN\<^sub>I_sub_N\<^sub>I: "FrN\<^sub>I \<subseteq> N\<^sub>I"
+    using hFrN\<^sub>I_HOL frontier_subset_closed[OF hN\<^sub>I_closed] by (by100 simp)
+  have hFrN\<^sub>I_sub_N: "FrN\<^sub>I \<subseteq> N"
+    using hFrN\<^sub>I_sub_N\<^sub>I hN\<^sub>I_eq_N by (by100 simp)
+  have hP_FrN\<^sub>I: "P \<in> FrN\<^sub>I"
+    using geotop_polygon_iterated_Sd_selected_arc_carrier_endpoint_frontier_prefix
+        [OF hJ hP hA1J hK_complex hK_fin hK_poly hN_def hA1_N hN\<^sub>I_def]
+      hFrN\<^sub>I_def by (by100 simp)
+  have hP_J\<^sub>N: "P \<in> J\<^sub>N"
+    unfolding hJ\<^sub>N_def
+    by (rule geotop_component_at_UNIV_self_prefix[OF hP_FrN\<^sub>I])
+  have hJ\<^sub>N_sub_FrN\<^sub>I: "J\<^sub>N \<subseteq> FrN\<^sub>I"
+    unfolding hJ\<^sub>N_def geotop_component_at_def by (by100 blast)
+  have hJ\<^sub>N_sub_N: "J\<^sub>N \<subseteq> N"
+    using hJ\<^sub>N_sub_FrN\<^sub>I hFrN\<^sub>I_sub_N by (by100 blast)
+  have hJ\<^sub>N_A2_QS_disj: "J\<^sub>N \<inter> (A2 \<union> {Q, S}) = {}"
+    using hJ\<^sub>N_sub_N hN_avoid by (by100 blast)
   have hD44_frontier_polygon_route_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> (\<exists>B. geotop_is_broken_line B
