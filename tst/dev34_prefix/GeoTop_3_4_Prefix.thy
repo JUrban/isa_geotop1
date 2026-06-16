@@ -4783,6 +4783,18 @@ proof -
   have hK\<^sub>N_connected: "geotop_complex_connected K\<^sub>N"
     by (rule geotop_iterated_Sd_selected_arc_carrier_restrict_connected_prefix
         [OF hK_complex hK_fin hA1 hP_A1 hA1_N hN_def hK\<^sub>N_def])
+  have hA1_not_subset_singleton: "\<And>x. \<not> A1 \<subseteq> {x}"
+    by (rule geotop_arc_not_subset_singleton_prefix[OF hA1])
+  have hK\<^sub>N_poly_connected_HOL: "connected (geotop_polyhedron K\<^sub>N)"
+    using hN_connected_HOL hK\<^sub>N_poly by (by100 simp)
+  have hA1_sub_K\<^sub>N_poly: "A1 \<subseteq> geotop_polyhedron K\<^sub>N"
+    using hA1_N hK\<^sub>N_poly by (by100 simp)
+  have hK\<^sub>N_vertex_incident_edge:
+      "\<And>p. {p} \<in> K\<^sub>N \<Longrightarrow>
+        \<exists>e\<in>K\<^sub>N. geotop_is_edge e \<and> p \<in> e"
+    by (rule geotop_connected_complex_nondegenerate_subset_vertex_incident_edge_prefix
+        [OF hK\<^sub>N_complex hK\<^sub>N_poly_connected_HOL hA1_sub_K\<^sub>N_poly
+          hA1_not_subset_singleton])
   have hBdK\<^sub>N_sub_K\<^sub>N: "BdK\<^sub>N \<subseteq> K\<^sub>N"
     using hD44_full_boundary_complex by (by100 blast)
   have hBdK\<^sub>N_fin: "finite BdK\<^sub>N"
