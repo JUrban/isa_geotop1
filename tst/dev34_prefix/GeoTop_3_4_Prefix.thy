@@ -3540,19 +3540,58 @@ proof -
   have hNcut_BdJ\<^sub>N_poly_disj:
       "?Ncut \<inter> geotop_polyhedron BdJ\<^sub>N = {}"
     using hBdJ\<^sub>N_poly_sub_J\<^sub>N hJ\<^sub>N_sub_N by (by100 blast)
+  have hD44_regular_neighborhood_sphere_same_component_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+          (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1
+       \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
+          ?Ncut Q1"
+    (**
+      Moise 4.4, lines 962-974.  The selected carrier \<open>N\<^sub>I\<close> is the
+      regular neighborhood of \<open>A1\<close> in the closed disk.  The component of
+      \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is the book's 1-sphere, and the complementary
+      frontier arc gives one outside component of \<open>I - (N \<union> A2)\<close> meeting the
+      lower and upper access witnesses. **)
+    sorry
+  have hD44_frontier_1sphere_book_step:
+      "geotop_is_n_sphere J\<^sub>N
+        (subspace_topology UNIV geotop_euclidean_topology J\<^sub>N) 1"
+    using hD44_regular_neighborhood_sphere_same_component_book_step
+    by (rule conjunct1)
+  have hBdJ\<^sub>N_complex: "geotop_is_complex BdJ\<^sub>N"
+    by (rule geotop_linear_graph_complex_prefix[OF hBdJ\<^sub>N_linear_graph])
+  have hD44_frontier_polygon_from_1sphere:
+      "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
+  proof -
+    have hsphere_BdJ:
+        "geotop_is_n_sphere (geotop_polyhedron BdJ\<^sub>N)
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron BdJ\<^sub>N)) 1"
+      using hD44_frontier_1sphere_book_step hJ\<^sub>N_eq_BdJ\<^sub>N_poly
+      by (by100 simp)
+    show ?thesis
+      unfolding geotop_is_polygon_def
+      by (intro exI[where x=BdJ\<^sub>N] conjI,
+          rule hBdJ\<^sub>N_complex, by100 simp, rule hsphere_BdJ)
+  qed
+  have hD44_same_component_from_book_step:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology ?Ncut Q1"
+    using hD44_regular_neighborhood_sphere_same_component_book_step
+    by (rule conjunct2)
+  have hD44_route_from_same_component:
+      "\<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> ?Ncut
+        \<and> Q1 \<in> B
+        \<and> S1 \<in> B"
+    by (rule geotop_same_component_open_broken_line_route_prefix
+        [OF hNcut_open hQ1_Ncut hD44_same_component_from_book_step])
   have hD44_frontier_polygon_route_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
        \<and> (\<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> ?Ncut
           \<and> Q1 \<in> B
           \<and> S1 \<in> B)"
-    (**
-      Moise 4.4, lines 958-974.  The selected carrier \<open>N\<^sub>I\<close> is the
-      regular neighborhood of \<open>A1\<close> in the closed disk.  The component of
-      \<open>Fr N\<^sub>I\<close> through \<open>P\<close> is the polygonal 1-sphere used by the book,
-      and its complementary frontier arc gives the broken line \<open>B\<close> in
-      \<open>I - (N \<union> A2)\<close> joining the two access witnesses. **)
-    sorry
+    using hD44_frontier_polygon_from_1sphere hD44_route_from_same_component
+    by (intro conjI)
   have hD44_frontier_polygon_book_step:
       "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)"
     using hD44_frontier_polygon_route_book_step by (rule conjunct1)
