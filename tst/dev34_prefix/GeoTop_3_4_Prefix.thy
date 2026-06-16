@@ -4719,6 +4719,36 @@ proof -
       by (rule hD44_degree_two_and_closed_corridor_suffice
           [OF hdegree hcorridor])
   qed
+  have hD44_card_ge2_imp_no_endpoint:
+      "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+          card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2) \<Longrightarrow>
+        \<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow> \<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    (**
+      Lower-incidence form of the no-endpoint half of Moise's frontier-graph
+      sentence.  If a frontier vertex has at least two incident selected
+      boundary edges, it cannot be a graph endpoint, whose definition gives
+      exactly one incident edge. **)
+  proof (intro allI impI)
+    fix w
+    assume hge2:
+      "\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
+        card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    assume hwBdJ: "{w} \<in> BdJ\<^sub>N"
+    show "\<not> geotop_graph_endpoint BdJ\<^sub>N w"
+    proof
+      assume hend: "geotop_graph_endpoint BdJ\<^sub>N w"
+      have hcard1:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} = 1"
+        using geotop_graph_endpoint_singleton_and_card_one_prefix
+          [OF hBdJ\<^sub>N_linear_graph hend]
+        by (by100 blast)
+      have hcard_ge2:
+          "card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+        by (rule hge2[OF hwBdJ])
+      show False
+        using hcard1 hcard_ge2 by (by100 linarith)
+    qed
+  qed
   have hD44_no_branch_no_endpoint_and_closed_corridor_suffice:
       "(\<And>w. {w} \<in> BdJ\<^sub>N \<Longrightarrow>
           card {e\<in>BdJ\<^sub>N. geotop_is_edge e \<and> w \<in> e} \<le> 2) \<Longrightarrow>
