@@ -2530,6 +2530,57 @@ proof -
         [OF hUopen hXU hYU hconnected])
 qed
 
+lemma geotop_exact_two_frontier_broken_crossings_polygon_same_component_prefix:
+  fixes U :: "(real^2) set" and L :: "(real^2) set set" and Q1 S1 :: "real^2"
+  assumes hUopen: "U \<in> geotop_euclidean_topology"
+  assumes hQ1U: "Q1 \<in> U"
+  assumes hS1U: "S1 \<in> U"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
+  assumes hL_connected: "geotop_complex_connected L"
+  assumes htwo:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>e\<^sub>1\<in>L. \<exists>e\<^sub>2\<in>L.
+        geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+        \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2
+        \<and> (\<forall>e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+            \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+  assumes hcross:
+    "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+      \<exists>B. geotop_is_broken_line B
+        \<and> B \<subseteq> U
+        \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+        \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+  shows
+    "geotop_is_polygon (geotop_polyhedron L)
+     \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+  (**
+    Moise 4.4 packaging in the book's frontier form: exact-two incidence on
+    the selected frontier component gives the polygonal 1-sphere, while the
+    lower-to-upper broken-line crossings through the outside corridor give the
+    required component relation in the cut-open set. **)
+proof -
+  have hL_sphere:
+      "geotop_is_n_sphere (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L)) 1"
+    by (rule geotop_connected_linear_graph_exact_two_polyhedron_1sphere_prefix
+        [OF hL_linear hL_fin hL_nonempty hL_connected refl htwo])
+  have hL_polygon:
+      "geotop_is_polygon (geotop_polyhedron L)"
+    unfolding geotop_is_polygon_def
+    by (intro exI[where x=L] conjI,
+        rule hL_linear, rule refl, rule hL_sphere)
+  have hsame_component:
+      "S1 \<in> geotop_component_at UNIV geotop_euclidean_topology U Q1"
+    by (rule geotop_broken_line_access_crossings_same_component_open_prefix
+        [OF hUopen hQ1U hS1U hcross])
+  show ?thesis
+    using hL_polygon hsame_component by (intro conjI)
+qed
+
 lemma geotop_component_member_gives_closed_corridor_prefix:
   fixes U :: "(real^2) set" and X Y :: "real^2"
   assumes hY_comp:
@@ -5090,19 +5141,57 @@ proof -
           \<and> Q1 \<in> closure Z
           \<and> S1 \<in> closure Z)"
   proof -
+    have hD44_moise_exact_two_and_broken_crossings_core:
+        "(\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2)))
+         \<and> (\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {})"
+      (**
+        Moise 4.4, lines 958--974, in the direct book form now reduced to
+        the two literal regular-neighborhood outputs.  First, the selected
+        frontier component of the fine carrier is locally a 1-manifold
+        boundary, so each of its vertices has exactly two incident boundary
+        edges.  Second, the complementary frontier side contains lower-to-upper
+        polygonal crossings through \<open>I - (N \<union> A2)\<close> meeting every sufficiently
+        small pair of access collars at \<open>Q1\<close> and \<open>S1\<close>. **)
+      sorry
+    have hD44_frontier_exact_two:
+        "\<forall>w. {w} \<in> BdJ\<^sub>N \<longrightarrow>
+          (\<exists>e\<^sub>1\<in>BdJ\<^sub>N. \<exists>e\<^sub>2\<in>BdJ\<^sub>N.
+            geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1
+            \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2
+            \<and> e\<^sub>1 \<noteq> e\<^sub>2
+            \<and> (\<forall>e. e \<in> BdJ\<^sub>N \<and> geotop_is_edge e \<and> w \<in> e
+                \<longrightarrow> e = e\<^sub>1 \<or> e = e\<^sub>2))"
+      using hD44_moise_exact_two_and_broken_crossings_core by (rule conjunct1)
+    have hD44_broken_crossings:
+        "\<forall>\<epsilon>\<^sub>Q>0. \<forall>\<epsilon>\<^sub>S>0.
+          \<exists>B. geotop_is_broken_line B
+            \<and> B \<subseteq> ?Ncut
+            \<and> B \<inter> ball Q1 \<epsilon>\<^sub>Q \<noteq> {}
+            \<and> B \<inter> ball S1 \<epsilon>\<^sub>S \<noteq> {}"
+      using hD44_moise_exact_two_and_broken_crossings_core by (rule conjunct2)
     have hD44_moise_frontier_polygon_and_same_component_core:
         "geotop_is_polygon (geotop_polyhedron BdJ\<^sub>N)
          \<and> S1 \<in> geotop_component_at UNIV geotop_euclidean_topology
               ?Ncut Q1"
       (**
-        Moise 4.4, lines 958--974, in the direct book form.  The fine carrier
-        of \<open>A1\<close>, restricted to the closed polygonal disk, is the regular
-        neighborhood \<open>N'\<close>.  The selected component of \<open>Fr N'\<close> through \<open>P\<close>
-        is a polygonal 1-sphere, and the complementary outside side puts the
-        lower and upper access witnesses \<open>Q1\<close> and \<open>S1\<close> in the same component
-        of \<open>I - (N \<union> A2)\<close>.  The graph valence/no-endpoint and closed-corridor
-        formulation below is pure packaging from this book sentence. **)
-      sorry
+        Packaging of the literal regular-neighborhood outputs above.  Exact
+        two incidence gives the polygonal frontier component, and the
+        lower-to-upper broken-line access crossings give the component relation
+        in the open outside-carrier cut. **)
+      by (rule geotop_exact_two_frontier_broken_crossings_polygon_same_component_prefix
+          [OF hNcut_open hQ1_Ncut hS1_Ncut hBdJ\<^sub>N_linear_graph
+            hBdJ\<^sub>N_fin hBdJ\<^sub>N_nonempty hBdJ\<^sub>N_connected
+            hD44_frontier_exact_two hD44_broken_crossings])
     show ?thesis
     proof -
       have hD44_frontier_polygon:
