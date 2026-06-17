@@ -22,7 +22,8 @@
   numbers=left,
   numberstyle=\tiny\color{black!45},
   xleftmargin=2em,
-  framexleftmargin=1.5em
+  framexleftmargin=1.5em,
+  literate={ö}{{\"o}}1 {∈}{{$\in$}}1
 }
 \lstset{style=source}
 
@@ -55,19 +56,20 @@ item in Sections 3--4 it gives:
     corresponds to Moise's proof.
 \end{itemize}
 
-The ``exact'' excerpts are inserted with \verb|\lstinputlisting| from the live
-files in \src{tst/}.  Compile this file from \src{/project/tst} so the relative
-paths resolve.
+The exact excerpts are stored as small pre-extracted files under
+\src{sections_3_4_snippets/}.  Each listing uses \verb|firstnumber| to preserve
+the original source line numbers.  This avoids repeated high-line-number scans
+through the large Isabelle theory files during PDF generation.
 
 \section{Section 3: The Schoenflies Theorem for Polygons}
 
 \itemhead{Theorem 3.1}{geotop.tex:724--733}{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy:551}{Theorem_GT_3_1}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=724,lastline=733]{geotop.tex}
+\lstinputlisting[firstnumber=724]{sections_3_4_snippets/book_3_1.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=548,lastline=563]{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy}
+\lstinputlisting[firstnumber=548]{sections_3_4_snippets/formal_3_1.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The Isabelle proof follows the barycentric-coordinate proof, but packages the
@@ -83,10 +85,10 @@ homeomorphism matching the prescribed vertices.  It bridges the book's
 \itemhead{Theorem 3.2}{geotop.tex:735--750}{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy:721}{Theorem_GT_3_2}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=735,lastline=750]{geotop.tex}
+\lstinputlisting[firstnumber=735]{sections_3_4_snippets/book_3_2.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=718,lastline=729]{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy}
+\lstinputlisting[firstnumber=718]{sections_3_4_snippets/formal_3_2.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 Moise translates the simplex to the origin and extends the vertex map linearly
@@ -99,10 +101,10 @@ ambient-space conclusion as a homeomorphism of \src{UNIV}.
 \itemhead{Definition: Free 2-Simplex}{geotop.tex:752--760}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:5808,5817}{geotop_free_2_simplex; geotop_boundary_free_2_simplex}
 
 \paragraph{Book definition.}
-\lstinputlisting[firstline=752,lastline=760]{geotop.tex}
+\lstinputlisting[firstnumber=752]{sections_3_4_snippets/book_free_2_simplex.tex}
 
 \paragraph{Formal definitions.}
-\lstinputlisting[firstline=5804,lastline=5828]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=5804]{sections_3_4_snippets/formal_free_2_simplex.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The book says a free triangle is one whose intersection with the polygon
@@ -117,10 +119,10 @@ witness.
 \itemhead{Theorem 3.3}{geotop.tex:762--780}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:19301}{Theorem_GT_3_3}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=762,lastline=780]{geotop.tex}
+\lstinputlisting[firstnumber=762]{sections_3_4_snippets/book_3_3.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=19298,lastline=19318]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=19298]{sections_3_4_snippets/formal_3_3.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The final theorem wrapper is short: it invokes the stronger count theorem
@@ -135,10 +137,10 @@ parent disk.  The last extraction step is
 \itemhead{Theorem 3.4}{geotop.tex:782--799}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:58990}{Theorem_GT_3_4}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=782,lastline=799]{geotop.tex}
+\lstinputlisting[firstnumber=782]{sections_3_4_snippets/book_3_4.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=58987,lastline=59004]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=58987]{sections_3_4_snippets/formal_3_4.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The formal proof obtains a triangulation of the closed polygonal disk via
@@ -154,10 +156,10 @@ This is the direct formal replacement for Moise's ``remove a free
 \itemhead{Theorem 3.5}{geotop.tex:801--820}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59533}{Theorem_GT_3_5}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=801,lastline=820]{geotop.tex}
+\lstinputlisting[firstnumber=801]{sections_3_4_snippets/book_3_5.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=59530,lastline=59543]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=59530]{sections_3_4_snippets/formal_3_5.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The Isabelle proof follows the composition proof in the book.  It applies
@@ -169,10 +171,10 @@ project's homeomorphism-composition and inverse lemmas.
 \itemhead{Theorem 3.6}{geotop.tex:821--822}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59717}{Theorem_GT_3_6}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=821,lastline=822]{geotop.tex}
+\lstinputlisting[firstnumber=821]{sections_3_4_snippets/book_3_6.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=59715,lastline=59726]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=59715]{sections_3_4_snippets/formal_3_6.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 Moise says simply ``By Theorem 4.''  Isabelle expands that into the standard
@@ -185,10 +187,10 @@ preimage of that 2-cell under the homeomorphism is the required disk
 \itemhead{Theorem 3.7}{geotop.tex:824--826}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59831}{Theorem_GT_3_7}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=824,lastline=826]{geotop.tex}
+\lstinputlisting[firstnumber=824]{sections_3_4_snippets/book_3_7.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=59824,lastline=59860]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=59824]{sections_3_4_snippets/formal_3_7.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The book's one-line proof says to choose the deletion homeomorphisms with
@@ -203,10 +205,10 @@ the fixed-outside-\src{U} requirement.
 \itemhead{Theorem 4.1}{geotop.tex:865--867}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59930}{Theorem_GT_4_1}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=865,lastline=867]{geotop.tex}
+\lstinputlisting[firstnumber=865]{sections_3_4_snippets/book_4_1.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=59930,lastline=59942]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=59930]{sections_3_4_snippets/formal_4_1.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The formal proof sets \src{V} to the component of \src{U} containing \src{P}
@@ -218,10 +220,10 @@ of open components, and uses component disjointness to place \src{Q} in
 \itemhead{Theorem 4.2}{geotop.tex:869--884}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:67224}{Theorem_GT_4_2}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=869,lastline=884]{geotop.tex}
+\lstinputlisting[firstnumber=869]{sections_3_4_snippets/book_4_2.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=67219,lastline=67255]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+\lstinputlisting[firstnumber=67219]{sections_3_4_snippets/formal_4_2.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The formal theorem includes an explicit cyclic-order assumption
@@ -235,10 +237,10 @@ theorem.  The wrapper then reorders the conjuncts into the theorem statement.
 \itemhead{Theorem 4.3}{geotop.tex:886--929}{dev34_prefix/GeoTop_3_4_Prefix.thy:7}{Theorem_GT_4_3}
 
 \paragraph{Book statement and proof, including Lemmas 4.3.1 and 4.3.2.}
-\lstinputlisting[firstline=886,lastline=929]{geotop.tex}
+\lstinputlisting[firstnumber=886]{sections_3_4_snippets/book_4_3.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=5,lastline=34]{dev34_prefix/GeoTop_3_4_Prefix.thy}
+\lstinputlisting[firstnumber=5]{sections_3_4_snippets/formal_4_3.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The book gives a polygonal-cell proof with two internal lemmas.  The current
@@ -264,10 +266,10 @@ is introduced for the bounded-component construction.
 \itemhead{Theorem 4.4}{geotop.tex:931--974}{dev34_prefix/GeoTop_3_4_Prefix.thy:32828}{Theorem_GT_4_4}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=931,lastline=974]{geotop.tex}
+\lstinputlisting[firstnumber=931]{sections_3_4_snippets/book_4_4.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=32824,lastline=32857]{dev34_prefix/GeoTop_3_4_Prefix.thy}
+\lstinputlisting[firstnumber=32824]{sections_3_4_snippets/formal_4_4.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The formal theorem is stated for a polygon \src{J} with named boundary points
@@ -284,10 +286,10 @@ the lower to upper side, and transfer the resulting component-frontier fact to
 \itemhead{Definition: Brick-Decomposition}{geotop.tex:943--956}{dev34_prefix/GeoTop_3_4_Prefix.thy:41}{geotop_brick_decomposition}
 
 \paragraph{Book definition.}
-\lstinputlisting[firstline=943,lastline=956]{geotop.tex}
+\lstinputlisting[firstnumber=943]{sections_3_4_snippets/book_brick_decomposition.tex}
 
 \paragraph{Formal definition.}
-\lstinputlisting[firstline=36,lastline=50]{dev34_prefix/GeoTop_3_4_Prefix.thy}
+\lstinputlisting[firstnumber=36]{sections_3_4_snippets/formal_brick_decomposition.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The definition records exactly the three book requirements: each brick is a
@@ -300,10 +302,10 @@ decompositions.
 \itemhead{Theorem 4.5}{geotop.tex:976--994}{dev34_facts/GeoTop_3_4_Facts.thy:11}{Theorem_GT_4_5}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=976,lastline=994]{geotop.tex}
+\lstinputlisting[firstnumber=976]{sections_3_4_snippets/book_4_5.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=9,lastline=18]{dev34_facts/GeoTop_3_4_Facts.thy}
+\lstinputlisting[firstnumber=9]{sections_3_4_snippets/formal_4_5.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 Moise derives this from Theorem 4.4 by a bounded-component contradiction.  The
@@ -315,10 +317,10 @@ geometric content: an arc complement in the plane is connected.
 \itemhead{Theorem 4.6}{geotop.tex:996--998}{dev34_facts/GeoTop_3_4_Facts.thy:22}{Theorem_GT_4_6}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=996,lastline=998]{geotop.tex}
+\lstinputlisting[firstnumber=996]{sections_3_4_snippets/book_4_6.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=20,lastline=29]{dev34_facts/GeoTop_3_4_Facts.thy}
+\lstinputlisting[firstnumber=20]{sections_3_4_snippets/formal_4_6.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The book argues that a proper frontier subset would lie in an arc and separate
@@ -330,10 +332,10 @@ conclusion by using \src{Jordan_Brouwer_frontier} after bridging a geotop
 \itemhead{Theorem 4.7}{geotop.tex:1002--1016}{dev34_facts/GeoTop_3_4_Facts.thy:265}{Theorem_GT_4_7}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=1002,lastline=1016]{geotop.tex}
+\lstinputlisting[firstnumber=1002]{sections_3_4_snippets/book_4_7.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=263,lastline=279]{dev34_facts/GeoTop_3_4_Facts.thy}
+\lstinputlisting[firstnumber=263]{sections_3_4_snippets/formal_4_7.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 Moise proves uniqueness of the bounded component using the same Figure 4.2/4.9
@@ -347,10 +349,10 @@ component facts.
 \itemhead{Theorem 4.8 and Lemmas 4.8.1--4.8.5}{geotop.tex:1020--1051}{dev34/GeoTop_3_4.thy:28666}{Theorem_GT_4_8}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=1020,lastline=1051]{geotop.tex}
+\lstinputlisting[firstnumber=1020]{sections_3_4_snippets/book_4_8.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=28663,lastline=28682]{dev34/GeoTop_3_4.thy}
+\lstinputlisting[firstnumber=28663]{sections_3_4_snippets/formal_4_8.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The formal proof follows the book's five-lemma outline inside the theorem body.
@@ -409,10 +411,10 @@ at \src{dev34/GeoTop_3_4.thy:12142}.
 \itemhead{Theorem 4.9 and Combinatorial Boundary Definition}{geotop.tex:1052--1056}{dev34/GeoTop_3_4.thy:31656}{Theorem_GT_4_9}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=1052,lastline=1056]{geotop.tex}
+\lstinputlisting[firstnumber=1052]{sections_3_4_snippets/book_4_9.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=31652,lastline=31669]{dev34/GeoTop_3_4.thy}
+\lstinputlisting[firstnumber=31652]{sections_3_4_snippets/formal_4_9.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The proof reuses the 4.8 link/star analysis with the boundary case: each edge
@@ -425,10 +427,10 @@ is \src{geotop_manifold_boundary_eq_one_incident_edges_dev34}, preceded by
 \itemhead{Theorem 4.10}{geotop.tex:1058--1062}{dev34/GeoTop_3_4.thy:32151}{Theorem_GT_4_10}
 
 \paragraph{Book statement and proof.}
-\lstinputlisting[firstline=1058,lastline=1062]{geotop.tex}
+\lstinputlisting[firstnumber=1058]{sections_3_4_snippets/book_4_10.tex}
 
 \paragraph{Formal statement.}
-\lstinputlisting[firstline=32148,lastline=32163]{dev34/GeoTop_3_4.thy}
+\lstinputlisting[firstnumber=32148]{sections_3_4_snippets/formal_4_10.thy}
 
 \paragraph{Isabelle proof and correspondence.}
 The formal proof follows Moise's two inclusions.  For
@@ -440,7 +442,7 @@ local chart would give a plane-homeomorphic open neighborhood, and
 \src{R^2}, contradicting membership in the frontier.
 
 \paragraph{Invariance-of-domain support.}
-\lstinputlisting[firstline=6715,lastline=6728]{gb/GeoTopBase.thy}
+\lstinputlisting[firstnumber=6715]{sections_3_4_snippets/formal_invariance_of_domain.thy}
 
 \section{Main Auxiliary Isabelle Lemmas}
 
