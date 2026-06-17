@@ -1,0 +1,16 @@
+Theorem 3. Let $J$ be a polygon in $\mathbf{R}^{2}$, let $I$ be the interior of $J$, and let $K$ be a triangulation of $\bar{I}$. If $K$ has more than one 2 -simplex, then $K$ has a free 2-simplex.
+
+Proof. The theorem in this weak form is hard to prove. But we can prove, by induction, the stronger assertion that $K$ has at least two free 2 -simplexes. If $K$ has exactly two 2 -simplexes, then this is clear. We may assume, then, that $K$ has more than two 2 -simplexes; and we may assume, as an induction hypothesis, that our conclusion holds for every complex $L$ which is a triangulation of a region of the type $\bar{I}$ and has fewer 2 -simplexes than $K$. There are at least two 2 -simplexes $\sigma, \tau$ of $K$ which have an edge in $\operatorname{Fr}|K|$. If both of them are free, then there is nothing to prove. Suppose, then, that
+
+$$
+\sigma=v_{0} v_{1} v_{2} \in K, \quad v_{0} v_{1} \subset \operatorname{Fr}|K|,
+$$
+
+and $\sigma$ is not free. Then neither $v_{0} v_{2}$ nor $v_{1} v_{2}$ lies in $\operatorname{Fr}|K|$, and the picture must look like Figure 3.2. The points $v_{0}$ and $v_{2}$ decompose the polygon
+
+\begin{center}
+\fbox{\parbox{0.82\linewidth}{\centering \emph{Figure 3.2 omitted in this rendered excerpt; see the raw book source above.}}}
+\end{center}
+
+
+$J=\mathrm{Fr}|K|$ into two broken lines $C_{1}$ and $C_{2}$; and $|K|=\bar{I}_{1} \cup \bar{I}_{2}$, where $I_{1}$ and $I_{2}$ are the interiors of $C_{1} \cup v_{0} v_{2}$ and $C_{2} \cup v_{0} v_{2}$ respectively. Let $L_{1}$ be the complex consisting of the simplexes of $K$ that lie in $\bar{I}_{1}$, together with $v_{0} v_{1} v_{2}$ and its faces. Let $L_{2}$ be the set of all simplexes of $K$ that lie in $\bar{I}_{2}$. By the induction hypothesis, each of the complexes $L_{i}$ has two free 2 -simplexes. Therefore each of them has a free 2 -simplex $\sigma_{i}$, different from $v_{0} v_{1} v_{2}$. It follows that each $\sigma_{i}$ is free not only in $L_{i}$ but also in $K$, which was to be proved. \(\square\)

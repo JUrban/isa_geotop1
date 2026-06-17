@@ -2,6 +2,8 @@
 \usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{booktabs}
@@ -28,6 +30,12 @@
 \lstset{style=source}
 
 \newcommand{\src}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\bookexcerpt}[2]{%
+  \paragraph{Book LaTeX source.}%
+  \lstinputlisting[firstnumber=#1]{sections_3_4_snippets/#2}%
+  \paragraph{Book rendered excerpt.}%
+  \begin{quote}\small\input{sections_3_4_rendered/#2}\end{quote}%
+}
 \newcommand{\itemhead}[4]{%
   \subsection{#1}%
   \noindent\textbf{Book source:} \src{#2}.\\
@@ -48,25 +56,29 @@ This report expands \src{SECTIONS_3_4_FORMALIZATION_MAP.md}.  For each book
 item in Sections 3--4 it gives:
 
 \begin{itemize}
-  \item the exact book source range from \src{geotop.tex}, including the book
-    statement and proof text for that item;
+  \item the exact book LaTeX source range from \src{geotop.tex}, including the
+    book statement and proof text for that item;
+  \item a rendered book excerpt from the same source range, with figure
+    environments replaced by labeled placeholders when the original image asset
+    is not included in this report;
   \item the exact current Isabelle declaration range, with file and line
     number;
   \item a short explanation of how the Isabelle proof was organized and how it
     corresponds to Moise's proof.
 \end{itemize}
 
-The exact excerpts are stored as small pre-extracted files under
-\src{sections_3_4_snippets/}.  Each listing uses \verb|firstnumber| to preserve
-the original source line numbers.  This avoids repeated high-line-number scans
-through the large Isabelle theory files during PDF generation.
+The exact source excerpts are stored as small pre-extracted files under
+\src{sections_3_4_snippets/}; rendered book excerpts are stored under
+\src{sections_3_4_rendered/}.  Each raw listing uses \verb|firstnumber| to
+preserve the original source line numbers.  This avoids repeated
+high-line-number scans through the large Isabelle theory files during PDF
+generation.
 
 \section{Section 3: The Schoenflies Theorem for Polygons}
 
 \itemhead{Theorem 3.1}{geotop.tex:724--733}{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy:551}{Theorem_GT_3_1}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=724]{sections_3_4_snippets/book_3_1.tex}
+\bookexcerpt{724}{book_3_1.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=548]{sections_3_4_snippets/formal_3_1.thy}
@@ -84,8 +96,7 @@ homeomorphism matching the prescribed vertices.  It bridges the book's
 
 \itemhead{Theorem 3.2}{geotop.tex:735--750}{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy:721}{Theorem_GT_3_2}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=735]{sections_3_4_snippets/book_3_2.tex}
+\bookexcerpt{735}{book_3_2.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=718]{sections_3_4_snippets/formal_3_2.thy}
@@ -100,8 +111,7 @@ ambient-space conclusion as a homeomorphism of \src{UNIV}.
 
 \itemhead{Definition: Free 2-Simplex}{geotop.tex:752--760}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:5808,5817}{geotop_free_2_simplex; geotop_boundary_free_2_simplex}
 
-\paragraph{Book definition.}
-\lstinputlisting[firstnumber=752]{sections_3_4_snippets/book_free_2_simplex.tex}
+\bookexcerpt{752}{book_free_2_simplex.tex}
 
 \paragraph{Formal definitions.}
 \lstinputlisting[firstnumber=5804]{sections_3_4_snippets/formal_free_2_simplex.thy}
@@ -118,8 +128,7 @@ witness.
 
 \itemhead{Theorem 3.3}{geotop.tex:762--780}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:19301}{Theorem_GT_3_3}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=762]{sections_3_4_snippets/book_3_3.tex}
+\bookexcerpt{762}{book_3_3.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=19298]{sections_3_4_snippets/formal_3_3.thy}
@@ -136,8 +145,7 @@ parent disk.  The last extraction step is
 
 \itemhead{Theorem 3.4}{geotop.tex:782--799}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:58990}{Theorem_GT_3_4}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=782]{sections_3_4_snippets/book_3_4.tex}
+\bookexcerpt{782}{book_3_4.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=58987]{sections_3_4_snippets/formal_3_4.thy}
@@ -155,8 +163,7 @@ This is the direct formal replacement for Moise's ``remove a free
 
 \itemhead{Theorem 3.5}{geotop.tex:801--820}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59533}{Theorem_GT_3_5}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=801]{sections_3_4_snippets/book_3_5.tex}
+\bookexcerpt{801}{book_3_5.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=59530]{sections_3_4_snippets/formal_3_5.thy}
@@ -170,8 +177,7 @@ project's homeomorphism-composition and inverse lemmas.
 
 \itemhead{Theorem 3.6}{geotop.tex:821--822}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59717}{Theorem_GT_3_6}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=821]{sections_3_4_snippets/book_3_6.tex}
+\bookexcerpt{821}{book_3_6.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=59715]{sections_3_4_snippets/formal_3_6.thy}
@@ -186,8 +192,7 @@ preimage of that 2-cell under the homeomorphism is the required disk
 
 \itemhead{Theorem 3.7}{geotop.tex:824--826}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59831}{Theorem_GT_3_7}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=824]{sections_3_4_snippets/book_3_7.tex}
+\bookexcerpt{824}{book_3_7.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=59824]{sections_3_4_snippets/formal_3_7.thy}
@@ -204,8 +209,7 @@ the fixed-outside-\src{U} requirement.
 
 \itemhead{Theorem 4.1}{geotop.tex:865--867}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59930}{Theorem_GT_4_1}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=865]{sections_3_4_snippets/book_4_1.tex}
+\bookexcerpt{865}{book_4_1.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=59930]{sections_3_4_snippets/formal_4_1.thy}
@@ -219,8 +223,7 @@ of open components, and uses component disjointness to place \src{Q} in
 
 \itemhead{Theorem 4.2}{geotop.tex:869--884}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:67224}{Theorem_GT_4_2}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=869]{sections_3_4_snippets/book_4_2.tex}
+\bookexcerpt{869}{book_4_2.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=67219]{sections_3_4_snippets/formal_4_2.thy}
@@ -236,8 +239,7 @@ theorem.  The wrapper then reorders the conjuncts into the theorem statement.
 
 \itemhead{Theorem 4.3}{geotop.tex:886--929}{dev34_prefix/GeoTop_3_4_Prefix.thy:7}{Theorem_GT_4_3}
 
-\paragraph{Book statement and proof, including Lemmas 4.3.1 and 4.3.2.}
-\lstinputlisting[firstnumber=886]{sections_3_4_snippets/book_4_3.tex}
+\bookexcerpt{886}{book_4_3.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=5]{sections_3_4_snippets/formal_4_3.thy}
@@ -265,8 +267,7 @@ is introduced for the bounded-component construction.
 
 \itemhead{Theorem 4.4}{geotop.tex:931--974}{dev34_prefix/GeoTop_3_4_Prefix.thy:32828}{Theorem_GT_4_4}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=931]{sections_3_4_snippets/book_4_4.tex}
+\bookexcerpt{931}{book_4_4.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=32824]{sections_3_4_snippets/formal_4_4.thy}
@@ -285,8 +286,7 @@ the lower to upper side, and transfer the resulting component-frontier fact to
 
 \itemhead{Definition: Brick-Decomposition}{geotop.tex:943--956}{dev34_prefix/GeoTop_3_4_Prefix.thy:41}{geotop_brick_decomposition}
 
-\paragraph{Book definition.}
-\lstinputlisting[firstnumber=943]{sections_3_4_snippets/book_brick_decomposition.tex}
+\bookexcerpt{943}{book_brick_decomposition.tex}
 
 \paragraph{Formal definition.}
 \lstinputlisting[firstnumber=36]{sections_3_4_snippets/formal_brick_decomposition.thy}
@@ -301,8 +301,7 @@ decompositions.
 
 \itemhead{Theorem 4.5}{geotop.tex:976--994}{dev34_facts/GeoTop_3_4_Facts.thy:11}{Theorem_GT_4_5}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=976]{sections_3_4_snippets/book_4_5.tex}
+\bookexcerpt{976}{book_4_5.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=9]{sections_3_4_snippets/formal_4_5.thy}
@@ -316,8 +315,7 @@ geometric content: an arc complement in the plane is connected.
 
 \itemhead{Theorem 4.6}{geotop.tex:996--998}{dev34_facts/GeoTop_3_4_Facts.thy:22}{Theorem_GT_4_6}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=996]{sections_3_4_snippets/book_4_6.tex}
+\bookexcerpt{996}{book_4_6.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=20]{sections_3_4_snippets/formal_4_6.thy}
@@ -331,8 +329,7 @@ conclusion by using \src{Jordan_Brouwer_frontier} after bridging a geotop
 
 \itemhead{Theorem 4.7}{geotop.tex:1002--1016}{dev34_facts/GeoTop_3_4_Facts.thy:265}{Theorem_GT_4_7}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=1002]{sections_3_4_snippets/book_4_7.tex}
+\bookexcerpt{1002}{book_4_7.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=263]{sections_3_4_snippets/formal_4_7.thy}
@@ -348,8 +345,7 @@ component facts.
 
 \itemhead{Theorem 4.8 and Lemmas 4.8.1--4.8.5}{geotop.tex:1020--1051}{dev34/GeoTop_3_4.thy:28666}{Theorem_GT_4_8}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=1020]{sections_3_4_snippets/book_4_8.tex}
+\bookexcerpt{1020}{book_4_8.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=28663]{sections_3_4_snippets/formal_4_8.thy}
@@ -410,8 +406,7 @@ at \src{dev34/GeoTop_3_4.thy:12142}.
 
 \itemhead{Theorem 4.9 and Combinatorial Boundary Definition}{geotop.tex:1052--1056}{dev34/GeoTop_3_4.thy:31656}{Theorem_GT_4_9}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=1052]{sections_3_4_snippets/book_4_9.tex}
+\bookexcerpt{1052}{book_4_9.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=31652]{sections_3_4_snippets/formal_4_9.thy}
@@ -426,8 +421,7 @@ is \src{geotop_manifold_boundary_eq_one_incident_edges_dev34}, preceded by
 
 \itemhead{Theorem 4.10}{geotop.tex:1058--1062}{dev34/GeoTop_3_4.thy:32151}{Theorem_GT_4_10}
 
-\paragraph{Book statement and proof.}
-\lstinputlisting[firstnumber=1058]{sections_3_4_snippets/book_4_10.tex}
+\bookexcerpt{1058}{book_4_10.tex}
 
 \paragraph{Formal statement.}
 \lstinputlisting[firstnumber=32148]{sections_3_4_snippets/formal_4_10.thy}

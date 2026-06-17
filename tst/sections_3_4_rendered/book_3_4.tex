@@ -1,0 +1,15 @@
+Theorem 4. Let $J$ be a polygon in $\mathbf{R}^{2}$. Then there is a homeomorphism $h: \mathbf{R}^{\mathbf{2}} \leftrightarrow \mathbf{R}^{\mathbf{2}}$, such that $h(J)$ is the frontier of a 2 -simplex.\\
+Proof. Let $I$ be the interior of $J$, and let $K$ be a triangulation of $\bar{I}$. Any free 2 -simplex of $K$ can be removed by a homeomorphism $h: \mathbf{R}^{2} \leftrightarrow \mathbf{R}^{2}$.
+
+Case 1. Suppose that $v_{0} v_{1} v_{2}$ is free, with $v_{0} v_{1} v_{2} \cap \mathrm{Fr}|K|=v_{0} v_{2}$. We take $v_{3}, v_{4}$, and $v_{5}$ as in the figure, so that they and $v_{1}$ are collinear, with $v_{3}$ and $v_{4}$ "very close" to $v_{1}$ and $v_{5}$ respectively, so that the entire figure intersects $\mathrm{Fr}|K|$ only in $v_{0} v_{2}$. We then define $h$ as the identity in the complement of Figure 3.3, so that $v_{0}, v_{2}, v_{3}$, and $v_{4}$ are left fixed. Now define $h\left(v_{5}\right)=v_{1}$,
+
+\begin{center}
+\fbox{\parbox{0.82\linewidth}{\centering \emph{Figure 3.3 omitted in this rendered excerpt; see the raw book source above.}}}
+\end{center}
+
+
+and extend $h$ simplicially (Theorem 1) to each of the simplexes $v_{0} v_{4} v_{5}$, $v_{2} v_{4} v_{5}, v_{0} v_{5} v_{3}$, and $v_{2} v_{5} v_{3}$. The effect of $h$ is to reduce by 1 the number of 2 -simplexes of $K$.
+
+Case 2. Suppose that $v_{0} v_{1} v_{2}$ is free in $K$, with $v_{0} v_{1} v_{2} \cap \mathrm{Fr}|K|=v_{0} v_{1} \cup v_{1} v_{2}$. Use the inverse of the mapping $h$ that we defined in Case 1.
+
+By induction, the theorem follows. \(\square\)
