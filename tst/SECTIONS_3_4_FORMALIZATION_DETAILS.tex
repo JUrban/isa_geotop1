@@ -1,0 +1,544 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\lstdefinestyle{source}{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=single,
+  framerule=0.2pt,
+  rulecolor=\color{black!30},
+  numbers=left,
+  numberstyle=\tiny\color{black!45},
+  xleftmargin=2em,
+  framexleftmargin=1.5em
+}
+\lstset{style=source}
+
+\newcommand{\src}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\itemhead}[4]{%
+  \subsection{#1}%
+  \noindent\textbf{Book source:} \src{#2}.\\
+  \textbf{Formal source:} \src{#3}.\\
+  \textbf{Formal item:} \src{#4}.%
+}
+
+\title{Moise Sections 3--4: Detailed Formalization Correspondence}
+\author{GeoTop formalization notes}
+\date{Snapshot: 2026-06-17}
+
+\begin{document}
+\maketitle
+
+\section{How to Read This File}
+
+This report expands \src{SECTIONS_3_4_FORMALIZATION_MAP.md}.  For each book
+item in Sections 3--4 it gives:
+
+\begin{itemize}
+  \item the exact book source range from \src{geotop.tex}, including the book
+    statement and proof text for that item;
+  \item the exact current Isabelle declaration range, with file and line
+    number;
+  \item a short explanation of how the Isabelle proof was organized and how it
+    corresponds to Moise's proof.
+\end{itemize}
+
+The ``exact'' excerpts are inserted with \verb|\lstinputlisting| from the live
+files in \src{tst/}.  Compile this file from \src{/project/tst} so the relative
+paths resolve.
+
+\section{Section 3: The Schoenflies Theorem for Polygons}
+
+\itemhead{Theorem 3.1}{geotop.tex:724--733}{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy:551}{Theorem_GT_3_1}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=724,lastline=733]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=548,lastline=563]{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The Isabelle proof follows the barycentric-coordinate proof, but packages the
+hard affine extension in existing convex/simplex infrastructure.  The theorem is
+stated for an arbitrary Euclidean space type, with vertex sets \src{V}, \src{W}
+and a bijection \src{\<phi>}.  The proof first exposes barycentric coordinates
+for points of \src{\<sigma>}, then uses
+\src{geotop_simplex_vertex_bijection_affine_extension} to obtain the affine
+homeomorphism matching the prescribed vertices.  It bridges the book's
+``simplicial homeomorphism'' to \src{top1_homeomorphism_on} and
+\src{geotop_simplicial_on}.
+
+\itemhead{Theorem 3.2}{geotop.tex:735--750}{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy:721}{Theorem_GT_3_2}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=735,lastline=750]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=718,lastline=729]{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+Moise translates the simplex to the origin and extends the vertex map linearly
+to the ambient space.  Isabelle reuses Theorem 3.1 for the restricted simplex
+homeomorphism and then applies
+\src{geotop_simplex_vertex_bijection_affine_extension} to get the global
+Euclidean homeomorphism \src{g}.  The formal statement records the same
+ambient-space conclusion as a homeomorphism of \src{UNIV}.
+
+\itemhead{Definition: Free 2-Simplex}{geotop.tex:752--760}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:5808,5817}{geotop_free_2_simplex; geotop_boundary_free_2_simplex}
+
+\paragraph{Book definition.}
+\lstinputlisting[firstline=752,lastline=760]{geotop.tex}
+
+\paragraph{Formal definitions.}
+\lstinputlisting[firstline=5804,lastline=5828]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The book says a free triangle is one whose intersection with the polygon
+frontier consists of one or two edges.  The formal definition also permits the
+empty-contact case because later fold-normalization needs to distinguish a
+chosen free 2-simplex from one whose actual boundary contact is nonempty.
+\src{geotop_boundary_free_2_simplex} is the nonempty boundary-contact version.
+The surrounding lemmas prove transfer, cardinality, and contact-case facts that
+let the induction in Theorem 3.3 recover the book's intended free-boundary
+witness.
+
+\itemhead{Theorem 3.3}{geotop.tex:762--780}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:19301}{Theorem_GT_3_3}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=762,lastline=780]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=19298,lastline=19318]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The final theorem wrapper is short: it invokes the stronger count theorem
+\src{geotop_polygon_disk_free_2simplex_count_ge2_prefix}, exactly matching
+Moise's proof strategy that proves at least two free 2-simplexes.  The long
+formal work is in the induction infrastructure: existence of two boundary
+2-simplexes, the nonfree boundary-triangle split along the chord, decomposition
+into two smaller polygonal disks, and transfer of side witnesses back to the
+parent disk.  The last extraction step is
+\src{geotop_polygon_disk_boundary_free_witness_avoids_empty_contact_prefix}.
+
+\itemhead{Theorem 3.4}{geotop.tex:782--799}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:58990}{Theorem_GT_3_4}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=782,lastline=799]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=58987,lastline=59004]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The formal proof obtains a triangulation of the closed polygonal disk via
+\src{Theorem_GT_2_2}, then runs the free-triangle deletion induction as a
+supported fold-normalization theorem.  The two Figure 3.3 cases are formalized
+by \src{geotop_figure33_one_boundary_named_supported_fold_prefix} and
+\src{geotop_figure33_two_boundary_named_supported_inverse_fold_prefix}; the
+combined induction package is
+\src{geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix}.
+This is the direct formal replacement for Moise's ``remove a free
+2-simplex by a homeomorphism'' step.
+
+\itemhead{Theorem 3.5}{geotop.tex:801--820}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59533}{Theorem_GT_3_5}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=801,lastline=820]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=59530,lastline=59543]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The Isabelle proof follows the composition proof in the book.  It applies
+\src{Theorem_GT_3_4} to \src{J} and \src{J'} to send both polygons to simplex
+frontiers, applies the simplex homeomorphism machinery from Theorem 3.2 to
+match those frontiers, then composes the three plane homeomorphisms using the
+project's homeomorphism-composition and inverse lemmas.
+
+\itemhead{Theorem 3.6}{geotop.tex:821--822}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59717}{Theorem_GT_3_6}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=821,lastline=822]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=59715,lastline=59726]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+Moise says simply ``By Theorem 4.''  Isabelle expands that into the standard
+preimage argument: from Theorem 3.4 choose a homeomorphism carrying \src{J} to
+the frontier of a 2-simplex \src{\<sigma>}; a simplex is a 2-cell, and the
+preimage of that 2-cell under the homeomorphism is the required disk
+\src{D}.  Frontier preservation under plane homeomorphisms supplies
+\src{J = Fr D}.
+
+\itemhead{Theorem 3.7}{geotop.tex:824--826}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59831}{Theorem_GT_3_7}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=824,lastline=826]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=59824,lastline=59860]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The book's one-line proof says to choose the deletion homeomorphisms with
+support inside \src{U}.  Isabelle makes this explicit by using the same
+fold-normalization package as Theorem 3.4, but in its support-parametric form:
+\src{geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix}.
+The formal conclusion adds \src{\<forall>P\<in>UNIV - U. h P = P}, exactly encoding
+the fixed-outside-\src{U} requirement.
+
+\section{Section 4: The Jordan Curve Theorem}
+
+\itemhead{Theorem 4.1}{geotop.tex:865--867}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:59930}{Theorem_GT_4_1}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=865,lastline=867]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=59930,lastline=59942]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The formal proof sets \src{V} to the component of \src{U} containing \src{P}
+and \src{W = U - V}.  It proves the component is open by
+\src{geotop_component_at_open_in_euclidean}, proves the complement is a union
+of open components, and uses component disjointness to place \src{Q} in
+\src{W}.  This is Moise's proof with the component-open fact made explicit.
+
+\itemhead{Theorem 4.2}{geotop.tex:869--884}{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:67224}{Theorem_GT_4_2}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=869,lastline=884]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=67219,lastline=67255]{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The formal theorem includes an explicit cyclic-order assumption
+\src{geotop_polygon_cyclic_order J P Q R S}.  The proof delegates the geometric
+contradiction argument to
+\src{geotop_polygon_arc_opposite_boundary_decomposition_prefix}, which bundles
+the reduction to the rectangle, the ``if Q' and S' were in the same component''
+broken-line construction, and the contradiction with the earlier crossing
+theorem.  The wrapper then reorders the conjuncts into the theorem statement.
+
+\itemhead{Theorem 4.3}{geotop.tex:886--929}{dev34_prefix/GeoTop_3_4_Prefix.thy:7}{Theorem_GT_4_3}
+
+\paragraph{Book statement and proof, including Lemmas 4.3.1 and 4.3.2.}
+\lstinputlisting[firstline=886,lastline=929]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=5,lastline=34]{dev34_prefix/GeoTop_3_4_Prefix.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The book gives a polygonal-cell proof with two internal lemmas.  The current
+formal proof does not name those sublemmas separately; it proves the same
+separation theorem by bridging \src{geotop_is_n_sphere} to HOL-Analysis
+homeomorphism of the standard circle and applying
+\src{Jordan_Brouwer_separation}.  Thus Lemma 4.3.1 and Lemma 4.3.2 are
+absorbed into the library theorem rather than replayed as separate Isabelle
+lemmas.
+
+\paragraph{Lemma 4.3.1 row.}
+The exact book statement and proof are \src{geotop.tex:898--902}, included in
+the listing above.  There is no standalone Isabelle declaration for this
+sublemma; its separation role is covered by \src{Theorem_GT_4_3} at
+\src{dev34_prefix/GeoTop_3_4_Prefix.thy:7}.
+
+\paragraph{Lemma 4.3.2 row.}
+The exact book statement and proof are \src{geotop.tex:904--929}, included in
+the listing above.  As with Lemma 4.3.1, the current formalization proves the
+parent theorem via \src{Jordan_Brouwer_separation}; no separate Isabelle lemma
+is introduced for the bounded-component construction.
+
+\itemhead{Theorem 4.4}{geotop.tex:931--974}{dev34_prefix/GeoTop_3_4_Prefix.thy:32828}{Theorem_GT_4_4}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=931,lastline=974]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=32824,lastline=32857]{dev34_prefix/GeoTop_3_4_Prefix.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The formal theorem is stated for a polygon \src{J} with named boundary points
+\src{P,Q,R,S}, cyclic order, two disjoint arcs \src{A1,A2}, and the endpoint
+conditions \src{A1 \<inter> J = {P}} and \src{A2 \<inter> J = {R}}.  The proof is
+the one-line wrapper around
+\src{geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix}.
+That auxiliary lemma is the formal version of the brick/regular-neighborhood
+construction: choose a sufficiently fine carrier around \src{A1}, take the
+frontier component containing \src{P}, extract the broken line crossing from
+the lower to upper side, and transfer the resulting component-frontier fact to
+\src{Q} and \src{S}.
+
+\itemhead{Definition: Brick-Decomposition}{geotop.tex:943--956}{dev34_prefix/GeoTop_3_4_Prefix.thy:41}{geotop_brick_decomposition}
+
+\paragraph{Book definition.}
+\lstinputlisting[firstline=943,lastline=956]{geotop.tex}
+
+\paragraph{Formal definition.}
+\lstinputlisting[firstline=36,lastline=50]{dev34_prefix/GeoTop_3_4_Prefix.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The definition records exactly the three book requirements: each brick is a
+polyhedral disk, the union is all of the plane, pairwise nonempty intersections
+are broken lines in both frontiers, and every point has a neighborhood meeting
+at most three bricks.  The completed Theorem 4.4 proof uses a specialized
+transfer lemma rather than developing a broad reusable theory of all brick
+decompositions.
+
+\itemhead{Theorem 4.5}{geotop.tex:976--994}{dev34_facts/GeoTop_3_4_Facts.thy:11}{Theorem_GT_4_5}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=976,lastline=994]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=9,lastline=18]{dev34_facts/GeoTop_3_4_Facts.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+Moise derives this from Theorem 4.4 by a bounded-component contradiction.  The
+formal proof uses the already available general result
+\src{top1_connected_complement_of_geotop_arc}, specialized to dimension two.
+This is stronger than the book route but proves the same theorem with the same
+geometric content: an arc complement in the plane is connected.
+
+\itemhead{Theorem 4.6}{geotop.tex:996--998}{dev34_facts/GeoTop_3_4_Facts.thy:22}{Theorem_GT_4_6}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=996,lastline=998]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=20,lastline=29]{dev34_facts/GeoTop_3_4_Facts.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The book argues that a proper frontier subset would lie in an arc and separate
+the plane, contradicting Theorem 4.5.  Isabelle proves the same frontier
+conclusion by using \src{Jordan_Brouwer_frontier} after bridging a geotop
+1-sphere to the HOL standard sphere.  The component hypothesis is expressed via
+\src{geotop_component_at}.
+
+\itemhead{Theorem 4.7}{geotop.tex:1002--1016}{dev34_facts/GeoTop_3_4_Facts.thy:265}{Theorem_GT_4_7}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=1002,lastline=1016]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=263,lastline=279]{dev34_facts/GeoTop_3_4_Facts.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+Moise proves uniqueness of the bounded component using the same Figure 4.2/4.9
+configuration and Theorem 4.5.  The Isabelle proof splits the argument into
+existence of a bounded component and uniqueness.  Existence comes from
+\src{geotop_polygon_interior_is_bounded_component}; uniqueness uses the same
+``a second bounded component would have frontier in an arc'' contradiction,
+with the arc-separation obstruction supplied by Theorem 4.5 and Jordan-Brouwer
+component facts.
+
+\itemhead{Theorem 4.8 and Lemmas 4.8.1--4.8.5}{geotop.tex:1020--1051}{dev34/GeoTop_3_4.thy:28666}{Theorem_GT_4_8}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=1020,lastline=1051]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=28663,lastline=28682]{dev34/GeoTop_3_4.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The formal proof follows the book's five-lemma outline inside the theorem body.
+Local fact \src{hL1} proves every vertex lies in an edge using the no-open-
+singleton property of a 2-manifold.  Local \src{hL2} proves at least one
+incident 2-simplex for every incident edge.  Local \src{hL3} proves at least
+two incident 2-simplexes using the small-semicircle/no-arc-separates-plane
+package.  Local \src{hL4} proves at most two using the three-incident-simplex
+Jordan contradiction.  Local \src{hL5} proves link connectedness.  The final
+step uses the Figure 4.10 cone/link model lemmas to identify each star with a
+combinatorial 2-cell.
+
+\paragraph{Lemma 4.8.1 row.}
+Book source: \src{geotop.tex:1024--1025}.  Formal status:
+\src{geotop_complex_simplex_vertex_incident_edge} at
+\src{dev34_facts/GeoTop_3_4_Facts.thy:535}, and the local theorem step
+\src{hL1} at \src{dev34/GeoTop_3_4.thy:28686}.
+
+\paragraph{Lemma 4.8.2 row.}
+Book source: \src{geotop.tex:1027--1029}.  Formal status:
+\src{geotop_incident_edge_face_count_ge_1_link_edge_witness} at
+\src{dev34_facts/GeoTop_3_4_Facts.thy:4892}, and local steps \src{hL2} and
+\src{hL2_count} at \src{dev34/GeoTop_3_4.thy:28715} and
+\src{dev34/GeoTop_3_4.thy:28739}.
+
+\paragraph{Lemma 4.8.3 row.}
+Book source: \src{geotop.tex:1031--1032}.  Formal status:
+\src{geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34}
+at \src{dev34/GeoTop_3_4.thy:24605}, with the local conclusion \src{hL3} at
+\src{dev34/GeoTop_3_4.thy:28770}.
+
+\paragraph{Lemma 4.8.4 row.}
+Book source: \src{geotop.tex:1034--1035}.  Formal status:
+\src{geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34}
+at \src{dev34/GeoTop_3_4.thy:27813},
+\src{geotop_three_incident_2simplex_sphere_not_separates_chart_dev34} at
+\src{dev34/GeoTop_3_4.thy:27888}, and
+\src{geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34}
+at \src{dev34/GeoTop_3_4.thy:28588}.  The local conclusion is \src{hL4} at
+\src{dev34/GeoTop_3_4.thy:28850}.
+
+\paragraph{Lemma 4.8.5 row.}
+Book source: \src{geotop.tex:1039--1040}.  Formal status: the link
+connectedness conclusion is the local fact \src{hL5} at
+\src{dev34/GeoTop_3_4.thy:29543}; it is not split out as a global theorem.
+
+\paragraph{Figure 4.10 model row.}
+Book source: \src{geotop.tex:1042--1051}.  Formal status:
+\src{geotop_fig410_boundary_subdivision_model_from_finite_linear_link_polygon_dev34}
+at \src{dev34/GeoTop_3_4.thy:7616},
+\src{geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_dev34}
+at \src{dev34/GeoTop_3_4.thy:12048}, and
+\src{geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_with_interior_dev34}
+at \src{dev34/GeoTop_3_4.thy:12142}.
+
+\itemhead{Theorem 4.9 and Combinatorial Boundary Definition}{geotop.tex:1052--1056}{dev34/GeoTop_3_4.thy:31656}{Theorem_GT_4_9}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=1052,lastline=1056]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=31652,lastline=31669]{dev34/GeoTop_3_4.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The proof reuses the 4.8 link/star analysis with the boundary case: each edge
+has one or two incident 2-simplexes, and the link of a vertex is either a
+broken line or a polygon.  The formal boundary assertion is stated directly as
+the union of edges with exactly one incident 2-simplex.  The key named bridge
+is \src{geotop_manifold_boundary_eq_one_incident_edges_dev34}, preceded by
+\src{geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34}.
+
+\itemhead{Theorem 4.10}{geotop.tex:1058--1062}{dev34/GeoTop_3_4.thy:32151}{Theorem_GT_4_10}
+
+\paragraph{Book statement and proof.}
+\lstinputlisting[firstline=1058,lastline=1062]{geotop.tex}
+
+\paragraph{Formal statement.}
+\lstinputlisting[firstline=32148,lastline=32163]{dev34/GeoTop_3_4.thy}
+
+\paragraph{Isabelle proof and correspondence.}
+The formal proof follows Moise's two inclusions.  For
+\src{Bd M \<subseteq> Fr M}, a point of \src{M - Fr M} has an open neighborhood in
+\src{M} and is therefore manifold-interior.  For \src{Fr M \<subseteq> Bd M}, closedness
+puts frontier points in \src{M}; if such a point were manifold-interior, its
+local chart would give a plane-homeomorphic open neighborhood, and
+\src{Theorem_GT_4_invariance_of_domain} would make that neighborhood open in
+\src{R^2}, contradicting membership in the frontier.
+
+\paragraph{Invariance-of-domain support.}
+\lstinputlisting[firstline=6715,lastline=6728]{gb/GeoTopBase.thy}
+
+\section{Main Auxiliary Isabelle Lemmas}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.28\textwidth}
+                  >{\raggedright\arraybackslash}p{0.25\textwidth}
+                  >{\raggedright\arraybackslash}p{0.39\textwidth}}
+\toprule
+\textbf{Isabelle item} & \textbf{Location} & \textbf{Book correspondence / role}\\
+\midrule
+\endhead
+\src{geotop_polygon_disk_two_boundary_2simplexes_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:5493} &
+Supports Theorem 3.3: supplies the book's claim that at least two 2-simplexes
+touch the polygon frontier.\\
+\src{geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:12903} &
+Formalizes the Figure 3.2 split when the chosen boundary triangle is not free.\\
+\src{geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:13771} &
+Runs the two-side induction count used in Moise's stronger ``two free
+2-simplexes'' argument.\\
+\src{geotop_polygon_disk_boundary_free_witness_avoids_empty_contact_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:34363} &
+Extracts a genuine boundary-free witness distinct from the chosen bad triangle.\\
+\src{geotop_figure33_one_boundary_named_supported_fold_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:45304} &
+Formal Figure 3.3 Case 1 fold, with support control.\\
+\src{geotop_figure33_two_boundary_named_supported_inverse_fold_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:55144} &
+Formal Figure 3.3 Case 2 inverse fold, with support control.\\
+\src{geotop_free_triangle_one_boundary_edge_supported_fold_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:58113} &
+Packages the one-boundary-edge deletion case for Theorems 3.4 and 3.7.\\
+\src{geotop_free_triangle_two_boundary_edges_supported_inverse_fold_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:58242} &
+Packages the two-boundary-edge deletion case for Theorems 3.4 and 3.7.\\
+\src{geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:58843} &
+The full supported induction that removes free triangles until the polygon is
+carried to a simplex frontier.\\
+\src{geotop_polygon_arc_opposite_boundary_decomposition_prefix} &
+\src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:67081} &
+Formalizes the core contradiction in Theorem 4.2.\\
+\src{geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix} &
+\src{dev34_prefix/GeoTop_3_4_Prefix.thy:30025} &
+Formalizes the brick/regular-neighborhood component-transfer proof of
+Theorem 4.4.\\
+\src{geotop_complex_simplex_vertex_incident_edge} &
+\src{dev34_facts/GeoTop_3_4_Facts.thy:535} &
+Standalone support for Lemma 4.8.1: vertices are incident to edges in the
+2-manifold setting.\\
+\src{geotop_incident_edge_face_count_ge_1_link_edge_witness} &
+\src{dev34_facts/GeoTop_3_4_Facts.thy:4892} &
+Support for Lemma 4.8.2: incident edges have a 2-simplex witness.\\
+\src{geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34} &
+\src{dev34/GeoTop_3_4.thy:24605} &
+The small-semicircle contradiction behind Lemma 4.8.3.\\
+\src{geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34} &
+\src{dev34/GeoTop_3_4.thy:27813} &
+Initial local contradiction for three 2-simplexes incident to one edge.\\
+\src{geotop_three_incident_2simplex_sphere_not_separates_chart_dev34} &
+\src{dev34/GeoTop_3_4.thy:27888} &
+Jordan/sphere version of the three-incident-simplex obstruction.\\
+\src{geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34} &
+\src{dev34/GeoTop_3_4.thy:28588} &
+Final contradiction package used in Lemma 4.8.4.\\
+\src{geotop_fig410_boundary_subdivision_model_from_finite_linear_link_polygon_dev34} &
+\src{dev34/GeoTop_3_4.thy:7616} &
+Builds the Figure 4.10 boundary subdivision model.\\
+\src{geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_dev34} &
+\src{dev34/GeoTop_3_4.thy:12048} &
+Identifies a star with the standard cone over a polygonal link.\\
+\src{geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_with_interior_dev34} &
+\src{dev34/GeoTop_3_4.thy:12142} &
+Interior-aware version used to conclude the star is a combinatorial 2-cell.\\
+\src{geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34} &
+\src{dev34/GeoTop_3_4.thy:30251} &
+Boundary-manifold edge count for Theorem 4.9.\\
+\src{geotop_manifold_boundary_eq_one_incident_edges_dev34} &
+\src{dev34/GeoTop_3_4.thy:31626} &
+Identifies the topological manifold boundary with the union of one-incident
+edges, matching Moise's \(\partial K\) paragraph.\\
+\src{Theorem_GT_4_invariance_of_domain} &
+\src{gb/GeoTopBase.thy:6722} &
+The Brouwer invariance-of-domain theorem used in the second inclusion of
+Theorem 4.10.\\
+\bottomrule
+\end{longtable}
+
+\section{Summary}
+
+Sections 3--4 are now represented by named Isabelle theorems
+\src{Theorem_GT_3_1} through \src{Theorem_GT_3_7} and
+\src{Theorem_GT_4_1} through \src{Theorem_GT_4_10}.  The proof style is not
+uniformly literal: several book picture arguments are replaced by packaged
+Isabelle lemmas, and Theorems 4.3, 4.5, and 4.6 use HOL-Analysis/Jordan-Brouwer
+bridges where that is cleaner than replaying Moise's full planar construction.
+The correspondences above record where those replacements occur and which
+auxiliary lemmas carry the geometric work.
+
+\end{document}
