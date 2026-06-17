@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\newcommand{\src}[1]{\texttt{\detokenize{#1}}}
+
+\title{Sections 3--4 Formalization Overview}
+\author{GeoTop formalization notes}
+\date{2026-06-17}
+
+\begin{document}
+\maketitle
+
+\section{Current Status}
+
+The Moise Sections 3--4 theorem chain is closed in the current \src{dev34}
+split.  Section 3 is represented by \src{Theorem_GT_3_1} through
+\src{Theorem_GT_3_7}; Section 4 is represented by \src{Theorem_GT_4_1}
+through \src{Theorem_GT_4_10}.  The main definitions are
+\src{geotop_free_2_simplex}, \src{geotop_boundary_free_2_simplex}, and
+\src{geotop_brick_decomposition}.  The supporting invariance-of-domain theorem
+is \src{Theorem_GT_4_invariance_of_domain} in \src{gb/GeoTopBase.thy:6722}.
+
+A direct scan of the current Section 3--4 theory files found no active
+\src{sorry} or \src{oops} markers.  The only hit for \src{admit} was prose in a
+comment using the English word ``admits''.
+
+\section{Size and Location}
+
+\begin{longtable}{p{0.18\textwidth}p{0.35\textwidth}p{0.16\textwidth}p{0.23\textwidth}}
+\toprule
+\textbf{Area} & \textbf{File or directory} & \textbf{Size} & \textbf{Role}\\
+\midrule
+\endhead
+Base prefix & \src{dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy} & 5,865 lines & Theorems 3.1--3.2 and simplex/homeomorphism setup.\\
+Mid prefix & \src{dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy} & 67,258 lines & Free-simplex machinery, Theorems 3.3--3.7, and Theorems 4.1--4.2.\\
+Prefix & \src{dev34_prefix/GeoTop_3_4_Prefix.thy} & 32,860 lines & Theorem 4.3, brick-decomposition, and Theorem 4.4.\\
+Facts layer & \src{dev34_facts/GeoTop_3_4_Facts.thy} & 7,516 lines & Theorems 4.5--4.7 and reusable Jordan/separation facts.\\
+Final layer & \src{dev34/GeoTop_3_4.thy} & 32,239 lines & Theorems 4.8--4.10 and manifold/link/star work.\\
+Main proof files & above five files & 145,738 lines & Working Section 3--4 formalization split.\\
+Fast cache & \src{.dev34_fast_cache/} & about 90 MB & Generated prefix/slice cache for focused checks.\\
+Report snippets & \src{sections_3_4_snippets/} & about 160 KB & Cached exact source excerpts for the detailed report.\\
+Rendered snippets & \src{sections_3_4_rendered/} & about 80 KB & Rendered book excerpts for the detailed report.\\
+\bottomrule
+\end{longtable}
+
+\section{How It Was Done}
+
+The development was split into layers so finished infrastructure could be
+reused without replaying the whole theory stack on every edit.  The main layers
+are \src{dev34_prefix_base}, \src{dev34_prefix_mid}, \src{dev34_prefix},
+\src{dev34_facts}, and \src{dev34}.
+
+The workflow relied heavily on searchable indexes: \src{THEOREMS_AND_DEFS.txt}
+for declaration names and line numbers, \src{STMT_INDEX.txt} for normalized
+statements, and full-tree \src{rg} searches for local proof facts and comments.
+The fast iteration path used \src{.dev34_fast_cache} and
+\src{check_dev34_fast.sh}.  The cache stores generated prefixes and focused
+slices so that long theorem packages can be checked without rebuilding all
+earlier finished text.  It is a development accelerator, not a substitute for
+final Isabelle verification.
+
+\section{Proof Strategy}
+
+Section 3 was closed by turning Moise's geometric induction into explicit
+reusable packages.  Theorem 3.3 uses the stronger ``at least two free
+2-simplexes'' induction.  Theorem 3.4 uses the Figure 3.3 fold and inverse-fold
+packages.  Theorem 3.7 reuses the same fold normalization with support control
+outside a chosen open set.
+
+Section 4 combines faithful formalizations of Moise's arguments with
+library-backed topological bridges.  Theorem 4.2 packages the opposite-boundary
+arc separation argument.  Theorem 4.4 packages the brick/regular-neighborhood
+component-transfer argument.  Theorems 4.3, 4.5, and 4.6 use
+HOL-Analysis/Jordan-Brouwer bridges where that is cleaner than replaying every
+planar picture argument.  Theorem 4.8 follows Moise's five-link-lemma plan
+inside the theorem body.  Theorem 4.9 identifies the topological boundary with
+one-incident edges, and Theorem 4.10 uses invariance of domain for the
+frontier-to-boundary inclusion.
+
+\section{Problems and Solutions}
+
+\begin{longtable}{p{0.43\textwidth}p{0.50\textwidth}}
+\toprule
+\textbf{Problem} & \textbf{Solution}\\
+\midrule
+\endhead
+Long theory files made ordinary verification slow. & Split the development into layers and used \src{.dev34_fast_cache} focused prefix/slice checks.\\
+Search by memory was unreliable in a 100k+ line development. & Regenerated and used \src{THEOREMS_AND_DEFS.txt}, \src{STMT_INDEX.txt}, and full-index \src{rg} searches frequently.\\
+Moise's proofs rely on figures and phrases such as ``evidently''. & Replaced picture arguments by named local lemmas and reusable geometric packages.\\
+Theorem 3.3 needed a stronger induction than the final theorem statement. & Proved and used the two-free-simplex count theorem, then extracted the weaker witness theorem.\\
+Theorems 3.4 and 3.7 required controlled plane homeomorphisms. & Built supported Figure 3.3 fold/inverse-fold packages and a supported normalization theorem.\\
+Theorem 4.4's brick proof was too broad if formalized as a general brick theory. & Focused on the exact component-transfer conclusion needed by the theorem.\\
+Theorem 4.8 needed many local incidence and link facts. & Broke the proof into L1--L5 local steps plus named semicircle, three-incident-simplex, and Figure 4.10 cone/link packages.\\
+The detailed LaTeX report became slow to compile when it read high line ranges from large \src{.thy} files. & Cached source excerpts in \src{sections_3_4_snippets/} and rendered book excerpts in \src{sections_3_4_rendered/}.\\
+\bottomrule
+\end{longtable}
+
+\section{Outcome and Caveats}
+
+The split architecture made it possible to close very large theorem packages
+incrementally.  The indexes made theorem lookup and line-number reporting
+practical, and the proof packages now document the correspondence between
+Moise's informal geometric steps and formal Isabelle objects.
+
+The main caveats are structural.  The \src{dev34} split is a working
+formalization layer; integration into the final canonical \src{GeoTop.thy}
+layout may still require cleanup.  Some book sublemmas are absorbed into
+stronger library-backed theorems rather than reproduced line-for-line.  The
+fast cache is generated local state and should be treated as an iteration aid.
+The local TeX installation in this environment cannot build PDFs because
+required TeX format files are missing, but the LaTeX source is intended to be
+portable.
+
+\end{document}
+
